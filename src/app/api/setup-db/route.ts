@@ -1,18 +1,44 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { Client } from 'pg';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
-  const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres.dokkypjturwhppjgrptu:Crimesney71011@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+  const candidateUrls = [
+    process.env.DATABASE_URL,
+    'postgresql://postgres:Crimesney71011@db.dokkypjturwhppjgrptu.supabase.co:5432/postgres',
+    'postgresql://postgres.dokkypjturwhppjgrptu:Crimesney71011@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres',
+    'postgresql://postgres.dokkypjturwhppjgrptu:Crimesney71011@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres',
+  ].filter(Boolean) as string[];
 
-  const pool = new Pool({
-    connectionString: dbUrl,
-    ssl: { rejectUnauthorized: false },
-  });
+  let client: Client | null = null;
+  let connectedUrl = '';
+  let lastError: any = null;
+
+  for (const url of candidateUrls) {
+    try {
+      const c = new Client({
+        connectionString: url,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000,
+      });
+      await c.connect();
+      client = c;
+      connectedUrl = url;
+      break;
+    } catch (err: any) {
+      lastError = err;
+      console.error(`Failed connecting to ${url}:`, err?.message);
+    }
+  }
+
+  if (!client) {
+    return NextResponse.json(
+      { error: `Koneksi Supabase gagal. Error: ${lastError?.message || 'Unknown'}` },
+      { status: 500 }
+    );
+  }
 
   try {
-    const client = await pool.connect();
-
     // 1. Create Tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS "User" (
@@ -138,8 +164,7 @@ export async function GET() {
       `);
     }
 
-    client.release();
-    await pool.end();
+    await client.end();
 
     return NextResponse.json({
       success: true,
@@ -148,8 +173,8 @@ export async function GET() {
       password: 'password123',
     });
   } catch (error: any) {
-    console.error('Setup DB error:', error);
-    await pool.end();
+    console.error('Setup DB DDL error:', error);
+    if (client) await client.end();
     return NextResponse.json(
       { error: error?.message || 'Gagal menyetel database' },
       { status: 500 }
