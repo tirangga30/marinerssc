@@ -187,13 +187,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FEATURED PLAYERS GRID - DYNAMIC STARRED PLAYERS */}
+      {/* PLAYERS GRID - DYNAMIC PLAYERS */}
       <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 space-y-3 sm:space-y-8">
         <div className="flex items-end justify-between border-b border-slate-800 pb-2">
           <div>
             <span className="text-[9px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Pilar Skuad</span>
             <h2 className="text-base sm:text-3xl font-black uppercase text-white mt-0.5">
-              Pemain Bintang Mariners SC ⭐
+              Pemain Mariners SC
             </h2>
           </div>
           <Link
@@ -226,9 +226,11 @@ export default async function HomePage() {
                   #{player.number}
                 </div>
 
-                <div className="absolute top-1.5 sm:top-4 left-1.5 sm:left-4 px-1 sm:px-2.5 py-0.5 rounded bg-amber-400 text-blue-950 font-black text-[7px] sm:text-[10px] uppercase tracking-wider shadow flex items-center gap-1">
-                  ⭐ BINTANG
-                </div>
+                {player.isCaptain && (
+                  <div className="absolute top-1.5 sm:top-4 left-1.5 sm:left-4 px-1.5 sm:px-2.5 py-0.5 rounded bg-white text-blue-950 font-black text-[7px] sm:text-[10px] uppercase tracking-wider shadow">
+                    KAPTEN
+                  </div>
+                )}
               </div>
 
               {/* Player Info */}

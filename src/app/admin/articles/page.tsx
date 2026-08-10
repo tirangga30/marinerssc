@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Calendar } from 'lucide-react';
+import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2 } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -18,11 +18,12 @@ export default function AdminArticlesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
     category: 'Kabar Tim',
-    thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80',
+    thumbnail: '/stadium_hero.png',
     content: '',
   });
 
@@ -47,7 +48,7 @@ export default function AdminArticlesPage() {
     setFormData({
       title: '',
       category: 'Kabar Tim',
-      thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80',
+      thumbnail: '/stadium_hero.png',
       content: '',
     });
     setShowModal(true);
@@ -62,6 +63,34 @@ export default function AdminArticlesPage() {
       content: art.content,
     });
     setShowModal(true);
+  };
+
+  // Direct Thumbnail Upload Handler
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const body = new FormData();
+    body.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setFormData((prev) => ({ ...prev, thumbnail: data.url }));
+      } else {
+        alert(data.error || 'Gagal mengunggah gambar berita');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat mengunggah gambar berita');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -90,7 +119,8 @@ export default function AdminArticlesPage() {
         setShowModal(false);
         fetchArticles();
       } else {
-        alert('Gagal menyimpan artikel');
+        const errorData = await res.json();
+        alert(errorData.error || 'Gagal menyimpan artikel');
       }
     } catch {
       alert('Terjadi kesalahan');
@@ -104,29 +134,29 @@ export default function AdminArticlesPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-amber-400"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Dashboard Admin
         </Link>
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 rounded-xl gold-gradient-bg text-slate-950 font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:brightness-110"
+          className="px-4 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg"
         >
-          <Plus className="w-4 h-4" /> Tulis Artikel Berita Baru
+          <Plus className="w-4 h-4 text-blue-600" /> Tulis Artikel Berita Baru
         </button>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+      <div className="glass-panel p-6 rounded-3xl border border-sky-400/30 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h1 className="text-xl font-black uppercase text-slate-100 gold-gradient-text">
-            Manajemen Berita & Artikel ({articles.length})
+          <h1 className="text-xl font-black uppercase text-white blue-gradient-text">
+            Manajemen Berita & Artikel Mariners SC ({articles.length})
           </h1>
         </div>
 
         {/* Articles Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-900/80 text-amber-400 font-bold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-200">
+            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3">Tanggal Terbit</th>
                 <th className="p-3">Judul Artikel</th>
@@ -137,18 +167,18 @@ export default function AdminArticlesPage() {
             <tbody className="divide-y divide-slate-800/60 font-medium">
               {articles.map((art) => (
                 <tr key={art.id} className="hover:bg-slate-800/40">
-                  <td className="p-3 font-bold text-slate-400">
+                  <td className="p-3 font-bold text-slate-300">
                     {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="p-3 flex items-center gap-3">
-                    <img src={art.thumbnail} alt={art.title} className="w-10 h-8 rounded object-cover border border-slate-700" />
-                    <span className="font-bold text-slate-100">{art.title}</span>
+                    <img src={art.thumbnail} alt={art.title} className="w-12 h-9 rounded-lg object-cover border border-sky-400/30 shadow-sm" />
+                    <span className="font-bold text-white">{art.title}</span>
                   </td>
-                  <td className="p-3 font-bold text-amber-400">{art.category}</td>
+                  <td className="p-3 font-bold text-sky-300">{art.category}</td>
                   <td className="p-3 text-right space-x-2">
                     <button
                       onClick={() => openEditModal(art)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -168,10 +198,10 @@ export default function AdminArticlesPage() {
 
       {/* Modal Add / Edit Article */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 space-y-6 shadow-2xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-black uppercase text-amber-400">
+              <h3 className="text-lg font-black uppercase text-sky-400">
                 {editingArticle ? 'Edit Artikel' : 'Tulis Artikel Baru'}
               </h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
@@ -180,52 +210,72 @@ export default function AdminArticlesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              
+              {/* DIRECT THUMBNAIL UPLOAD SECTION */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                <label className="font-bold text-sky-300 uppercase block">Foto Header / Gambar Berita (Direct Upload)</label>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="relative w-28 h-20 rounded-xl overflow-hidden bg-slate-800 border border-sky-400/40 shrink-0">
+                    <img
+                      src={formData.thumbnail || '/stadium_hero.png'}
+                      alt="Thumbnail Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <div className="flex-1 space-y-2 w-full">
+                    <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold inline-flex items-center gap-2 text-xs transition-colors">
+                      {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      {uploading ? 'Mengunggah...' : 'Upload Foto Berita dari Laptop'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Pilih file foto (.jpg, .png, .webp) dari laptop Anda untuk dijadikan gambar header berita.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Judul Artikel</label>
+                <label className="font-bold text-slate-200 uppercase block mb-1">Judul Artikel</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   placeholder="Judul Berita Terbaru..."
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Kategori</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
-                  >
-                    <option value="Laporan Pertandingan">Laporan Pertandingan</option>
-                    <option value="Kabar Tim">Kabar Tim</option>
-                    <option value="Transfer">Transfer Pemain</option>
-                    <option value="Klub">Informasi Klub</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">URL Gambar Header (Thumbnail)</label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.thumbnail}
-                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
-                  />
-                </div>
+              <div>
+                <label className="font-bold text-slate-200 uppercase block mb-1">Kategori</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                >
+                  <option value="Laporan Pertandingan">Laporan Pertandingan</option>
+                  <option value="Kabar Tim">Kabar Tim</option>
+                  <option value="Transfer">Transfer Pemain</option>
+                  <option value="Klub">Informasi Klub</option>
+                </select>
               </div>
 
               <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Isi Berita Lengkap (Format Markdown / Paragraf)</label>
+                <label className="font-bold text-slate-200 uppercase block mb-1">Isi Berita Lengkap (Format Markdown / Paragraf)</label>
                 <textarea
                   rows={8}
                   required
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 font-mono text-xs"
+                  className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-mono text-xs focus:border-sky-400 outline-none"
                   placeholder="### Subjudul Berita&#10;&#10;Isi paragraf berita..."
                 />
               </div>
@@ -240,9 +290,10 @@ export default function AdminArticlesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl gold-gradient-bg text-slate-950 font-extrabold uppercase flex items-center gap-2 shadow"
+                  disabled={uploading}
+                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow"
                 >
-                  <Save className="w-4 h-4" /> Terbitkan Artikel
+                  <Save className="w-4 h-4 text-blue-600" /> Terbitkan Artikel
                 </button>
               </div>
             </form>
