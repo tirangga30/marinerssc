@@ -14,7 +14,7 @@ async function main() {
   await prisma.competition.deleteMany();
 
   console.log('Creating Admin...');
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('ug45yuTDht6NT67', 12);
   await prisma.user.create({
     data: {
       name: 'Mariners SC Admin',

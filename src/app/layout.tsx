@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import PublicShell from '@/components/PublicShell';
 
 export const metadata: Metadata = {
   title: 'Mariners SC - Website Resmi Klub Sepak Bola',
@@ -16,9 +15,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="bg-[#060b14] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <PublicShell>{children}</PublicShell>
       </body>
     </html>
   );
