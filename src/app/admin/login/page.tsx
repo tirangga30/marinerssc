@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@marinersfc.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -68,14 +68,13 @@ export default function AdminLoginPage() {
           <div className="space-y-1">
             <label className="text-xs font-bold uppercase text-slate-200 tracking-wider">Email Admin</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-sky-400 text-sm text-white placeholder-slate-500 outline-none transition-colors"
-                placeholder="admin@marinersfc.com"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-sky-400 text-sm text-white placeholder-slate-500 outline-none transition-colors"
+                placeholder="Email admin"
               />
             </div>
           </div>
@@ -105,10 +104,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <div className="pt-4 border-t border-slate-800 text-center text-xs text-slate-400 space-y-1">
-          <p>Kredensial Bawaan Dev:</p>
-          <p className="font-mono text-sky-400 font-bold">admin@marinersfc.com / password123</p>
-        </div>
+
 
       </div>
     </div>
