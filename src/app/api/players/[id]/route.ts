@@ -6,7 +6,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const session = await getAdminSession();
     if (!session) {
-      return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
+      return NextResponse.json({ error: 'Tidak sah (Silakan login ulang admin)' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -36,8 +36,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     return NextResponse.json(player);
-  } catch (error) {
-    return NextResponse.json({ error: 'Gagal memperbarui pemain' }, { status: 500 });
+  } catch (error: any) {
+    console.error('PUT /api/players error:', error);
+    return NextResponse.json(
+      { error: error?.message || 'Gagal memperbarui data pemain' },
+      { status: 500 }
+    );
   }
 }
 
@@ -51,7 +55,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     await prisma.player.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Gagal menghapus pemain' }, { status: 500 });
+  } catch (error: any) {
+    console.error('DELETE /api/players error:', error);
+    return NextResponse.json(
+      { error: error?.message || 'Gagal menghapus pemain' },
+      { status: 500 }
+    );
   }
 }
