@@ -7,29 +7,37 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Dynamic rendering for latest data
 
 export default async function HomePage() {
-  // Fetch latest/next match
-  const matches = await prisma.footballMatch.findMany({
-    orderBy: { matchDate: 'asc' },
-  });
+  let matches: any[] = [];
+  let articles: any[] = [];
+  let featuredPlayers: any[] = [];
+
+  try {
+    // Fetch latest/next match
+    matches = await prisma.footballMatch.findMany({
+      orderBy: { matchDate: 'asc' },
+    });
+
+    // Fetch 3 latest articles
+    articles = await prisma.article.findMany({
+      orderBy: { publishedAt: 'desc' },
+      take: 3,
+    });
+
+    // Fetch featured players
+    featuredPlayers = await prisma.player.findMany({
+      where: {
+        slug: {
+          in: ['jay-idzes', 'thom-haye', 'marselino-ferdinan', 'rafael-struick', 'maarten-paes', 'ramadhan-sananta'],
+        },
+      },
+      take: 6,
+    });
+  } catch (error) {
+    console.error('Error fetching data from database:', error);
+  }
 
   const nextMatch = matches.find((m: any) => m.status === 'scheduled') || matches[matches.length - 1];
   const lastFinishedMatch = [...matches].reverse().find((m: any) => m.status === 'finished');
-
-  // Fetch 3 latest articles
-  const articles = await prisma.article.findMany({
-    orderBy: { publishedAt: 'desc' },
-    take: 3,
-  });
-
-  // Fetch featured players
-  const featuredPlayers = await prisma.player.findMany({
-    where: {
-      slug: {
-        in: ['jay-idzes', 'thom-haye', 'marselino-ferdinan', 'rafael-struick', 'maarten-paes', 'ramadhan-sananta'],
-      },
-    },
-    take: 6,
-  });
 
   // Stats calculation
   const totalMatches = matches.filter((m: any) => m.status === 'finished').length;
@@ -106,7 +114,7 @@ export default async function HomePage() {
             </span>
           </div>
 
-          {nextMatch && (
+          {nextMatch ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center">
               
               {/* Mariners FC (Home/Away) */}
@@ -153,6 +161,10 @@ export default async function HomePage() {
                 </div>
               </div>
 
+            </div>
+          ) : (
+            <div className="text-center py-6 text-xs text-slate-400">
+              Menghubungkan data pertandingan Mariners FC...
             </div>
           )}
 

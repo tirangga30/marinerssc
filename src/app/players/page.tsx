@@ -15,9 +15,14 @@ const positionLabels: Record<string, string> = {
 };
 
 export default async function PlayersPage() {
-  const players = await prisma.player.findMany({
-    orderBy: { number: 'asc' },
-  });
+  let players: any[] = [];
+  try {
+    players = await prisma.player.findMany({
+      orderBy: { number: 'asc' },
+    });
+  } catch (error) {
+    console.error('Error fetching players:', error);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
