@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Edit, Trash2, ArrowLeft, X, Save, CheckCircle2 } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 
 interface Player {
   id: string;
@@ -28,8 +28,9 @@ export default function AdminPlayersPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  // Form State
+  // Form State - Default Photo Template is /playertemplate.jpeg
   const [formData, setFormData] = useState({
     name: '',
     number: '',
@@ -37,7 +38,7 @@ export default function AdminPlayersPage() {
     nationality: 'Indonesia',
     heightCm: '',
     weightKg: '',
-    photoUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
+    photoUrl: '/playertemplate.jpeg',
     bio: '',
     isCaptain: false,
     status: 'Active',
@@ -73,7 +74,7 @@ export default function AdminPlayersPage() {
       nationality: 'Indonesia',
       heightCm: '',
       weightKg: '',
-      photoUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: '',
       isCaptain: false,
       status: 'Active',
@@ -95,7 +96,7 @@ export default function AdminPlayersPage() {
       nationality: player.nationality,
       heightCm: player.heightCm?.toString() || '',
       weightKg: player.weightKg?.toString() || '',
-      photoUrl: player.photoUrl,
+      photoUrl: player.photoUrl || '/playertemplate.jpeg',
       bio: player.bio,
       isCaptain: player.isCaptain,
       status: player.status,
@@ -106,6 +107,34 @@ export default function AdminPlayersPage() {
       redCards: player.redCards.toString(),
     });
     setShowModal(true);
+  };
+
+  // Direct File Upload Handler
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const body = new FormData();
+    body.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setFormData((prev) => ({ ...prev, photoUrl: data.url }));
+      } else {
+        alert(data.error || 'Gagal mengunggah foto');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat mengunggah foto');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -134,7 +163,8 @@ export default function AdminPlayersPage() {
         setShowModal(false);
         fetchPlayers();
       } else {
-        alert('Gagal menyimpan data pemain');
+        const errorData = await res.json();
+        alert(errorData.error || 'Gagal menyimpan data pemain');
       }
     } catch {
       alert('Terjadi kesalahan');
@@ -148,29 +178,29 @@ export default function AdminPlayersPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-amber-400"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Dashboard Admin
         </Link>
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 rounded-xl gold-gradient-bg text-slate-950 font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:brightness-110"
+          className="px-4 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg"
         >
-          <Plus className="w-4 h-4" /> Tambah Pemain Baru
+          <Plus className="w-4 h-4 text-blue-600" /> Tambah Pemain Baru
         </button>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+      <div className="glass-panel p-6 rounded-3xl border border-sky-400/30 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h1 className="text-xl font-black uppercase text-slate-100 gold-gradient-text">
-            Daftar Pemain Skuad ({players.length})
+          <h1 className="text-xl font-black uppercase text-white blue-gradient-text">
+            Daftar Pemain Skuad Mariners SC ({players.length})
           </h1>
         </div>
 
         {/* Players Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-900/80 text-amber-400 font-bold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-200">
+            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3">No</th>
                 <th className="p-3">Pemain</th>
@@ -184,26 +214,30 @@ export default function AdminPlayersPage() {
             <tbody className="divide-y divide-slate-800/60 font-medium">
               {players.map((player) => (
                 <tr key={player.id} className="hover:bg-slate-800/40">
-                  <td className="p-3 font-mono font-bold text-amber-400">#{player.number}</td>
+                  <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
                   <td className="p-3 flex items-center gap-3">
-                    <img src={player.photoUrl} alt={player.name} className="w-8 h-8 rounded-full object-cover border border-amber-500/40" />
+                    <img
+                      src={player.photoUrl || '/playertemplate.jpeg'}
+                      alt={player.name}
+                      className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
+                    />
                     <div>
-                      <span className="font-bold text-slate-100 uppercase">{player.name}</span>
-                      {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold">(C)</span>}
+                      <span className="font-bold text-white uppercase">{player.name}</span>
+                      {player.isCaptain && <span className="ml-2 text-[10px] text-sky-400 font-extrabold">(C)</span>}
                     </div>
                   </td>
-                  <td className="p-3 font-bold text-amber-400/90">{player.position}</td>
+                  <td className="p-3 font-bold text-sky-300">{player.position}</td>
                   <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
                   <td className="p-3">{player.appearances}</td>
                   <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
                       {player.status}
                     </span>
                   </td>
                   <td className="p-3 text-right space-x-2">
                     <button
                       onClick={() => openEditModal(player)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -223,10 +257,10 @@ export default function AdminPlayersPage() {
 
       {/* Modal Add / Edit Player */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 space-y-6 shadow-2xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-black uppercase text-amber-400">
+              <h3 className="text-lg font-black uppercase text-sky-400">
                 {editingPlayer ? 'Edit Data Pemain' : 'Tambah Pemain Baru'}
               </h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
@@ -235,33 +269,76 @@ export default function AdminPlayersPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              
+              {/* UPLOAD FOTO SECTION */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                <label className="font-bold text-sky-300 uppercase block">Foto Pemain (Direct Upload)</label>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
+                    <img
+                      src={formData.photoUrl || '/playertemplate.jpeg'}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <div className="flex-1 space-y-2 w-full">
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                        {uploading ? 'Mengunggah...' : 'Upload Foto dari Laptop'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          disabled={uploading}
+                          className="hidden"
+                        />
+                      </label>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.jpeg' }))}
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
+                      >
+                        Reset Template
+                      </button>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400">
+                      Pilih file gambar (.jpg, .png, .webp) dari laptop Anda. Jika tidak diunggah, akan menggunakan template default <strong>/playertemplate.jpeg</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Nama Lengkap</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Nama Lengkap</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Nomor Punggung</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Nomor Punggung</label>
                   <input
                     type="number"
                     required
                     value={formData.number}
                     onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Posisi Utama</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Posisi Utama</label>
                   <select
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   >
                     <option value="GK">Penjaga Gawang (GK)</option>
                     <option value="DF">Bek / Defender (DF)</option>
@@ -270,110 +347,99 @@ export default function AdminPlayersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Kewarganegaraan</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Kewarganegaraan</label>
                   <input
                     type="text"
                     value={formData.nationality}
                     onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Tinggi (cm)</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Tinggi (cm)</label>
                   <input
                     type="number"
                     value={formData.heightCm}
                     onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Berat (kg)</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Berat (kg)</label>
                   <input
                     type="number"
                     value={formData.weightKg}
                     onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">URL Foto Pemain</label>
-                <input
-                  type="url"
-                  required
-                  value={formData.photoUrl}
-                  onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Biografi Singkat</label>
+                <label className="font-bold text-slate-200 uppercase block mb-1">Biografi Singkat</label>
                 <textarea
                   rows={3}
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Gol</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Gol</label>
                   <input
                     type="number"
                     value={formData.goals}
                     onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Assist</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Assist</label>
                   <input
                     type="number"
                     value={formData.assists}
                     onChange={(e) => setFormData({ ...formData, assists: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Laga</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Laga</label>
                   <input
                     type="number"
                     value={formData.appearances}
                     onChange={(e) => setFormData({ ...formData, appearances: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Kartu Kuning</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Kartu Kuning</label>
                   <input
                     type="number"
                     value={formData.yellowCards}
                     onChange={(e) => setFormData({ ...formData, yellowCards: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 uppercase block mb-1">Kartu Merah</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Kartu Merah</label>
                   <input
                     type="number"
                     value={formData.redCards}
                     onChange={(e) => setFormData({ ...formData, redCards: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100"
+                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
               </div>
 
               <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-400">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-sky-400">
                   <input
                     type="checkbox"
                     checked={formData.isCaptain}
                     onChange={(e) => setFormData({ ...formData, isCaptain: e.target.checked })}
-                    className="w-4 h-4 rounded"
+                    className="w-4 h-4 rounded text-blue-600"
                   />
                   <span>Kapten Utama</span>
                 </label>
@@ -389,9 +455,10 @@ export default function AdminPlayersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl gold-gradient-bg text-slate-950 font-extrabold uppercase flex items-center gap-2 shadow"
+                  disabled={uploading}
+                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow"
                 >
-                  <Save className="w-4 h-4" /> Simpan Pemain
+                  <Save className="w-4 h-4 text-blue-600" /> Simpan Pemain
                 </button>
               </div>
             </form>

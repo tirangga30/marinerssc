@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -42,13 +42,17 @@ export default function AdminLoginPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl shadow-slate-950">
         
-        {/* Brand Header */}
+        {/* Brand Header - NO BOX around logo */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-sky-400 shadow-lg shadow-blue-500/30 mb-2 border border-white/20">
-            <Shield className="w-8 h-8 text-white fill-sky-200" />
+          <div className="flex items-center justify-center mb-3">
+            <img
+              src="/marinerssc.png"
+              alt="Mariners SC Logo"
+              className="h-16 w-auto object-contain drop-shadow-xl"
+            />
           </div>
           <h1 className="text-2xl font-black uppercase blue-gradient-text">
-            Portal Admin Mariners FC
+            Portal Admin Mariners SC
           </h1>
           <p className="text-xs text-slate-300">Masukkan kredensial pengelola klub untuk melanjutkan</p>
         </div>

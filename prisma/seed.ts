@@ -17,7 +17,7 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 10);
   await prisma.user.create({
     data: {
-      name: 'Mariners FC Admin',
+      name: 'Mariners SC Admin',
       email: 'admin@marinersfc.com',
       password: hashedPassword,
       isAdmin: true,
@@ -32,7 +32,7 @@ async function main() {
     ],
   });
 
-  console.log('Creating 16+ Players...');
+  console.log('Creating 16+ Players with default /playertemplate.jpeg...');
   const playersData = [
     {
       name: 'Maarten Paes',
@@ -43,8 +43,8 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 191,
       weightKg: 84,
-      photoUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
-      bio: 'Kiper tembok kokoh Mariners FC dengan refleks kelas dunia dan distribusi bola akurat.',
+      photoUrl: '/playertemplate.jpeg',
+      bio: 'Kiper tembok kokoh Mariners SC dengan refleks kelas dunia dan distribusi bola akurat.',
       isCaptain: false,
       status: 'Active',
       goals: 0,
@@ -62,8 +62,8 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 190,
       weightKg: 82,
-      photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
-      bio: 'Bek tengah berkarisma tinggi yang memimpin benteng pertahanan Mariners FC dengan kedisiplinan luar biasa.',
+      photoUrl: '/playertemplate.jpeg',
+      bio: 'Bek tengah berkarisma tinggi yang memimpin benteng pertahanan Mariners SC dengan kedisiplinan luar biasa.',
       isCaptain: true,
       status: 'Active',
       goals: 2,
@@ -81,7 +81,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 183,
       weightKg: 75,
-      photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Defender serba bisa yang tak kenal kompromi dalam duel udara dan pemotongan umpan berbahaya.',
       isCaptain: false,
       status: 'Active',
@@ -100,7 +100,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 172,
       weightKg: 64,
-      photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Bek kiri lincah terkenal dengan lemparan dalam jarak jauh spektakuler yang menjadi senjata mematikan.',
       isCaptain: false,
       status: 'Active',
@@ -119,8 +119,8 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 185,
       weightKg: 78,
-      photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80',
-      bio: 'Bek kanan berpengalaman Eropa yang disiplin membantu bertahan danOverlap matang ke lini depan.',
+      photoUrl: '/playertemplate.jpeg',
+      bio: 'Bek kanan berpengalaman Eropa yang disiplin membantu bertahan dan overlap matang ke lini depan.',
       isCaptain: false,
       status: 'Active',
       goals: 1,
@@ -138,7 +138,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 187,
       weightKg: 80,
-      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Jenderal lapangan tengah (The Professor) penyaji umpan manja dan visi permainan kelas atas.',
       isCaptain: false,
       status: 'Active',
@@ -157,7 +157,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 176,
       weightKg: 67,
-      photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Wonderkid dengan kelincahan dribel eksotik dan tendangan spekulasi berbuah gol-gol krusial.',
       isCaptain: false,
       status: 'Active',
@@ -176,7 +176,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 188,
       weightKg: 76,
-      photoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Gelandang jangkar elegan pembaca serangan lawan dan pengatur ritme transisi tim.',
       isCaptain: false,
       status: 'Active',
@@ -195,7 +195,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 187,
       weightKg: 81,
-      photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Bek agresif julukan "Preman" yang lugas memutus ancaman bomber lawan tanpa kompromi.',
       isCaptain: false,
       status: 'Active',
@@ -214,7 +214,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 182,
       weightKg: 75,
-      photoUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Pemain serba bisa yang mampu bertransformasi sebagai gelandang pekerja keras maupun wing back.',
       isCaptain: false,
       status: 'Active',
@@ -233,7 +233,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 187,
       weightKg: 76,
-      photoUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Penyerang tajam dengan pergerakan off-the-ball menawan serta penyelesaian akhir dingin.',
       isCaptain: false,
       status: 'Active',
@@ -252,7 +252,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 182,
       weightKg: 77,
-      photoUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Striker haus gol bertipikal target man dengan fisik bertenaga dan tembakan mematikan.',
       isCaptain: false,
       status: 'Active',
@@ -271,7 +271,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 180,
       weightKg: 74,
-      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Winger kreatif "Wak Haji" dengan kontrol bola magis dan naluri mencetak gol dari sudut sulit.',
       isCaptain: false,
       status: 'Active',
@@ -290,7 +290,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 174,
       weightKg: 72,
-      photoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Pemain berenergi tanpa habis di sisi kanan pertahanan yang pantang menyerah.',
       isCaptain: false,
       status: 'Active',
@@ -309,7 +309,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 170,
       weightKg: 63,
-      photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Winger lincah dengan visi umpan terobosan cerdik yang sering merepotkan bek lawan.',
       isCaptain: false,
       status: 'Active',
@@ -328,7 +328,7 @@ async function main() {
       nationality: 'Indonesia',
       heightCm: 178,
       weightKg: 73,
-      photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80',
+      photoUrl: '/playertemplate.jpeg',
       bio: 'Kiper muda penuh percaya diri spesialis penggagalkan penalti dalam situasi kritis.',
       isCaptain: false,
       status: 'Active',
@@ -360,7 +360,7 @@ async function main() {
       homeScore: 3,
       awayScore: 1,
       formation: '4-3-3',
-      summary: 'Kemenangan spektakuler Mariners FC dengan dominasi total di lini tengah dan 3 gol menawan.',
+      summary: 'Kemenangan spektakuler Mariners SC dengan dominasi total di lini tengah dan 3 gol menawan.',
     },
   });
 
@@ -413,7 +413,7 @@ async function main() {
       homeScore: 2,
       awayScore: 4,
       formation: '4-3-3',
-      summary: 'Hujan gol sengit di Surabaya di mana serangan cepat Mariners FC membawa pulang 3 poin penuh.',
+      summary: 'Hujan gol sengit di Surabaya di mana serangan cepat Mariners SC membawa pulang 3 poin penuh.',
     },
   });
 
@@ -428,15 +428,6 @@ async function main() {
       },
     });
   }
-
-  await prisma.matchEvent.createMany({
-    data: [
-      { matchId: match2.id, playerId: createdPlayers['rafael-struick'].id, assistPlayerId: createdPlayers['pratama-arhan'].id, type: 'goal', minute: 10, description: 'Lemparan jauh Arhan yang disambut voli ciamik Struick' },
-      { matchId: match2.id, playerId: createdPlayers['ragnar-oratmangoen'].id, assistPlayerId: createdPlayers['thom-haye'].id, type: 'goal', minute: 29, description: 'Dribel meliuk-liuk sebelum mengeksekusi ke tiang jauh' },
-      { matchId: match2.id, playerId: createdPlayers['marselino-ferdinan'].id, type: 'goal', minute: 61, description: 'Tembakan bebas akurat meluncur ke pojok kanan gawang' },
-      { matchId: match2.id, playerId: createdPlayers['ramadhan-sananta'].id, type: 'goal', minute: 88, description: 'Counter-attack kilat dituntaskan dengan tenang' },
-    ],
-  });
 
   // Match 3: Finished - 2-0 vs Bali United
   const match3 = await prisma.footballMatch.create({
@@ -500,14 +491,14 @@ async function main() {
   await prisma.article.createMany({
     data: [
       {
-        title: 'Mariners FC Tundukkan Persija 3-1 di Stadion Samudra',
-        slug: 'mariners-fc-tundukkan-persija-3-1',
+        title: 'Mariners SC Tundukkan Persija 3-1 di Stadion Samudra',
+        slug: 'mariners-sc-tundukkan-persija-3-1',
         category: 'Laporan Pertandingan',
         thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80',
         content: `
 ### Kemenangan Gemilang di Laga Derby
 
-Pertandingan sengit BRI Liga 1 di Stadion Gelora Samudra berakhir dengan sorak-sorai ribuan pendukung **Mariners FC**. Tuan rumah berhasil menaklukkan Persija Jakarta dengan skor meyakinkan **3-1**.
+Pertandingan sengit BRI Liga 1 di Stadion Gelora Samudra berakhir dengan sorak-sorai ribuan pendukung **Mariners SC**. Tuan rumah berhasil menaklukkan Persija Jakarta dengan skor meyakinkan **3-1**.
 
 Gol pembuka dicetak oleh striker **Ramadhan Sananta** pada menit ke-14 lewat sundulan terukur hasil sepakan pojok ciamik dari **Thom Haye**. Jelang akhir babak pertama, **Marselino Ferdinan** menggandakan keunggulan melalui tembakan spektakuler dari luar kotak penalti.
 
@@ -526,44 +517,11 @@ Persija sempat memperkecil kedudukan di menit ke-52. Namun babak kedua seolah me
         content: `
 ### Persiapan Matang Lini Depan & Belakang
 
-Jelang laga panas pekan ke-24 melawan PSM Makassar, skuad **Mariners FC** menggelar latihan intensif di Kompleks Pelatihan Samudra, Jakarta.
+Jelang laga panas pekan ke-24 melawan PSM Makassar, skuad **Mariners SC** menggelar latihan intensif di Kompleks Pelatihan Samudra, Jakarta.
 
 Dokter tim mengonfirmasi bahwa seluruh pilar utama berada dalam kondisi prima tanpa kendala cedera berarti. Kiper utama **Maarten Paes** dan jenderal lapangan tengah **Thom Haye** siap diturunkan sejak menit pertama.
-
-#### Rotasi Pemain
-Pelatih mengisyaratkan kemungkinan rotasi ringan di posisi wing-back untuk menjaga kesegaran fisik pemain mengingat padatnya jadwal kompetisi bulan ini.
         `,
         publishedAt: new Date('2026-02-12T14:30:00Z'),
-      },
-      {
-        title: 'Thom Haye Raih Penghargaan Midfielder of the Month Liga 1',
-        slug: 'thom-haye-midfielder-of-the-month',
-        category: 'Kabar Tim',
-        thumbnail: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1200&auto=format&fit=crop&q=80',
-        content: `
-### Prestasi Individu Mengesankan
-
-Gelandang andalan Mariners FC, **Thom Haye**, resmi terpilih sebagai *Midfielder of the Month* edisi Januari 2026.
-
-Pemain yang dijuluki *The Professor* ini mencatatkan statistik mengagumkan: 6 umpan kunci (assists), 92% akurasi umpan, serta memimpin statistik recovery bola terbanyak di Liga 1.
-
-Penghargaan ini menjadi motivasi tambahan bagi Mariners FC untuk terus konsisten mempertahankan posisi papan atas klasemen.
-        `,
-        publishedAt: new Date('2026-02-05T09:15:00Z'),
-      },
-      {
-        title: 'Stadion Gelora Samudra Ditingkatkan dengan Fasilitas Lampu LED Kelas Dunia',
-        slug: 'stadion-samudra-ditingkatkan-fasilitas-led',
-        category: 'Klub',
-        thumbnail: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1200&auto=format&fit=crop&q=80',
-        content: `
-### Pengalaman Menonton Lebih Spektakuler
-
-Manajemen Mariners FC mengumumkan selesainya pemasangan tata lampu LED hemat energi standar FIFA di Stadion Gelora Samudra.
-
-Fasilitas baru ini tidak hanya mendukung pencahayaan laga malam hari secara optimal tetapi juga dilengkapi dengan efek cahaya animasi selebrasi gol yang akan menambah atmosfer magis di setiap laga kandang Mariners FC.
-        `,
-        publishedAt: new Date('2026-01-28T16:00:00Z'),
       },
     ],
   });

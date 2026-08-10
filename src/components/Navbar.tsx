@@ -22,17 +22,19 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Brand */}
+          {/* Logo & Brand - NO BOX around logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-sky-400 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300 border border-white/20">
-              <Shield className="w-7 h-7 text-white fill-sky-200" />
-            </div>
+            <img
+              src="/marinerssc.png"
+              alt="Mariners SC Logo"
+              className="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
+            />
             <div>
               <span className="text-2xl font-black tracking-wider uppercase blue-gradient-text block leading-none">
-                MARINERS FC
+                MARINERS SC
               </span>
               <span className="text-[10px] tracking-widest uppercase text-sky-200/80 font-semibold block mt-1">
-                Website Resmi Klub
+                Official Soccer Club
               </span>
             </div>
           </Link>

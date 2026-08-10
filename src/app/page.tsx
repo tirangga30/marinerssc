@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { Shield, Calendar, ArrowRight, Flame, Sparkles } from 'lucide-react';
+import { Calendar, ArrowRight, Flame, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -70,7 +70,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-200 font-medium leading-relaxed">
-            Selamat datang di rumah resmi <strong className="text-sky-300">Mariners FC</strong>. Saksikan aksi terbaik pilar pertahanan, keajaiban lini tengah, dan gol-gol spektakuler laskar Samudra.
+            Selamat datang di rumah resmi <strong className="text-sky-300">Mariners SC</strong>. Saksikan aksi terbaik pilar pertahanan, keajaiban lini tengah, dan gol-gol spektakuler laskar Samudra.
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-4 pt-4">
@@ -112,14 +112,18 @@ export default async function HomePage() {
           {nextMatch ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center">
               
-              {/* Mariners FC (Home/Away) */}
+              {/* Mariners SC (Home/Away) - NO BOX around logo */}
               <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4">
                 <div className="order-2 md:order-1 text-center md:text-right">
-                  <h4 className="text-xl font-black text-white uppercase">MARINERS FC</h4>
+                  <h4 className="text-xl font-black text-white uppercase">MARINERS SC</h4>
                   <p className="text-xs text-sky-400 font-bold">Tuan Rumah</p>
                 </div>
-                <div className="order-1 md:order-2 w-16 h-16 rounded-2xl bg-blue-600/20 border-2 border-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                  <Shield className="w-9 h-9 text-white fill-sky-200" />
+                <div className="order-1 md:order-2 flex items-center justify-center">
+                  <img
+                    src="/marinerssc.png"
+                    alt="Mariners SC Logo"
+                    className="w-16 h-16 object-contain drop-shadow-xl"
+                  />
                 </div>
               </div>
 
@@ -159,7 +163,7 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="text-center py-6 text-xs text-slate-400">
-              Menghubungkan data pertandingan Mariners FC...
+              Menghubungkan data pertandingan Mariners SC...
             </div>
           )}
 
@@ -181,7 +185,7 @@ export default async function HomePage() {
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Pilar Utama Skuad</span>
             <h2 className="text-2xl sm:text-3xl font-black uppercase text-white mt-1">
-              Pemain Bintang Mariners FC
+              Pemain Bintang Mariners SC
             </h2>
           </div>
           <Link
@@ -202,7 +206,7 @@ export default async function HomePage() {
               {/* Photo & Number Badge */}
               <div className="relative h-64 overflow-hidden bg-slate-900">
                 <img
-                  src={player.photoUrl}
+                  src={player.photoUrl || '/playertemplate.jpeg'}
                   alt={player.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -259,7 +263,7 @@ export default async function HomePage() {
         <div className="glass-panel p-8 rounded-2xl border border-sky-400/20 bg-gradient-to-r from-blue-950/60 via-[#060b14] to-blue-950/60">
           <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
             <h2 className="text-2xl font-black uppercase text-white">Statistik Musim 2025/2026</h2>
-            <p className="text-xs text-slate-300">Ringkasan performa klub Mariners FC sejauh ini di kompetisi BRI Liga 1</p>
+            <p className="text-xs text-slate-300">Ringkasan performa klub Mariners SC sejauh ini di kompetisi BRI Liga 1</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">

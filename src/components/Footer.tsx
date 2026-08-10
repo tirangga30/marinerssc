@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Trophy, MapPin, Mail, Phone, Heart } from 'lucide-react';
+import { Trophy, MapPin, Mail, Phone, Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -8,14 +8,16 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           
-          {/* Brand Col */}
+          {/* Brand Col - NO BOX around logo */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-sky-400 shadow-md shadow-blue-500/20 border border-white/20">
-                <Shield className="w-6 h-6 text-white fill-sky-200" />
-              </div>
+              <img
+                src="/marinerssc.png"
+                alt="Mariners SC Logo"
+                className="h-10 w-auto object-contain drop-shadow-md"
+              />
               <span className="text-xl font-black uppercase tracking-wider blue-gradient-text">
-                MARINERS FC
+                MARINERS SC
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -59,7 +61,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>contact@marinersfc.com</span>
+                <span>contact@marinerssc.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-sky-400 shrink-0" />
@@ -83,9 +85,9 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-slate-800 text-center text-xs text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} Mariners Football Club. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} Mariners Soccer Club. All Rights Reserved.</p>
           <p className="flex items-center gap-1">
-            Built for Mariners FC Fans with <Heart className="w-3.5 h-3.5 text-blue-500 fill-blue-500 inline" />
+            Built for Mariners SC Fans with <Heart className="w-3.5 h-3.5 text-blue-500 fill-blue-500 inline" />
           </p>
         </div>
       </div>
