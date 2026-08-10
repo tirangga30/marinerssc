@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { Shield, ArrowLeft, Award, Flame, UserCheck, Calendar } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function PlayerDetailPage({

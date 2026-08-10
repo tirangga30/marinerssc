@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,6 +36,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     });
 
+    // Invalidate Next.js static cache for players and homepage
+    revalidatePath('/');
+    revalidatePath('/players');
+    revalidatePath(`/players/${player.slug}`);
+    revalidatePath('/stats');
+
     return NextResponse.json(player);
   } catch (error: any) {
     console.error('PUT /api/players error:', error);
@@ -54,6 +61,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     const { id } = await params;
     await prisma.player.delete({ where: { id } });
+
+    revalidatePath('/');
+    revalidatePath('/players');
+    revalidatePath('/stats');
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('DELETE /api/players error:', error);

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Users, Shield, ArrowRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const positionOrder = ['GK', 'DF', 'MF', 'FW'];
