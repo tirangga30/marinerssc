@@ -43,12 +43,11 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-12">
       
-      {/* HERO SECTION */}
+      {/* HERO SECTION - Background /players.jpeg */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-blue-500/20">
-        {/* Stadium Background Image Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat filter brightness-45 scale-105 transform duration-1000"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1920&auto=format&fit=crop&q=80')` }}
+          style={{ backgroundImage: `url('/players.jpeg')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/75 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#060b14] via-transparent to-[#060b14]" />
@@ -112,7 +111,7 @@ export default async function HomePage() {
           {nextMatch ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center">
               
-              {/* Mariners SC (Home/Away) - NO BOX around logo */}
+              {/* Mariners SC (Home/Away) - NO BOX */}
               <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4">
                 <div className="order-2 md:order-1 text-center md:text-right">
                   <h4 className="text-xl font-black text-white uppercase">MARINERS SC</h4>
