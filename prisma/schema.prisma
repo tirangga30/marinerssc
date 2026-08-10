@@ -1,0 +1,114 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Player {
+  id             String       @id @default(uuid())
+  name           String
+  slug           String       @unique
+  number         Int          @unique
+  position       String       // GK, DF, MF, FW
+  birthDate      DateTime?
+  nationality    String       @default("Indonesia")
+  heightCm       Int?
+  weightKg       Int?
+  photoUrl       String
+  bio            String
+  isCaptain      Boolean      @default(false)
+  status         String       @default("Active") // Active, Injured
+  goals          Int          @default(0)
+  assists        Int          @default(0)
+  appearances    Int          @default(0)
+  yellowCards    Int          @default(0)
+  redCards       Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  lineups        MatchLineup[]
+  events         MatchEvent[]  @relation("PlayerEvents")
+  assistedEvents MatchEvent[]  @relation("AssistPlayerEvents")
+}
+
+model FootballMatch {
+  id           String        @id @default(uuid())
+  opponentName String
+  opponentLogo String
+  matchDate    DateTime
+  competition  String        @default("BRI Liga 1")
+  venue        String        @default("Stadion Gelora Samudra, Jakarta")
+  isHome       Boolean       @default(true)
+  status       String        @default("scheduled") // scheduled, live, finished
+  homeScore    Int?
+  awayScore    Int?
+  formation    String        @default("4-3-3")
+  summary      String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  lineups      MatchLineup[]
+  events       MatchEvent[]
+}
+
+model MatchLineup {
+  id            String        @id @default(uuid())
+  matchId       String
+  playerId      String
+  isStarter     Boolean       @default(true)
+  pitchPosition String        // e.g. GK, RB, CB1, CB2, LB, CM1, CM2, CAM, RW, ST, LW, SUB
+  positionName  String        // e.g. Goalkeeper, Right Back, Striker
+
+  match         FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player        Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model MatchEvent {
+  id             String        @id @default(uuid())
+  matchId        String
+  playerId       String
+  assistPlayerId String?
+  type           String        // goal, assist, yellow_card, red_card, sub
+  minute         Int
+  description    String?
+
+  match          FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player         Player        @relation("PlayerEvents", fields: [playerId], references: [id], onDelete: Cascade)
+  assistPlayer   Player?       @relation("AssistPlayerEvents", fields: [assistPlayerId], references: [id], onDelete: SetNull)
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  category    String   @default("Kabar Tim") // Laporan Pertandingan, Kabar Tim, Transfer
+  thumbnail   String
+  content     String
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Competition {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  season    String   @default("2025/2026")
+  type      String   @default("Liga")
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
