@@ -1,248 +1,155 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
+  const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres.dokkypjturwhppjgrptu:Crimesney71011@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+
+  const pool = new Pool({
+    connectionString: dbUrl,
+    ssl: { rejectUnauthorized: false },
+  });
+
   try {
-    // 1. Ensure Admin User exists
+    const client = await pool.connect();
+
+    // 1. Create Tables
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "User" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "email" TEXT UNIQUE NOT NULL,
+        "password" TEXT NOT NULL,
+        "isAdmin" BOOLEAN DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS "Player" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "slug" TEXT UNIQUE NOT NULL,
+        "number" INTEGER UNIQUE NOT NULL,
+        "position" TEXT NOT NULL,
+        "birthDate" TIMESTAMP(3),
+        "nationality" TEXT DEFAULT 'Indonesia',
+        "heightCm" INTEGER,
+        "weightKg" INTEGER,
+        "photoUrl" TEXT NOT NULL,
+        "bio" TEXT NOT NULL,
+        "isCaptain" BOOLEAN DEFAULT false,
+        "status" TEXT DEFAULT 'Active',
+        "goals" INTEGER DEFAULT 0,
+        "assists" INTEGER DEFAULT 0,
+        "appearances" INTEGER DEFAULT 0,
+        "yellowCards" INTEGER DEFAULT 0,
+        "redCards" INTEGER DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS "FootballMatch" (
+        "id" TEXT PRIMARY KEY,
+        "opponentName" TEXT NOT NULL,
+        "opponentLogo" TEXT NOT NULL,
+        "matchDate" TIMESTAMP(3) NOT NULL,
+        "competition" TEXT DEFAULT 'BRI Liga 1',
+        "venue" TEXT DEFAULT 'Stadion Gelora Samudra, Jakarta',
+        "isHome" BOOLEAN DEFAULT true,
+        "status" TEXT DEFAULT 'scheduled',
+        "homeScore" INTEGER,
+        "awayScore" INTEGER,
+        "formation" TEXT DEFAULT '4-3-3',
+        "summary" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS "MatchLineup" (
+        "id" TEXT PRIMARY KEY,
+        "matchId" TEXT NOT NULL,
+        "playerId" TEXT NOT NULL,
+        "isStarter" BOOLEAN DEFAULT true,
+        "pitchPosition" TEXT NOT NULL,
+        "positionName" TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS "MatchEvent" (
+        "id" TEXT PRIMARY KEY,
+        "matchId" TEXT NOT NULL,
+        "playerId" TEXT NOT NULL,
+        "assistPlayerId" TEXT,
+        "type" TEXT NOT NULL,
+        "minute" INTEGER NOT NULL,
+        "description" TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS "Article" (
+        "id" TEXT PRIMARY KEY,
+        "title" TEXT NOT NULL,
+        "slug" TEXT UNIQUE NOT NULL,
+        "category" TEXT DEFAULT 'Kabar Tim',
+        "thumbnail" TEXT NOT NULL,
+        "content" TEXT NOT NULL,
+        "publishedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS "Competition" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "slug" TEXT UNIQUE NOT NULL,
+        "season" TEXT DEFAULT '2025/2026',
+        "type" TEXT DEFAULT 'Liga',
+        "isPrimary" BOOLEAN DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 2. Insert Admin User
     const hashedPassword = await bcrypt.hash('password123', 10);
-    const admin = await prisma.user.upsert({
-      where: { email: 'admin@marinersfc.com' },
-      update: { password: hashedPassword, isAdmin: true },
-      create: {
-        name: 'Mariners FC Admin',
-        email: 'admin@marinersfc.com',
-        password: hashedPassword,
-        isAdmin: true,
-      },
-    });
+    await client.query(`
+      INSERT INTO "User" ("id", "name", "email", "password", "isAdmin", "createdAt", "updatedAt")
+      VALUES ('admin-id-1', 'Mariners FC Admin', 'admin@marinersfc.com', '${hashedPassword}', true, NOW(), NOW())
+      ON CONFLICT ("email") DO UPDATE SET "password" = '${hashedPassword}';
+    `);
 
-    // 2. Seed Players if empty
-    const playerCount = await prisma.player.count();
-    if (playerCount === 0) {
-      const playersData = [
-        {
-          name: 'Maarten Paes',
-          slug: 'maarten-paes',
-          number: 1,
-          position: 'GK',
-          birthDate: new Date('1998-05-14'),
-          nationality: 'Indonesia',
-          heightCm: 191,
-          weightKg: 84,
-          photoUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
-          bio: 'Kiper tembok kokoh Mariners FC dengan refleks kelas dunia dan distribusi bola akurat.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 0,
-          assists: 0,
-          appearances: 12,
-          yellowCards: 1,
-          redCards: 0,
-        },
-        {
-          name: 'Jay Idzes',
-          slug: 'jay-idzes',
-          number: 4,
-          position: 'DF',
-          birthDate: new Date('2000-06-02'),
-          nationality: 'Indonesia',
-          heightCm: 190,
-          weightKg: 82,
-          photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
-          bio: 'Bek tengah berkarisma tinggi yang memimpin benteng pertahanan Mariners FC dengan kedisiplinan luar biasa.',
-          isCaptain: true,
-          status: 'Active',
-          goals: 2,
-          assists: 1,
-          appearances: 12,
-          yellowCards: 2,
-          redCards: 0,
-        },
-        {
-          name: 'Rizky Ridho',
-          slug: 'rizky-ridho',
-          number: 5,
-          position: 'DF',
-          birthDate: new Date('2001-11-21'),
-          nationality: 'Indonesia',
-          heightCm: 183,
-          weightKg: 75,
-          photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80',
-          bio: 'Defender serba bisa yang tak kenal kompromi dalam duel udara dan pemotongan umpan berbahaya.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 1,
-          assists: 0,
-          appearances: 11,
-          yellowCards: 3,
-          redCards: 0,
-        },
-        {
-          name: 'Pratama Arhan',
-          slug: 'pratama-arhan',
-          number: 12,
-          position: 'DF',
-          birthDate: new Date('2001-12-21'),
-          nationality: 'Indonesia',
-          heightCm: 172,
-          weightKg: 64,
-          photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80',
-          bio: 'Bek kiri lincah terkenal dengan lemparan dalam jarak jauh spektakuler yang menjadi senjata mematikan.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 1,
-          assists: 4,
-          appearances: 10,
-          yellowCards: 1,
-          redCards: 0,
-        },
-        {
-          name: 'Sandy Walsh',
-          slug: 'sandy-walsh',
-          number: 6,
-          position: 'DF',
-          birthDate: new Date('1995-03-14'),
-          nationality: 'Indonesia',
-          heightCm: 185,
-          weightKg: 78,
-          photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80',
-          bio: 'Bek kanan berpengalaman Eropa yang disiplin membantu bertahan dan overlap matang ke lini depan.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 1,
-          assists: 2,
-          appearances: 10,
-          yellowCards: 2,
-          redCards: 0,
-        },
-        {
-          name: 'Thom Haye',
-          slug: 'thom-haye',
-          number: 19,
-          position: 'MF',
-          birthDate: new Date('1995-02-09'),
-          nationality: 'Indonesia',
-          heightCm: 187,
-          weightKg: 80,
-          photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
-          bio: 'Jenderal lapangan tengah (The Professor) penyaji umpan manja dan visi permainan kelas atas.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 3,
-          assists: 6,
-          appearances: 12,
-          yellowCards: 2,
-          redCards: 0,
-        },
-        {
-          name: 'Marselino Ferdinan',
-          slug: 'marselino-ferdinan',
-          number: 7,
-          position: 'MF',
-          birthDate: new Date('2004-09-09'),
-          nationality: 'Indonesia',
-          heightCm: 176,
-          weightKg: 67,
-          photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80',
-          bio: 'Wonderkid dengan kelincahan dribel eksotik dan tendangan spekulasi berbuah gol-gol krusial.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 5,
-          assists: 4,
-          appearances: 12,
-          yellowCards: 1,
-          redCards: 0,
-        },
-        {
-          name: 'Rafael Struick',
-          slug: 'rafael-struick',
-          number: 9,
-          position: 'FW',
-          birthDate: new Date('2003-03-27'),
-          nationality: 'Indonesia',
-          heightCm: 187,
-          weightKg: 76,
-          photoUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&auto=format&fit=crop&q=80',
-          bio: 'Penyerang tajam dengan pergerakan off-the-ball menawan serta penyelesaian akhir dingin.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 6,
-          assists: 2,
-          appearances: 12,
-          yellowCards: 2,
-          redCards: 0,
-        },
-        {
-          name: 'Ramadhan Sananta',
-          slug: 'ramadhan-sananta',
-          number: 11,
-          position: 'FW',
-          birthDate: new Date('2002-11-27'),
-          nationality: 'Indonesia',
-          heightCm: 182,
-          weightKg: 77,
-          photoUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=600&auto=format&fit=crop&q=80',
-          bio: 'Striker haus gol bertipikal target man dengan fisik bertenaga dan tembakan mematikan.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 7,
-          assists: 1,
-          appearances: 11,
-          yellowCards: 1,
-          redCards: 0,
-        },
-        {
-          name: 'Ragnar Oratmangoen',
-          slug: 'ragnar-oratmangoen',
-          number: 10,
-          position: 'FW',
-          birthDate: new Date('1998-01-21'),
-          nationality: 'Indonesia',
-          heightCm: 180,
-          weightKg: 74,
-          photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
-          bio: 'Winger kreatif Wak Haji dengan kontrol bola magis dan naluri mencetak gol dari sudut sulit.',
-          isCaptain: false,
-          status: 'Active',
-          goals: 5,
-          assists: 5,
-          appearances: 12,
-          yellowCards: 0,
-          redCards: 0,
-        },
-      ];
+    // 3. Insert Players
+    const playersData = [
+      ['p1', 'Maarten Paes', 'maarten-paes', 1, 'GK', '1998-05-14', 'Indonesia', 191, 84, 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80', 'Kiper tembok kokoh Mariners FC', false, 'Active', 0, 0, 12, 1, 0],
+      ['p2', 'Jay Idzes', 'jay-idzes', 4, 'DF', '2000-06-02', 'Indonesia', 190, 82, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80', 'Bek tengah berkarisma tinggi', true, 'Active', 2, 1, 12, 2, 0],
+      ['p3', 'Rizky Ridho', 'rizky-ridho', 5, 'DF', '2001-11-21', 'Indonesia', 183, 75, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80', 'Defender serba bisa', false, 'Active', 1, 0, 11, 3, 0],
+      ['p4', 'Pratama Arhan', 'pratama-arhan', 12, 'DF', '2001-12-21', 'Indonesia', 172, 64, 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80', 'Bek kiri lincah lemparan jauh', false, 'Active', 1, 4, 10, 1, 0],
+      ['p5', 'Sandy Walsh', 'sandy-walsh', 6, 'DF', '1995-03-14', 'Indonesia', 185, 78, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80', 'Bek kanan berpengalaman Europe', false, 'Active', 1, 2, 10, 2, 0],
+      ['p6', 'Thom Haye', 'thom-haye', 19, 'MF', '1995-02-09', 'Indonesia', 187, 80, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Jenderal lapangan tengah The Professor', false, 'Active', 3, 6, 12, 2, 0],
+      ['p7', 'Marselino Ferdinan', 'marselino-ferdinan', 7, 'MF', '2004-09-09', 'Indonesia', 176, 67, 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80', 'Wonderkid dribel eksotik', false, 'Active', 5, 4, 12, 1, 0],
+      ['p8', 'Rafael Struick', 'rafael-struick', 9, 'FW', '2003-03-27', 'Indonesia', 187, 76, 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&auto=format&fit=crop&q=80', 'Penyerang tajam finisher dingin', false, 'Active', 6, 2, 12, 2, 0],
+      ['p9', 'Ramadhan Sananta', 'ramadhan-sananta', 11, 'FW', '2002-11-27', 'Indonesia', 182, 77, 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=600&auto=format&fit=crop&q=80', 'Striker haus gol target man', false, 'Active', 7, 1, 11, 1, 0],
+      ['p10', 'Ragnar Oratmangoen', 'ragnar-oratmangoen', 10, 'FW', '1998-01-21', 'Indonesia', 180, 74, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Winger kreatif Wak Haji', false, 'Active', 5, 5, 12, 0, 0],
+    ];
 
-      for (const p of playersData) {
-        await prisma.player.upsert({
-          where: { slug: p.slug },
-          update: p,
-          create: p,
-        });
-      }
+    for (const p of playersData) {
+      await client.query(`
+        INSERT INTO "Player" ("id", "name", "slug", "number", "position", "birthDate", "nationality", "heightCm", "weightKg", "photoUrl", "bio", "isCaptain", "status", "goals", "assists", "appearances", "yellowCards", "redCards", "createdAt", "updatedAt")
+        VALUES ('${p[0]}', '${p[1]}', '${p[2]}', ${p[3]}, '${p[4]}', '${p[5]}', '${p[6]}', ${p[7]}, ${p[8]}, '${p[9]}', '${p[10]}', ${p[11]}, '${p[12]}', ${p[13]}, ${p[14]}, ${p[15]}, ${p[16]}, ${p[17]}, NOW(), NOW())
+        ON CONFLICT ("slug") DO NOTHING;
+      `);
     }
 
-    // 3. Seed Articles if empty
-    const articleCount = await prisma.article.count();
-    if (articleCount === 0) {
-      await prisma.article.create({
-        data: {
-          title: 'Mariners FC Tundukkan Persija 3-1 di Stadion Samudra',
-          slug: 'mariners-fc-tundukkan-persija-3-1',
-          category: 'Laporan Pertandingan',
-          thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80',
-          content: 'Pertandingan sengit BRI Liga 1 di Stadion Gelora Samudra berakhir dengan kemenangan Mariners FC 3-1 atas Persija Jakarta.',
-        },
-      });
-    }
+    client.release();
+    await pool.end();
 
     return NextResponse.json({
       success: true,
-      message: 'Database Supabase berhasil disinkronisasi & di-seed!',
-      admin: admin.email,
+      message: 'SELAMAT! Tabel PostgreSQL Supabase berhasil dibuat & di-seed 100%!',
+      admin: 'admin@marinersfc.com',
+      password: 'password123',
     });
   } catch (error: any) {
     console.error('Setup DB error:', error);
+    await pool.end();
     return NextResponse.json(
       { error: error?.message || 'Gagal menyetel database' },
       { status: 500 }
