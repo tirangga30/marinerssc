@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star } from 'lucide-react';
 
 interface Player {
   id: string;
@@ -64,6 +64,32 @@ export default function AdminPlayersPage() {
   useEffect(() => {
     fetchPlayers();
   }, []);
+
+  // Toggle Star (Pemain Bintang / Favorit)
+  const toggleStar = async (player: Player) => {
+    try {
+      const newCaptainState = !player.isCaptain;
+      const res = await fetch(`/api/players/${player.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...player,
+          isCaptain: newCaptainState,
+        }),
+      });
+
+      if (res.ok) {
+        // Optimistic local update for instant UI feedback
+        setPlayers((prev) =>
+          prev.map((p) => (p.id === player.id ? { ...p, isCaptain: newCaptainState } : p))
+        );
+      } else {
+        alert('Gagal mengedit status pemain bintang');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat mengubah status pemain bintang');
+    }
+  };
 
   const openAddModal = () => {
     setEditingPlayer(null);
@@ -208,6 +234,7 @@ export default function AdminPlayersPage() {
                 <th className="p-3">Gol / Assist</th>
                 <th className="p-3">Laga</th>
                 <th className="p-3">Status</th>
+                <th className="p-3 text-center">Bintang ⭐</th>
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
@@ -223,7 +250,7 @@ export default function AdminPlayersPage() {
                     />
                     <div>
                       <span className="font-bold text-white uppercase">{player.name}</span>
-                      {player.isCaptain && <span className="ml-2 text-[10px] text-sky-400 font-extrabold">(C)</span>}
+                      {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold">(Bintang)</span>}
                     </div>
                   </td>
                   <td className="p-3 font-bold text-sky-300">{player.position}</td>
@@ -234,6 +261,22 @@ export default function AdminPlayersPage() {
                       {player.status}
                     </span>
                   </td>
+                  
+                  {/* TOMBOL BINTANG (FAVORIT) SETELAH TABEL STATUS */}
+                  <td className="p-3 text-center">
+                    <button
+                      onClick={() => toggleStar(player)}
+                      title={player.isCaptain ? 'Hapus dari Pemain Bintang' : 'Jadikan Pemain Bintang Beranda'}
+                      className={`p-2 rounded-xl border transition-all ${
+                        player.isCaptain
+                          ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                          : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                      }`}
+                    >
+                      <Star className={`w-4 h-4 ${player.isCaptain ? 'fill-amber-400 text-amber-400' : ''}`} />
+                    </button>
+                  </td>
+
                   <td className="p-3 text-right space-x-2">
                     <button
                       onClick={() => openEditModal(player)}
@@ -434,14 +477,14 @@ export default function AdminPlayersPage() {
               </div>
 
               <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-sky-400">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-400">
                   <input
                     type="checkbox"
                     checked={formData.isCaptain}
                     onChange={(e) => setFormData({ ...formData, isCaptain: e.target.checked })}
-                    className="w-4 h-4 rounded text-blue-600"
+                    className="w-4 h-4 rounded text-amber-500"
                   />
-                  <span>Kapten Utama</span>
+                  <span>Tampilkan di Pemain Bintang Beranda ⭐</span>
                 </label>
               </div>
 
