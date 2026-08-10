@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Trophy, Users, Calendar, Newspaper, BarChart3, Lock, Menu, X } from 'lucide-react';
+import { Shield, Calendar, Users, Newspaper, BarChart3, Lock, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -18,21 +18,21 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 glass-panel border-b border-amber-500/20 backdrop-blur-md">
+    <header className="sticky top-0 z-50 glass-panel border-b border-blue-500/20 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
-              <Shield className="w-7 h-7 text-slate-950 fill-amber-300" />
+            <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-sky-400 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300 border border-white/20">
+              <Shield className="w-7 h-7 text-white fill-sky-200" />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-wider uppercase gold-gradient-text block leading-none">
+              <span className="text-2xl font-black tracking-wider uppercase blue-gradient-text block leading-none">
                 MARINERS FC
               </span>
-              <span className="text-[10px] tracking-widest uppercase text-slate-400 font-semibold block mt-1">
-                Official Club Website
+              <span className="text-[10px] tracking-widest uppercase text-sky-200/80 font-semibold block mt-1">
+                Website Resmi Klub
               </span>
             </div>
           </Link>
@@ -46,13 +46,13 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
                     isActive
-                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/10'
-                      : 'text-slate-300 hover:text-amber-400 hover:bg-slate-800/50'
+                      ? 'bg-blue-600/30 text-sky-300 border border-sky-400/40 shadow-sm shadow-blue-500/20'
+                      : 'text-slate-200 hover:text-sky-300 hover:bg-slate-800/60'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
                   {link.name}
                 </Link>
               );
@@ -63,9 +63,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/admin/login"
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-950 gold-gradient-bg rounded-lg shadow-md shadow-amber-500/20 hover:brightness-110 hover:scale-105 transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-extrabold uppercase tracking-wider white-blue-btn rounded-lg"
             >
-              <Lock className="w-3.5 h-3.5" />
+              <Lock className="w-3.5 h-3.5 text-blue-600" />
               Portal Admin
             </Link>
           </div>
@@ -74,7 +74,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 focus:outline-none"
+              className="p-2 rounded-lg text-slate-200 hover:text-sky-300 hover:bg-slate-800/60 focus:outline-none"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -85,7 +85,7 @@ export default function Navbar() {
 
       {/* Mobile Navigation Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass-panel border-t border-slate-800 px-4 pt-3 pb-6 space-y-2">
+        <div className="md:hidden glass-panel border-t border-blue-500/20 px-4 pt-3 pb-6 space-y-2">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
@@ -94,13 +94,13 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-semibold ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-bold ${
                   isActive
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-amber-400'
+                    ? 'bg-blue-600/30 text-sky-300 border border-sky-400/40'
+                    : 'text-slate-200 hover:bg-slate-800/80 hover:text-sky-300'
                 }`}
               >
-                <Icon className="w-5 h-5 text-amber-400" />
+                <Icon className="w-5 h-5 text-sky-400" />
                 {link.name}
               </Link>
             );
@@ -109,9 +109,9 @@ export default function Navbar() {
             <Link
               href="/admin/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold uppercase tracking-wider text-slate-950 gold-gradient-bg rounded-lg shadow-md"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-extrabold uppercase tracking-wider white-blue-btn rounded-lg"
             >
-              <Lock className="w-4 h-4" />
+              <Lock className="w-4 h-4 text-blue-600" />
               Portal Admin
             </Link>
           </div>
