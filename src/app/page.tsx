@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Shield, Calendar, Trophy, ArrowRight, Star, Flame, Sparkles, Award, PlayCircle } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Dynamic rendering for latest data
 
 export default async function HomePage() {
@@ -11,8 +12,8 @@ export default async function HomePage() {
     orderBy: { matchDate: 'asc' },
   });
 
-  const nextMatch = matches.find((m) => m.status === 'scheduled') || matches[matches.length - 1];
-  const lastFinishedMatch = [...matches].reverse().find((m) => m.status === 'finished');
+  const nextMatch = matches.find((m: any) => m.status === 'scheduled') || matches[matches.length - 1];
+  const lastFinishedMatch = [...matches].reverse().find((m: any) => m.status === 'finished');
 
   // Fetch 3 latest articles
   const articles = await prisma.article.findMany({
@@ -31,10 +32,10 @@ export default async function HomePage() {
   });
 
   // Stats calculation
-  const totalMatches = matches.filter((m) => m.status === 'finished').length;
-  const wins = matches.filter((m) => m.status === 'finished' && m.homeScore !== null && m.awayScore !== null && ((m.isHome && m.homeScore > m.awayScore) || (!m.isHome && m.awayScore > m.homeScore))).length;
+  const totalMatches = matches.filter((m: any) => m.status === 'finished').length;
+  const wins = matches.filter((m: any) => m.status === 'finished' && m.homeScore !== null && m.awayScore !== null && ((m.isHome && m.homeScore > m.awayScore) || (!m.isHome && m.awayScore > m.homeScore))).length;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 100;
-  const totalGoals = matches.reduce((acc, m) => acc + (m.isHome ? (m.homeScore || 0) : (m.awayScore || 0)), 0);
+  const totalGoals = matches.reduce((acc: number, m: any) => acc + (m.isHome ? (m.homeScore || 0) : (m.awayScore || 0)), 0);
 
   return (
     <div className="space-y-16 pb-12">
@@ -185,7 +186,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredPlayers.map((player) => (
+          {featuredPlayers.map((player: any) => (
             <Link
               key={player.id}
               href={`/players/${player.slug}`}
@@ -293,7 +294,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {articles.map((article) => (
+          {articles.map((article: any) => (
             <Link
               key={article.id}
               href={`/articles/${article.slug}`}
