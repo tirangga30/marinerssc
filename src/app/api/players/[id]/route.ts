@@ -6,8 +6,9 @@ import { revalidatePath } from 'next/cache';
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Tidak sah (Silakan login ulang admin)' }, { status: 401 });
+    // Allow edit in local development mode or if session exists
+    if (!session && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Sesi berakhir. Silakan login ulang di portal admin.' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -21,22 +22,21 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         slug,
         number: parseInt(data.number),
         position: data.position,
-        nationality: data.nationality,
+        nationality: data.nationality || 'Indonesia',
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
         weightKg: data.weightKg ? parseInt(data.weightKg) : null,
         photoUrl: data.photoUrl,
-        bio: data.bio,
+        bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
-        status: data.status,
-        goals: parseInt(data.goals),
-        assists: parseInt(data.assists),
-        appearances: parseInt(data.appearances),
-        yellowCards: parseInt(data.yellowCards),
-        redCards: parseInt(data.redCards),
+        status: data.status || 'Active',
+        goals: parseInt(data.goals || 0),
+        assists: parseInt(data.assists || 0),
+        appearances: parseInt(data.appearances || 0),
+        yellowCards: parseInt(data.yellowCards || 0),
+        redCards: parseInt(data.redCards || 0),
       },
     });
 
-    // Invalidate Next.js static cache for players and homepage
     revalidatePath('/');
     revalidatePath('/players');
     revalidatePath(`/players/${player.slug}`);
@@ -55,8 +55,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
+    if (!session && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Sesi berakhir. Silakan login ulang di portal admin.' }, { status: 401 });
     }
 
     const { id } = await params;

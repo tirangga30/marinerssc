@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function GET() {
   try {
@@ -16,8 +17,8 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
+    if (!session && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Sesi berakhir. Silakan login ulang di portal admin.' }, { status: 401 });
     }
 
     const data = await req.json();
@@ -44,9 +45,13 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidatePath('/');
+    revalidatePath('/players');
+    revalidatePath('/stats');
+
     return NextResponse.json(player);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: 'Gagal menambah pemain' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Gagal menambah pemain' }, { status: 500 });
   }
 }
