@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { User, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 interface LineupPlayer {
   id: string;
@@ -54,7 +53,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
   return (
     <div className="space-y-6">
       {/* Tactical Pitch Box */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500/30 tactical-pitch-bg shadow-2xl shadow-emerald-900/40">
+      <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto rounded-2xl overflow-hidden border-2 border-sky-400/40 tactical-pitch-bg shadow-2xl shadow-blue-950/60">
         
         {/* Pitch Lines Overlay */}
         <div className="absolute inset-0 pointer-events-none">
@@ -63,7 +62,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
           
           {/* Halfway Line & Center Circle */}
           <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-white/20 -translate-y-1/2"></div>
-          <div className="absolute top-1/2 left-1/2 w-32 h-32 rounded-full border-2 border-white/20 -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-28 sm:w-32 h-28 sm:h-32 rounded-full border-2 border-white/20 -translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/30 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           
           {/* Penalty Area Top (Opponent side) */}
@@ -75,9 +74,9 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
         </div>
 
         {/* Formation Header Badge */}
-        <div className="absolute top-6 left-6 z-10 glass-panel px-3 py-1.5 rounded-lg border border-amber-500/30 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-amber-400" />
-          <span className="text-xs font-bold tracking-wider text-amber-400 uppercase">
+        <div className="absolute top-4 left-4 z-10 glass-panel px-3 py-1.5 rounded-lg border border-sky-400/40 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-sky-400" />
+          <span className="text-xs font-bold tracking-wider text-sky-300 uppercase">
             Formasi: {formation}
           </span>
         </div>
@@ -93,20 +92,20 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
               className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-110 hover:z-30"
             >
               {/* Player Avatar Circle */}
-              <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-full border-2 border-amber-400 shadow-lg shadow-amber-500/30 overflow-hidden bg-slate-900 group-hover:border-amber-300">
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 overflow-hidden bg-slate-900 group-hover:border-white">
                 <img
-                  src={lineup.player.photoUrl}
+                  src={lineup.player.photoUrl || '/playertemplate.jpeg'}
                   alt={lineup.player.name}
                   className="w-full h-full object-cover"
                 />
                 {/* Number Badge */}
-                <div className="absolute bottom-0 right-0 bg-amber-500 text-slate-950 text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-slate-950">
+                <div className="absolute bottom-0 right-0 blue-gradient-bg text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-white/30">
                   {lineup.player.number}
                 </div>
               </div>
 
               {/* Player Name Tag */}
-              <div className="mt-1 glass-panel px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold text-slate-100 whitespace-nowrap group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors border border-white/10">
+              <div className="mt-1 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20">
                 {lineup.player.name.split(' ').pop()}
               </div>
             </Link>
@@ -117,7 +116,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
       {/* Substitutes / Bench Section */}
       {bench.length > 0 && (
         <div className="glass-panel p-5 rounded-xl border border-slate-800">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-sky-400 mb-3">
             Pemain Cadangan (Bench)
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -127,12 +126,12 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
                 href={`/players/${b.player.slug}`}
                 className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/40 shrink-0">
-                  <img src={b.player.photoUrl} alt={b.player.name} className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0">
+                  <img src={b.player.photoUrl || '/playertemplate.jpeg'} alt={b.player.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-200 truncate">{b.player.name}</p>
-                  <p className="text-[10px] text-amber-400/80 font-mono">#{b.player.number} • {b.player.position}</p>
+                  <p className="text-[10px] text-sky-400/90 font-mono">#{b.player.number} • {b.player.position}</p>
                 </div>
               </Link>
             ))}
