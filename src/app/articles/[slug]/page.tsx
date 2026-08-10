@@ -24,13 +24,7 @@ export default async function ArticleDetailPage({
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Back Button */}
-      <Link
-        href="/articles"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-amber-400 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Kembali ke Indeks Berita
-      </Link>
+
 
       <article className="glass-panel p-6 sm:p-10 rounded-3xl border border-amber-500/30 space-y-8">
         

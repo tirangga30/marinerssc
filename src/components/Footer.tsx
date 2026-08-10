@@ -21,7 +21,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Klub Sepak Bola Profesional kebanggaan Samudra. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.
+              Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.
             </p>
           </div>
 
@@ -52,20 +52,20 @@ export default function Footer() {
           {/* Stadion & Home base */}
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-sky-400/30 pb-2 inline-block">
-              Stadion Utama
+              Kontak
             </h4>
             <div className="space-y-3 text-xs font-medium">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                <span>Stadion Gelora Samudra, Jln. Samudra Raya No. 19, Jakarta</span>
+                <span>Rajapolah</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>contact@marinerssc.com</span>
+                <span>tiranggakamalbaskara@gmail.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>+62 (021) 555-MARINERS</span>
+                <span>+62 852 2333 7028</span>
               </div>
             </div>
           </div>
@@ -74,9 +74,6 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-slate-800 text-center text-xs text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} Mariners Soccer Club. All Rights Reserved.</p>
-          <p className="flex items-center gap-1">
-            Built for Mariners SC Fans with <Heart className="w-3.5 h-3.5 text-blue-500 fill-blue-500 inline" />
-          </p>
         </div>
       </div>
     </footer>

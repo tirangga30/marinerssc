@@ -83,7 +83,7 @@ export default async function HomePage() {
               href="/players"
               className="flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-3.5 rounded-lg sm:rounded-xl font-extrabold uppercase white-blue-btn text-[10px] sm:text-sm"
             >
-              Lihat Skuad Tim
+              Skuad Tim
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
             </Link>
             <Link
@@ -121,7 +121,7 @@ export default async function HomePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                 <div className="order-2 sm:order-1 text-center sm:text-right">
                   <h4 className="text-[10px] sm:text-xl font-black text-white uppercase">MARINERS SC</h4>
-                  <p className="text-[8px] sm:text-xs text-sky-400 font-bold">Tuan Rumah</p>
+
                 </div>
                 <div className="order-1 sm:order-2 flex items-center justify-center">
                   <img
@@ -164,7 +164,7 @@ export default async function HomePage() {
                 </div>
                 <div className="text-center sm:text-left">
                   <h4 className="text-[10px] sm:text-xl font-black text-white uppercase">{nextMatch.opponentName}</h4>
-                  <p className="text-[8px] sm:text-xs text-slate-400 font-semibold">Lawan</p>
+
                 </div>
               </div>
 
@@ -193,7 +193,7 @@ export default async function HomePage() {
           <div>
             <span className="text-[9px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Pilar Skuad</span>
             <h2 className="text-base sm:text-3xl font-black uppercase text-white mt-0.5">
-              Pemain Mariners SC
+              Mariners SC Players
             </h2>
           </div>
           <Link

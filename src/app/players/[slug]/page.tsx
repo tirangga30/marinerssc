@@ -25,13 +25,7 @@ export default async function PlayerDetailPage({
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Back CTA */}
-      <Link
-        href="/players"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-amber-400 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Kembali ke Skuad Tim
-      </Link>
+  
 
       {/* Main Profile Card */}
       <div className="glass-panel rounded-3xl border border-amber-500/30 overflow-hidden shadow-2xl">

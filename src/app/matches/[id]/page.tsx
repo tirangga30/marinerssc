@@ -34,13 +34,7 @@ export default async function MatchDetailPage({
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
       
-      {/* Back Button */}
-      <Link
-        href="/matches"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Kembali ke Jadwal & Hasil
-      </Link>
+      
 
       {/* Main Score Board Header - NO BOX AROUND LOGOS */}
       <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/30 text-center space-y-6 relative overflow-hidden">
@@ -73,7 +67,7 @@ export default async function MatchDetailPage({
             <h2 className="text-xs sm:text-xl font-black text-white uppercase">
               {match.isHome ? 'MARINERS SC' : match.opponentName}
             </h2>
-            <span className="text-[10px] sm:text-xs text-sky-400 font-bold uppercase">Tuan Rumah</span>
+
           </div>
 
           {/* Score Box */}
@@ -96,7 +90,7 @@ export default async function MatchDetailPage({
               </div>
             )}
             <p className="text-[10px] sm:text-xs text-slate-300 font-medium flex items-center justify-center gap-1 mt-2">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" /> {match.venue}
+               {match.venue}
             </p>
           </div>
 
@@ -112,7 +106,7 @@ export default async function MatchDetailPage({
             <h2 className="text-xs sm:text-xl font-black text-white uppercase">
               {!match.isHome ? 'MARINERS SC' : match.opponentName}
             </h2>
-            <span className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">Tamu</span>
+
           </div>
 
         </div>
