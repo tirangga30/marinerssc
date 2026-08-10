@@ -74,19 +74,19 @@ export default async function MatchDetailPage({
           <div className="space-y-2">
             {match.status === 'finished' ? (
               <div>
+                <span className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
+                  Full Time
+                </span>
                 <div className="text-3xl sm:text-6xl font-black font-mono blue-gradient-text tracking-widest">
                   {match.homeScore} : {match.awayScore}
                 </div>
-                <span className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
-                  Pertandingan Selesai
-                </span>
               </div>
             ) : (
               <div>
+                <p className="text-[10px] sm:text-xs text-sky-400 font-bold uppercase mt-2">Mendatang</p>
                 <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl bg-blue-600/30 text-sky-300 text-xl sm:text-3xl font-black border border-sky-400/40">
                   VS
                 </div>
-                <p className="text-[10px] sm:text-xs text-sky-400 font-bold uppercase mt-2">Mendatang</p>
               </div>
             )}
             <p className="text-[10px] sm:text-xs text-slate-300 font-medium flex items-center justify-center gap-1 mt-2">

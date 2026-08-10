@@ -43,11 +43,11 @@ export default async function AdminDashboardPage() {
       {/* Dashboard Top Banner */}
       <div className="glass-panel p-8 rounded-3xl border border-sky-400/30 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-1 text-center md:text-left">
-          <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Panel Kelola Klub</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Panel Admin</span>
           <h1 className="text-3xl font-black uppercase text-white blue-gradient-text">
             Selamat Datang, {session.email}
           </h1>
-          <p className="text-xs text-slate-300">Pengelolaan data pemain, jadwal taktis pertandingan, dan berita publik Mariners FC.</p>
+          <p className="text-xs text-slate-300">© 2026 Mariners Soccer Club. All Rights Reserved.</p>
         </div>
 
         <form action="/api/auth/logout" method="POST">
@@ -55,7 +55,7 @@ export default async function AdminDashboardPage() {
             type="submit"
             className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-red-500/20 text-slate-200 hover:text-red-400 border border-slate-700 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
           >
-            <LogOut className="w-4 h-4" /> Keluar Admin
+            <LogOut className="w-4 h-4" /> Logout
           </button>
         </form>
       </div>

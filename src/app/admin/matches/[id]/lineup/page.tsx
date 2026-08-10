@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, ArrowLeft, Save, Plus, Trash2, CheckCircle2, Activity, UserPlus, Clock } from 'lucide-react';
+import {
+  ArrowLeft, Save, Plus, Trash2, CheckCircle2, Activity,
+  Clock, Zap, Shield, Star, AlertCircle, GripVertical, X
+} from 'lucide-react';
 
 interface Player {
   id: string;
@@ -28,18 +31,27 @@ interface MatchEventInput {
   description: string;
 }
 
-const defaultPitchPositions = [
-  { position: 'GK', label: 'Goalkeeper (GK)' },
-  { position: 'LB', label: 'Left Back (LB)' },
-  { position: 'CB1', label: 'Center Back 1 (CB1)' },
-  { position: 'CB2', label: 'Center Back 2 (CB2)' },
-  { position: 'RB', label: 'Right Back (RB)' },
-  { position: 'CM1', label: 'Central Midfield 1 (CM1)' },
-  { position: 'CM2', label: 'Central Midfield 2 (CM2)' },
-  { position: 'CAM', label: 'Attacking Midfield (CAM)' },
-  { position: 'LW', label: 'Left Winger (LW)' },
-  { position: 'ST', label: 'Striker (ST)' },
-  { position: 'RW', label: 'Right Winger (RW)' },
+const PITCH_POSITIONS = [
+  { key: 'GK',  fullLabel: 'Goalkeeper',      x: 50, y: 88 },
+  { key: 'LB',  fullLabel: 'Left Back',        x: 15, y: 70 },
+  { key: 'CB1', fullLabel: 'Center Back 1',    x: 36, y: 72 },
+  { key: 'CB2', fullLabel: 'Center Back 2',    x: 64, y: 72 },
+  { key: 'RB',  fullLabel: 'Right Back',       x: 85, y: 70 },
+  { key: 'CM1', fullLabel: 'Central Mid 1',    x: 25, y: 50 },
+  { key: 'CM2', fullLabel: 'Central Mid 2',    x: 50, y: 48 },
+  { key: 'CAM', fullLabel: 'Attacking Mid',    x: 75, y: 50 },
+  { key: 'LW',  fullLabel: 'Left Winger',      x: 15, y: 22 },
+  { key: 'ST',  fullLabel: 'Striker',          x: 50, y: 14 },
+  { key: 'RW',  fullLabel: 'Right Winger',     x: 85, y: 22 },
+];
+
+const EVENT_TYPES = [
+  { value: 'goal',        label: '⚽ Gol',              color: '#22c55e' },
+  { value: 'yellow_card', label: '🟨 Kartu Kuning',     color: '#eab308' },
+  { value: 'red_card',    label: '🟥 Kartu Merah',      color: '#ef4444' },
+  { value: 'sub',         label: '🔄 Pergantian',       color: '#38bdf8' },
+  { value: 'own_goal',    label: '⚽ Gol Bunuh Diri',   color: '#f97316' },
+  { value: 'penalty',     label: '🎯 Penalti',          color: '#a855f7' },
 ];
 
 export default function MatchLineupBuilderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -49,20 +61,23 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const [players, setPlayers] = useState<Player[]>([]);
   const [matchData, setMatchData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Lineup state (Map pitchPosition -> playerId)
   const [startersMap, setStartersMap] = useState<Record<string, string>>({});
   const [benchPlayerIds, setBenchPlayerIds] = useState<string[]>([]);
   const [eventsList, setEventsList] = useState<MatchEventInput[]>([]);
 
-  // New Event Form State
+  // Drag state
+  const [dragPlayerId, setDragPlayerId] = useState<string | null>(null);
+  const [dragFromPos, setDragFromPos] = useState<string | null>(null); // source pitch position key
+  const [dragOverPos, setDragOverPos] = useState<string | null>(null);
+
   const [newEvent, setNewEvent] = useState({
-    playerId: '',
-    assistPlayerId: '',
-    type: 'goal',
-    minute: '15',
-    description: '',
+    playerId: '', assistPlayerId: '', type: 'goal', minute: '15', description: '',
   });
+
+  const [activeTab, setActiveTab] = useState<'lineup' | 'events'>('lineup');
 
   useEffect(() => {
     async function loadData() {
@@ -71,6 +86,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           fetch('/api/players'),
           fetch(`/api/matches/${matchId}`),
         ]);
+        if (!playersRes.ok || !matchRes.ok) throw new Error('Gagal fetch data');
 
         const playersData = await playersRes.json();
         const matchInfo = await matchRes.json();
@@ -78,25 +94,18 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         setPlayers(playersData);
         setMatchData(matchInfo);
 
-        // Populate existing lineups
-        if (matchInfo.lineups && matchInfo.lineups.length > 0) {
+        if (matchInfo.lineups?.length > 0) {
           const sMap: Record<string, string> = {};
           const bIds: string[] = [];
-
           matchInfo.lineups.forEach((l: any) => {
-            if (l.isStarter) {
-              sMap[l.pitchPosition] = l.playerId;
-            } else {
-              bIds.push(l.playerId);
-            }
+            if (l.isStarter) sMap[l.pitchPosition] = l.playerId;
+            else bIds.push(l.playerId);
           });
-
           setStartersMap(sMap);
           setBenchPlayerIds(bIds);
         }
 
-        // Populate existing events
-        if (matchInfo.events && matchInfo.events.length > 0) {
+        if (matchInfo.events?.length > 0) {
           setEventsList(
             matchInfo.events.map((e: any) => ({
               playerId: e.playerId,
@@ -108,7 +117,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           );
         }
       } catch (err) {
-        console.error('Gagal memuat data taktik:', err);
+        console.error('Gagal memuat data:', err);
       } finally {
         setLoading(false);
       }
@@ -116,22 +125,70 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     loadData();
   }, [matchId]);
 
-  const handleStarterChange = (positionKey: string, playerId: string) => {
-    setStartersMap((prev) => ({ ...prev, [positionKey]: playerId }));
+  /* ─── Drag helpers ─── */
+  const handleDragStart = (playerId: string, fromPosKey: string | null) => {
+    setDragPlayerId(playerId);
+    setDragFromPos(fromPosKey);
   };
 
-  const toggleBenchPlayer = (playerId: string) => {
+  const handleDropOnPosition = (toPosKey: string) => {
+    if (!dragPlayerId) return;
+    setStartersMap((prev) => {
+      const updated = { ...prev };
+      // Remove player from previous pitch position
+      if (dragFromPos) delete updated[dragFromPos];
+      // If target slot has someone, swap them back to bench or source pos
+      const displaced = updated[toPosKey];
+      if (displaced) {
+        if (dragFromPos) updated[dragFromPos] = displaced;
+        // else: displaced player goes back to available (not on pitch)
+        else delete updated[toPosKey];
+      }
+      updated[toPosKey] = dragPlayerId;
+      return updated;
+    });
+    // Remove from bench if coming from bench
+    if (!dragFromPos) {
+      setBenchPlayerIds((prev) => prev.filter((id) => id !== dragPlayerId));
+    }
+    setDragPlayerId(null);
+    setDragFromPos(null);
+    setDragOverPos(null);
+  };
+
+  const handleDropOnBench = () => {
+    if (!dragPlayerId) return;
+    // If from pitch pos, remove from pitch
+    if (dragFromPos) {
+      setStartersMap((prev) => {
+        const updated = { ...prev };
+        delete updated[dragFromPos];
+        return updated;
+      });
+    }
+    // Add to bench if not already there
     setBenchPlayerIds((prev) =>
-      prev.includes(playerId) ? prev.filter((id) => id !== playerId) : [...prev, playerId]
+      prev.includes(dragPlayerId) ? prev : [...prev, dragPlayerId]
     );
+    setDragPlayerId(null);
+    setDragFromPos(null);
+    setDragOverPos(null);
+  };
+
+  const clearPosition = (posKey: string) => {
+    setStartersMap((prev) => {
+      const updated = { ...prev };
+      delete updated[posKey];
+      return updated;
+    });
+  };
+
+  const removeBenchPlayer = (playerId: string) => {
+    setBenchPlayerIds((prev) => prev.filter((id) => id !== playerId));
   };
 
   const addEvent = () => {
-    if (!newEvent.playerId) {
-      alert('Pilih pemain untuk event ini');
-      return;
-    }
-
+    if (!newEvent.playerId) { alert('Pilih pemain untuk event ini'); return; }
     setEventsList((prev) => [
       ...prev,
       {
@@ -142,272 +199,493 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         description: newEvent.description,
       },
     ]);
-
     setNewEvent({ playerId: '', assistPlayerId: '', type: 'goal', minute: '15', description: '' });
   };
 
-  const removeEvent = (index: number) => {
-    setEventsList((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleSaveAll = async () => {
+    setSaving(true);
     const lineupsPayload: MatchLineupInput[] = [];
-
-    // Starters
-    defaultPitchPositions.forEach((pos) => {
-      const pId = startersMap[pos.position];
-      if (pId) {
-        lineupsPayload.push({
-          playerId: pId,
-          isStarter: true,
-          pitchPosition: pos.position,
-          positionName: pos.label,
-        });
-      }
+    PITCH_POSITIONS.forEach((pos) => {
+      const pId = startersMap[pos.key];
+      if (pId) lineupsPayload.push({ playerId: pId, isStarter: true, pitchPosition: pos.key, positionName: pos.fullLabel });
     });
-
-    // Bench
     benchPlayerIds.forEach((pId) => {
-      lineupsPayload.push({
-        playerId: pId,
-        isStarter: false,
-        pitchPosition: 'SUB',
-        positionName: 'Cadangan',
-      });
+      lineupsPayload.push({ playerId: pId, isStarter: false, pitchPosition: 'SUB', positionName: 'Cadangan' });
     });
 
     try {
       const res = await fetch(`/api/matches/${matchId}/lineup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lineups: lineupsPayload,
-          events: eventsList,
-        }),
+        body: JSON.stringify({ lineups: lineupsPayload, events: eventsList }),
       });
-
       if (res.ok) {
-        alert('Taktik lineup & event pertandingan berhasil disimpan!');
-        router.push('/admin/matches');
-        router.refresh();
-      } else {
-        alert('Gagal menyimpan taktik');
-      }
-    } catch {
-      alert('Terjadi kesalahan jaringan');
-    }
+        setSaveSuccess(true);
+        setTimeout(() => { router.push('/admin/matches'); router.refresh(); }, 1200);
+      } else { alert('Gagal menyimpan lineup'); }
+    } catch { alert('Terjadi kesalahan jaringan'); }
+    finally { setSaving(false); }
   };
 
+  const getPlayerById = (id: string) => players.find((p) => p.id === id);
+  const starterCount = Object.values(startersMap).filter(Boolean).length;
+  const pitchedIds = new Set(Object.values(startersMap).filter(Boolean));
+  const benchSet = new Set(benchPlayerIds);
+  const availablePlayers = players.filter((p) => !pitchedIds.has(p.id) && !benchSet.has(p.id));
+
   if (loading) {
-    return <div className="p-12 text-center text-amber-400 font-bold">Memuat Lineup Builder...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 border-4 border-sky-500/30 border-t-sky-400 rounded-full animate-spin mx-auto" />
+          <p className="text-sky-400 font-bold uppercase tracking-widest text-sm">Memuat Lineup Builder...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Link
-          href="/admin/matches"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-amber-400"
-        >
-          <ArrowLeft className="w-4 h-4" /> Kembali ke Manajemen Pertandingan
-        </Link>
-        <button
-          onClick={handleSaveAll}
-          className="px-6 py-2.5 rounded-xl gold-gradient-bg text-slate-950 font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:brightness-110"
-        >
-          <Save className="w-4 h-4" /> Simpan Semua Lineup & Events
-        </button>
-      </div>
+    <div className="min-h-screen">
 
-      {/* Match Title Banner */}
-      <div className="glass-panel p-6 rounded-2xl border border-amber-500/30 flex items-center justify-between">
-        <div>
-          <span className="text-xs font-bold text-amber-400 uppercase">Match Lineup & Events Builder</span>
-          <h1 className="text-2xl font-black uppercase text-slate-100 gold-gradient-text">
-            Mariners FC vs {matchData?.opponentName}
-          </h1>
-        </div>
-        <div className="text-xs font-mono font-bold px-3 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
-          Formasi: {matchData?.formation || '4-3-3'}
-        </div>
-      </div>
+      {/* ═══ TOP STICKY HEADER ═══ */}
+      <div className="sticky top-0 z-40 border-b border-slate-800/80 backdrop-blur-xl bg-slate-950/85">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <Link
+            href="/admin/matches"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-400 hover:text-sky-400 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Manajemen Pertandingan</span>
+            <span className="sm:hidden">Kembali</span>
+          </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Column: 11 Starters Selection */}
-        <div className="lg:col-span-7 glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <Activity className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-black uppercase text-slate-100">Susunan 11 Pemain Starter (4-3-3)</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {defaultPitchPositions.map((pos) => (
-              <div key={pos.position} className="space-y-1">
-                <label className="text-[11px] font-extrabold uppercase text-amber-400 flex items-center gap-1">
-                  <span>{pos.label}</span>
-                </label>
-                <select
-                  value={startersMap[pos.position] || ''}
-                  onChange={(e) => handleStarterChange(pos.position, e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-100 font-medium focus:border-amber-500 outline-none"
-                >
-                  <option value="">-- Pilih Pemain --</option>
-                  {players.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      #{p.number} {p.name} ({p.position})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-
-          {/* Bench Selection */}
-          <div className="pt-6 border-t border-slate-800 space-y-3">
-            <h3 className="text-xs font-bold uppercase text-amber-400">Pemain Cadangan (Bench)</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {players.map((p) => {
-                const isSelectedAsStarter = Object.values(startersMap).includes(p.id);
-                if (isSelectedAsStarter) return null;
-                const isBench = benchPlayerIds.includes(p.id);
-
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => toggleBenchPlayer(p.id)}
-                    className={`p-2 rounded-xl text-xs font-semibold flex items-center justify-between border transition-all ${
-                      isBench
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/50'
-                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <span className="truncate">#{p.number} {p.name}</span>
-                    {isBench && <CheckCircle2 className="w-4 h-4 shrink-0 text-amber-400" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Match Event Logger */}
-        <div className="lg:col-span-5 glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <Clock className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-black uppercase text-slate-100">Catat Event Laga (Gol/Kartu)</h2>
-          </div>
-
-          {/* Form Add Event */}
-          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
-            <div>
-              <label className="font-bold text-slate-300 uppercase block mb-1">Tipe Event</label>
-              <select
-                value={newEvent.type}
-                onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
-                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100"
-              >
-                <option value="goal">⚽ Gol</option>
-                <option value="yellow_card">🟨 Kartu Kuning</option>
-                <option value="red_card">🟥 Kartu Merah</option>
-                <option value="sub">🔄 Pergantian Pemain</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Pemain Utama</label>
-                <select
-                  value={newEvent.playerId}
-                  onChange={(e) => setNewEvent({ ...newEvent, playerId: e.target.value })}
-                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100"
-                >
-                  <option value="">-- Pilih Pemain --</option>
-                  {players.map((p) => (
-                    <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Pemberi Assist (Opsional)</label>
-                <select
-                  value={newEvent.assistPlayerId}
-                  onChange={(e) => setNewEvent({ ...newEvent, assistPlayerId: e.target.value })}
-                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100"
-                >
-                  <option value="">-- Tidak ada --</option>
-                  {players.map((p) => (
-                    <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="font-bold text-slate-300 uppercase block mb-1">Menit Ke-</label>
-                <input
-                  type="number"
-                  value={newEvent.minute}
-                  onChange={(e) => setNewEvent({ ...newEvent, minute: e.target.value })}
-                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="font-bold text-slate-300 uppercase block mb-1">Keterangan / Deskripsi</label>
-                <input
-                  type="text"
-                  placeholder="Tendangan roket luar penalti"
-                  value={newEvent.description}
-                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100"
-                />
-              </div>
+          <div className="flex items-center gap-2">
+            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-colors ${
+              starterCount === 11
+                ? 'bg-green-500/20 border-green-500/50 text-green-400'
+                : 'bg-sky-500/10 border-sky-500/30 text-sky-400'
+            }`}>
+              {starterCount}/11 Starter
             </div>
 
             <button
-              type="button"
-              onClick={addEvent}
-              className="w-full py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold uppercase text-xs flex items-center justify-center gap-1 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+              onClick={handleSaveAll}
+              disabled={saving || saveSuccess}
+              className={`px-5 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg transition-all disabled:opacity-70 ${
+                saveSuccess
+                  ? 'bg-green-500 text-white shadow-green-500/25'
+                  : 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/25 hover:shadow-sky-500/35'
+              }`}
             >
-              <Plus className="w-4 h-4" /> Tambahkan Event
+              {saving ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : saveSuccess ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saveSuccess ? 'Tersimpan!' : saving ? 'Menyimpan...' : 'Simpan Lineup & Events'}
             </button>
           </div>
-
-          {/* List Added Events */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold uppercase text-slate-400">Daftar Event Tercatat ({eventsList.length})</h3>
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {eventsList.map((ev, idx) => {
-                const playerObj = players.find((p) => p.id === ev.playerId);
-                const assistObj = players.find((p) => p.id === ev.assistPlayerId);
-                return (
-                  <div key={idx} className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-mono font-bold text-amber-400 mr-2">{ev.minute}'</span>
-                      <span className="font-bold text-slate-100 uppercase">{playerObj?.name || 'Pemain'}</span>
-                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-400 font-mono">
-                        {ev.type}
-                      </span>
-                      {assistObj && <p className="text-[10px] text-amber-400/80">Assist: {assistObj.name}</p>}
-                    </div>
-                    <button onClick={() => removeEvent(idx)} className="text-red-400 hover:text-red-300">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
         </div>
-
       </div>
 
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+        {/* ═══ MATCH BANNER ═══ */}
+        <div className="relative rounded-2xl overflow-hidden border border-sky-500/20 p-5"
+          style={{ background: 'linear-gradient(135deg, rgba(2,12,27,0.97) 0%, rgba(14,50,100,0.5) 100%)' }}>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(56,189,248,0.07),transparent_60%)]" />
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-500/70 flex items-center gap-1.5">
+                <Activity className="w-3 h-3" /> Match Lineup & Events Builder
+              </span>
+              <h1 className="text-xl sm:text-2xl font-black uppercase text-white mt-0.5">
+                Mariners FC <span className="text-sky-400">vs</span> {matchData?.opponentName || '—'}
+              </h1>
+              {matchData?.competition && (
+                <p className="text-[11px] text-slate-400 mt-0.5">{matchData.competition}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-center px-3 py-1.5 rounded-xl bg-slate-900/80 border border-sky-500/20">
+                <p className="text-[9px] text-slate-500 uppercase font-bold">Formasi</p>
+                <p className="text-lg font-black font-mono text-sky-400">{matchData?.formation || '4-3-3'}</p>
+              </div>
+              {matchData?.status === 'finished' && matchData?.homeScore !== null && (
+                <div className="text-center px-3 py-1.5 rounded-xl bg-slate-900/80 border border-green-500/20">
+                  <p className="text-[9px] text-slate-500 uppercase font-bold">Skor</p>
+                  <p className="text-lg font-black font-mono text-green-400">{matchData.homeScore} – {matchData.awayScore}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ MOBILE TABS ═══ */}
+        <div className="flex lg:hidden gap-1 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+          {(['lineup', 'events'] as const).map((tab) => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${
+                activeTab === tab ? 'bg-sky-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              }`}>
+              {tab === 'lineup' ? <><Shield className="w-3 h-3 inline mr-1" />Susunan Pemain</> : <><Zap className="w-3 h-3 inline mr-1" />Event ({eventsList.length})</>}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+          {/* ═══════════════════════════════════
+              LEFT COLUMN: PITCH + BENCH
+          ════════════════════════════════════ */}
+          <div className={`lg:col-span-7 space-y-4 ${activeTab === 'events' ? 'hidden lg:block' : ''}`}>
+
+            {/* ─── DRAG HINT ─── */}
+            <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5">
+              <GripVertical className="w-3 h-3" />
+              Seret pemain dari daftar ke posisi di lapangan • Seret antar posisi untuk menukar • Lepas ke area bench untuk keluarkan
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* ── FOOTBALL PITCH (smaller, fixed height) ── */}
+              <div className="rounded-2xl overflow-hidden border border-slate-700/60 shadow-xl shadow-black/30">
+                {/* Pitch Header */}
+                <div className="bg-slate-900/70 px-3 py-2 border-b border-slate-800 flex items-center gap-2">
+                  <Shield className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-xs font-black uppercase text-slate-200">Lapangan — {matchData?.formation || '4-3-3'}</span>
+                  <span className="ml-auto text-[9px] text-slate-500 font-mono">
+                    {starterCount < 11 ? `${11 - starterCount} kosong` : '✓ Penuh'}
+                  </span>
+                </div>
+
+                {/* Pitch area — fixed smaller height */}
+                <div
+                  className="relative w-full select-none"
+                  style={{
+                    paddingBottom: '115%',
+                    background: 'linear-gradient(180deg, #15803d 0%, #14532d 20%, #166534 40%, #15803d 60%, #14532d 80%, #166534 100%)',
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  {/* SVG Pitch Lines */}
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 115" preserveAspectRatio="none">
+                    <rect x="2" y="2" width="96" height="111" rx="0.5" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="0.5" />
+                    <line x1="2" y1="57.5" x2="98" y2="57.5" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <circle cx="50" cy="57.5" r="10" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <circle cx="50" cy="57.5" r="0.7" fill="rgba(255,255,255,0.5)" />
+                    {/* Top penalty area */}
+                    <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <circle cx="50" cy="13" r="0.6" fill="rgba(255,255,255,0.5)" />
+                    {/* Bottom penalty area */}
+                    <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <circle cx="50" cy="102" r="0.6" fill="rgba(255,255,255,0.5)" />
+                    {/* Alternating grass stripes */}
+                    {[0,1,2,3,4].map(i => (
+                      <rect key={i} x="2" y={2 + i * 22} width="96" height="11" fill="rgba(0,0,0,0.035)" />
+                    ))}
+                  </svg>
+
+                  {/* Attack Arrow */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-30 pointer-events-none">
+                    <svg width="12" height="14" viewBox="0 0 12 14">
+                      <path d="M6 0L12 8H8v6H4V8H0Z" fill="white"/>
+                    </svg>
+                  </div>
+
+                  {/* Player Tokens */}
+                  {PITCH_POSITIONS.map((pos) => {
+                    const pId = startersMap[pos.key];
+                    const player = pId ? getPlayerById(pId) : undefined;
+                    const isDragTarget = dragOverPos === pos.key;
+
+                    return (
+                      <div
+                        key={pos.key}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 z-10"
+                        style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverPos(pos.key); }}
+                        onDragLeave={() => setDragOverPos(null)}
+                        onDrop={() => handleDropOnPosition(pos.key)}
+                      >
+                        {/* Token circle */}
+                        <div
+                          draggable={!!player}
+                          onDragStart={() => player && handleDragStart(player.id, pos.key)}
+                          onDragEnd={() => { setDragPlayerId(null); setDragFromPos(null); setDragOverPos(null); }}
+                          className={`w-9 h-9 rounded-full border-2 flex items-center justify-center font-black text-[10px] transition-all cursor-${player ? 'grab' : 'default'} ${
+                            isDragTarget
+                              ? 'border-sky-300 bg-sky-500/30 scale-125 shadow-lg shadow-sky-500/40'
+                              : player
+                              ? 'bg-sky-600 border-sky-300 text-white shadow-lg shadow-sky-600/40 hover:scale-110'
+                              : 'bg-slate-800/80 border-dashed border-slate-600 text-slate-500'
+                          }`}
+                        >
+                          {player ? player.number : <span className="text-slate-600 text-[8px]">+</span>}
+                        </div>
+                        {/* Name chip */}
+                        <div className={`px-1 py-px rounded text-[7px] font-black uppercase leading-none whitespace-nowrap max-w-[48px] truncate ${
+                          player
+                            ? 'bg-slate-950/90 text-sky-300 border border-sky-500/30'
+                            : 'bg-slate-950/60 text-slate-600 border border-slate-700'
+                        }`}>
+                          {player ? player.name.split(' ')[0] : pos.key}
+                        </div>
+                        {/* Clear X button when filled */}
+                        {player && (
+                          <button
+                            onClick={() => clearPosition(pos.key)}
+                            className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity z-20"
+                            style={{ fontSize: '7px' }}
+                            title="Keluarkan dari posisi"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── PLAYER ROSTER (drag source) ── */}
+              <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden flex flex-col">
+                <div className="px-3 py-2.5 border-b border-slate-800 flex items-center gap-2 shrink-0">
+                  <Star className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-xs font-black uppercase text-slate-200">Roster Pemain</span>
+                  <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">
+                    {availablePlayers.length} tersedia
+                  </span>
+                </div>
+                <div className="p-2 space-y-1 overflow-y-auto flex-1 max-h-[calc(115%+32px)]">
+                  {availablePlayers.length === 0 ? (
+                    <p className="text-[10px] text-slate-600 text-center py-6">Semua pemain sudah ditempatkan</p>
+                  ) : (
+                    availablePlayers.map((p) => (
+                      <div
+                        key={p.id}
+                        draggable
+                        onDragStart={() => handleDragStart(p.id, null)}
+                        onDragEnd={() => { setDragPlayerId(null); setDragFromPos(null); }}
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${
+                          dragPlayerId === p.id
+                            ? 'opacity-40 scale-95'
+                            : 'bg-slate-800/60 border-slate-700 hover:border-sky-500/50 hover:bg-slate-800'
+                        }`}
+                      >
+                        <GripVertical className="w-3 h-3 text-slate-600 shrink-0" />
+                        <span className="w-6 h-6 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-[9px] font-black text-sky-400 shrink-0">
+                          {p.number}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-[10px] font-bold text-slate-200 truncate">{p.name}</span>
+                          <span className="text-[8px] text-slate-500">{p.position}</span>
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── BENCH ZONE (drop target) ── */}
+            <div
+              className={`rounded-2xl border-2 border-dashed overflow-hidden transition-all ${
+                dragPlayerId ? 'border-sky-500/60 bg-sky-500/5' : 'border-slate-700/60 bg-slate-900/40'
+              }`}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropOnBench}
+            >
+              <div className="px-3 py-2 border-b border-slate-800/60 flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-slate-300">Pemain Cadangan (Bench)</span>
+                <span className="text-[9px] text-slate-500 font-medium">— Seret pemain ke sini untuk jadikan cadangan</span>
+                <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">
+                  {benchPlayerIds.length}
+                </span>
+              </div>
+              <div className="p-2 flex flex-wrap gap-1.5 min-h-[48px]">
+                {benchPlayerIds.length === 0 ? (
+                  <p className="text-[10px] text-slate-600 w-full text-center py-2">
+                    {dragPlayerId ? '📥 Lepas di sini untuk jadi cadangan' : 'Belum ada pemain cadangan'}
+                  </p>
+                ) : (
+                  benchPlayerIds.map((pId) => {
+                    const p = getPlayerById(pId);
+                    if (!p) return null;
+                    return (
+                      <div
+                        key={pId}
+                        draggable
+                        onDragStart={() => handleDragStart(p.id, null)}
+                        onDragEnd={() => { setDragPlayerId(null); setDragFromPos(null); }}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-800 border border-sky-500/25 text-[10px] font-bold text-sky-300 cursor-grab active:cursor-grabbing select-none"
+                      >
+                        <span className="text-[9px] text-sky-400/70">#{p.number}</span>
+                        <span className="truncate max-w-[70px]">{p.name}</span>
+                        <button
+                          onClick={() => removeBenchPlayer(p.id)}
+                          className="ml-0.5 text-slate-500 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          {/* ═══════════════════════════════════
+              RIGHT COLUMN: EVENT LOGGER
+          ════════════════════════════════════ */}
+          <div className={`lg:col-span-5 space-y-4 ${activeTab === 'lineup' ? 'hidden lg:block' : ''}`}>
+
+            {/* ── EVENT FORM ── */}
+            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-sky-400" />
+                <h2 className="text-sm font-black uppercase text-slate-100">Catat Event Laga</h2>
+              </div>
+
+              <div className="p-4 space-y-3">
+                {/* Event type grid */}
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1.5">Tipe Event</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {EVENT_TYPES.map((et) => (
+                      <button
+                        key={et.value}
+                        type="button"
+                        onClick={() => setNewEvent({ ...newEvent, type: et.value })}
+                        className={`px-2 py-1.5 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight ${
+                          newEvent.type === et.value
+                            ? 'bg-sky-600/20 border-sky-400/60 text-sky-300'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
+                        }`}
+                      >
+                        {et.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Player selectors */}
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Pemain Utama *</label>
+                  <select
+                    value={newEvent.playerId}
+                    onChange={(e) => setNewEvent({ ...newEvent, playerId: e.target.value })}
+                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                  >
+                    <option value="">-- Pilih Pemain --</option>
+                    {players.map((p) => (
+                      <option key={p.id} value={p.id}>#{p.number} {p.name} ({p.position})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {newEvent.type === 'goal' && (
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Assist (Opsional)</label>
+                    <select
+                      value={newEvent.assistPlayerId}
+                      onChange={(e) => setNewEvent({ ...newEvent, assistPlayerId: e.target.value })}
+                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                    >
+                      <option value="">-- Tidak ada assist --</option>
+                      {players.filter(p => p.id !== newEvent.playerId).map((p) => (
+                        <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Menit</label>
+                    <input
+                      type="number" min="1" max="120" value={newEvent.minute}
+                      onChange={(e) => setNewEvent({ ...newEvent, minute: e.target.value })}
+                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none text-center font-mono font-bold"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Deskripsi</label>
+                    <input
+                      type="text" placeholder="Tendangan roket..."
+                      value={newEvent.description}
+                      onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button" onClick={addEvent}
+                  className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-600/20"
+                >
+                  <Plus className="w-4 h-4" /> Tambahkan Event
+                </button>
+              </div>
+            </div>
+
+            {/* ── EVENTS LIST ── */}
+            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-sky-400" />
+                <h3 className="text-sm font-black uppercase text-slate-100">
+                  Daftar Event ({eventsList.length})
+                </h3>
+              </div>
+              <div className="divide-y divide-slate-800/60 max-h-80 overflow-y-auto">
+                {eventsList.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <AlertCircle className="w-7 h-7 text-slate-700 mx-auto mb-1.5" />
+                    <p className="text-xs text-slate-600">Belum ada event dicatat</p>
+                  </div>
+                ) : (
+                  [...eventsList].sort((a, b) => a.minute - b.minute).map((ev, idx) => {
+                    const playerObj = getPlayerById(ev.playerId);
+                    const assistObj = ev.assistPlayerId ? getPlayerById(ev.assistPlayerId) : null;
+                    const evType = EVENT_TYPES.find(et => et.value === ev.type);
+                    return (
+                      <div key={idx} className="px-4 py-2.5 flex items-start gap-3 hover:bg-slate-800/30 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                          <span className="text-[9px] font-black font-mono text-sky-400">{ev.minute}'</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-black text-slate-100 uppercase">{playerObj?.name || '—'}</span>
+                            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase"
+                              style={{ background: `${evType?.color}20`, color: evType?.color, border: `1px solid ${evType?.color}40` }}>
+                              {evType?.label || ev.type}
+                            </span>
+                          </div>
+                          {assistObj && <p className="text-[9px] text-slate-500 mt-0.5">Assist: {assistObj.name}</p>}
+                          {ev.description && <p className="text-[9px] text-slate-500 italic truncate">{ev.description}</p>}
+                        </div>
+                        <button
+                          onClick={() => setEventsList((prev) => prev.filter((_, i) => i !== eventsList.indexOf(ev)))}
+                          className="p-1 rounded text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
