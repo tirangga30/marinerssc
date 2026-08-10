@@ -65,7 +65,7 @@ export default async function HomePage() {
           {/* Badge Top */}
           <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
-            <span>Musim 2025/2026</span>
+            <span>Musim 2026/2027</span>
           </div>
 
           <h1 className="text-2xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white leading-tight sm:leading-none">
@@ -110,7 +110,7 @@ export default async function HomePage() {
               </h3>
             </div>
             <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-              {nextMatch?.competition || 'BRI Liga 1'}
+              {nextMatch?.competition || 'Matchday 1'}
             </span>
           </div>
 
@@ -271,8 +271,8 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/20 bg-gradient-to-r from-blue-950/60 via-[#060b14] to-blue-950/60">
           <div className="text-center max-w-xl mx-auto mb-3 sm:mb-8 space-y-0.5">
-            <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2025/2026</h2>
-            <p className="text-[9px] sm:text-xs text-slate-300">Performa klub Mariners SC di BRI Liga 1</p>
+            <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2026/2027</h2>
+            <p className="text-[9px] sm:text-xs text-slate-300">Performa klub Mariners SC di musim ini</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-6 text-center">

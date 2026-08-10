@@ -106,7 +106,7 @@ model Competition {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
-  season    String   @default("2025/2026")
+  season    String   @default("2026/2027")
   type      String   @default("Liga")
   isPrimary Boolean  @default(true)
   createdAt DateTime @default(now())

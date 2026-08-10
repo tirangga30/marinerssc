@@ -19,7 +19,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         opponentName: data.opponentName,
         opponentLogo: data.opponentLogo,
         matchDate: new Date(data.matchDate),
-        competition: data.competition || 'BRI Liga 1',
+        competition: data.competition || 'Matchday 1',
         venue: data.venue,
         isHome: Boolean(data.isHome),
         status: data.status,

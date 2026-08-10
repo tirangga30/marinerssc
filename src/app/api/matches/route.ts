@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         opponentName: data.opponentName,
         opponentLogo: data.opponentLogo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=150&auto=format&fit=crop&q=80',
         matchDate: new Date(data.matchDate),
-        competition: data.competition || 'BRI Liga 1',
+        competition: data.competition || 'Matchday 1',
         venue: data.venue || 'Stadion Gelora Samudra, Jakarta',
         isHome: Boolean(data.isHome),
         status: data.status || 'scheduled',

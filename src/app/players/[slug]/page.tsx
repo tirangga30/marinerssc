@@ -106,7 +106,7 @@ export default async function PlayerDetailPage({
             {/* Season Stats Grid */}
             <div className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                Statistik Musim 2025/2026
+                Statistik Musim 2026/2027
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">

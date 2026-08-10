@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="glass-panel border-t border-blue-500/20 text-slate-300 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Brand Col - NO BOX around logo */}
           <div className="space-y-4 md:col-span-1">
@@ -67,18 +67,6 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-sky-400 shrink-0" />
                 <span>+62 (021) 555-MARINERS</span>
               </div>
-            </div>
-          </div>
-
-          {/* Sponsor & Badge */}
-          <div>
-            <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-sky-400/30 pb-2 inline-block">
-              Kejuaraan
-            </h4>
-            <div className="p-4 rounded-xl bg-blue-950/40 border border-blue-500/30 text-center space-y-2">
-              <Trophy className="w-8 h-8 text-sky-400 mx-auto animate-bounce" />
-              <p className="text-xs font-black text-white uppercase">Juara BRI Liga 1</p>
-              <p className="text-[11px] text-sky-300 font-semibold">Musim 2024/2025</p>
             </div>
           </div>
 

@@ -27,8 +27,8 @@ async function main() {
   console.log('Creating Competitions...');
   await prisma.competition.createMany({
     data: [
-      { name: 'BRI Liga 1 Indonesia', slug: 'bri-liga-1', season: '2025/2026', type: 'Liga Utama', isPrimary: true },
-      { name: 'Piala Indonesia 2026', slug: 'piala-indonesia', season: '2025/2026', type: 'Turnamen Domestik', isPrimary: false },
+      { name: 'Liga Utama', slug: 'liga-utama', season: '2026/2027', type: 'Liga Utama', isPrimary: true },
+      { name: 'Piala Indonesia 2026', slug: 'piala-indonesia', season: '2026/2027', type: 'Turnamen Domestik', isPrimary: false },
     ],
   });
 
@@ -353,7 +353,7 @@ async function main() {
       opponentName: 'Persija Jakarta',
       opponentLogo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=150&auto=format&fit=crop&q=80',
       matchDate: new Date('2026-02-01T19:00:00Z'),
-      competition: 'BRI Liga 1',
+      competition: 'Matchday 1',
       venue: 'Stadion Gelora Samudra, Jakarta',
       isHome: true,
       status: 'finished',
@@ -406,7 +406,7 @@ async function main() {
       opponentName: 'Persebaya Surabaya',
       opponentLogo: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=150&auto=format&fit=crop&q=80',
       matchDate: new Date('2026-02-08T15:30:00Z'),
-      competition: 'BRI Liga 1',
+      competition: 'Matchday 2',
       venue: 'Stadion Gelora Bung Tomo, Surabaya',
       isHome: false,
       status: 'finished',
@@ -435,7 +435,7 @@ async function main() {
       opponentName: 'Bali United',
       opponentLogo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80',
       matchDate: new Date('2026-02-15T19:00:00Z'),
-      competition: 'BRI Liga 1',
+      competition: 'Matchday 3',
       venue: 'Stadion Gelora Samudra, Jakarta',
       isHome: true,
       status: 'finished',
@@ -464,7 +464,7 @@ async function main() {
       opponentName: 'PSM Makassar',
       opponentLogo: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=150&auto=format&fit=crop&q=80',
       matchDate: new Date('2026-02-22T19:00:00Z'),
-      competition: 'BRI Liga 1',
+      competition: 'Matchday 4',
       venue: 'Stadion Gelora Samudra, Jakarta',
       isHome: true,
       status: 'scheduled',

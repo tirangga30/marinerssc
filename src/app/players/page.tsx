@@ -32,7 +32,7 @@ export default async function PlayersPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Tim Utama Mariners SC</span>
         <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
-          Skuad Resmi Musim 2025/2026
+          Skuad Resmi Musim 2026/2027
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Mengenal pilar pertahanan, pengatur ritme serangan, dan mesin gol kebanggaan Mariners SC.
