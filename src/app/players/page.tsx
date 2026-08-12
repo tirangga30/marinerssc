@@ -6,12 +6,21 @@ import { Shield, ArrowRight } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const positionOrder = ['GK', 'DF', 'MF', 'FW'];
+const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {
-  GK: 'Penjaga Gawang (Goalkeepers)',
-  DF: 'Lini Belakang (Defenders)',
-  MF: 'Lini Tengah (Midfielders)',
-  FW: 'Lini Depan (Forwards)',
+  GOALKEEPER: 'GOALKEEPER',
+  DEFENDER: 'DEFENDER',
+  MIDFIELDER: 'MIDFIELDER',
+  FORWARD: 'FORWARD',
+};
+
+const normalizePos = (pos: string) => {
+  const p = pos?.toUpperCase();
+  if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
+  if (p === 'DF' || p === 'DEFENDER') return 'DEFENDER';
+  if (p === 'MF' || p === 'MIDFIELDER') return 'MIDFIELDER';
+  if (p === 'FW' || p === 'FORWARD') return 'FORWARD';
+  return p || 'FORWARD';
 };
 
 export default async function PlayersPage() {
@@ -41,7 +50,7 @@ export default async function PlayersPage() {
 
       {/* Grouped by Position */}
       {positionOrder.map((pos) => {
-        const group = players.filter((p) => p.position === pos);
+        const group = players.filter((p) => normalizePos(p.position) === pos);
         if (group.length === 0) return null;
 
         return (
@@ -59,42 +68,30 @@ export default async function PlayersPage() {
                 <Link
                   key={player.id}
                   href={`/players/${player.slug}`}
-                  className="group glass-panel rounded-xl sm:rounded-2xl overflow-hidden border border-slate-800 card-glow-hover flex flex-col justify-between"
+                  className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
                 >
-                  <div className="relative h-36 sm:h-64 overflow-hidden bg-slate-900">
-                    <img
-                      src={player.photoUrl || '/playertemplate.jpeg'}
-                      alt={player.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-transparent to-transparent" />
-                    
-                    {/* Number Badge */}
-                    <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl blue-gradient-bg text-white font-black text-xs sm:text-lg flex items-center justify-center shadow-lg border border-white/20">
-                      #{player.number}
-                    </div>
+                  {/* Full Photo */}
+                  <img
+                    src={player.photoUrl || '/playertemplate.jpeg'}
+                    alt={player.name}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  
+                  {/* Soft Black Gradient Overlay at Bottom (reaches up to player name) */}
+                  <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
 
-                    {player.isCaptain && (
-                      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 px-1.5 sm:px-2 py-0.5 rounded bg-white text-blue-950 font-black text-[8px] sm:text-[10px] uppercase tracking-wider shadow">
-                        KAPTEN
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-400 block truncate">
-                      {player.nationality}
+                  {/* Bottom Info: Large Number alongside Name & Position */}
+                  <div className="relative z-10 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                    <span className="text-2xl sm:text-4xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
+                      {player.number}
                     </span>
-                    <h3 className="text-xs sm:text-base font-black text-white group-hover:text-sky-300 transition-colors uppercase truncate">
-                      {player.name}
-                    </h3>
-                    <p className="text-[10px] sm:text-xs text-slate-300 line-clamp-2">{player.bio}</p>
-                    
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] sm:text-xs font-semibold text-slate-300">
-                      <span>{player.appearances} Laga</span>
-                      <span className="text-sky-400 flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-                        Profil <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </span>
+                    <div className="min-w-0 space-y-0.5">
+                      <h3 className="text-sm sm:text-xl md:text-2xl font-black text-white group-hover:text-sky-300 transition-colors uppercase truncate leading-tight">
+                        {player.name}
+                      </h3>
+                      <p className="text-[9px] sm:text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none">
+                        {normalizePos(player.position)}
+                      </p>
                     </div>
                   </div>
                 </Link>

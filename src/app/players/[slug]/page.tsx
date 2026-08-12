@@ -43,13 +43,12 @@ function getResult(match: {
 }
 
 function getPositionLabel(pos: string) {
-  const map: Record<string, string> = {
-    GK: 'Penjaga Gawang',
-    DF: 'Bek',
-    MF: 'Gelandang',
-    FW: 'Penyerang',
-  };
-  return map[pos] || pos;
+  const p = pos?.toUpperCase();
+  if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
+  if (p === 'DF' || p === 'DEFENDER') return 'DEFENDER';
+  if (p === 'MF' || p === 'MIDFIELDER') return 'MIDFIELDER';
+  if (p === 'FW' || p === 'FORWARD') return 'FORWARD';
+  return p || 'FORWARD';
 }
 
 export default async function PlayerDetailPage({
@@ -425,7 +424,7 @@ export default async function PlayerDetailPage({
                       {/* ── MOBILE ROW (3 col) ── */}
                       <Link
                         href={`/matches/${match.id}`}
-                        className="grid sm:hidden px-3 py-3 hover:bg-white/[0.03] transition-colors items-center"
+                        className="grid sm:hidden px-3 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
                         style={{
                           gridTemplateColumns: '44px 1fr 40px',
                           borderTop: rowBorder,
@@ -457,7 +456,7 @@ export default async function PlayerDetailPage({
                       {/* ── DESKTOP ROW (7 col) ── */}
                       <Link
                         href={`/matches/${match.id}`}
-                        className="hidden sm:grid px-4 py-3 hover:bg-white/[0.03] transition-colors items-center"
+                        className="hidden sm:grid px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
                         style={{
                           gridTemplateColumns: '72px 1fr 44px 44px 44px 44px 52px',
                           borderTop: rowBorder,

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { Calendar, MapPin, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, MapPin, Flame, CheckCircle2, Clock } from 'lucide-react';
 
 export const revalidate = 0;
 
@@ -29,7 +29,7 @@ export default async function MatchesPage({
       {/* Header Banner */}
       <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-sky-400/20 text-center space-y-2 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Jadwal & Hasil Pertandingan</span>
+        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Jadwal &amp; Hasil Pertandingan</span>
         <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
           Season 2026/2027
         </h1>
@@ -73,92 +73,82 @@ export default async function MatchesPage({
       </div>
 
       {/* Matches List */}
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-4 sm:space-y-6">
         {filteredMatches.map((match) => (
           <Link
             key={match.id}
             href={`/matches/${match.id}`}
-            className="group glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 card-glow-hover flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6"
+            className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/30 hover:border-sky-400/60 shadow-2xl shadow-slate-950 hover:shadow-sky-500/10 transition-all duration-300 cursor-pointer"
           >
-            {/* Date & Competition */}
-            <div className="flex flex-col items-center md:items-start space-y-0.5 text-center md:text-left shrink-0 min-w-[140px]">
-              <span className="text-xs font-bold text-sky-400 uppercase flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
-                {new Date(match.matchDate).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </span>
-              <span className="text-[11px] text-slate-300 font-medium">{match.competition}</span>
-              <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-slate-400" />
-                {match.isHome ? 'Kandang' : 'Tandang'}
+            {/* Top Bar Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
+              <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
+                {match.status === 'scheduled' ? 'Laga Mendatang' : 'Hasil Pertandingan'}
+              </h3>
+              <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+                {match.competition || 'Matchday 1'}
               </span>
             </div>
 
-            {/* Scoreboard Middle - NO BOX AROUND LOGOS */}
-            <div className="flex-1 grid grid-cols-3 items-center text-center gap-2 sm:gap-4 max-w-xl w-full">
+            {/* Main Scoreboard Content */}
+            <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
               
-              {/* Home Team (Mariners SC or Opponent) - NO BOX */}
-              <div className="flex flex-col items-center gap-1 sm:gap-2">
-                <div className="flex items-center justify-center">
+              {/* Home Team (Mariners SC or Opponent) */}
+              <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
+                <div className="order-2 sm:order-1 text-center sm:text-right">
+                  <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                    {match.isHome ? 'MARINERS SC' : match.opponentName}
+                  </h4>
+                </div>
+                <div className="order-1 sm:order-2 flex items-center justify-center">
                   <img
                     src={match.isHome ? '/marinerssc.png' : match.opponentLogo}
                     alt={match.isHome ? 'Mariners SC' : match.opponentName}
-                    className="w-10 h-10 sm:w-14 sm:h-14 object-contain drop-shadow-lg"
+                    className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <span className="text-[11px] sm:text-xs font-extrabold uppercase text-white truncate w-full">
-                  {match.isHome ? 'MARINERS SC' : match.opponentName}
-                </span>
               </div>
 
-              {/* Score / Status */}
-              <div className="space-y-1">
+              {/* Score / VS Badge */}
+              <div className="space-y-0.5 sm:space-y-2">
                 {match.status === 'finished' ? (
-                  <div className="text-xl sm:text-3xl font-black font-mono blue-gradient-text tracking-widest">
+                  <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                     {match.homeScore} : {match.awayScore}
                   </div>
                 ) : (
-                  <div className="inline-block px-3 py-1 rounded-xl bg-blue-600/30 text-sky-300 text-xs sm:text-sm font-black border border-sky-400/40">
+                  <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
                     VS
                   </div>
                 )}
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                  {match.status === 'finished' ? (
-                    <span className="text-emerald-400 flex items-center justify-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Selesai
-                    </span>
-                  ) : (
-                    <span className="text-sky-400 flex items-center justify-center gap-1">
-                      <Clock className="w-3 h-3" /> Mendatang
-                    </span>
-                  )}
-                </div>
+                <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+                  {new Date(match.matchDate).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })} • {new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                </p>
+                <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">
+                  {match.venue} ({match.isHome ? 'Kandang' : 'Tandang'})
+                </p>
               </div>
 
-              {/* Away Team - NO BOX */}
-              <div className="flex flex-col items-center gap-1 sm:gap-2">
+              {/* Away Team */}
+              <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                 <div className="flex items-center justify-center">
                   <img
                     src={!match.isHome ? '/marinerssc.png' : match.opponentLogo}
                     alt={!match.isHome ? 'Mariners SC' : match.opponentName}
-                    className="w-10 h-10 sm:w-14 sm:h-14 object-contain drop-shadow-lg"
+                    className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <span className="text-[11px] sm:text-xs font-extrabold uppercase text-white truncate w-full">
-                  {!match.isHome ? 'MARINERS SC' : match.opponentName}
-                </span>
+                <div className="text-center sm:text-left">
+                  <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                    {!match.isHome ? 'MARINERS SC' : match.opponentName}
+                  </h4>
+                </div>
               </div>
 
-            </div>
-
-            {/* CTA Arrow */}
-            <div className="shrink-0">
-              <span className="px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-800 text-sky-400 text-xs font-bold uppercase flex items-center gap-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                Detail Laga <ArrowRight className="w-3.5 h-3.5" />
-              </span>
             </div>
 
           </Link>

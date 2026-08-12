@@ -30,11 +30,20 @@ export default function AdminPlayersPage() {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const normalizePos = (pos: string) => {
+    const p = pos?.toUpperCase();
+    if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
+    if (p === 'DF' || p === 'DEFENDER') return 'DEFENDER';
+    if (p === 'MF' || p === 'MIDFIELDER') return 'MIDFIELDER';
+    if (p === 'FW' || p === 'FORWARD') return 'FORWARD';
+    return p || 'FORWARD';
+  };
+
   // Form State - Default Photo Template is /playertemplate.jpeg
   const [formData, setFormData] = useState({
     name: '',
     number: '',
-    position: 'FW',
+    position: 'FORWARD',
     nationality: 'Indonesia',
     heightCm: '',
     weightKg: '',
@@ -234,7 +243,7 @@ export default function AdminPlayersPage() {
                 <th className="p-3">Gol / Assist</th>
                 <th className="p-3">Laga</th>
                 <th className="p-3">Status</th>
-                <th className="p-3 text-center">Bintang ⭐</th>
+                <th className="p-3 text-center">Pemain Beranda </th>
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
@@ -250,10 +259,10 @@ export default function AdminPlayersPage() {
                     />
                     <div>
                       <span className="font-bold text-white uppercase">{player.name}</span>
-                      {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold">(Bintang)</span>}
+                      {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold"></span>}
                     </div>
                   </td>
-                  <td className="p-3 font-bold text-sky-300">{player.position}</td>
+                  <td className="p-3 font-bold text-sky-300">{normalizePos(player.position)}</td>
                   <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
                   <td className="p-3">{player.appearances}</td>
                   <td className="p-3">
@@ -261,12 +270,12 @@ export default function AdminPlayersPage() {
                       {player.status}
                     </span>
                   </td>
-                  
-                  {/* TOMBOL BINTANG (FAVORIT) SETELAH TABEL STATUS */}
+
+                  {/* TOMBOL BINTANG (FAVORIT BERANDA) */}
                   <td className="p-3 text-center">
                     <button
                       onClick={() => toggleStar(player)}
-                      title={player.isCaptain ? 'Hapus dari Pemain Bintang' : 'Jadikan Pemain Bintang Beranda'}
+                      title={player.isCaptain ? 'Hapus dari Pemain Beranda' : 'Tampilkan di Pemain Beranda'}
                       className={`p-2 rounded-xl border transition-all ${
                         player.isCaptain
                           ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
@@ -383,10 +392,10 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   >
-                    <option value="GK">Penjaga Gawang (GK)</option>
-                    <option value="DF">Bek / Defender (DF)</option>
-                    <option value="MF">Gelandang / Midfielder (MF)</option>
-                    <option value="FW">Penyerang / Forward (FW)</option>
+                    <option value="GOALKEEPER">GOALKEEPER</option>
+                    <option value="DEFENDER">DEFENDER</option>
+                    <option value="MIDFIELDER">MIDFIELDER</option>
+                    <option value="FORWARD">FORWARD</option>
                   </select>
                 </div>
                 <div>
@@ -416,16 +425,6 @@ export default function AdminPlayersPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1">Biografi Singkat</label>
-                <textarea
-                  rows={3}
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
@@ -484,7 +483,7 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, isCaptain: e.target.checked })}
                     className="w-4 h-4 rounded text-amber-500"
                   />
-                  <span>Tampilkan di Pemain Bintang Beranda ⭐</span>
+                  <span>Tampilkan di Pemain Beranda ⭐</span>
                 </label>
               </div>
 

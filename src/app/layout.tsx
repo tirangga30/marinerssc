@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans, Oswald } from 'next/font/google';
 import './globals.css';
 import PublicShell from '@/components/PublicShell';
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-oswald',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Mariners SC - Website Resmi Klub Sepak Bola',
@@ -13,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
+    <html lang="id" className={`${jakarta.variable} ${oswald.variable}`}>
       <body className="bg-[#060b14] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
         <PublicShell>{children}</PublicShell>
       </body>

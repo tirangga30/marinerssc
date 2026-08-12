@@ -73,13 +73,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
           <div className="absolute bottom-[20%] left-1/2 w-2 h-2 bg-white/30 rounded-full -translate-x-1/2"></div>
         </div>
 
-        {/* Formation Header Badge */}
-        <div className="absolute top-4 left-4 z-10 glass-panel px-3 py-1.5 rounded-lg border border-sky-400/40 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-sky-400" />
-          <span className="text-xs font-bold tracking-wider text-sky-300 uppercase">
-            Formasi: {formation}
-          </span>
-        </div>
+
 
         {/* Starter Markers on Pitch */}
         {starters.map((lineup) => {
@@ -113,31 +107,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
         })}
       </div>
 
-      {/* Substitutes / Bench Section */}
-      {bench.length > 0 && (
-        <div className="glass-panel p-5 rounded-xl border border-slate-800">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-sky-400 mb-3">
-            Pemain Cadangan (Bench)
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {bench.map((b) => (
-              <Link
-                key={b.id}
-                href={`/players/${b.player.slug}`}
-                className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0">
-                  <img src={b.player.photoUrl || '/playertemplate.jpeg'} alt={b.player.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-slate-200 truncate">{b.player.name}</p>
-                  <p className="text-[10px] text-sky-400/90 font-mono">#{b.player.number} • {b.player.position}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

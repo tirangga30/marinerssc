@@ -38,18 +38,17 @@ export default async function MatchDetailPage({
 
       {/* Main Score Board Header - NO BOX AROUND LOGOS */}
       <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/30 text-center space-y-6 relative overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-xs font-bold text-sky-400 uppercase">
-          <span className="flex items-center gap-1.5">
-            <Trophy className="w-4 h-4" /> {match.competition}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-[10px] sm:text-xs font-bold uppercase">
+          <span className="text-sky-400">
+            {match.competition}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4" />
+          <span className="text-slate-400">
             {new Date(match.matchDate).toLocaleDateString('id-ID', {
               weekday: 'long',
               day: 'numeric',
-              month: 'long',
+              month: 'short',
               year: 'numeric',
-            })}
+            })} • {new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
           </span>
         </div>
 
@@ -70,10 +69,10 @@ export default async function MatchDetailPage({
           </div>
 
           {/* Score Box */}
-          <div className="space-y-2">
+          <div className="-mt-2 space-y-1">
             {match.status === 'finished' ? (
               <div>
-                <span className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
+                <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
                   Full Time
                 </span>
                 <div className="text-3xl sm:text-6xl font-black font-mono blue-gradient-text tracking-widest">
@@ -82,14 +81,14 @@ export default async function MatchDetailPage({
               </div>
             ) : (
               <div>
-                <p className="text-[10px] sm:text-xs text-sky-400 font-bold uppercase mt-2">Mendatang</p>
+                <p className="text-[10px] sm:text-xs text-sky-400 font-bold uppercase mb-1.5">Mendatang</p>
                 <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl bg-blue-600/30 text-sky-300 text-xl sm:text-3xl font-black border border-sky-400/40">
                   VS
                 </div>
               </div>
             )}
-            <p className="text-[10px] sm:text-xs text-slate-300 font-medium flex items-center justify-center gap-1 mt-2">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" /> {match.venue}
+            <p className="text-[10px] sm:text-xs text-slate-300 font-medium mt-1">
+              {match.venue}
             </p>
           </div>
 

@@ -144,16 +144,16 @@ export async function GET() {
 
     // 3. Insert Players
     const playersData = [
-      ['p1', 'Maarten Paes', 'maarten-paes', 1, 'GK', '1998-05-14', 'Indonesia', 191, 84, 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80', 'Kiper tembok kokoh Mariners FC', false, 'Active', 0, 0, 12, 1, 0],
-      ['p2', 'Jay Idzes', 'jay-idzes', 4, 'DF', '2000-06-02', 'Indonesia', 190, 82, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80', 'Bek tengah berkarisma tinggi', true, 'Active', 2, 1, 12, 2, 0],
-      ['p3', 'Rizky Ridho', 'rizky-ridho', 5, 'DF', '2001-11-21', 'Indonesia', 183, 75, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80', 'Defender serba bisa', false, 'Active', 1, 0, 11, 3, 0],
-      ['p4', 'Pratama Arhan', 'pratama-arhan', 12, 'DF', '2001-12-21', 'Indonesia', 172, 64, 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80', 'Bek kiri lincah lemparan jauh', false, 'Active', 1, 4, 10, 1, 0],
-      ['p5', 'Sandy Walsh', 'sandy-walsh', 6, 'DF', '1995-03-14', 'Indonesia', 185, 78, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80', 'Bek kanan berpengalaman Europe', false, 'Active', 1, 2, 10, 2, 0],
-      ['p6', 'Thom Haye', 'thom-haye', 19, 'MF', '1995-02-09', 'Indonesia', 187, 80, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Jenderal lapangan tengah The Professor', false, 'Active', 3, 6, 12, 2, 0],
-      ['p7', 'Marselino Ferdinan', 'marselino-ferdinan', 7, 'MF', '2004-09-09', 'Indonesia', 176, 67, 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80', 'Wonderkid dribel eksotik', false, 'Active', 5, 4, 12, 1, 0],
-      ['p8', 'Rafael Struick', 'rafael-struick', 9, 'FW', '2003-03-27', 'Indonesia', 187, 76, 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&auto=format&fit=crop&q=80', 'Penyerang tajam finisher dingin', false, 'Active', 6, 2, 12, 2, 0],
-      ['p9', 'Ramadhan Sananta', 'ramadhan-sananta', 11, 'FW', '2002-11-27', 'Indonesia', 182, 77, 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=600&auto=format&fit=crop&q=80', 'Striker haus gol target man', false, 'Active', 7, 1, 11, 1, 0],
-      ['p10', 'Ragnar Oratmangoen', 'ragnar-oratmangoen', 10, 'FW', '1998-01-21', 'Indonesia', 180, 74, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Winger kreatif Wak Haji', false, 'Active', 5, 5, 12, 0, 0],
+      ['p1', 'Maarten Paes', 'maarten-paes', 1, 'GOALKEEPER', '1998-05-14', 'Indonesia', 191, 84, 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80', 'Kiper tembok kokoh Mariners FC', false, 'Active', 0, 0, 12, 1, 0],
+      ['p2', 'Jay Idzes', 'jay-idzes', 4, 'DEFENDER', '2000-06-02', 'Indonesia', 190, 82, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80', 'Bek tengah berkarisma tinggi', true, 'Active', 2, 1, 12, 2, 0],
+      ['p3', 'Rizky Ridho', 'rizky-ridho', 5, 'DEFENDER', '2001-11-21', 'Indonesia', 183, 75, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80', 'Defender serba bisa', false, 'Active', 1, 0, 11, 3, 0],
+      ['p4', 'Pratama Arhan', 'pratama-arhan', 12, 'DEFENDER', '2001-12-21', 'Indonesia', 172, 64, 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80', 'Bek kiri lincah lemparan jauh', false, 'Active', 1, 4, 10, 1, 0],
+      ['p5', 'Sandy Walsh', 'sandy-walsh', 6, 'DEFENDER', '1995-03-14', 'Indonesia', 185, 78, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80', 'Bek kanan berpengalaman Europe', false, 'Active', 1, 2, 10, 2, 0],
+      ['p6', 'Thom Haye', 'thom-haye', 19, 'MIDFIELDER', '1995-02-09', 'Indonesia', 187, 80, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Jenderal lapangan tengah The Professor', false, 'Active', 3, 6, 12, 2, 0],
+      ['p7', 'Marselino Ferdinan', 'marselino-ferdinan', 7, 'MIDFIELDER', '2004-09-09', 'Indonesia', 176, 67, 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80', 'Wonderkid dribel eksotik', false, 'Active', 5, 4, 12, 1, 0],
+      ['p8', 'Rafael Struick', 'rafael-struick', 9, 'FORWARD', '2003-03-27', 'Indonesia', 187, 76, 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&auto=format&fit=crop&q=80', 'Penyerang tajam finisher dingin', false, 'Active', 6, 2, 12, 2, 0],
+      ['p9', 'Ramadhan Sananta', 'ramadhan-sananta', 11, 'FORWARD', '2002-11-27', 'Indonesia', 182, 77, 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=600&auto=format&fit=crop&q=80', 'Striker haus gol target man', false, 'Active', 7, 1, 11, 1, 0],
+      ['p10', 'Ragnar Oratmangoen', 'ragnar-oratmangoen', 10, 'FORWARD', '1998-01-21', 'Indonesia', 180, 74, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80', 'Winger kreatif Wak Haji', false, 'Active', 5, 5, 12, 0, 0],
     ];
 
     for (const p of playersData) {
