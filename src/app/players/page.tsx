@@ -27,6 +27,7 @@ export default async function PlayersPage() {
   let players: any[] = [];
   try {
     players = await prisma.player.findMany({
+      where: { isGuest: false },
       orderBy: { number: 'asc' },
     });
   } catch (error) {

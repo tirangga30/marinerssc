@@ -29,6 +29,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
         status: data.status || 'Active',
+        isGuest: data.isGuest !== undefined ? Boolean(data.isGuest) : undefined,
         goals: parseInt(data.goals || 0),
         assists: parseInt(data.assists || 0),
         appearances: parseInt(data.appearances || 0),

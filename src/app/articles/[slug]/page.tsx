@@ -26,16 +26,16 @@ export default async function ArticleDetailPage({
       
 
 
-      <article className="glass-panel p-6 sm:p-10 rounded-3xl border border-amber-500/30 space-y-8">
+      <article className="glass-panel p-6 sm:p-10 rounded-3xl border border-sky-400/30 space-y-8">
         
         {/* Category & Meta */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-md bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow">
+            <span className="px-3 py-1 rounded-md bg-sky-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow">
               {article.category}
             </span>
             <span className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <Calendar className="w-3.5 h-3.5 text-sky-400" />
               {new Date(article.publishedAt).toLocaleDateString('id-ID', {
                 weekday: 'long',
                 day: 'numeric',
@@ -45,7 +45,7 @@ export default async function ArticleDetailPage({
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black uppercase text-slate-100 gold-gradient-text leading-tight">
+          <h1 className="text-2xl sm:text-4xl font-black uppercase text-slate-100 blue-gradient-text leading-tight">
             {article.title}
           </h1>
         </div>
@@ -64,7 +64,7 @@ export default async function ArticleDetailPage({
           {article.content.split('\n\n').map((paragraph, idx) => {
             if (paragraph.startsWith('### ')) {
               return (
-                <h3 key={idx} className="text-xl font-bold uppercase text-amber-400 pt-4 border-b border-slate-800 pb-2">
+                <h3 key={idx} className="text-xl font-bold uppercase text-sky-400 pt-4 border-b border-slate-800 pb-2">
                   {paragraph.replace('### ', '')}
                 </h3>
               );
@@ -78,7 +78,7 @@ export default async function ArticleDetailPage({
             }
             if (paragraph.startsWith('> ')) {
               return (
-                <blockquote key={idx} className="p-4 rounded-xl glass-panel-gold border-l-4 border-amber-500 text-amber-300 italic">
+                <blockquote key={idx} className="p-4 rounded-xl glass-panel border-l-4 border-sky-500 text-sky-300 italic">
                   {paragraph.replace('> ', '')}
                 </blockquote>
               );

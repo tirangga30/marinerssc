@@ -73,25 +73,27 @@ export default function Navbar() {
             </nav>
 
             {/* Right Action Buttons */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link
-                href="/"
-                target="_blank"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-bold uppercase transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Lihat Web Publik
-              </Link>
-              <form action="/api/auth/logout" method="POST">
-                <button
-                  type="submit"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-xs font-bold uppercase transition-colors"
+            {pathname === '/admin/dashboard' && (
+              <div className="hidden md:flex items-center gap-3">
+                <Link
+                  href="/"
+                  target="_blank"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-bold uppercase transition-colors"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  Keluar
-                </button>
-              </form>
-            </div>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Lihat Web Publik
+                </Link>
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-xs font-bold uppercase transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Keluar
+                  </button>
+                </form>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
@@ -128,24 +130,26 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            <div className="pt-2 flex items-center gap-2">
-              <Link
-                href="/"
-                target="_blank"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 text-sky-300 text-xs font-bold uppercase border border-slate-700"
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Web Publik
-              </Link>
-              <form action="/api/auth/logout" method="POST" className="flex-1">
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-bold uppercase border border-red-500/30"
+            {pathname === '/admin/dashboard' && (
+              <div className="pt-2 flex items-center gap-2">
+                <Link
+                  href="/"
+                  target="_blank"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 text-sky-300 text-xs font-bold uppercase border border-slate-700"
                 >
-                  <LogOut className="w-3.5 h-3.5" /> Keluar
-                </button>
-              </form>
-            </div>
+                  <ExternalLink className="w-3.5 h-3.5" /> Web Publik
+                </Link>
+                <form action="/api/auth/logout" method="POST" className="flex-1">
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-bold uppercase border border-red-500/30"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Keluar
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         )}
       </header>

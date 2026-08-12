@@ -9,6 +9,8 @@ interface LineupPlayer {
   isStarter: boolean;
   pitchPosition: string;
   positionName: string;
+  x?: number | null;
+  y?: number | null;
   player: {
     id: string;
     name: string;
@@ -81,8 +83,14 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
 
         {/* Starter Markers on Pitch */}
         {starters.map((lineup) => {
-          const coords = positionCoordinates[lineup.pitchPosition] || { top: 50, left: 50 };
+          let coords = { top: 50, left: 50 };
+          if (lineup.x != null && lineup.y != null) {
+            coords = { top: lineup.y, left: lineup.x };
+          } else {
+            coords = positionCoordinates[lineup.pitchPosition] || { top: 50, left: 50 };
+          }
           const rawEvts = events.filter((e) => e.playerId === lineup.player.id);
+          const assistEvts = events.filter((e) => e.assistPlayerId === lineup.player.id && e.type !== 'sub');
 
           // Deduplicate card events: 1st yellow + 2nd yellow red card
           const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
@@ -93,6 +101,9 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
             if (['goal', 'own_goal', 'penalty', 'assist', 'red_card', 'sub'].includes(e.type)) {
               playerEvts.push(e);
             }
+          });
+          assistEvts.forEach(() => {
+            playerEvts.push({ type: 'assist' });
           });
 
           // Check if this starter was subbed out (their id appears as assistPlayerId in a sub event)

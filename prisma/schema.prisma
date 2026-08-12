@@ -31,6 +31,8 @@ model Player {
   bio            String
   isCaptain      Boolean      @default(false)
   status         String       @default("Active") // Active, Injured
+  isGuest        Boolean      @default(false)
+  guestMatchId   String?
   goals          Int          @default(0)
   assists        Int          @default(0)
   appearances    Int          @default(0)
@@ -57,6 +59,8 @@ model FootballMatch {
   awayScore    Int?
   formation    String        @default("4-3-3")
   summary      String?
+  duration     Int           @default(90)
+  extraTime    Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -71,6 +75,8 @@ model MatchLineup {
   isStarter     Boolean       @default(true)
   pitchPosition String        // e.g. GK, RB, CB1, CB2, LB, CM1, CM2, CAM, RW, ST, LW, SUB
   positionName  String        // e.g. Goalkeeper, Right Back, Striker
+  x             Float?
+  y             Float?
 
   match         FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player        Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)

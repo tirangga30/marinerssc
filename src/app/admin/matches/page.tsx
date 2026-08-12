@@ -185,12 +185,12 @@ export default function AdminMatchesPage() {
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
-                <th className="p-3">Tanggal Laga</th>
-                <th className="p-3">Lawan & Logo (Tanpa Box)</th>
+                <th className="p-3">Tanggal</th>
+                <th className="p-3">Lawan</th>
                 <th className="p-3">Status / Skor</th>
                 <th className="p-3">Lokasi</th>
-                <th className="p-3">Formasi Taktis</th>
-                <th className="p-3 text-right">Aksi & Lineup Builder</th>
+                <th className="p-3">Formasi</th>
+                <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
@@ -222,7 +222,7 @@ export default function AdminMatchesPage() {
                       href={`/admin/matches/${m.id}/lineup`}
                       className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
                     >
-                      <Settings2 className="w-3.5 h-3.5" /> Lineup Builder
+                      <Settings2 className="w-3.5 h-3.5" /> Match Setup
                     </Link>
                     <button
                       onClick={() => openEditModal(m)}
@@ -300,7 +300,7 @@ export default function AdminMatchesPage() {
                     value={formData.opponentName}
                     onChange={(e) => setFormData({ ...formData, opponentName: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="Persija Jakarta"
+                    placeholder="Input Tim Lawan"
                   />
                 </div>
                 <div>
@@ -313,46 +313,15 @@ export default function AdminMatchesPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Status Laga</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                  >
-                    <option value="scheduled">Mendatang (Scheduled)</option>
-                    <option value="finished">Selesai (Finished)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Formasi Utama</label>
+                <div className="sm:col-span-2">
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Lokasi Pertandingan (Venue)</label>
                   <input
                     type="text"
-                    value={formData.formation}
-                    onChange={(e) => setFormData({ ...formData, formation: e.target.value })}
+                    required
+                    value={formData.venue}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="4-3-3"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tuan Rumah (Home)</label>
-                  <input
-                    type="number"
-                    value={formData.homeScore}
-                    onChange={(e) => setFormData({ ...formData, homeScore: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tamu (Away)</label>
-                  <input
-                    type="number"
-                    value={formData.awayScore}
-                    onChange={(e) => setFormData({ ...formData, awayScore: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
+                    placeholder="Contoh: Stadion Gelora Samudra, Jakarta"
                   />
                 </div>
               </div>

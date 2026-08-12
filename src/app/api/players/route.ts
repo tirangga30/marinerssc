@@ -3,9 +3,22 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const matchId = searchParams.get('matchId');
+    const guestsOnly = searchParams.get('guestsOnly') === 'true';
+
+    let whereClause: any = { isGuest: false };
+
+    if (guestsOnly) {
+      whereClause = { isGuest: true };
+    } else if (matchId) {
+      whereClause = {}; // Ambil semua pemain agar dapat memisahkan skuad utama, tamu match ini, dan rekomendasi tamu match lain
+    }
+
     const players = await prisma.player.findMany({
+      where: whereClause,
       orderBy: { number: 'asc' },
     });
     return NextResponse.json(players);
@@ -22,13 +35,29 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (data.isGuest) {
+      slug = `${slug}-guest-${Date.now()}`;
+    }
+
+    const requestedNumber = parseInt(data.number);
+    const existingPlayer = await prisma.player.findUnique({ where: { number: requestedNumber } });
+    let finalNumber = requestedNumber;
+
+    if (existingPlayer) {
+      if (data.isGuest) {
+        const maxPlayer = await prisma.player.findFirst({ orderBy: { number: 'desc' } });
+        finalNumber = (maxPlayer?.number || 99) + 1;
+      } else {
+        return NextResponse.json({ error: `Nomor punggung ${requestedNumber} sudah digunakan oleh pemain lain.` }, { status: 400 });
+      }
+    }
 
     const player = await prisma.player.create({
       data: {
         name: data.name,
         slug,
-        number: parseInt(data.number),
+        number: finalNumber,
         position: data.position,
         nationality: data.nationality || 'Indonesia',
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
@@ -37,6 +66,8 @@ export async function POST(req: Request) {
         bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
         status: data.status || 'Active',
+        isGuest: Boolean(data.isGuest),
+        guestMatchId: data.guestMatchId || null,
         goals: parseInt(data.goals || 0),
         assists: parseInt(data.assists || 0),
         appearances: parseInt(data.appearances || 0),

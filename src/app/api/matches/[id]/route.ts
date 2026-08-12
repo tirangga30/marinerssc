@@ -22,6 +22,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Pertandingan tidak ditemukan' }, { status: 404 });
     }
 
+    const allMatches = await prisma.footballMatch.findMany({
+      orderBy: { matchDate: 'asc' },
+      select: { id: true },
+    });
+    const matchdayIndex = allMatches.findIndex(m => m.id === id) + 1;
+    match.competition = `Matchday ${matchdayIndex}`;
+
     return NextResponse.json(match);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Gagal mengambil data laga' }, { status: 500 });
@@ -51,6 +58,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         homeScore: data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
         awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
         formation: data.formation || '4-3-3',
+        duration: data.duration !== undefined ? parseInt(data.duration) : 90,
+        extraTime: data.extraTime !== undefined ? parseInt(data.extraTime) : 0,
         summary: data.summary,
       },
     });

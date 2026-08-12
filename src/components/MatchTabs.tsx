@@ -56,13 +56,15 @@ interface MatchTabsProps {
     awayScore: number | null;
     formation: string;
     summary: string | null;
+    duration?: number;
+    extraTime?: number;
     lineups: LineupItem[];
     events: EventItem[];
   };
 }
 
 export default function MatchTabs({ match }: MatchTabsProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('lineup');
 
   const starters = match.lineups.filter((l) => l.isStarter);
   const bench = match.lineups.filter((l) => !l.isStarter);
@@ -128,7 +130,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   }));
 
   const timelineYellowCounts: Record<string, number> = {};
-  const displayTimelineEvents = match.events.map((e) => {
+  const displayTimelineEvents: any[] = match.events.map((e) => {
     if (e.type === 'yellow_card' && e.player?.id) {
       timelineYellowCounts[e.player.id] = (timelineYellowCounts[e.player.id] || 0) + 1;
       if (timelineYellowCounts[e.player.id] >= 2) {
@@ -137,6 +139,18 @@ export default function MatchTabs({ match }: MatchTabsProps) {
     }
     return e;
   });
+
+  const dur = match.duration || 90;
+  const htMinute = Math.floor(dur / 2);
+  const ftMinute = dur;
+
+  displayTimelineEvents.push({ id: 'HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
+  if (match.status === 'finished') {
+    displayTimelineEvents.push({ id: 'FT-MARKER', minute: ftMinute, type: 'fulltime', isSystem: true });
+  }
+
+  // Sort timeline events ascending by minute
+  displayTimelineEvents.sort((a, b) => a.minute - b.minute);
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -258,10 +272,20 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                               <i className="fa-solid fa-right-left text-sky-400 shrink-0" /> Pergantian Pemain
                             </>
                           )}
+                          {event.type === 'halftime' && (
+                            <span className="text-sky-300">HALF-TIME</span>
+                          )}
+                          {event.type === 'fulltime' && (
+                            <span className="text-sky-300">FULL-TIME</span>
+                          )}
                         </span>
                       </div>
 
-                      {event.type === 'sub' ? (
+                      {event.isSystem ? (
+                        <div className="text-xs sm:text-sm font-bold text-slate-200">
+                          {event.type === 'halftime' ? 'Babak Pertama Berakhir' : 'Pertandingan Selesai'}
+                        </div>
+                      ) : event.type === 'sub' ? (
                         <div className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5 flex-wrap">
                           <span className="text-green-400">{event.player.name}</span>
                           <i className="fa-solid fa-right-left text-sky-400 text-[10px]" />
@@ -275,7 +299,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         </div>
                       )}
 
-                      {event.type !== 'sub' && event.assistPlayer && (
+                      {!event.isSystem && event.type !== 'sub' && event.assistPlayer && (
                         <div className="text-[10px] sm:text-xs text-slate-400 font-medium flex items-center gap-1">
                           <span className="w-3.5 h-3.5 rounded-full bg-amber-400/20 border border-amber-400/60 text-amber-400 font-mono font-black text-[9px] inline-flex items-center justify-center">A</span>
                           <span>Assist:</span>

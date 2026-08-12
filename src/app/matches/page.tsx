@@ -37,7 +37,7 @@ function MatchCard({ match }: { match: any }) {
             {new Date(match.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
           <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-            {match.competition || 'Matchday 1'}
+            Matchday {match.matchday}
           </span>
         </span>
       </div>
@@ -64,7 +64,7 @@ function MatchCard({ match }: { match: any }) {
         {/* Score / VS Badge */}
         <div className="space-y-0.5 sm:space-y-2">
           <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-            {new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+            {match.status === 'finished' ? 'FULL TIME' : `${new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
           </p>
           {match.status === 'finished' ? (
             <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
@@ -113,13 +113,19 @@ export default async function MatchesPage({
     orderBy: { matchDate: 'asc' },
   });
 
+  // Hitung Matchday (chronological index)
+  const matchesWithMatchday = allMatches.map((m, index) => ({
+    ...m,
+    matchday: index + 1
+  }));
+
   // Upcoming: terdekat dulu (ASC)
-  const upcomingMatches = allMatches
+  const upcomingMatches = matchesWithMatchday
     .filter((m) => m.status === 'scheduled')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
   // Finished: terbaru dulu (DESC)
-  const finishedMatches = allMatches
+  const finishedMatches = matchesWithMatchday
     .filter((m) => m.status === 'finished')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 

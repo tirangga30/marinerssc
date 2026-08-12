@@ -11,12 +11,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id: matchId } = await params;
-    const { lineups, events, formation } = await req.json();
+    const { lineups, events, formation, status, homeScore, awayScore, duration } = await req.json();
 
-    if (formation) {
+    const updateData: any = {};
+    if (formation !== undefined) updateData.formation = formation;
+    if (status !== undefined) updateData.status = status;
+    if (homeScore !== undefined) updateData.homeScore = homeScore === '' ? null : parseInt(homeScore);
+    if (awayScore !== undefined) updateData.awayScore = awayScore === '' ? null : parseInt(awayScore);
+    if (duration !== undefined) updateData.duration = parseInt(duration);
+
+    if (Object.keys(updateData).length > 0) {
       await prisma.footballMatch.update({
         where: { id: matchId },
-        data: { formation },
+        data: updateData,
       });
     }
 
@@ -33,6 +40,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           isStarter: Boolean(l.isStarter),
           pitchPosition: l.pitchPosition || 'SUB',
           positionName: l.positionName || 'Substitute',
+          x: l.x !== undefined ? parseFloat(l.x) : null,
+          y: l.y !== undefined ? parseFloat(l.y) : null,
         })),
       });
     }

@@ -47,7 +47,7 @@ export default async function AdminDashboardPage() {
           <h1 className="text-3xl font-black uppercase text-white blue-gradient-text">
             Selamat Datang, {session.email}
           </h1>
-          <p className="text-xs text-slate-300">© 2026 Mariners Soccer Club. All Rights Reserved.</p>
+          <p className="text-xs text-slate-300">© 2026 NY Company. All Rights Reserved.</p>
         </div>
 
         <form action="/api/auth/logout" method="POST">

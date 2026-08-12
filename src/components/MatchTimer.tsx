@@ -62,44 +62,44 @@ export default function MatchTimer({ targetDate, status }: MatchTimerProps) {
       <div className="flex items-center justify-center gap-1.5 sm:gap-3">
         {/* Days */}
         <div className="flex flex-col items-center">
-          <div className="w-10 sm:w-14 h-9 sm:h-12 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
-            <span className="text-sm sm:text-xl font-black font-mono text-white">
+          <div className="w-12 sm:w-20 h-10 sm:h-16 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
+            <span className="text-base sm:text-3xl font-black font-mono text-white">
               {String(timeLeft.days).padStart(2, '0')}
             </span>
           </div>
           <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Hari</span>
         </div>
 
-        <span className="text-sky-400 font-bold text-sm sm:text-xl mb-3">:</span>
+        <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
 
         {/* Hours */}
         <div className="flex flex-col items-center">
-          <div className="w-10 sm:w-14 h-9 sm:h-12 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
-            <span className="text-sm sm:text-xl font-black font-mono text-white">
+          <div className="w-12 sm:w-20 h-10 sm:h-16 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
+            <span className="text-base sm:text-3xl font-black font-mono text-white">
               {String(timeLeft.hours).padStart(2, '0')}
             </span>
           </div>
           <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Jam</span>
         </div>
 
-        <span className="text-sky-400 font-bold text-sm sm:text-xl mb-3">:</span>
+        <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
 
         {/* Minutes */}
         <div className="flex flex-col items-center">
-          <div className="w-10 sm:w-14 h-9 sm:h-12 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
-            <span className="text-sm sm:text-xl font-black font-mono text-white">
+          <div className="w-12 sm:w-20 h-10 sm:h-16 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
+            <span className="text-base sm:text-3xl font-black font-mono text-white">
               {String(timeLeft.minutes).padStart(2, '0')}
             </span>
           </div>
           <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Menit</span>
         </div>
 
-        <span className="text-sky-400 font-bold text-sm sm:text-xl mb-3">:</span>
+        <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
 
         {/* Seconds */}
         <div className="flex flex-col items-center">
-          <div className="w-10 sm:w-14 h-9 sm:h-12 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
-            <span className="text-sm sm:text-xl font-black font-mono blue-gradient-text">
+          <div className="w-12 sm:w-20 h-10 sm:h-16 rounded-xl bg-slate-900/90 border border-sky-400/30 flex items-center justify-center shadow-inner">
+            <span className="text-base sm:text-3xl font-black font-mono blue-gradient-text">
               {String(timeLeft.seconds).padStart(2, '0')}
             </span>
           </div>

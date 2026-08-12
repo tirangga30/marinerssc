@@ -16,6 +16,7 @@ interface Player {
   bio: string;
   isCaptain: boolean;
   status: string;
+  isGuest: boolean;
   goals: number;
   assists: number;
   appearances: number;
@@ -25,6 +26,7 @@ interface Player {
 
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [guestPlayers, setGuestPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -51,6 +53,7 @@ export default function AdminPlayersPage() {
     bio: '',
     isCaptain: false,
     status: 'Active',
+    isGuest: false,
     goals: '0',
     assists: '0',
     appearances: '0',
@@ -63,6 +66,10 @@ export default function AdminPlayersPage() {
       const res = await fetch('/api/players');
       const data = await res.json();
       setPlayers(data);
+
+      const guestRes = await fetch('/api/players?guestsOnly=true');
+      const guestData = await guestRes.json();
+      setGuestPlayers(guestData);
     } catch {
       console.error('Gagal mengambil pemain');
     } finally {
@@ -113,6 +120,7 @@ export default function AdminPlayersPage() {
       bio: '',
       isCaptain: false,
       status: 'Active',
+      isGuest: false,
       goals: '0',
       assists: '0',
       appearances: '0',
@@ -120,6 +128,33 @@ export default function AdminPlayersPage() {
       redCards: '0',
     });
     setShowModal(true);
+  };
+
+  const handleSelectGuest = (guestId: string) => {
+    const guest = guestPlayers.find(g => g.id === guestId);
+    if (guest) {
+      setEditingPlayer(guest);
+      setFormData({
+        name: guest.name,
+        number: guest.number.toString(),
+        position: guest.position,
+        nationality: guest.nationality || 'Indonesia',
+        heightCm: guest.heightCm?.toString() || '',
+        weightKg: guest.weightKg?.toString() || '',
+        photoUrl: guest.photoUrl || '/playertemplate.png',
+        bio: guest.bio || '',
+        isCaptain: guest.isCaptain || false,
+        status: guest.status || 'Active',
+        isGuest: false,
+        goals: guest.goals.toString(),
+        assists: guest.assists.toString(),
+        appearances: guest.appearances.toString(),
+        yellowCards: guest.yellowCards.toString(),
+        redCards: guest.redCards.toString(),
+      });
+    } else {
+      openAddModal(); // Reset form if empty string is selected
+    }
   };
 
   const openEditModal = (player: Player) => {
@@ -135,6 +170,7 @@ export default function AdminPlayersPage() {
       bio: player.bio,
       isCaptain: player.isCaptain,
       status: player.status,
+      isGuest: false,
       goals: player.goals.toString(),
       assists: player.assists.toString(),
       appearances: player.appearances.toString(),
@@ -262,7 +298,10 @@ export default function AdminPlayersPage() {
                       {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold"></span>}
                     </div>
                   </td>
-                  <td className="p-3 font-bold text-sky-300">{normalizePos(player.position)}</td>
+                  <td className="p-3 font-bold text-sky-300">
+                    {normalizePos(player.position)}
+                    {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Tamu</span>}
+                  </td>
                   <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
                   <td className="p-3">{player.appearances}</td>
                   <td className="p-3">
@@ -286,7 +325,25 @@ export default function AdminPlayersPage() {
                     </button>
                   </td>
 
-                  <td className="p-3 text-right space-x-2">
+                  <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
+                    {player.isGuest && (
+                      <button
+                        onClick={async () => {
+                          if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
+                            await fetch('/api/players/' + player.id, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ isGuest: false })
+                            });
+                            fetchPlayers();
+                          }
+                        }}
+                        title="Promosikan ke Skuad Utama"
+                        className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30"
+                      >
+                        <Star className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(player)}
                       className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
@@ -312,18 +369,34 @@ export default function AdminPlayersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
           <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-black uppercase text-sky-400">
-                {editingPlayer ? 'Edit Data Pemain' : 'Tambah Pemain Baru'}
-              </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
-                <X className="w-6 h-6" />
+              <h2 className="text-xl font-black uppercase text-white tracking-wide">
+                {editingPlayer ? 'Edit Pemain' : 'Tambah Pemain Baru'}
+              </h2>
+              <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              
-              {/* UPLOAD FOTO SECTION */}
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
+              {!editingPlayer && guestPlayers.length > 0 && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                  <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Tamu (Opsional)</label>
+                  <p className="text-xs text-amber-200/60 mb-2">Pilih pemain tamu untuk dipromosikan ke skuad utama secara permanen.</p>
+                  <select 
+                    onChange={(e) => handleSelectGuest(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-amber-400 outline-none text-sm"
+                  >
+                    <option value="">-- Buat Baru (Bukan dari Tamu) --</option>
+                    {guestPlayers.map(g => (
+                      <option key={g.id} value={g.id}>{g.name} (#{g.number})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                {/* Photo Upload Section */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-3">
                 <label className="font-bold text-sky-300 uppercase block">Foto Pemain (Direct Upload)</label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
@@ -427,54 +500,6 @@ export default function AdminPlayersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Gol</label>
-                  <input
-                    type="number"
-                    value={formData.goals}
-                    onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Assist</label>
-                  <input
-                    type="number"
-                    value={formData.assists}
-                    onChange={(e) => setFormData({ ...formData, assists: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Laga</label>
-                  <input
-                    type="number"
-                    value={formData.appearances}
-                    onChange={(e) => setFormData({ ...formData, appearances: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Kartu Kuning</label>
-                  <input
-                    type="number"
-                    value={formData.yellowCards}
-                    onChange={(e) => setFormData({ ...formData, yellowCards: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Kartu Merah</label>
-                  <input
-                    type="number"
-                    value={formData.redCards}
-                    onChange={(e) => setFormData({ ...formData, redCards: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-              </div>
-
               <div className="flex items-center gap-6 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-400">
                   <input
@@ -503,7 +528,8 @@ export default function AdminPlayersPage() {
                   <Save className="w-4 h-4 text-blue-600" /> Simpan Pemain
                 </button>
               </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}

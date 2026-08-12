@@ -22,9 +22,14 @@ export default async function HomePage() {
   let featuredPlayers: any[] = [];
 
   try {
-    matches = await prisma.footballMatch.findMany({
+    const rawMatches = await prisma.footballMatch.findMany({
       orderBy: { matchDate: 'asc' },
     });
+
+    matches = rawMatches.map((m: any, idx: number) => ({
+      ...m,
+      matchday: idx + 1
+    }));
 
     articles = await prisma.article.findMany({
       orderBy: { publishedAt: 'desc' },
@@ -138,7 +143,7 @@ export default async function HomePage() {
                 </span>
               )}
               <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                {nextMatch?.competition || 'Matchday 1'}
+                Matchday {nextMatch?.matchday || 1}
               </span>
             </span>
           </div>
@@ -165,7 +170,7 @@ export default async function HomePage() {
                 {/* Score / VS Badge */}
                 <div className="space-y-0.5 sm:space-y-2">
                   <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                    {new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                    {nextMatch.status === 'finished' ? 'FULL TIME' : `${new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
                   </p>
                   {nextMatch.status === 'finished' ? (
                     <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
@@ -246,7 +251,7 @@ export default async function HomePage() {
                             {new Date(m.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                           <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                            {m.competition || 'Matchday 1'}
+                            Matchday {m.matchday}
                           </span>
                         </span>
                       </div>
@@ -275,7 +280,7 @@ export default async function HomePage() {
                     {/* Score */}
                     <div className="space-y-0.5 sm:space-y-2">
                       <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                        {new Date(m.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                        FULL TIME
                       </p>
                       <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                         {m.homeScore} : {m.awayScore}
