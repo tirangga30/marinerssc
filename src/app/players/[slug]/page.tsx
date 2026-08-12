@@ -7,23 +7,9 @@ import { Oswald } from 'next/font/google';
 
 const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
-/* Yellow 2D soccer ball icon */
+/* FontAwesome soccer ball icon */
 const BallIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
-    <circle cx="50" cy="50" r="50" fill="#facc15" />
-    {/* Center pentagon */}
-    <polygon points="50,30 66,42 60,62 40,62 34,42" fill="#111827" />
-    {/* Top */}
-    <polygon points="50,4 59,18 50,30 41,18" fill="#111827" />
-    {/* Top-right */}
-    <polygon points="78,16 82,34 66,42 61,26" fill="#111827" />
-    {/* Bottom-right */}
-    <polygon points="84,66 72,82 60,72 60,62 74,56" fill="#111827" />
-    {/* Bottom-left */}
-    <polygon points="16,66 26,82 40,72 40,62 28,56" fill="#111827" />
-    {/* Top-left */}
-    <polygon points="22,16 39,26 34,42 18,34" fill="#111827" />
-  </svg>
+  <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" style={{ fontSize: `${size}px` }} />
 );
 
 export const dynamic = 'force-dynamic';
@@ -64,9 +50,11 @@ export default async function PlayerDetailPage({
       lineups: {
         include: { match: true },
         orderBy: { match: { matchDate: 'desc' } },
-        take: 6,
       },
       events: {
+        include: { match: true },
+      },
+      assistedEvents: {
         include: { match: true },
       },
     },
@@ -74,9 +62,23 @@ export default async function PlayerDetailPage({
 
   if (!player) notFound();
 
-  const recentMatches = player.lineups.filter(
-    (l) => l.match.status === 'finished'
+  const finishedLineups = (player.lineups || []).filter(
+    (l: any) => l.match.status === 'finished'
   );
+  const recentMatches = finishedLineups.slice(0, 6);
+
+  // Dynamic accurate season statistics calculations across all finished matches (Excluding own_goals!)
+  const totalGoals = Math.max(
+    player.goals,
+    (player.events || []).filter((e: any) => (e.type === 'goal' || e.type === 'penalty') && e.match?.status === 'finished').length
+  );
+  const totalAssists = Math.max(
+    player.assists,
+    (player.events || []).filter((e: any) => e.type === 'assist').length + (player.assistedEvents || []).length
+  );
+  const totalAppearances = Math.max(player.appearances, finishedLineups.length);
+  const totalYellowCards = Math.max(player.yellowCards, (player.events || []).filter((e: any) => e.type === 'yellow_card').length);
+  const totalRedCards = Math.max(player.redCards, (player.events || []).filter((e: any) => e.type === 'red_card').length);
 
   const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
   const specBg = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' };
@@ -84,68 +86,51 @@ export default async function PlayerDetailPage({
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
 
-      {/* Back */}
-      <Link
-        href="/players"
-        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-sky-400 transition-colors font-semibold group"
-      >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        Kembali ke Daftar Pemain
-      </Link>
-
       {/* ═══════════════════════════════════════════════════ */}
       {/* PROFILE CARD                                        */}
       {/* MOBILE: centered photo top, info below              */}
       {/* DESKTOP: photo left, info right                     */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="rounded-2xl overflow-hidden shadow-2xl" style={panelBg}>
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* PROFILE CARD & PHOTO                                */}
+      {/* Format: Full Photo Box with Overlay (Same as homepage) */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* UNIFIED PROFILE CARD & SPECS                       */}
+      {/* Photo on top with smooth gradient background below */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="rounded-2xl sm:rounded-3xl overflow-hidden border border-sky-400/20 shadow-2xl bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526]">
+        {/* Top Photo Box (Portrait Ratio) */}
+        <div className="group relative h-80 sm:h-[500px] overflow-hidden flex flex-col justify-end">
+          {/* Full Photo */}
+          <img
+            src={player.photoUrl || '/playertemplate.jpeg'}
+            alt={player.name}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
+          
+          {/* Soft Black Gradient Overlay at Bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-[#060b14] via-[#060b14]/65 to-transparent pointer-events-none" />
 
-        {/* ── MOBILE layout (flex-col, centered) ── */}
-        <div className="flex flex-col items-center pt-6 pb-5 px-4 sm:hidden">
-          {/* Photo */}
-          <div className="relative w-28 h-28 rounded-2xl overflow-hidden mb-4 shadow-xl"
-            style={{ border: '2px solid rgba(255,255,255,0.1)' }}>
-            <img
-              src={player.photoUrl}
-              alt={player.name}
-              className="w-full h-full object-cover object-top"
-            />
-            {player.isCaptain && (
-              <div
-                className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-black text-white uppercase"
-                style={{ background: '#2563eb' }}
-              >
-                C
-              </div>
-            )}
-          </div>
-
-          {/* Badges */}
-          <div className="flex items-center gap-2 mb-3">
-            <span
-              className="px-2.5 py-1 rounded text-xs font-black"
-              style={{ background: '#f59e0b', color: '#0f172a' }}
-            >
-              #{player.number}
+          {/* Bottom Info: Large Number alongside Name & Position */}
+          <div className="relative z-10 p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
+            <span className="text-3xl sm:text-5xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
+              {player.number}
             </span>
-            <span
-              className="px-2.5 py-1 rounded text-xs font-black text-white uppercase"
-              style={{ background: '#1d4ed8' }}
-            >
-              {getPositionLabel(player.position)}
-            </span>
+            <div className="min-w-0 space-y-0.5 sm:space-y-1">
+              <h1 className="text-base sm:text-2xl md:text-3xl font-black text-white uppercase truncate leading-tight">
+                {player.name}
+              </h1>
+              <p className="text-[9px] sm:text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none">
+                {getPositionLabel(player.position)}
+              </p>
+            </div>
           </div>
+        </div>
 
-          {/* Name */}
-          <h1 className="text-2xl font-black uppercase text-white text-center leading-tight tracking-tight mb-1">
-            {player.name}
-          </h1>
-          <p className="text-sm font-bold mb-4" style={{ color: '#38bdf8' }}>
-            Mariners SC #{player.number}
-          </p>
-
-          {/* Physical specs 2×2 */}
-          <div className="grid grid-cols-2 gap-2 w-full">
+        {/* Integrated Physical Specs Panel (Seamless without border line) */}
+        <div className="p-4 sm:p-6 bg-gradient-to-b from-[#060b14] via-[#091222]/80 to-[#0a1526]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
             {[
               {
                 label: 'Tanggal Lahir',
@@ -156,96 +141,16 @@ export default async function PlayerDetailPage({
                   : '—',
               },
               { label: 'Kewarganegaraan', value: player.nationality || 'Indonesia' },
-              {
-                label: 'Tinggi Badan',
-                value: player.heightCm ? `${player.heightCm} cm` : '—',
-              },
-              {
-                label: 'Berat Badan',
-                value: player.weightKg ? `${player.weightKg} kg` : '—',
-              },
+              { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
+              { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
             ].map((item) => (
-              <div key={item.label} className="rounded-lg px-3 py-2.5" style={specBg}>
-                <span
-                  className="block text-[9px] font-bold uppercase tracking-wider mb-1"
-                  style={{ color: '#64748b' }}
-                >
+              <div key={item.label} className="rounded-xl p-3 sm:p-4 bg-slate-900/80 border border-slate-800/80 shadow-inner">
+                <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   {item.label}
                 </span>
-                <span className="text-sm font-extrabold text-slate-100">{item.value}</span>
+                <span className="text-xs sm:text-base font-extrabold text-white">{item.value}</span>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* ── DESKTOP layout (photo left, info right) ── */}
-        <div className="hidden sm:flex gap-0">
-          {/* Photo */}
-          <div className="relative shrink-0 w-48" style={{ minHeight: '220px' }}>
-            <img
-              src={player.photoUrl}
-              alt={player.name}
-              className="w-full h-full object-cover object-top"
-              style={{ minHeight: '220px' }}
-            />
-            {player.isCaptain && (
-              <div
-                className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded text-white font-black text-[9px] uppercase"
-                style={{ background: '#2563eb' }}
-              >
-                <Shield className="w-2.5 h-2.5" /> C
-              </div>
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 p-7 flex flex-col justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span
-                  className="px-2.5 py-1 rounded text-xs font-black"
-                  style={{ background: '#f59e0b', color: '#0f172a' }}
-                >
-                  #{player.number}
-                </span>
-                <span
-                  className="px-2.5 py-1 rounded text-xs font-black text-white uppercase"
-                  style={{ background: '#1d4ed8' }}
-                >
-                  {getPositionLabel(player.position)}
-                </span>
-              </div>
-              <h1 className="text-4xl font-black uppercase text-white leading-none tracking-tight">
-                {player.name}
-              </h1>
-              <p className="text-sm font-bold" style={{ color: '#38bdf8' }}>
-                Mariners SC #{player.number}
-              </p>
-            </div>
-
-            {/* Specs 4-col */}
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                {
-                  label: 'Tanggal Lahir',
-                  value: player.birthDate
-                    ? new Date(player.birthDate).toLocaleDateString('id-ID', {
-                      day: '2-digit', month: 'short', year: 'numeric',
-                    })
-                    : '—',
-                },
-                { label: 'Kewarganegaraan', value: player.nationality || 'Indonesia' },
-                { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
-                { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
-              ].map((item) => (
-                <div key={item.label} className="rounded-lg px-3 py-2.5" style={specBg}>
-                  <span className="block text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>
-                    {item.label}
-                  </span>
-                  <span className="text-sm font-extrabold text-slate-100">{item.value}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -260,18 +165,18 @@ export default async function PlayerDetailPage({
         </div>
         <div className="grid grid-cols-5 gap-2 sm:gap-3">
           {[
-            { label: 'GOL', value: player.goals, color: '#f59e0b' },
-            { label: 'ASSIST', value: player.assists, color: '#38bdf8' },
-            { label: 'MAIN', value: player.appearances, color: '#a78bfa' },
-            { label: 'KUNING', value: player.yellowCards, color: '#facc15' },
-            { label: 'MERAH', value: player.redCards, color: '#f87171' },
+            { label: 'GOL', value: totalGoals, color: '#f59e0b' },
+            { label: 'ASSIST', value: totalAssists, color: '#38bdf8' },
+            { label: 'MAIN', value: totalAppearances, color: '#a78bfa' },
+            { label: 'KUNING', value: totalYellowCards, color: '#facc15' },
+            { label: 'MERAH', value: totalRedCards, color: '#f87171' },
           ].map((s) => (
             <div
               key={s.label}
               className="rounded-xl flex flex-col items-center justify-center py-4 sm:py-5 gap-1 text-center"
               style={panelBg}
             >
-              <span className={`text-2xl sm:text-3xl font-black ${oswald.className}`} style={{ color: s.color, letterSpacing: '0.02em' }}>
+              <span className={`text-2xl sm:text-3xl font-black text-white ${oswald.className}`} style={{ letterSpacing: '0.02em' }}>
                 {s.value}
               </span>
               <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
@@ -301,75 +206,55 @@ export default async function PlayerDetailPage({
             </div>
           ) : (
             <>
-              {/* ── MOBILE Table Header (3 col) ── */}
+              {/* ── Table Header ── */}
               <div
-                className="grid sm:hidden px-3 py-2 text-[9px] font-bold uppercase tracking-wider"
+                className="grid px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
                 style={{
-                  gridTemplateColumns: '44px 1fr 40px',
+                  gridTemplateColumns: '64px 1fr auto',
                   background: 'rgba(255,255,255,0.03)',
                   borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  color: '#475569',
+                  color: '#64748b',
                 }}
               >
                 <span>Tanggal</span>
-                <span>Pertandingan &amp; Skor</span>
-                <span className="text-center">Hasil</span>
-              </div>
-
-              {/* ── DESKTOP Table Header (7 col) ── */}
-              <div
-                className="hidden sm:grid px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider"
-                style={{
-                  gridTemplateColumns: '72px 1fr 44px 44px 44px 44px 52px',
-                  background: 'rgba(255,255,255,0.03)',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  color: '#475569',
-                }}
-              >
-                <span>Tanggal</span>
-                <span>Pertandingan &amp; Skor</span>
-                <span className="text-center flex items-center justify-center"><BallIcon size={12} /></span>
-                <span className="text-center">🎯</span>
-                <span className="text-center text-yellow-400">■</span>
-                <span className="text-center text-red-500">■</span>
-                <span className="text-center">Hasil</span>
+                <span>Pertandingan</span>
+                <span className="text-right pr-1">Skor &amp; Hasil</span>
               </div>
 
               {/* ── Rows ── */}
               <div>
-                {recentMatches.map((lineup, idx) => {
+                {recentMatches.map((lineup: any, idx: number) => {
                   const match = lineup.match;
                   const result = getResult(match);
-                  const ourScore = match.isHome ? match.homeScore : match.awayScore;
-                  const theirScore = match.isHome ? match.awayScore : match.homeScore;
 
-                  const evts = player.events.filter((e) => e.matchId === match.id);
-                  const goals = evts.filter((e) => e.type === 'goal').length;
-                  const assists = evts.filter((e) => e.type === 'assist').length;
-                  const yc = evts.filter((e) => e.type === 'yellow_card').length;
-                  const rc = evts.filter((e) => e.type === 'red_card').length;
+                  const evts = (player.events || []).filter((e: any) => e.matchId === match.id);
+                  const assistEvts = (player.assistedEvents || []).filter((e: any) => e.matchId === match.id);
+
+                  const ownGoals = evts.filter((e: any) => e.type === 'own_goal').length;
+                  const penalties = evts.filter((e: any) => e.type === 'penalty').length;
+                  const regularGoals = evts.filter((e: any) => e.type === 'goal').length;
+                  const goals = regularGoals + ownGoals + penalties;
+                  const assists = evts.filter((e: any) => e.type === 'assist').length + assistEvts.length;
+                  const yc = evts.filter((e: any) => e.type === 'yellow_card').length;
+                  const hasSecondYellow = evts.some((e: any) => e.type === 'second_yellow') || yc >= 2;
+                  const hasDirectRed = evts.some((e: any) => e.type === 'red_card');
+                  const rc = (hasSecondYellow || hasDirectRed) ? 1 : 0;
 
                   const resultBg = result === 'W' ? '#16a34a' : result === 'L' ? '#dc2626' : '#475569';
-
-
-
                   const rowBorder = idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)';
 
-                  /* ─── shared match cell ─── */
-                  /* Home team always top, away team bottom */
+                  /* Shared match team labels */
                   const TopTeam = match.isHome
                     ? () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img src="/marinerssc.png" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>Mariners SC</span>
-                        <span className="text-sm font-black tabular-nums shrink-0 ml-1" style={{ color: '#f1f5f9' }}>{ourScore ?? '—'}</span>
                       </div>
                     )
                     : () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img src={match.opponentLogo} alt={match.opponentName} className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-semibold truncate flex-1" style={{ color: '#94a3b8' }}>{match.opponentName}</span>
-                        <span className="text-sm font-black tabular-nums shrink-0 ml-auto" style={{ color: '#64748b' }}>{theirScore ?? '—'}</span>
                       </div>
                     );
 
@@ -378,38 +263,57 @@ export default async function PlayerDetailPage({
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img src={match.opponentLogo} alt={match.opponentName} className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-semibold truncate flex-1" style={{ color: '#94a3b8' }}>{match.opponentName}</span>
-                        <span className="text-sm font-black tabular-nums shrink-0 ml-auto" style={{ color: '#64748b' }}>{theirScore ?? '—'}</span>
                       </div>
                     )
                     : () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img src="/marinerssc.png" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>Mariners SC</span>
-                        <span className="text-sm font-black tabular-nums shrink-0 ml-1" style={{ color: '#f1f5f9' }}>{ourScore ?? '—'}</span>
                       </div>
                     );
 
-                  /* Event icons centered between the two rows */
-                  const hasEvents = goals > 0 || assists > 0 || yc > 0 || rc > 0;
+                  const hasEvents = goals > 0 || assists > 0 || rc > 0;
 
                   const MatchCell = () => (
-                    <div className="flex items-stretch gap-2 min-w-0">
-                      {/* Teams stacked */}
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                         <TopTeam />
                         <BottomTeam />
                       </div>
-                      {/* Event icons — vertically centered */}
+                      {/* Event icons: Regular Goals / Own Goals / Penalty & Assists (Yellow A plain text) */}
                       {hasEvents && (
                         <div className="flex items-center gap-1 shrink-0">
-                          {Array.from({ length: Math.min(goals, 3) }).map((_, i) => (
-                            <BallIcon key={`g${i}`} size={15} />
+                          {Array.from({ length: Math.min(regularGoals, 3) }).map((_, i) => (
+                            <BallIcon key={`g${i}`} size={14} />
                           ))}
-                          {Array.from({ length: Math.min(assists, 2) }).map((_, i) => (
-                            <span key={`a${i}`} style={{ fontSize: 13, lineHeight: 1 }}>🎯</span>
+                          {Array.from({ length: Math.min(ownGoals, 3) }).map((_, i) => (
+                            <i key={`og${i}`} className="fa-regular fa-futbol text-red-500 text-xs shrink-0" title="Gol Bunuh Diri" />
                           ))}
-                          {yc > 0 && <span style={{ fontSize: 13, lineHeight: 1 }}>🟨</span>}
-                          {rc > 0 && <span style={{ fontSize: 13, lineHeight: 1 }}>🟥</span>}
+                          {Array.from({ length: Math.min(penalties, 3) }).map((_, i) => (
+                            <span key={`p${i}`} className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
+                              <i className="fa-regular fa-futbol text-amber-400 text-xs" />
+                              <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-sm">
+                                P
+                              </span>
+                            </span>
+                          ))}
+                          {Array.from({ length: Math.min(assists, 3) }).map((_, i) => (
+                            <span
+                              key={`a${i}`}
+                              className="text-amber-400 font-black text-xs sm:text-sm leading-none shrink-0"
+                              title="Assist"
+                            >
+                              A
+                            </span>
+                          ))}
+                          {hasSecondYellow ? (
+                            <span className="relative inline-flex items-center shrink-0 align-middle ml-1" title="Kartu Kuning 2x (Kartu Merah)">
+                              <span className="w-2.5 h-3.5 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-2px, -1px)' }} />
+                              <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                            </span>
+                          ) : hasDirectRed ? (
+                            <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                          ) : null}
                         </div>
                       )}
                     </div>
@@ -420,66 +324,48 @@ export default async function PlayerDetailPage({
                     .replace('/', '.');
 
                   return (
-                    <React.Fragment key={lineup.id}>
-                      {/* ── MOBILE ROW (3 col) ── */}
-                      <Link
-                        href={`/matches/${match.id}`}
-                        className="grid sm:hidden px-3 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
-                        style={{
-                          gridTemplateColumns: '44px 1fr 40px',
-                          borderTop: rowBorder,
-                        }}
-                      >
-                        {/* Date */}
-                        <span className="text-[11px] font-bold" style={{ color: '#64748b' }}>
-                          {dateStr}
-                        </span>
+                    <Link
+                      key={lineup.id}
+                      href={`/matches/${match.id}`}
+                      className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
+                      style={{
+                        gridTemplateColumns: '64px 1fr auto',
+                        borderTop: rowBorder,
+                      }}
+                    >
+                      {/* Date */}
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-400">
+                        {dateStr}
+                      </span>
 
-                        {/* Match */}
-                        <div className="min-w-0 pr-2">
-                          <MatchCell />
+                      {/* Match Teams & Event Badges */}
+                      <div className="min-w-0 pr-2">
+                        <MatchCell />
+                      </div>
+
+                      {/* Vertically Stacked Scores directly to the left of Result Badge */}
+                      <div className="flex items-center justify-end gap-2.5 shrink-0">
+                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                          <span style={{ color: match.isHome ? '#38bdf8' : '#f1f5f9' }}>
+                            {match.homeScore ?? '—'}
+                          </span>
+                          <span style={{ color: match.isHome ? '#f1f5f9' : '#38bdf8' }}>
+                            {match.awayScore ?? '—'}
+                          </span>
                         </div>
 
-                        {/* Result */}
-                        <div className="flex items-center justify-center">
-                          {result ? (
-                            <span
-                              className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white"
-                              style={{ background: resultBg }}
-                            >
-                              {result}
-                            </span>
-                          ) : <span style={{ color: '#334155' }}>—</span>}
-                        </div>
-                      </Link>
-
-                      {/* ── DESKTOP ROW (7 col) ── */}
-                      <Link
-                        href={`/matches/${match.id}`}
-                        className="hidden sm:grid px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
-                        style={{
-                          gridTemplateColumns: '72px 1fr 44px 44px 44px 44px 52px',
-                          borderTop: rowBorder,
-                        }}
-                      >
-                        <span className="text-xs font-bold" style={{ color: '#64748b' }}>{dateStr}</span>
-
-                        <div className="pr-2 min-w-0"><MatchCell /></div>
-
-                        <span className="text-center text-sm font-black" style={{ color: goals > 0 ? '#38bdf8' : '#334155' }}>{goals}</span>
-                        <span className="text-center text-sm font-black" style={{ color: assists > 0 ? '#34d399' : '#334155' }}>{assists}</span>
-                        <span className="text-center text-sm font-black" style={{ color: yc > 0 ? '#facc15' : '#334155' }}>{yc}</span>
-                        <span className="text-center text-sm font-black" style={{ color: rc > 0 ? '#f87171' : '#334155' }}>{rc}</span>
-
-                        <div className="flex items-center justify-center">
-                          {result ? (
-                            <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white" style={{ background: resultBg }}>
-                              {result}
-                            </span>
-                          ) : <span style={{ color: '#334155' }}>—</span>}
-                        </div>
-                      </Link>
-                    </React.Fragment>
+                        {result ? (
+                          <span
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                            style={{ background: resultBg }}
+                          >
+                            {result}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#334155' }}>—</span>
+                        )}
+                      </div>
+                    </Link>
                   );
                 })}
               </div>

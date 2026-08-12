@@ -46,13 +46,52 @@ const PITCH_POSITIONS = [
 ];
 
 const EVENT_TYPES = [
-  { value: 'goal',        label: '⚽ Gol',              color: '#22c55e' },
-  { value: 'yellow_card', label: '🟨 Kartu Kuning',     color: '#eab308' },
-  { value: 'red_card',    label: '🟥 Kartu Merah',      color: '#ef4444' },
-  { value: 'sub',         label: '🔄 Pergantian',       color: '#38bdf8' },
-  { value: 'own_goal',    label: '⚽ Gol Bunuh Diri',   color: '#f97316' },
-  { value: 'penalty',     label: '🎯 Penalti',          color: '#a855f7' },
+  { value: 'goal',        label: 'Gol',                 color: '#22c55e' },
+  { value: 'yellow_card', label: 'Kartu Kuning',        color: '#eab308' },
+  { value: 'red_card',    label: 'Kartu Merah',         color: '#ef4444' },
+  { value: 'sub',         label: 'Pergantian',          color: '#38bdf8' },
+  { value: 'own_goal',    label: 'Gol Bunuh Diri',      color: '#f97316' },
+  { value: 'penalty',     label: 'Penalti',             color: '#a855f7' },
 ];
+
+const EventIcon = ({ type }: { type: string }) => {
+  if (type === 'goal') {
+    return <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" />;
+  }
+  if (type === 'own_goal') {
+    return <i className="fa-regular fa-futbol text-red-500 shrink-0 inline-block align-middle" />;
+  }
+  if (type === 'penalty') {
+    return (
+      <span className="relative inline-flex items-center shrink-0 align-middle mr-1">
+        <i className="fa-regular fa-futbol text-amber-400 text-xs" />
+        <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-xs">
+          P
+        </span>
+      </span>
+    );
+  }
+  if (type === 'sub') {
+    return <i className="fa-solid fa-right-left text-sky-400 shrink-0 inline-block align-middle" />;
+  }
+  if (type === 'yellow_card') {
+    return <span className="w-2.5 h-3.5 bg-amber-400 rounded-[1px] inline-block shrink-0 align-middle shadow-xs border border-amber-300/40" title="Kartu Kuning" />;
+  }
+  if (type === 'second_yellow') {
+    return (
+      <span className="relative inline-flex items-center shrink-0 align-middle ml-1" title="Kartu Kuning 2x (Kartu Merah)">
+        {/* Darker yellow card behind */}
+        <span className="w-2.5 h-3.5 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-2px, -1px)' }} />
+        {/* Red card in front */}
+        <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+      </span>
+    );
+  }
+  if (type === 'red_card') {
+    return <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 align-middle shadow-xs border border-red-400/40" title="Kartu Merah" />;
+  }
+  return null;
+};
 
 export default function MatchLineupBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: matchId } = use(params);
@@ -189,12 +228,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
   const addEvent = () => {
     if (!newEvent.playerId) { alert('Pilih pemain untuk event ini'); return; }
+
+    let finalType = newEvent.type;
+
+    // Otomatis ubah menjadi second_yellow (Kartu Kuning 2x / Merah) jika pemain sudah memiliki kartu kuning
+    if (newEvent.type === 'yellow_card') {
+      const existingYellow = eventsList.some(
+        (e) => e.playerId === newEvent.playerId && (e.type === 'yellow_card' || e.type === 'second_yellow')
+      );
+      if (existingYellow) {
+        finalType = 'second_yellow';
+      }
+    }
+
     setEventsList((prev) => [
       ...prev,
       {
         playerId: newEvent.playerId,
         assistPlayerId: newEvent.assistPlayerId || undefined,
-        type: newEvent.type,
+        type: finalType,
         minute: parseInt(newEvent.minute) || 0,
         description: newEvent.description,
       },
@@ -563,13 +615,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         key={et.value}
                         type="button"
                         onClick={() => setNewEvent({ ...newEvent, type: et.value })}
-                        className={`px-2 py-1.5 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight ${
+                        className={`px-2 py-2 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight flex items-center gap-1.5 ${
                           newEvent.type === et.value
                             ? 'bg-sky-600/20 border-sky-400/60 text-sky-300'
                             : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
                         }`}
                       >
-                        {et.label}
+                        <EventIcon type={et.value} />
+                        <span>{et.label}</span>
                       </button>
                     ))}
                   </div>
@@ -661,6 +714,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
+                            <EventIcon type={ev.type} />
                             <span className="text-xs font-black text-slate-100 uppercase">{playerObj?.name || '—'}</span>
                             <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase"
                               style={{ background: `${evType?.color}20`, color: evType?.color, border: `1px solid ${evType?.color}40` }}>

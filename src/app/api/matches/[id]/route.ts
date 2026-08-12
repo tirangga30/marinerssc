@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { recalculateAllPlayerStats } from '@/lib/stats';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -54,6 +55,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     });
 
+    await recalculateAllPlayerStats();
+
     revalidatePath('/');
     revalidatePath('/matches');
     revalidatePath(`/matches/${id}`);
@@ -77,6 +80,8 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     await prisma.matchLineup.deleteMany({ where: { matchId: id } });
     await prisma.matchEvent.deleteMany({ where: { matchId: id } });
     await prisma.footballMatch.delete({ where: { id } });
+
+    await recalculateAllPlayerStats();
 
     revalidatePath('/');
     revalidatePath('/matches');

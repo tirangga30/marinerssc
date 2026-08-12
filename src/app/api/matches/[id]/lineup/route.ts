@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { recalculateAllPlayerStats } from '@/lib/stats';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -49,6 +50,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         })),
       });
     }
+
+    await recalculateAllPlayerStats();
 
     const updatedMatch = await prisma.footballMatch.findUnique({
       where: { id: matchId },

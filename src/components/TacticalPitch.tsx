@@ -22,6 +22,11 @@ interface LineupPlayer {
 interface TacticalPitchProps {
   lineups: LineupPlayer[];
   formation?: string;
+  events?: Array<{
+    id: string;
+    playerId: string;
+    type: string;
+  }>;
 }
 
 // Preset coordinates on pitch percentage (top %, left %)
@@ -46,7 +51,7 @@ const positionCoordinates: Record<string, { top: number; left: number }> = {
   CF: { top: 14, left: 50 },
 };
 
-export default function TacticalPitch({ lineups, formation = '4-3-3' }: TacticalPitchProps) {
+export default function TacticalPitch({ lineups, formation = '4-3-3', events = [] }: TacticalPitchProps) {
   const starters = lineups.filter((l) => l.isStarter);
   const bench = lineups.filter((l) => !l.isStarter);
 
@@ -73,11 +78,29 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
           <div className="absolute bottom-[20%] left-1/2 w-2 h-2 bg-white/30 rounded-full -translate-x-1/2"></div>
         </div>
 
-
-
         {/* Starter Markers on Pitch */}
         {starters.map((lineup) => {
           const coords = positionCoordinates[lineup.pitchPosition] || { top: 50, left: 50 };
+          const rawEvts = events.filter((e) => e.playerId === lineup.player.id);
+
+          // Deduplicate card events: 1st yellow + 2nd yellow red card
+          const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
+          const hasSecondYellowEvt = rawEvts.some((e) => e.type === 'second_yellow');
+
+          const playerEvts: Array<{ type: string }> = [];
+          rawEvts.forEach((e) => {
+            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
+              playerEvts.push(e);
+            }
+          });
+
+          if (hasSecondYellowEvt || yellowEvts.length >= 2) {
+            if (yellowEvts.length > 0) playerEvts.push({ type: 'yellow_card' });
+            playerEvts.push({ type: 'second_yellow' });
+          } else if (yellowEvts.length === 1) {
+            playerEvts.push({ type: 'yellow_card' });
+          }
+
           return (
             <Link
               key={lineup.id}
@@ -86,21 +109,58 @@ export default function TacticalPitch({ lineups, formation = '4-3-3' }: Tactical
               className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-110 hover:z-30"
             >
               {/* Player Avatar Circle */}
-              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 overflow-hidden bg-slate-900 group-hover:border-white">
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
                 <img
                   src={lineup.player.photoUrl || '/playertemplate.jpeg'}
                   alt={lineup.player.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-full"
                 />
-                {/* Number Badge */}
-                <div className="absolute bottom-0 right-0 blue-gradient-bg text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-white/30">
-                  {lineup.player.number}
-                </div>
+
+                {/* Event Badges Overlay on Top-Right Corner */}
+                {playerEvts.length > 0 && (
+                  <div className="absolute -top-2.5 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/40 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/10 shadow-sm">
+                    {playerEvts.map((e, idx) => (
+                      <span key={idx} className="inline-flex items-center justify-center">
+                        {e.type === 'goal' && <i className="fa-regular fa-futbol text-amber-400 text-[8px] sm:text-[9.5px]" />}
+                        {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[8px] sm:text-[9.5px]" />}
+                        {e.type === 'penalty' && (
+                          <span className="relative inline-flex items-center">
+                            <i className="fa-regular fa-futbol text-amber-400 text-[8px] sm:text-[9.5px]" />
+                            <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-amber-400 text-slate-950 font-black text-[5px] flex items-center justify-center leading-none">
+                              P
+                            </span>
+                          </span>
+                        )}
+                        {e.type === 'assist' && (
+                          <span className="text-amber-400 font-black text-[7.5px] sm:text-[9px] leading-none">A</span>
+                        )}
+                        {e.type === 'yellow_card' && (
+                          <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-amber-400 rounded-[1px] inline-block border border-amber-300/40" />
+                        )}
+                        {e.type === 'second_yellow' && (
+                          <span className="relative inline-flex items-center ml-0.5 shrink-0">
+                            <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-amber-500 rounded-[1px] border border-amber-600/50" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
+                            <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-red-600 rounded-[1px] border border-red-400/40 absolute top-0 left-0" />
+                          </span>
+                        )}
+                        {e.type === 'red_card' && (
+                          <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-red-600 rounded-[1px] inline-block border border-red-400/40" />
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
               </div>
 
-              {/* Player Name Tag */}
-              <div className="mt-1 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20">
-                {lineup.player.name.split(' ').pop()}
+              {/* Player Name Tag with squad number on the left in blue */}
+              <div className="mt-1 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20 flex items-center gap-1 shadow-md">
+                <span className="text-sky-400 font-black font-mono">
+                  {lineup.player.number}
+                </span>
+                <span>
+                  {lineup.player.name.split(' ')[0]}
+                </span>
               </div>
             </Link>
           );

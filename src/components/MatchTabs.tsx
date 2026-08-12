@@ -13,15 +13,7 @@ import {
 } from 'lucide-react';
 
 const BallIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="inline-block shrink-0">
-    <circle cx="50" cy="50" r="50" fill="#facc15" />
-    <polygon points="50,30 66,42 60,62 40,62 34,42" fill="#111827" />
-    <polygon points="50,4 59,18 50,30 41,18" fill="#111827" />
-    <polygon points="78,16 82,34 66,42 61,26" fill="#111827" />
-    <polygon points="84,66 72,82 60,72 60,62 74,56" fill="#111827" />
-    <polygon points="16,66 26,82 40,72 40,62 28,56" fill="#111827" />
-    <polygon points="22,16 39,26 34,42 18,34" fill="#111827" />
-  </svg>
+  <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" style={{ fontSize: `${size}px` }} />
 );
 
 interface Player {
@@ -75,19 +67,46 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const starters = match.lineups.filter((l) => l.isStarter);
   const bench = match.lineups.filter((l) => !l.isStarter);
 
-  // Helper to find events for a specific player in this match (Goal & Assist)
+  // Helper to find events for a specific player in this match (Goals, Cards, Assists, Subs)
   const getPlayerEvents = (playerId: string) => {
-    const evts: Array<{ id: string; type: 'goal' | 'assist' }> = [];
+    const rawEvts: Array<{ id: string; type: string }> = [];
     match.events.forEach((e) => {
-      if (e.player && e.player.id === playerId && e.type === 'goal') {
-        evts.push({ id: `${e.id}-goal`, type: 'goal' });
+      if (e.player && e.player.id === playerId) {
+        rawEvts.push({ id: `${e.id}-${e.type}`, type: e.type });
       }
       if (e.assistPlayer && e.assistPlayer.id === playerId) {
-        evts.push({ id: `${e.id}-assist`, type: 'assist' });
+        rawEvts.push({ id: `${e.id}-assist`, type: 'assist' });
       }
     });
-    return evts;
+
+    const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
+    const secondYellowEvt = rawEvts.find((e) => e.type === 'second_yellow');
+
+    const result: Array<{ id: string; type: string }> = [];
+    rawEvts.forEach((e) => {
+      if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
+        result.push(e);
+      }
+    });
+
+    if (secondYellowEvt) {
+      if (yellowEvts.length > 0) result.push(yellowEvts[0]);
+      result.push(secondYellowEvt);
+    } else if (yellowEvts.length >= 2) {
+      result.push(yellowEvts[0]);
+      result.push({ id: yellowEvts[1].id, type: 'second_yellow' });
+    } else if (yellowEvts.length === 1) {
+      result.push(yellowEvts[0]);
+    }
+
+    return result;
   };
+
+  const pitchEvents = match.events.map((e) => ({
+    id: e.id,
+    playerId: e.player?.id || '',
+    type: e.type,
+  }));
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -178,9 +197,44 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                               <BallIcon size={14} /> GOL!
                             </>
                           )}
-                          {event.type === 'yellow_card' && '🟨 Kartu Kuning'}
-                          {event.type === 'red_card' && '🟥 Kartu Merah'}
-                          {event.type === 'sub' && '🔄 Pergantian Pemain'}
+                          {event.type === 'own_goal' && (
+                            <>
+                              <i className="fa-regular fa-futbol text-red-500 text-sm shrink-0" /> GOL BUNUH DIRI!
+                            </>
+                          )}
+                          {event.type === 'penalty' && (
+                            <>
+                              <span className="relative inline-flex items-center shrink-0 mr-1">
+                                <i className="fa-regular fa-futbol text-amber-400 text-xs" />
+                                <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-sm">
+                                  P
+                                </span>
+                              </span> GOL PENALTI!
+                            </>
+                          )}
+                          {event.type === 'yellow_card' && (
+                            <>
+                              <span className="w-2.5 h-3.5 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" /> Kartu Kuning
+                            </>
+                          )}
+                          {event.type === 'second_yellow' && (
+                            <>
+                              <span className="relative inline-flex items-center shrink-0 align-middle ml-1 mr-1.5" title="Kartu Kuning 2x (Kartu Merah)">
+                                <span className="w-2.5 h-3.5 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-2px, -1px)' }} />
+                                <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                              </span> Kartu Kuning 2x (Merah)
+                            </>
+                          )}
+                          {event.type === 'red_card' && (
+                            <>
+                              <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" /> Kartu Merah
+                            </>
+                          )}
+                          {event.type === 'sub' && (
+                            <>
+                              <i className="fa-solid fa-right-left text-sky-400 shrink-0" /> Pergantian Pemain
+                            </>
+                          )}
                         </span>
                       </div>
 
@@ -217,7 +271,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
         <div className="space-y-8 animate-fadeIn">
           {/* Tactical Pitch 2D */}
           <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/20">
-            <TacticalPitch lineups={match.lineups} formation={match.formation} />
+            <TacticalPitch lineups={match.lineups} formation={match.formation} events={pitchEvents} />
           </div>
 
           {/* Lineup Detail Grid (Starting XI + Substitutes) */}
@@ -248,44 +302,60 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                       <Link
                         key={item.id}
                         href={`/players/${item.player.slug}`}
-                        className="flex items-center justify-between py-3 hover:bg-slate-800/40 px-2 rounded-xl transition-colors group"
+                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Photo Avatar */}
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
-                            <img
-                              src={item.player.photoUrl || '/playertemplate.jpeg'}
-                              alt={item.player.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-black text-sky-400 font-mono">
-                                {item.player.number}
-                              </span>
-                              <span className="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate">
-                                {item.player.name}
-                              </span>
-                            </div>
-                          </div>
+                        {/* Photo Avatar */}
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                          <img
+                            src={item.player.photoUrl || '/playertemplate.jpeg'}
+                            alt={item.player.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
 
-                        {/* Match Event Badges (Only Goal & Assist) */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {playerEvts
-                            .filter((e) => e.type === 'goal' || e.type === 'assist')
-                            .map((e) => (
-                              <span key={e.id} className="inline-flex items-center justify-center">
-                                {e.type === 'goal' && <BallIcon size={16} />}
-                                {e.type === 'assist' && (
-                                  <span className="w-4 h-4 rounded-full bg-amber-400/20 border border-amber-400/60 text-amber-400 font-mono font-black text-[10px] flex items-center justify-center shadow-sm">
-                                    A
+                        {/* Squad Number — Compact Aligned Column */}
+                        <span className="w-5 text-center text-xs font-black text-sky-400 font-mono shrink-0">
+                          {item.player.number}
+                        </span>
+
+                        {/* Player Name — Tight Left */}
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate">
+                          {item.player.name}
+                        </span>
+
+                        {/* Match Event Badges — Smaller Icons */}
+                        <div className="flex items-center gap-1 shrink-0 ml-auto">
+                          {playerEvts.map((e) => (
+                            <span key={e.id} className="inline-flex items-center justify-center">
+                              {e.type === 'goal' && <BallIcon size={11} />}
+                              {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
+                              {e.type === 'penalty' && (
+                                <span className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
+                                  <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                  <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
+                                    P
                                   </span>
-                                )}
-                              </span>
-                            ))}
+                                </span>
+                              )}
+                              {e.type === 'assist' && (
+                                <span className="text-amber-400 font-black text-[10px] leading-none shrink-0" title="Assist">
+                                  A
+                                </span>
+                              )}
+                              {e.type === 'yellow_card' && (
+                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" title="Kartu Kuning" />
+                              )}
+                              {e.type === 'second_yellow' && (
+                                <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
+                                  <span className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
+                                  <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                                </span>
+                              )}
+                              {e.type === 'red_card' && (
+                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                              )}
+                            </span>
+                          ))}
                         </div>
                       </Link>
                     );
@@ -316,43 +386,60 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                       <Link
                         key={item.id}
                         href={`/players/${item.player.slug}`}
-                        className="flex items-center justify-between py-3 hover:bg-slate-800/40 px-2 rounded-xl transition-colors group"
+                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
-                            <img
-                              src={item.player.photoUrl || '/playertemplate.jpeg'}
-                              alt={item.player.name}
-                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
-                            />
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-black text-slate-400 font-mono">
-                                {item.player.number}
-                              </span>
-                              <span className="text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate">
-                                {item.player.name}
-                              </span>
-                            </div>
-                          </div>
+                        {/* Photo Avatar */}
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
+                          <img
+                            src={item.player.photoUrl || '/playertemplate.jpeg'}
+                            alt={item.player.name}
+                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                          />
                         </div>
 
-                        {/* Match Event Badges (Only Goal & Assist) */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {playerEvts
-                            .filter((e) => e.type === 'goal' || e.type === 'assist')
-                            .map((e) => (
-                              <span key={e.id} className="inline-flex items-center justify-center">
-                                {e.type === 'goal' && <BallIcon size={16} />}
-                                {e.type === 'assist' && (
-                                  <span className="w-4 h-4 rounded-full bg-amber-400/20 border border-amber-400/60 text-amber-400 font-mono font-black text-[10px] flex items-center justify-center shadow-sm">
-                                    A
+                        {/* Squad Number — Compact Aligned Column */}
+                        <span className="w-5 text-center text-xs font-black text-slate-400 font-mono shrink-0">
+                          {item.player.number}
+                        </span>
+
+                        {/* Player Name — Tight Left */}
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate">
+                          {item.player.name}
+                        </span>
+
+                        {/* Match Event Badges — Smaller Icons */}
+                        <div className="flex items-center gap-1 shrink-0 ml-auto">
+                          {playerEvts.map((e) => (
+                            <span key={e.id} className="inline-flex items-center justify-center">
+                              {e.type === 'goal' && <BallIcon size={11} />}
+                              {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
+                              {e.type === 'penalty' && (
+                                <span className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
+                                  <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                  <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
+                                    P
                                   </span>
-                                )}
-                              </span>
-                            ))}
+                                </span>
+                              )}
+                              {e.type === 'assist' && (
+                                <span className="text-amber-400 font-black text-[10px] leading-none shrink-0" title="Assist">
+                                  A
+                                </span>
+                              )}
+                              {e.type === 'yellow_card' && (
+                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" title="Kartu Kuning" />
+                              )}
+                              {e.type === 'second_yellow' && (
+                                <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
+                                  <span className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
+                                  <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                                </span>
+                              )}
+                              {e.type === 'red_card' && (
+                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                              )}
+                            </span>
+                          ))}
                         </div>
                       </Link>
                     );
