@@ -60,7 +60,7 @@ export default async function PlayerDetailPage({
     },
   });
 
-  if (!player) notFound();
+  if (!player || player.isGuest) notFound();
 
   const finishedLineups = (player.lineups || []).filter(
     (l: any) => l.match.status === 'finished'

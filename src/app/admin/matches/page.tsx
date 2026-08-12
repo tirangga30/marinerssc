@@ -156,7 +156,7 @@ export default function AdminMatchesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
+
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <Link
@@ -185,12 +185,12 @@ export default function AdminMatchesPage() {
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
-                <th className="p-3">Tanggal</th>
-                <th className="p-3">Lawan</th>
+                <th className="p-3">Tanggal Laga</th>
+                <th className="p-3">Lawan & Logo (Tanpa Box)</th>
                 <th className="p-3">Status / Skor</th>
                 <th className="p-3">Lokasi</th>
-                <th className="p-3">Formasi</th>
-                <th className="p-3 text-right">Aksi</th>
+                <th className="p-3">Formasi Taktis</th>
+                <th className="p-3 text-right">Aksi & Lineup Builder</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
@@ -222,7 +222,7 @@ export default function AdminMatchesPage() {
                       href={`/admin/matches/${m.id}/lineup`}
                       className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
                     >
-                      <Settings2 className="w-3.5 h-3.5" /> Match Setup
+                      <Settings2 className="w-3.5 h-3.5" /> Lineup Builder
                     </Link>
                     <button
                       onClick={() => openEditModal(m)}
@@ -258,7 +258,7 @@ export default function AdminMatchesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              
+
               {/* DIRECT OPPONENT LOGO UPLOAD SECTION */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
                 <label className="font-bold text-sky-300 uppercase block">Logo Tim Lawan (Direct Upload)</label>
@@ -271,7 +271,7 @@ export default function AdminMatchesPage() {
                       className="w-14 h-14 object-contain drop-shadow-xl"
                     />
                   </div>
-                  
+
                   <div className="flex-1 space-y-2">
                     <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold inline-flex items-center gap-2 text-xs transition-colors">
                       {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -300,7 +300,7 @@ export default function AdminMatchesPage() {
                     value={formData.opponentName}
                     onChange={(e) => setFormData({ ...formData, opponentName: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="Input Tim Lawan"
+                    placeholder="Persija Jakarta"
                   />
                 </div>
                 <div>
@@ -313,15 +313,46 @@ export default function AdminMatchesPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Lokasi Pertandingan (Venue)</label>
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Status Laga</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  >
+                    <option value="scheduled">Mendatang (Scheduled)</option>
+                    <option value="finished">Selesai (Finished)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Formasi Utama</label>
                   <input
                     type="text"
-                    required
-                    value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                    value={formData.formation}
+                    onChange={(e) => setFormData({ ...formData, formation: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="Contoh: Stadion Gelora Samudra, Jakarta"
+                    placeholder="4-3-3"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tuan Rumah (Home)</label>
+                  <input
+                    type="number"
+                    value={formData.homeScore}
+                    onChange={(e) => setFormData({ ...formData, homeScore: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tamu (Away)</label>
+                  <input
+                    type="number"
+                    value={formData.awayScore}
+                    onChange={(e) => setFormData({ ...formData, awayScore: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
                   />
                 </div>
               </div>

@@ -119,13 +119,9 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
             playerEvts.push({ type: 'yellow_card' });
           }
 
-          return (
-            <Link
-              key={lineup.id}
-              href={`/players/${lineup.player.slug}`}
-              style={{ top: `${coords.top}%`, left: `${coords.left}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-110 hover:z-30"
-            >
+          const isGuest = (lineup.player as any)?.isGuest;
+          const TokenContent = (
+            <>
               {/* Player Avatar Circle */}
               <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
                 <img
@@ -183,6 +179,25 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
                   {lineup.player.name.split(' ')[0]}
                 </span>
               </div>
+            </>
+          );
+
+          return isGuest ? (
+            <div
+              key={lineup.id}
+              style={{ top: `${coords.top}%`, left: `${coords.left}%` }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center cursor-default select-none"
+            >
+              {TokenContent}
+            </div>
+          ) : (
+            <Link
+              key={lineup.id}
+              href={`/players/${lineup.player.slug}`}
+              style={{ top: `${coords.top}%`, left: `${coords.left}%` }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-110 hover:z-30"
+            >
+              {TokenContent}
             </Link>
           );
         })}

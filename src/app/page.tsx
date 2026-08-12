@@ -36,9 +36,9 @@ export default async function HomePage() {
       take: 3,
     });
 
-    // Fetch players starred/favorited by admin (isCaptain = true), or fallback to top players
+    // Fetch players starred/favorited by admin (isFeatured = true), or fallback to top players
     featuredPlayers = await prisma.player.findMany({
-      where: { isCaptain: true },
+      where: { isFeatured: true },
       orderBy: { number: 'asc' },
       take: 6,
     });

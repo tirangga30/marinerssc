@@ -65,6 +65,7 @@ export async function POST(req: Request) {
         photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
         bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
+        isFeatured: Boolean(data.isFeatured),
         status: data.status || 'Active',
         isGuest: Boolean(data.isGuest),
         guestMatchId: data.guestMatchId || null,

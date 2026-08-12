@@ -31,6 +31,14 @@ export default async function MatchDetailPage({
     notFound();
   }
 
+  const allMatches = await prisma.footballMatch.findMany({
+    orderBy: { matchDate: 'asc' },
+    select: { id: true },
+  });
+
+  const matchdayIndex = allMatches.findIndex((m) => m.id === id) + 1;
+  const matchdayLabel = matchdayIndex > 0 ? `Matchday ${matchdayIndex}` : match.competition;
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
       
@@ -40,7 +48,7 @@ export default async function MatchDetailPage({
       <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/30 text-center space-y-6 relative overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-[10px] sm:text-xs font-bold uppercase">
           <span className="text-sky-400">
-            {match.competition}
+            {matchdayLabel}
           </span>
           <span className="text-slate-400">
             {new Date(match.matchDate).toLocaleDateString('id-ID', {

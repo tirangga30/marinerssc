@@ -15,6 +15,7 @@ interface Player {
   photoUrl: string;
   bio: string;
   isCaptain: boolean;
+  isFeatured: boolean;
   status: string;
   isGuest: boolean;
   goals: number;
@@ -81,23 +82,21 @@ export default function AdminPlayersPage() {
     fetchPlayers();
   }, []);
 
-  // Toggle Star (Pemain Bintang / Favorit)
+  // Toggle Star (Pemain Bintang / Favorit Beranda)
   const toggleStar = async (player: Player) => {
     try {
-      const newCaptainState = !player.isCaptain;
+      const newFeaturedState = !player.isFeatured;
       const res = await fetch(`/api/players/${player.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...player,
-          isCaptain: newCaptainState,
+          isFeatured: newFeaturedState,
         }),
       });
 
       if (res.ok) {
-        // Optimistic local update for instant UI feedback
         setPlayers((prev) =>
-          prev.map((p) => (p.id === player.id ? { ...p, isCaptain: newCaptainState } : p))
+          prev.map((p) => (p.id === player.id ? { ...p, isFeatured: newFeaturedState } : p))
         );
       } else {
         alert('Gagal mengedit status pemain bintang');
@@ -295,12 +294,16 @@ export default function AdminPlayersPage() {
                     />
                     <div>
                       <span className="font-bold text-white uppercase">{player.name}</span>
-                      {player.isCaptain && <span className="ml-2 text-[10px] text-amber-400 font-extrabold"></span>}
+                      {player.isCaptain && (
+                        <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                          👑 Kapten
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="p-3 font-bold text-sky-300">
                     {normalizePos(player.position)}
-                    {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Tamu</span>}
+                    {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
                   </td>
                   <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
                   <td className="p-3">{player.appearances}</td>
@@ -314,14 +317,14 @@ export default function AdminPlayersPage() {
                   <td className="p-3 text-center">
                     <button
                       onClick={() => toggleStar(player)}
-                      title={player.isCaptain ? 'Hapus dari Pemain Beranda' : 'Tampilkan di Pemain Beranda'}
+                      title={player.isFeatured ? 'Hapus dari Pemain Beranda' : 'Tampilkan di Pemain Beranda'}
                       className={`p-2 rounded-xl border transition-all ${
-                        player.isCaptain
+                        player.isFeatured
                           ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
                           : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
                       }`}
                     >
-                      <Star className={`w-4 h-4 ${player.isCaptain ? 'fill-amber-400 text-amber-400' : ''}`} />
+                      <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
                     </button>
                   </td>
 
@@ -380,13 +383,13 @@ export default function AdminPlayersPage() {
             <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
               {!editingPlayer && guestPlayers.length > 0 && (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                  <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Tamu (Opsional)</label>
-                  <p className="text-xs text-amber-200/60 mb-2">Pilih pemain tamu untuk dipromosikan ke skuad utama secara permanen.</p>
+                  <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>
+                  <p className="text-xs text-amber-200/60 mb-2">Pilih pemain loan untuk dipromosikan ke skuad utama secara permanen.</p>
                   <select 
                     onChange={(e) => handleSelectGuest(e.target.value)}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-amber-400 outline-none text-sm"
                   >
-                    <option value="">-- Buat Baru (Bukan dari Tamu) --</option>
+                    <option value="">-- Buat Baru (Bukan dari Loan) --</option>
                     {guestPlayers.map(g => (
                       <option key={g.id} value={g.id}>{g.name} (#{g.number})</option>
                     ))}
@@ -508,7 +511,7 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, isCaptain: e.target.checked })}
                     className="w-4 h-4 rounded text-amber-500"
                   />
-                  <span>Tampilkan di Pemain Beranda ⭐</span>
+                  <span>Jadikan Kapten 👑</span>
                 </label>
               </div>
 

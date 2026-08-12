@@ -30,6 +30,7 @@ model Player {
   photoUrl       String
   bio            String
   isCaptain      Boolean      @default(false)
+  isFeatured     Boolean      @default(false)
   status         String       @default("Active") // Active, Injured
   isGuest        Boolean      @default(false)
   guestMatchId   String?

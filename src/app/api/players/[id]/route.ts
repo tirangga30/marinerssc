@@ -13,29 +13,26 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const { id } = await params;
     const data = await req.json();
-    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const updateData: any = {};
+    if (data.name !== undefined) {
+      updateData.name = data.name;
+      updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+    if (data.number !== undefined) updateData.number = parseInt(data.number);
+    if (data.position !== undefined) updateData.position = data.position;
+    if (data.nationality !== undefined) updateData.nationality = data.nationality;
+    if (data.heightCm !== undefined) updateData.heightCm = data.heightCm ? parseInt(data.heightCm) : null;
+    if (data.weightKg !== undefined) updateData.weightKg = data.weightKg ? parseInt(data.weightKg) : null;
+    if (data.photoUrl !== undefined) updateData.photoUrl = data.photoUrl;
+    if (data.isCaptain !== undefined) updateData.isCaptain = Boolean(data.isCaptain);
+    if (data.isFeatured !== undefined) updateData.isFeatured = Boolean(data.isFeatured);
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.isGuest !== undefined) updateData.isGuest = Boolean(data.isGuest);
 
     const player = await prisma.player.update({
       where: { id },
-      data: {
-        name: data.name,
-        slug,
-        number: parseInt(data.number),
-        position: data.position,
-        nationality: data.nationality || 'Indonesia',
-        heightCm: data.heightCm ? parseInt(data.heightCm) : null,
-        weightKg: data.weightKg ? parseInt(data.weightKg) : null,
-        photoUrl: data.photoUrl,
-        bio: data.bio || '',
-        isCaptain: Boolean(data.isCaptain),
-        status: data.status || 'Active',
-        isGuest: data.isGuest !== undefined ? Boolean(data.isGuest) : undefined,
-        goals: parseInt(data.goals || 0),
-        assists: parseInt(data.assists || 0),
-        appearances: parseInt(data.appearances || 0),
-        yellowCards: parseInt(data.yellowCards || 0),
-        redCards: parseInt(data.redCards || 0),
-      },
+      data: updateData,
     });
 
     revalidatePath('/');

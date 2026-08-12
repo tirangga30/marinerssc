@@ -23,6 +23,7 @@ interface Player {
   number: number;
   position: string;
   photoUrl: string;
+  isGuest?: boolean;
 }
 
 interface LineupItem {
@@ -144,7 +145,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const htMinute = Math.floor(dur / 2);
   const ftMinute = dur;
 
-  displayTimelineEvents.push({ id: 'HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
+  if (match.status === 'finished' || match.status === 'live') {
+    displayTimelineEvents.push({ id: 'HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
+  }
   if (match.status === 'finished') {
     displayTimelineEvents.push({ id: 'FT-MARKER', minute: ftMinute, type: 'fulltime', isSystem: true });
   }
@@ -214,7 +217,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               <div className="text-center py-8 space-y-2">
                 <Shield className="w-8 h-8 text-slate-700 mx-auto" />
                 <p className="text-xs font-semibold text-slate-500">
-                  Belum ada event tercatat untuk pertandingan ini.
+                  {match.status === 'scheduled' ? 'Pertandingan belum dimulai.' : 'Belum ada event tercatat untuk pertandingan ini.'}
                 </p>
               </div>
             ) : (
@@ -355,12 +358,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                 <div className="divide-y divide-slate-800/60">
                   {starters.map((item) => {
                     const playerEvts = getPlayerEvents(item.player.id);
-                    return (
-                      <Link
-                        key={item.id}
-                        href={`/players/${item.player.slug}`}
-                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
-                      >
+                    const isGuest = item.player.isGuest;
+                    const Content = (
+                      <>
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
                           <img
@@ -378,6 +378,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Player Name — Tight Left */}
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
+                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
                           {Array.from({ length: subbedOutCount[item.player.id] || 0 }).map((_, i) => (
                             <i key={i} className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0" title="Digantikan" />
                           ))}
@@ -417,6 +418,20 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                             </span>
                           ))}
                         </div>
+                      </>
+                    );
+
+                    return isGuest ? (
+                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-300 select-none">
+                        {Content}
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={`/players/${item.player.slug}`}
+                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
+                      >
+                        {Content}
                       </Link>
                     );
                   })}
@@ -442,12 +457,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                 <div className="divide-y divide-slate-800/60">
                   {bench.map((item) => {
                     const playerEvts = getPlayerEvents(item.player.id);
-                    return (
-                      <Link
-                        key={item.id}
-                        href={`/players/${item.player.slug}`}
-                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
-                      >
+                    const isGuest = item.player.isGuest;
+                    const Content = (
+                      <>
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
                           <img
@@ -465,6 +477,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Player Name — Tight Left */}
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
+                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
                           {Array.from({ length: subbedInCount[item.player.id] || 0 }).map((_, i) => (
                             <i key={`in-${i}`} className="fa-solid fa-right-left text-green-500 text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
                           ))}
@@ -507,6 +520,20 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                             </span>
                           ))}
                         </div>
+                      </>
+                    );
+
+                    return isGuest ? (
+                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-300 select-none">
+                        {Content}
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={`/players/${item.player.slug}`}
+                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
+                      >
+                        {Content}
                       </Link>
                     );
                   })}
