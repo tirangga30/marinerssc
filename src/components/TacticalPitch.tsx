@@ -26,6 +26,7 @@ interface TacticalPitchProps {
     id: string;
     playerId: string;
     type: string;
+    assistPlayerId?: string;
   }>;
 }
 
@@ -89,10 +90,16 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
 
           const playerEvts: Array<{ type: string }> = [];
           rawEvts.forEach((e) => {
-            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
+            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card', 'sub'].includes(e.type)) {
               playerEvts.push(e);
             }
           });
+
+          // Check if this starter was subbed out (their id appears as assistPlayerId in a sub event)
+          const isSubbedOut = events.some((e) => e.type === 'sub' && e.assistPlayerId === lineup.player.id);
+          if (isSubbedOut && !playerEvts.some((e) => e.type === 'sub')) {
+            playerEvts.push({ type: 'sub' });
+          }
 
           if (hasSecondYellowEvt || yellowEvts.length >= 2) {
             if (yellowEvts.length > 0) playerEvts.push({ type: 'yellow_card' });
@@ -145,6 +152,9 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
                         )}
                         {e.type === 'red_card' && (
                           <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-red-600 rounded-[1px] inline-block border border-red-400/40" />
+                        )}
+                        {e.type === 'sub' && (
+                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Digantikan" />
                         )}
                       </span>
                     ))}

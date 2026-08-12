@@ -659,6 +659,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   </div>
                 )}
 
+                {newEvent.type === 'sub' && (
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Pemain yang Digantikan *</label>
+                    <select
+                      value={newEvent.assistPlayerId}
+                      onChange={(e) => setNewEvent({ ...newEvent, assistPlayerId: e.target.value })}
+                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                    >
+                      <option value="">-- Pilih Pemain Keluar --</option>
+                      {players.filter(p => p.id !== newEvent.playerId).map((p) => (
+                        <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Menit</label>
@@ -668,15 +684,17 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none text-center font-mono font-bold"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Deskripsi</label>
-                    <input
-                      type="text" placeholder="Tendangan roket..."
-                      value={newEvent.description}
-                      onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
-                    />
-                  </div>
+                  {newEvent.type !== 'sub' && (
+                    <div className="col-span-2">
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Deskripsi</label>
+                      <input
+                        type="text" placeholder="Tendangan roket..."
+                        value={newEvent.description}
+                        onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                        className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -721,7 +739,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               {evType?.label || ev.type}
                             </span>
                           </div>
-                          {assistObj && <p className="text-[9px] text-slate-500 mt-0.5">Assist: {assistObj.name}</p>}
+                          {ev.type === 'sub' && assistObj && (
+                            <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1">
+                              <span className="text-green-400 font-bold">{getPlayerById(ev.playerId)?.name}</span>
+                              <i className="fa-solid fa-right-left text-sky-400 text-[8px]" />
+                              <span className="text-red-400 font-bold">{assistObj.name}</span>
+                            </p>
+                          )}
+                          {ev.type !== 'sub' && assistObj && <p className="text-[9px] text-slate-500 mt-0.5">Assist: {assistObj.name}</p>}
                           {ev.description && <p className="text-[9px] text-slate-500 italic truncate">{ev.description}</p>}
                         </div>
                         <button

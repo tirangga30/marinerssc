@@ -192,8 +192,8 @@ export default async function PlayerDetailPage({
       {/* ═══════════════════════════════════════════════════ */}
       <div>
         <div className="flex items-end justify-between mb-3">
-          <h2 className="text-xl font-black text-white">Last Matches</h2>
-          <span className="text-xs font-semibold" style={{ color: '#38bdf8' }}>Riwayat Laga Terakhir</span>
+          <h2 className="text-l font-black text-white">Last Matches</h2>
+          
         </div>
 
         <div className="rounded-2xl overflow-hidden shadow-xl" style={panelBg}>
@@ -280,19 +280,19 @@ export default async function PlayerDetailPage({
                         <TopTeam />
                         <BottomTeam />
                       </div>
-                      {/* Event icons: Regular Goals / Own Goals / Penalty & Assists (Yellow A plain text) */}
+                      {/* Event icons: Regular Goals / Own Goals / Penalty & Assists */}
                       {hasEvents && (
                         <div className="flex items-center gap-1 shrink-0">
                           {Array.from({ length: Math.min(regularGoals, 3) }).map((_, i) => (
-                            <BallIcon key={`g${i}`} size={14} />
+                            <BallIcon key={`g${i}`} size={11} />
                           ))}
                           {Array.from({ length: Math.min(ownGoals, 3) }).map((_, i) => (
-                            <i key={`og${i}`} className="fa-regular fa-futbol text-red-500 text-xs shrink-0" title="Gol Bunuh Diri" />
+                            <i key={`og${i}`} className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />
                           ))}
                           {Array.from({ length: Math.min(penalties, 3) }).map((_, i) => (
                             <span key={`p${i}`} className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
-                              <i className="fa-regular fa-futbol text-amber-400 text-xs" />
-                              <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-sm">
+                              <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                              <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
                                 P
                               </span>
                             </span>
@@ -300,19 +300,19 @@ export default async function PlayerDetailPage({
                           {Array.from({ length: Math.min(assists, 3) }).map((_, i) => (
                             <span
                               key={`a${i}`}
-                              className="text-amber-400 font-black text-xs sm:text-sm leading-none shrink-0"
+                              className="text-amber-400 font-black text-[10px] leading-none shrink-0"
                               title="Assist"
                             >
                               A
                             </span>
                           ))}
                           {hasSecondYellow ? (
-                            <span className="relative inline-flex items-center shrink-0 align-middle ml-1" title="Kartu Kuning 2x (Kartu Merah)">
-                              <span className="w-2.5 h-3.5 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-2px, -1px)' }} />
-                              <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                            <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
+                              <span className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
+                              <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
                             </span>
                           ) : hasDirectRed ? (
-                            <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                            <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
                           ) : null}
                         </div>
                       )}
