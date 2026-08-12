@@ -118,7 +118,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
               {/* Player Avatar Circle */}
               <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
                 <img
-                  src={lineup.player.photoUrl || '/playertemplate.jpeg'}
+                  src={lineup.player.photoUrl || '/playertemplate.png'}
                   alt={lineup.player.name}
                   className="w-full h-full object-cover rounded-full"
                 />

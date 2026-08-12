@@ -104,7 +104,7 @@ export default async function PlayerDetailPage({
         <div className="group relative h-80 sm:h-[500px] overflow-hidden flex flex-col justify-end">
           {/* Full Photo */}
           <img
-            src={player.photoUrl || '/playertemplate.jpeg'}
+            src={player.photoUrl || '/playertemplate.png'}
             alt={player.name}
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
@@ -240,7 +240,7 @@ export default async function PlayerDetailPage({
                   const hasDirectRed = evts.some((e: any) => e.type === 'red_card');
                   const rc = (hasSecondYellow || hasDirectRed) ? 1 : 0;
 
-                  const resultBg = result === 'W' ? '#16a34a' : result === 'L' ? '#dc2626' : '#475569';
+                  const resultBg = result === 'W' ? '#16a34a' : result === 'L' ? '#dc2626' : '#d97706';
                   const rowBorder = idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)';
 
                   /* Shared match team labels */

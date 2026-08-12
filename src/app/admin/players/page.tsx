@@ -39,7 +39,7 @@ export default function AdminPlayersPage() {
     return p || 'FORWARD';
   };
 
-  // Form State - Default Photo Template is /playertemplate.jpeg
+  // Form State - Default Photo Template is /playertemplate.png
   const [formData, setFormData] = useState({
     name: '',
     number: '',
@@ -47,7 +47,7 @@ export default function AdminPlayersPage() {
     nationality: 'Indonesia',
     heightCm: '',
     weightKg: '',
-    photoUrl: '/playertemplate.jpeg',
+    photoUrl: '/playertemplate.png',
     bio: '',
     isCaptain: false,
     status: 'Active',
@@ -109,7 +109,7 @@ export default function AdminPlayersPage() {
       nationality: 'Indonesia',
       heightCm: '',
       weightKg: '',
-      photoUrl: '/playertemplate.jpeg',
+      photoUrl: '/playertemplate.png',
       bio: '',
       isCaptain: false,
       status: 'Active',
@@ -131,7 +131,7 @@ export default function AdminPlayersPage() {
       nationality: player.nationality,
       heightCm: player.heightCm?.toString() || '',
       weightKg: player.weightKg?.toString() || '',
-      photoUrl: player.photoUrl || '/playertemplate.jpeg',
+      photoUrl: player.photoUrl || '/playertemplate.png',
       bio: player.bio,
       isCaptain: player.isCaptain,
       status: player.status,
@@ -253,7 +253,7 @@ export default function AdminPlayersPage() {
                   <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
                   <td className="p-3 flex items-center gap-3">
                     <img
-                      src={player.photoUrl || '/playertemplate.jpeg'}
+                      src={player.photoUrl || '/playertemplate.png'}
                       alt={player.name}
                       className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
                     />
@@ -328,7 +328,7 @@ export default function AdminPlayersPage() {
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
                     <img
-                      src={formData.photoUrl || '/playertemplate.jpeg'}
+                      src={formData.photoUrl || '/playertemplate.png'}
                       alt="Preview"
                       className="w-full h-full object-cover"
                     />
@@ -350,7 +350,7 @@ export default function AdminPlayersPage() {
                       
                       <button
                         type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.jpeg' }))}
+                        onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))}
                         className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
                       >
                         Reset Template
@@ -358,7 +358,7 @@ export default function AdminPlayersPage() {
                     </div>
 
                     <p className="text-[11px] text-slate-400">
-                      Pilih file gambar (.jpg, .png, .webp) dari laptop Anda. Jika tidak diunggah, akan menggunakan template default <strong>/playertemplate.jpeg</strong>.
+                      Pilih file gambar (.jpg, .png, .webp) dari laptop Anda. Jika tidak diunggah, akan menggunakan template default <strong>/playertemplate.png</strong>.
                     </p>
                   </div>
                 </div>

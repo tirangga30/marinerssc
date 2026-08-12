@@ -131,8 +131,15 @@ export default async function HomePage() {
             <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
               {nextMatch?.status === 'scheduled' ? 'Laga Mendatang' : 'Hasil Pertandingan Terakhir'}
             </h3>
-            <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-              {nextMatch?.competition || 'Matchday 1'}
+            <span className="flex items-center gap-1.5 sm:gap-2">
+              {nextMatch && (
+                <span className="text-[9px] sm:text-xs font-medium text-slate-400">
+                  {new Date(nextMatch.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
+              <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+                {nextMatch?.competition || 'Matchday 1'}
+              </span>
             </span>
           </div>
 
@@ -157,6 +164,9 @@ export default async function HomePage() {
 
                 {/* Score / VS Badge */}
                 <div className="space-y-0.5 sm:space-y-2">
+                  <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+                    {new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                  </p>
                   {nextMatch.status === 'finished' ? (
                     <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                       {nextMatch.homeScore} : {nextMatch.awayScore}
@@ -166,14 +176,6 @@ export default async function HomePage() {
                       VS
                     </div>
                   )}
-                  <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                    {new Date(nextMatch.matchDate).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })} • {new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
-                  </p>
                   <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{nextMatch.venue}</p>
                 </div>
 
@@ -205,6 +207,108 @@ export default async function HomePage() {
 
         </Link>
       </section>
+
+      {/* 3 PERTANDINGAN TERAKHIR */}
+      {finishedMatches.length > 0 && (() => {
+        const last3 = [...finishedMatches]
+          .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+          .slice(0, 3);
+        return (
+          <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div className="mb-3 sm:mb-5 flex items-center gap-2">
+              <span className="w-1 h-5 rounded-full bg-sky-400 inline-block" />
+              <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">3 Pertandingan Terakhir</h2>
+            </div>
+            <div className="space-y-2">
+              {last3.map((m: any) => (
+                <Link
+                  key={m.id}
+                  href={`/matches/${m.id}`}
+                  className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/30 hover:border-sky-400/60 shadow-2xl shadow-slate-950 hover:shadow-sky-500/10 transition-all duration-300 cursor-pointer"
+                >
+                  {/* Top Bar Header */}
+                  {(() => {
+                    const our = m.isHome ? m.homeScore : m.awayScore;
+                    const their = m.isHome ? m.awayScore : m.homeScore;
+                    const result = our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW';
+                    const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
+                    const resultBg = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
+                    return (
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
+                        <span
+                          className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border"
+                          style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
+                        >
+                          {result}
+                        </span>
+                        <span className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-[9px] sm:text-xs font-medium text-slate-400">
+                            {new Date(m.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+                            {m.competition || 'Matchday 1'}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Main Scoreboard Content */}
+                  <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
+
+                    {/* Home Team */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
+                      <div className="order-2 sm:order-1 text-center sm:text-right">
+                        <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                          {m.isHome ? 'MARINERS SC' : m.opponentName}
+                        </h4>
+                      </div>
+                      <div className="order-1 sm:order-2 flex items-center justify-center">
+                        <img
+                          src={m.isHome ? '/marinerssc.png' : m.opponentLogo}
+                          alt={m.isHome ? 'Mariners SC' : m.opponentName}
+                          className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Score */}
+                    <div className="space-y-0.5 sm:space-y-2">
+                      <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+                        {new Date(m.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                      </p>
+                      <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
+                        {m.homeScore} : {m.awayScore}
+                      </div>
+                      <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">
+                        {m.venue} ({m.isHome ? 'Kandang' : 'Tandang'})
+                      </p>
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
+                      <div className="flex items-center justify-center">
+                        <img
+                          src={!m.isHome ? '/marinerssc.png' : m.opponentLogo}
+                          alt={!m.isHome ? 'Mariners SC' : m.opponentName}
+                          className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                          {!m.isHome ? 'MARINERS SC' : m.opponentName}
+                        </h4>
+                      </div>
+                    </div>
+
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
 
       {/* SEASON STATS OVERVIEW - MOVED TO DIRECTLY BELOW BOXMATCH */}
       <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -261,7 +365,7 @@ export default async function HomePage() {
             >
               {/* Full Photo */}
               <img
-                src={player.photoUrl || '/playertemplate.jpeg'}
+                src={player.photoUrl || '/playertemplate.png'}
                 alt={player.name}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

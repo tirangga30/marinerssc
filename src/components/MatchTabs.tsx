@@ -340,7 +340,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
                           <img
-                            src={item.player.photoUrl || '/playertemplate.jpeg'}
+                            src={item.player.photoUrl || '/playertemplate.png'}
                             alt={item.player.name}
                             className="w-full h-full object-cover"
                           />
@@ -427,7 +427,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
                           <img
-                            src={item.player.photoUrl || '/playertemplate.jpeg'}
+                            src={item.player.photoUrl || '/playertemplate.png'}
                             alt={item.player.name}
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
                           />
