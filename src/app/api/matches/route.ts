@@ -34,6 +34,7 @@ export async function POST(req: Request) {
         competition: data.competition || 'Matchday 1',
         venue: data.venue || 'Stadion Gelora Samudra, Jakarta',
         isHome: Boolean(data.isHome),
+        isLiveEnabled: Boolean(data.isLiveEnabled),
         status: data.status || 'scheduled',
         homeScore: data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
         awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,

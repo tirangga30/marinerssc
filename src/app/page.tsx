@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Calendar, ArrowRight, Flame, Sparkles } from 'lucide-react';
 import MatchTimer from '@/components/MatchTimer';
+import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,6 +17,38 @@ const normalizePos = (pos: string) => {
   return p || 'FORWARD';
 };
 
+function formatBoxDisplayName(fullName: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return fullName;
+
+  if (fullName.length <= 14) return fullName;
+  return parts[0];
+}
+
+
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+  if (!m) return 'scheduled';
+  if (m.status === 'finished') return 'finished';
+  const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+  if (hasFulltime) return 'finished';
+
+  const now = new Date();
+  const start = new Date(m.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  if (m.isLiveEnabled !== false) {
+    if (now >= start) return 'live';
+    return 'scheduled';
+  } else {
+    const durationMinutes = m.duration || 60;
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    if (now < start) return 'scheduled';
+    if (now >= start && now <= end) return 'live';
+    return 'finished';
+  }
+}
+
 export default async function HomePage() {
   let matches: any[] = [];
   let articles: any[] = [];
@@ -23,6 +56,9 @@ export default async function HomePage() {
 
   try {
     const rawMatches = await prisma.footballMatch.findMany({
+      include: {
+        events: true,
+      },
       orderBy: { matchDate: 'asc' },
     });
 
@@ -53,9 +89,23 @@ export default async function HomePage() {
     console.error('Error fetching data from database:', error);
   }
 
-  const nextMatch = matches.find((m: any) => m.status === 'scheduled') || matches[matches.length - 1];
+  const matchesWithStatus = matches.map((m: any) => ({
+    ...m,
+    computedStatus: getDynamicMatchStatus(m)
+  }));
 
-  const finishedMatches = matches.filter((m: any) => m.status === 'finished');
+  const liveMatch = matchesWithStatus.find((m: any) => m.computedStatus === 'live');
+  const upcomingMatch = matchesWithStatus
+    .filter((m: any) => m.computedStatus === 'scheduled')
+    .sort((a: any, b: any) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())[0];
+  const lastFinishedMatch = matchesWithStatus
+    .filter((m: any) => m.computedStatus === 'finished')
+    .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())[0];
+
+  const nextMatch = liveMatch || upcomingMatch || lastFinishedMatch || matchesWithStatus[0];
+  const featuredStatus = nextMatch ? getDynamicMatchStatus(nextMatch) : 'scheduled';
+
+  const finishedMatches = matchesWithStatus.filter((m: any) => m.computedStatus === 'finished');
   const totalFinished = finishedMatches.length;
 
   const wins = finishedMatches.filter(
@@ -133,9 +183,19 @@ export default async function HomePage() {
         >
           
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
-            <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
-              {nextMatch?.status === 'scheduled' ? 'Laga Mendatang' : 'Hasil Pertandingan Terakhir'}
-            </h3>
+            {featuredStatus === 'live' ? (
+              <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+              </span>
+            ) : featuredStatus === 'scheduled' ? (
+              <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
+                Laga Mendatang
+              </h3>
+            ) : (
+              <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
+                Hasil Pertandingan Terakhir
+              </h3>
+            )}
             <span className="flex items-center gap-1.5 sm:gap-2">
               {nextMatch && (
                 <span className="text-[9px] sm:text-xs font-medium text-slate-400">
@@ -169,17 +229,32 @@ export default async function HomePage() {
 
                 {/* Score / VS Badge */}
                 <div className="space-y-0.5 sm:space-y-2">
-                  <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                    {nextMatch.status === 'finished' ? 'FULL TIME' : `${new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
-                  </p>
-                  {nextMatch.status === 'finished' ? (
-                    <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
-                      {nextMatch.homeScore} : {nextMatch.awayScore}
-                    </div>
+                  {featuredStatus === 'live' ? (
+                    <LiveScoreDisplay
+                      targetDate={nextMatch.matchDate}
+                      duration={nextMatch.duration}
+                      homeScore={nextMatch.homeScore ?? 0}
+                      awayScore={nextMatch.awayScore ?? 0}
+                      isLiveEnabled={nextMatch.isLiveEnabled !== false}
+                      events={nextMatch.events}
+                      status={featuredStatus}
+                    />
+                  ) : featuredStatus === 'finished' ? (
+                    <>
+                      <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+                      <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
+                        {nextMatch.homeScore ?? 0} : {nextMatch.awayScore ?? 0}
+                      </div>
+                    </>
                   ) : (
-                    <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
-                      VS
-                    </div>
+                    <>
+                      <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+                        {`${new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
+                      </p>
+                      <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+                        VS
+                      </div>
+                    </>
                   )}
                   <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{nextMatch.venue}</p>
                 </div>
@@ -201,8 +276,8 @@ export default async function HomePage() {
 
               </div>
 
-              {/* COUNTDOWN TIMER INSIDE THE BOX */}
-              <MatchTimer targetDate={nextMatch.matchDate} status={nextMatch.status} />
+              {/* COUNTDOWN / LIVE / FINISHED TIMER INSIDE THE BOX */}
+              <MatchTimer targetDate={nextMatch.matchDate} status={featuredStatus} duration={nextMatch.duration} isLiveEnabled={nextMatch.isLiveEnabled !== false} />
             </>
           ) : (
             <div className="text-center py-3 text-xs text-slate-400">
@@ -366,7 +441,7 @@ export default async function HomePage() {
             <Link
               key={player.id}
               href={`/players/${player.slug}`}
-              className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
+              className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
             >
               {/* Full Photo */}
               <img
@@ -375,19 +450,19 @@ export default async function HomePage() {
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               
-              {/* Soft Black Gradient Overlay at Bottom (reaches up to player name) */}
-              <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
+              {/* Soft Black Gradient Overlay at Bottom */}
+              <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/65 to-transparent pointer-events-none" />
 
-              {/* Bottom Info: Large Number alongside Name & Position */}
-              <div className="relative z-10 p-3 sm:p-5 flex items-center gap-2 sm:gap-3.5">
-                <span className="text-3xl sm:text-5xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
+              {/* Bottom Info: Number alongside Name & Position (Compact box font size) */}
+              <div className="relative z-10 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <span className="text-3xl sm:text-5xl md:text-6xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
                   {player.number}
                 </span>
-                <div className="min-w-0 space-y-0.5 sm:space-y-1">
-                  <h3 className="text-base sm:text-2xl md:text-3xl font-black text-white group-hover:text-sky-300 transition-colors uppercase truncate leading-tight">
-                    {player.name}
+                <div className="min-w-0 space-y-0.5">
+                  <h3 className="text-sm sm:text-xl md:text-2xl font-black text-white group-hover:text-sky-300 transition-colors uppercase leading-tight">
+                    {formatBoxDisplayName(player.name)}
                   </h3>
-                  <p className="text-[9px] sm:text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none">
+                  <p className="text-[7px] sm:text-[8px] md:text-[9px] text-sky-400/90 font-bold uppercase tracking-widest leading-none">
                     {normalizePos(player.position)}
                   </p>
                 </div>

@@ -10,6 +10,7 @@ import {
   Shield,
   Activity,
   UserCheck,
+  Play,
 } from 'lucide-react';
 
 const BallIcon = ({ size = 16 }: { size?: number }) => (
@@ -59,6 +60,7 @@ interface MatchTabsProps {
     summary: string | null;
     duration?: number;
     extraTime?: number;
+    isLiveEnabled?: boolean;
     lineups: LineupItem[];
     events: EventItem[];
   };
@@ -130,8 +132,25 @@ export default function MatchTabs({ match }: MatchTabsProps) {
     assistPlayerId: e.assistPlayer?.id || undefined,
   }));
 
+  const dur = match.duration || 60;
+  const htMinute = Math.floor(dur / 2);
+  const ftMinute = dur;
+
+  const startMs = new Date(match.matchDate).getTime();
+  const nowMs = new Date().getTime();
+  const elapsedMin = Math.floor((nowMs - startMs) / 60000);
+  const isStarted = match.status === 'finished' || match.status === 'live' || nowMs >= startMs;
+
+  const isLiveMode = match.isLiveEnabled !== false;
+
+  // Filter raw events if in Non-Live mode and match is not finished yet
+  let currentRawEvents = [...(match.events || [])];
+  if (!isLiveMode && match.status !== 'finished') {
+    currentRawEvents = currentRawEvents.filter((e) => e.minute <= Math.max(1, elapsedMin));
+  }
+
   const timelineYellowCounts: Record<string, number> = {};
-  const displayTimelineEvents: any[] = match.events.map((e) => {
+  const displayTimelineEvents: any[] = currentRawEvents.map((e) => {
     if (e.type === 'yellow_card' && e.player?.id) {
       timelineYellowCounts[e.player.id] = (timelineYellowCounts[e.player.id] || 0) + 1;
       if (timelineYellowCounts[e.player.id] >= 2) {
@@ -141,15 +160,32 @@ export default function MatchTabs({ match }: MatchTabsProps) {
     return e;
   });
 
-  const dur = match.duration || 90;
-  const htMinute = Math.floor(dur / 2);
-  const ftMinute = dur;
+  const hasK1 = displayTimelineEvents.some((e) => e.type === 'kickoff_1');
+  const hasHT = displayTimelineEvents.some((e) => e.type === 'halftime');
+  const hasK2 = displayTimelineEvents.some((e) => e.type === 'kickoff_2');
+  const hasFT = displayTimelineEvents.some((e) => e.type === 'fulltime');
 
-  if (match.status === 'finished' || match.status === 'live') {
-    displayTimelineEvents.push({ id: 'HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
-  }
-  if (match.status === 'finished') {
-    displayTimelineEvents.push({ id: 'FT-MARKER', minute: ftMinute, type: 'fulltime', isSystem: true });
+  if (isStarted) {
+    if (!hasK1 && (match.status === 'finished' || elapsedMin >= 1)) {
+      displayTimelineEvents.push({ id: 'AUTO-K1-MARKER', minute: 1, type: 'kickoff_1', isSystem: true });
+    }
+
+    if (!isLiveMode) {
+      // In Non Live mode, auto markers ONLY appear progressively as elapsed match time passes
+      if (!hasHT && (match.status === 'finished' || elapsedMin >= htMinute)) {
+        displayTimelineEvents.push({ id: 'AUTO-HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
+      }
+      if (!hasK2 && (match.status === 'finished' || elapsedMin >= htMinute + 1)) {
+        displayTimelineEvents.push({ id: 'AUTO-K2-MARKER', minute: htMinute + 1, type: 'kickoff_2', isSystem: true });
+      }
+      if (!hasFT && (match.status === 'finished' || elapsedMin >= dur)) {
+        displayTimelineEvents.push({ id: 'AUTO-FT-MARKER', minute: ftMinute, type: 'fulltime', isSystem: true });
+      }
+    } else if (match.status === 'finished') {
+      if (!hasHT) displayTimelineEvents.push({ id: 'AUTO-HT-MARKER', minute: htMinute, type: 'halftime', isSystem: true });
+      if (!hasK2) displayTimelineEvents.push({ id: 'AUTO-K2-MARKER', minute: htMinute + 1, type: 'kickoff_2', isSystem: true });
+      if (!hasFT) displayTimelineEvents.push({ id: 'AUTO-FT-MARKER', minute: ftMinute, type: 'fulltime', isSystem: true });
+    }
   }
 
   // Sort timeline events ascending by minute
@@ -275,6 +311,12 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                               <i className="fa-solid fa-right-left text-sky-400 shrink-0" /> Pergantian Pemain
                             </>
                           )}
+                          {event.type === 'kickoff_1' && (
+                            <span className="text-cyan-400 flex items-center gap-1"><Play className="w-3 h-3 fill-cyan-400" /> KICKOFF BABAK 1</span>
+                          )}
+                          {event.type === 'kickoff_2' && (
+                            <span className="text-cyan-400 flex items-center gap-1"><Play className="w-3 h-3 fill-cyan-400" /> KICKOFF BABAK 2</span>
+                          )}
                           {event.type === 'halftime' && (
                             <span className="text-sky-300">HALF-TIME</span>
                           )}
@@ -284,13 +326,16 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         </span>
                       </div>
 
-                      {event.isSystem ? (
+                      {event.isSystem || ['kickoff_1', 'kickoff_2', 'halftime', 'fulltime'].includes(event.type) ? (
                         <div className="text-xs sm:text-sm font-bold text-slate-200">
-                          {event.type === 'halftime' ? 'Babak Pertama Berakhir' : 'Pertandingan Selesai'}
+                          {event.type === 'kickoff_1' && 'Kickoff Babak Pertama'}
+                          {event.type === 'kickoff_2' && 'Kickoff Babak Kedua'}
+                          {event.type === 'halftime' && 'Babak Pertama Berakhir'}
+                          {event.type === 'fulltime' && 'Pertandingan Selesai'}
                         </div>
                       ) : event.type === 'sub' ? (
                         <div className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5 flex-wrap">
-                          <span className="text-green-400">{event.player.name}</span>
+                          <span className="text-green-400">{event.player?.name}</span>
                           <i className="fa-solid fa-right-left text-sky-400 text-[10px]" />
                           {event.assistPlayer ? (
                             <span className="text-red-400">{event.assistPlayer.name}</span>
@@ -298,7 +343,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         </div>
                       ) : (
                         <div className="text-xs sm:text-sm font-bold text-slate-200">
-                          {event.player.name}
+                          {event.player?.name}
                         </div>
                       )}
 

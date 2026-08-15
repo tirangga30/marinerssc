@@ -23,6 +23,16 @@ const normalizePos = (pos: string) => {
   return p || 'FORWARD';
 };
 
+function formatBoxDisplayName(fullName: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return fullName;
+
+  // If full name is short (<= 14 chars), display full name, otherwise first name only
+  if (fullName.length <= 14) return fullName;
+  return parts[0];
+}
+
 export default async function PlayersPage() {
   let players: any[] = [];
   try {
@@ -69,7 +79,7 @@ export default async function PlayersPage() {
                 <Link
                   key={player.id}
                   href={`/players/${player.slug}`}
-                  className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
+                  className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
                 >
                   {/* Full Photo */}
                   <img
@@ -78,19 +88,19 @@ export default async function PlayersPage() {
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   
-                  {/* Soft Black Gradient Overlay at Bottom (reaches up to player name) */}
+                  {/* Soft Black Gradient Overlay at Bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
 
-                  {/* Bottom Info: Large Number alongside Name & Position */}
-                  <div className="relative z-10 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-2xl sm:text-4xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
+                  {/* Bottom Info: Number alongside Name & Position (Compact box font size) */}
+                  <div className="relative z-10 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                    <span className="text-3xl sm:text-5xl md:text-6xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
                       {player.number}
                     </span>
                     <div className="min-w-0 space-y-0.5">
-                      <h3 className="text-sm sm:text-xl md:text-2xl font-black text-white group-hover:text-sky-300 transition-colors uppercase truncate leading-tight">
-                        {player.name}
+                      <h3 className="text-sm sm:text-xl md:text-2xl font-black text-white group-hover:text-sky-300 transition-colors uppercase leading-tight">
+                        {formatBoxDisplayName(player.name)}
                       </h3>
-                      <p className="text-[9px] sm:text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none">
+                      <p className="text-[7px] sm:text-[8px] md:text-[9px] text-sky-400/90 font-bold uppercase tracking-widest leading-none">
                         {normalizePos(player.position)}
                       </p>
                     </div>

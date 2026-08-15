@@ -3,9 +3,33 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import MatchTabs from '@/components/MatchTabs';
+import MatchTimer from '@/components/MatchTimer';
+import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 
 export const revalidate = 0;
+
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+  if (!m) return 'scheduled';
+  if (m.status === 'finished') return 'finished';
+  const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+  if (hasFulltime) return 'finished';
+
+  const now = new Date();
+  const start = new Date(m.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  if (m.isLiveEnabled !== false) {
+    if (now >= start) return 'live';
+    return 'scheduled';
+  } else {
+    const durationMinutes = m.duration || 60;
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    if (now < start) return 'scheduled';
+    if (now >= start && now <= end) return 'live';
+    return 'finished';
+  }
+}
 
 export default async function MatchDetailPage({
   params,
@@ -38,18 +62,23 @@ export default async function MatchDetailPage({
 
   const matchdayIndex = allMatches.findIndex((m) => m.id === id) + 1;
   const matchdayLabel = matchdayIndex > 0 ? `Matchday ${matchdayIndex}` : match.competition;
+  const status = getDynamicMatchStatus(match);
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
-      
-     
 
       {/* Main Score Board Header - NO BOX AROUND LOGOS */}
       <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/30 text-center space-y-6 relative overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-[10px] sm:text-xs font-bold uppercase">
-          <span className="text-sky-400">
-            {matchdayLabel}
-          </span>
+          {status === 'live' ? (
+            <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+            </span>
+          ) : (
+            <span className="text-sky-400">
+              {matchdayLabel}
+            </span>
+          )}
           <span className="text-slate-400">
             {new Date(match.matchDate).toLocaleDateString('id-ID', {
               weekday: 'long',
@@ -61,7 +90,7 @@ export default async function MatchDetailPage({
         </div>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-6 items-center">
-          
+
           {/* Home Team - NO BOX */}
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center">
@@ -78,13 +107,21 @@ export default async function MatchDetailPage({
 
           {/* Score Box */}
           <div className="-mt-2 space-y-1">
-            {match.status === 'finished' ? (
+            {status === 'live' ? (
+              <LiveScoreDisplay
+                targetDate={match.matchDate}
+                duration={match.duration}
+                homeScore={match.homeScore ?? 0}
+                awayScore={match.awayScore ?? 0}
+                isLiveEnabled={match.isLiveEnabled !== false}
+              />
+            ) : status === 'finished' ? (
               <div>
                 <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
                   Full Time
                 </span>
                 <div className="text-3xl sm:text-6xl font-black font-mono blue-gradient-text tracking-widest">
-                  {match.homeScore} : {match.awayScore}
+                  {match.homeScore ?? 0} : {match.awayScore ?? 0}
                 </div>
               </div>
             ) : (

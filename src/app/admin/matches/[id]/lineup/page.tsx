@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Save, Plus, Trash2, CheckCircle2, Activity,
   Clock, Zap, Shield, Star, AlertCircle, GripVertical, X,
-  UserCheck, Upload, Loader2
+  UserCheck, Upload, Loader2, Play
 } from 'lucide-react';
 
 interface Player {
@@ -42,21 +42,24 @@ interface MatchEventInput {
   type: string;
   minute: number;
   description: string;
+  createdAt?: string | Date;
 }
 
 const PITCH_POSITIONS = [
-  { key: 'GK',  fullLabel: 'Goalkeeper',      x: 50, y: 88 },
-  { key: 'LB',  fullLabel: 'Left Back',        x: 15, y: 70 },
-  { key: 'CB1', fullLabel: 'Center Back 1',    x: 36, y: 72 },
-  { key: 'CB2', fullLabel: 'Center Back 2',    x: 64, y: 72 },
-  { key: 'RB',  fullLabel: 'Right Back',       x: 85, y: 70 },
-  { key: 'CM1', fullLabel: 'Central Mid 1',    x: 25, y: 50 },
-  { key: 'CM2', fullLabel: 'Central Mid 2',    x: 50, y: 48 },
-  { key: 'CAM', fullLabel: 'Attacking Mid',    x: 75, y: 50 },
-  { key: 'LW',  fullLabel: 'Left Winger',      x: 15, y: 22 },
-  { key: 'ST',  fullLabel: 'Striker',          x: 50, y: 14 },
-  { key: 'RW',  fullLabel: 'Right Winger',     x: 85, y: 22 },
+  { key: 'GK', fullLabel: 'Goalkeeper', x: 50, y: 88 },
+  { key: 'LB', fullLabel: 'Left Back', x: 15, y: 70 },
+  { key: 'CB1', fullLabel: 'Center Back 1', x: 36, y: 72 },
+  { key: 'CB2', fullLabel: 'Center Back 2', x: 64, y: 72 },
+  { key: 'RB', fullLabel: 'Right Back', x: 85, y: 70 },
+  { key: 'CM1', fullLabel: 'Central Mid 1', x: 25, y: 50 },
+  { key: 'CM2', fullLabel: 'Central Mid 2', x: 50, y: 48 },
+  { key: 'CAM', fullLabel: 'Attacking Mid', x: 75, y: 50 },
+  { key: 'LW', fullLabel: 'Left Winger', x: 15, y: 22 },
+  { key: 'ST', fullLabel: 'Striker', x: 50, y: 14 },
+  { key: 'RW', fullLabel: 'Right Winger', x: 85, y: 22 },
 ];
+
+const isMatchTimeEvent = (type: string) => ['kickoff_2', 'halftime', 'fulltime'].includes(type);
 
 const EVENT_TYPES = [
   { value: 'goal',        label: 'Gol',                 color: '#22c55e' },
@@ -65,9 +68,15 @@ const EVENT_TYPES = [
   { value: 'sub',         label: 'Pergantian',          color: '#38bdf8' },
   { value: 'own_goal',    label: 'Gol Bunuh Diri',      color: '#f97316' },
   { value: 'penalty',     label: 'Penalti',             color: '#a855f7' },
+  { value: 'halftime',    label: 'Halftime',            color: '#38bdf8' },
+  { value: 'kickoff_2',   label: 'Kickoff Babak 2',     color: '#06b6d4' },
+  { value: 'fulltime',    label: 'Fulltime',            color: '#38bdf8' },
 ];
 
 const EventIcon = ({ type }: { type: string }) => {
+  if (type === 'kickoff_1' || type === 'kickoff_2') {
+    return <Play className="w-3.5 h-3.5 text-cyan-400 shrink-0 inline-block align-middle fill-cyan-400" />;
+  }
   if (type === 'goal') {
     return <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" />;
   }
@@ -103,6 +112,9 @@ const EventIcon = ({ type }: { type: string }) => {
   if (type === 'red_card') {
     return <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 align-middle shadow-xs border border-red-400/40" title="Kartu Merah" />;
   }
+  if (type === 'halftime' || type === 'fulltime') {
+    return <Clock className="w-3.5 h-3.5 text-sky-400 shrink-0 inline-block align-middle" />;
+  }
   return null;
 };
 
@@ -117,8 +129,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     formation: '4-3-3',
     homeScore: '',
     awayScore: '',
-    duration: 90,
+    duration: 60,
     extraTime: 0,
+    isLiveEnabled: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -133,8 +146,103 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const [dragFromPitch, setDragFromPitch] = useState<boolean>(false);
 
   const [newEvent, setNewEvent] = useState({
-    playerId: '', assistPlayerId: '', type: 'goal', minute: '15', description: '',
+    playerId: '', assistPlayerId: '', type: 'goal', minute: '1', description: '',
   });
+
+  const getCurrentMatchMinute = () => {
+    const ftEvent = eventsList.find((e) => e.type === 'fulltime');
+    if (ftEvent) {
+      return ftEvent.minute;
+    }
+    if (matchDetails.status === 'finished') {
+      return matchDetails.duration || 60;
+    }
+
+    const htEvent = eventsList.find((e) => e.type === 'halftime');
+    const k2Event = eventsList.find((e) => e.type === 'kickoff_2');
+
+    if (htEvent && !k2Event) {
+      return htEvent.minute;
+    }
+
+    const now = new Date().getTime();
+    const matchStartMs = matchData?.matchDate ? new Date(matchData.matchDate).getTime() : now;
+
+    if (k2Event) {
+      const k2Time = k2Event.createdAt ? new Date(k2Event.createdAt).getTime() : now;
+      const elapsedMin = Math.floor((now - k2Time) / 60000);
+      const halfDur = Math.floor((matchDetails.duration || 60) / 2);
+      const startMin = k2Event.minute || (halfDur + 1);
+      return startMin + elapsedMin;
+    }
+
+    if (now < matchStartMs) return 1;
+    let elapsed = Math.floor((now - matchStartMs) / 60000) + 1;
+    return elapsed;
+  };
+
+  // Real-time Scoreboard live timer state for Admin Lineup Builder
+  const [liveTimerDisplay, setLiveTimerDisplay] = useState<{
+    phase: string;
+    text: string;
+    boxText: string | null;
+  }>({ phase: 'BELUM KICKOFF', text: '00:00', boxText: null });
+
+  useEffect(() => {
+    if (!matchDetails.isLiveEnabled) return;
+
+    const updateAdminTimer = () => {
+      const ht = eventsList.find((e) => e.type === 'halftime');
+      const k2 = eventsList.find((e) => e.type === 'kickoff_2');
+      const ft = eventsList.find((e) => e.type === 'fulltime');
+
+      if (ft || matchDetails.status === 'finished') {
+        setLiveTimerDisplay({ phase: 'FULL TIME', text: '00:00', boxText: 'FULLTIME' });
+        return;
+      }
+      if (ht && !k2) {
+        setLiveTimerDisplay({ phase: 'HALFTIME', text: '00:00', boxText: 'HALFTIME' });
+        return;
+      }
+
+      const nowMs = new Date().getTime();
+      const matchStartMs = matchData?.matchDate ? new Date(matchData.matchDate).getTime() : nowMs;
+
+      if (nowMs < matchStartMs) {
+        setLiveTimerDisplay({ phase: 'BELUM KICKOFF', text: '00:00', boxText: null });
+        return;
+      }
+
+      let totalSec = 0;
+      let phaseLabel = 'BABAK 1';
+
+      if (k2) {
+        phaseLabel = 'BABAK 2';
+        const k2Time = k2.createdAt ? new Date(k2.createdAt).getTime() : nowMs;
+        const elapsedSec = Math.max(0, Math.floor((nowMs - k2Time) / 1000));
+        const halfDur = Math.floor((matchDetails.duration || 60) / 2);
+        const k2BaseSec = ((k2.minute || (halfDur + 1)) - 1) * 60;
+        totalSec = k2BaseSec + elapsedSec;
+      } else {
+        phaseLabel = 'BABAK 1';
+        totalSec = Math.max(0, Math.floor((nowMs - matchStartMs) / 1000));
+      }
+
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+      setLiveTimerDisplay({
+        phase: phaseLabel,
+        text: formatted,
+        boxText: null,
+      });
+    };
+
+    updateAdminTimer();
+    const timer = setInterval(updateAdminTimer, 1000);
+    return () => clearInterval(timer);
+  }, [matchDetails.isLiveEnabled, matchDetails.duration, matchDetails.status, matchData?.matchDate, eventsList]);
 
   const [activeTab, setActiveTab] = useState<'lineup' | 'events'>('lineup');
   const [rosterTab, setRosterTab] = useState<'main' | 'guests'>('main');
@@ -246,8 +354,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           formation: matchInfo.formation || '4-3-3',
           homeScore: matchInfo.homeScore !== null ? matchInfo.homeScore.toString() : '',
           awayScore: matchInfo.awayScore !== null ? matchInfo.awayScore.toString() : '',
-          duration: matchInfo.duration || 90,
+          duration: matchInfo.duration || 60,
           extraTime: matchInfo.extraTime || 0,
+          isLiveEnabled: Boolean(matchInfo.isLiveEnabled),
         });
 
         if (matchInfo.lineups?.length > 0) {
@@ -255,13 +364,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           const bIds: string[] = [];
           matchInfo.lineups.forEach((l: any) => {
             if (l.isStarter) {
-               let cx = l.x, cy = l.y;
-               if (cx == null || cy == null) {
-                 const preset = PITCH_POSITIONS.find(p => p.key === l.pitchPosition);
-                 if (preset) { cx = preset.x; cy = preset.y; }
-                 else { cx = 50; cy = 50; }
-               }
-               sArr.push({ playerId: l.playerId, x: cx, y: cy, pitchPosition: l.pitchPosition, positionName: l.positionName });
+              let cx = l.x, cy = l.y;
+              if (cx == null || cy == null) {
+                const preset = PITCH_POSITIONS.find(p => p.key === l.pitchPosition);
+                if (preset) { cx = preset.x; cy = preset.y; }
+                else { cx = 50; cy = 50; }
+              }
+              sArr.push({ playerId: l.playerId, x: cx, y: cy, pitchPosition: l.pitchPosition, positionName: l.positionName });
             }
             else bIds.push(l.playerId);
           });
@@ -277,6 +386,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               type: e.type,
               minute: e.minute,
               description: e.description || '',
+              createdAt: e.createdAt ? new Date(e.createdAt) : undefined,
             }))
           );
         }
@@ -309,13 +419,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       setDragFromPitch(false);
       return;
     }
-    
+
     x = Math.max(0, Math.min(100, x));
     y = Math.max(0, Math.min(100, y));
 
     setStarters((prev) => {
       const filtered = prev.filter((p) => p.playerId !== dragPlayerId);
-      
+
       let posName = 'Midfielder';
       let pKey = 'CM';
       if (y > 70) { posName = 'Defender'; pKey = 'CB'; }
@@ -362,26 +472,31 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     setMatchDetails(prev => {
       let parsedVal = val;
       if (val !== '' && parseInt(val) < 0) parsedVal = '0';
-      const home = type === 'home' ? parsedVal : prev.homeScore;
-      const away = type === 'away' ? parsedVal : prev.awayScore;
-      const isFinished = home !== '' || away !== '';
       return {
         ...prev,
         [type === 'home' ? 'homeScore' : 'awayScore']: parsedVal,
-        status: isFinished ? 'finished' : 'scheduled'
       };
     });
   };
 
   const addEvent = () => {
-    if (!newEvent.playerId) { alert('Pilih pemain untuk event ini'); return; }
+    const isTimeEv = isMatchTimeEvent(newEvent.type);
+    if (!isTimeEv && !newEvent.playerId) {
+      alert('Pilih pemain untuk event ini');
+      return;
+    }
+
+    let targetPlayerId = newEvent.playerId;
+    if (!targetPlayerId && isTimeEv) {
+      targetPlayerId = players[0]?.id || '';
+    }
 
     let finalType = newEvent.type;
 
     // Otomatis ubah menjadi second_yellow (Kartu Kuning 2x / Merah) jika pemain sudah memiliki kartu kuning
     if (newEvent.type === 'yellow_card') {
       const existingYellow = eventsList.some(
-        (e) => e.playerId === newEvent.playerId && (e.type === 'yellow_card' || e.type === 'second_yellow')
+        (e) => e.playerId === targetPlayerId && (e.type === 'yellow_card' || e.type === 'second_yellow')
       );
       if (existingYellow) {
         finalType = 'second_yellow';
@@ -390,7 +505,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
     if (newEvent.type === 'red_card' || finalType === 'second_yellow') {
       const existingRed = eventsList.some(
-        (e) => e.playerId === newEvent.playerId && (e.type === 'red_card' || e.type === 'second_yellow')
+        (e) => e.playerId === targetPlayerId && (e.type === 'red_card' || e.type === 'second_yellow')
       );
       if (existingRed) {
         alert('Gagal! Pemain ini sudah menerima kartu merah.');
@@ -412,7 +527,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           return;
         }
       }
-      
+
       if (newEvent.type === 'own_goal') {
         const currentOwnGoals = eventsList.filter(e => e.type === 'own_goal').length;
         if (currentOwnGoals >= opponentScore) {
@@ -422,17 +537,69 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       }
     }
 
+    if (finalType === 'fulltime') {
+      setMatchDetails((prev) => ({ ...prev, status: 'finished' }));
+    }
+
     setEventsList((prev) => [
       ...prev,
       {
-        playerId: newEvent.playerId,
+        playerId: targetPlayerId,
         assistPlayerId: newEvent.assistPlayerId || undefined,
         type: finalType,
         minute: parseInt(newEvent.minute) || 0,
         description: newEvent.description,
+        createdAt: new Date(),
       },
     ]);
-    setNewEvent({ playerId: '', assistPlayerId: '', type: 'goal', minute: '15', description: '' });
+    const defaultNextMin = matchDetails.isLiveEnabled ? String(getCurrentMatchMinute()) : '1';
+    setNewEvent({ playerId: '', assistPlayerId: '', type: 'goal', minute: defaultNextMin, description: '' });
+  };
+
+  const handleDeleteEvent = (indexToDelete: number) => {
+    const evToDelete = eventsList[indexToDelete];
+    const updatedEvents = eventsList.filter((_, i) => i !== indexToDelete);
+    setEventsList(updatedEvents);
+
+    if (evToDelete?.type === 'fulltime') {
+      const hasRemainingFT = updatedEvents.some((e) => e.type === 'fulltime');
+      if (!hasRemainingFT) {
+        const start = matchData?.matchDate ? new Date(matchData.matchDate).getTime() : 0;
+        const now = new Date().getTime();
+        const durationMs = (matchDetails.duration || 60) * 60 * 1000;
+        const end = start + durationMs;
+
+        if (matchDetails.isLiveEnabled !== false) {
+          setMatchDetails((prev) => ({ ...prev, status: now >= start ? 'live' : 'scheduled' }));
+        } else {
+          setMatchDetails((prev) => ({
+            ...prev,
+            status: (now >= start && now <= end) ? 'live' : (now > end ? 'finished' : 'scheduled'),
+          }));
+        }
+      }
+    }
+  };
+
+  const getEffectiveStatus = () => {
+    const hasFulltime = eventsList.some((e) => e.type === 'fulltime');
+    if (hasFulltime) return 'finished';
+    if (!matchData?.matchDate) return 'scheduled';
+
+    const start = new Date(matchData.matchDate).getTime();
+    if (isNaN(start)) return 'scheduled';
+    const now = new Date().getTime();
+
+    if (now < start) return 'scheduled';
+
+    if (matchDetails.isLiveEnabled !== false) {
+      return 'live';
+    } else {
+      const durationMs = (matchDetails.duration || 60) * 60 * 1000;
+      const end = start + durationMs;
+      if (now >= end) return 'finished';
+      return 'live';
+    }
   };
 
   const handleSaveAll = async () => {
@@ -452,25 +619,37 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       lineupsPayload.push({ playerId: pId, isStarter: false, pitchPosition: 'SUB', positionName: 'Cadangan' });
     });
 
+    const effectiveStatus = getEffectiveStatus();
+
     try {
       const res = await fetch(`/api/matches/${matchId}/lineup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          lineups: lineupsPayload, 
+        body: JSON.stringify({
+          lineups: lineupsPayload,
           events: eventsList,
-          status: matchDetails.status,
+          status: effectiveStatus,
           formation: matchDetails.formation,
           homeScore: matchDetails.homeScore,
           awayScore: matchDetails.awayScore,
-          duration: matchDetails.duration
+          duration: matchDetails.duration,
+          isLiveEnabled: matchDetails.isLiveEnabled
         }),
       });
       if (res.ok) {
+        setMatchDetails((prev) => ({ ...prev, status: effectiveStatus }));
         setSaveSuccess(true);
-        setTimeout(() => { router.push('/admin/matches'); router.refresh(); }, 1200);
-      } else { alert('Gagal menyimpan lineup'); }
-    } catch { alert('Terjadi kesalahan jaringan'); }
+        setTimeout(() => {
+          setSaveSuccess(false);
+          router.refresh();
+        }, 2000);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        alert(`Gagal menyimpan lineup: ${errJson.error || res.statusText}`);
+      }
+    } catch (err: any) {
+      alert(`Terjadi kesalahan jaringan: ${err?.message || err}`);
+    }
     finally { setSaving(false); }
   };
 
@@ -510,22 +689,20 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           </Link>
 
           <div className="flex items-center gap-2">
-            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-colors ${
-              starterCount === 11
+            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-colors ${starterCount === 11
                 ? 'bg-green-500/20 border-green-500/50 text-green-400'
                 : 'bg-sky-500/10 border-sky-500/30 text-sky-400'
-            }`}>
+              }`}>
               {starterCount}/11 Starter
             </div>
 
             <button
               onClick={handleSaveAll}
               disabled={saving || saveSuccess}
-              className={`px-5 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg transition-all disabled:opacity-70 ${
-                saveSuccess
+              className={`px-5 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg transition-all disabled:opacity-70 ${saveSuccess
                   ? 'bg-green-500 text-white shadow-green-500/25'
                   : 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/25 hover:shadow-sky-500/35'
-              }`}
+                }`}
             >
               {saving ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -545,32 +722,58 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         {/* ═══ SCOREBOARD ═══ */}
         <div className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-sky-500/20 flex flex-col items-center justify-center gap-4 relative overflow-hidden shadow-xl">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-50" />
-          <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest text-center flex flex-col items-center gap-2">
-            <span>{matchData?.competition ? `${matchData.competition} — Hasil Pertandingan` : 'Hasil Pertandingan'}</span>
-            <div className="flex items-center gap-3 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+          <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest text-center flex flex-col items-center gap-1.5">
+            <span className="text-slate-300 font-black tracking-wider text-xs">{matchData?.competition ? matchData.competition : 'Pertandingan'}</span>
+            {matchData?.matchDate && (
+              <span className="flex items-center gap-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-400/30 shadow-inner my-0.5">
+                <Clock className="w-3.5 h-3.5 text-sky-400" />
+                {new Date(matchData.matchDate).toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })} • {new Date(matchData.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+              </span>
+            )}
+            <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 Waktu Laga:
-                <select 
-                  value={matchDetails.duration} 
-                  onChange={e => setMatchDetails(prev => ({...prev, duration: parseInt(e.target.value) || 90}))} 
-                  className="w-16 bg-slate-900 border border-slate-700 text-sky-400 rounded px-1 text-center outline-none focus:border-sky-500" 
+                <select
+                  value={matchDetails.duration}
+                  onChange={e => setMatchDetails(prev => ({ ...prev, duration: parseInt(e.target.value) || 60 }))}
+                  className="bg-slate-900 border border-slate-700 text-sky-400 rounded px-2 py-0.5 text-center outline-none focus:border-sky-500 text-xs"
                   title="Waktu Laga (menit)"
                 >
                   {[10, 20, 30, 40, 50, 60, 70, 80, 90].map(val => (
-                    <option key={val} value={val}>{val} mnt</option>
+                    <option key={val} value={val}>{val} menit</option>
                   ))}
+                </select>
+              </label>
+
+              <span className="text-slate-600 hidden sm:inline">|</span>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                Mode Pertandingan:
+                <select
+                  value={matchDetails.isLiveEnabled ? 'true' : 'false'}
+                  onChange={e => setMatchDetails(prev => ({ ...prev, isLiveEnabled: e.target.value === 'true' }))}
+                  className="bg-slate-900 border border-slate-700 text-sky-400 rounded px-2 py-0.5 text-center outline-none focus:border-sky-500 text-xs"
+                  title="Pilih Mode Pertandingan Live"
+                >
+                  <option value="true">Live Score (DEMO)</option>
+                  <option value="false">Non Live Score</option>
                 </select>
               </label>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2 sm:gap-6 justify-center w-full max-w-3xl">
             {/* Home Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-4 text-center sm:text-right">
               <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1">{matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
               <img src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/marinerssc.png')} alt="Home" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2" />
             </div>
-            
+
             {/* Score Inputs */}
             <div className="flex items-center gap-2 sm:gap-3 bg-slate-950 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-slate-700 shadow-inner shrink-0 relative group">
               {matchData?.matchDate && new Date() < new Date(matchData.matchDate) && (
@@ -607,9 +810,30 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2">{!matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
             </div>
           </div>
-          
-          <p className="text-[9px] text-sky-400 font-bold bg-sky-500/10 px-2 py-1 rounded mt-1">
-            {matchDetails.status === 'finished' ? 'Laga Selesai (Full Time)' : (matchData?.matchDate && new Date() < new Date(matchData.matchDate) ? 'Laga Belum Dimulai' : 'Laga Sedang Berlangsung')}
+
+          {/* Realtime Timer display for Live Score mode */}
+          {matchDetails.isLiveEnabled && (
+            <div className="flex flex-col items-center justify-center gap-1 mt-1">
+              <div className="flex items-center gap-1.5 bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800 shadow-inner">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
+                <span className="text-[10px] font-black text-sky-400 uppercase tracking-widest">{liveTimerDisplay.phase}</span>
+                <span className="text-slate-600">|</span>
+                {liveTimerDisplay.boxText ? (
+                  <span className="text-xs font-black font-mono text-amber-400 animate-pulse">{liveTimerDisplay.boxText}</span>
+                ) : (
+                  <span className="text-xs font-black font-mono text-red-400">{liveTimerDisplay.text}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <p className="text-[9px] font-bold px-2.5 py-1 rounded mt-0.5 bg-sky-500/10 text-sky-400">
+            {(() => {
+              const st = getEffectiveStatus();
+              if (st === 'finished') return 'Laga Selesai (Full Time)';
+              if (st === 'live') return 'Laga Sedang Berlangsung';
+              return 'Laga Belum Dimulai';
+            })()}
           </p>
         </div>
 
@@ -617,9 +841,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         <div className="flex lg:hidden gap-1 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
           {(['lineup', 'events'] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${
-                activeTab === tab ? 'bg-sky-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-              }`}>
+              className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${activeTab === tab ? 'bg-sky-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+                }`}>
               {tab === 'lineup' ? <><Shield className="w-3 h-3 inline mr-1" />Susunan Pemain</> : <><Zap className="w-3 h-3 inline mr-1" />Event ({eventsList.length})</>}
             </button>
           ))}
@@ -683,7 +906,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
                     <circle cx="50" cy="102" r="0.6" fill="rgba(255,255,255,0.5)" />
                     {/* Alternating grass stripes */}
-                    {[0,1,2,3,4].map(i => (
+                    {[0, 1, 2, 3, 4].map(i => (
                       <rect key={i} x="2" y={2 + i * 22} width="96" height="11" fill="rgba(0,0,0,0.035)" />
                     ))}
                   </svg>
@@ -691,7 +914,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   {/* Attack Arrow */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-30 pointer-events-none">
                     <svg width="12" height="14" viewBox="0 0 12 14">
-                      <path d="M6 0L12 8H8v6H4V8H0Z" fill="white"/>
+                      <path d="M6 0L12 8H8v6H4V8H0Z" fill="white" />
                     </svg>
                   </div>
 
@@ -741,11 +964,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   <button
                     type="button"
                     onClick={() => setRosterTab('main')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                      rosterTab === 'main'
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${rosterTab === 'main'
                         ? 'bg-sky-600/30 text-sky-300 border border-sky-500/50 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                    }`}
+                      }`}
                   >
                     <Star className="w-3 h-3 text-sky-400" />
                     Skuad Utama ({mainSquadAvailable.length})
@@ -754,11 +976,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   <button
                     type="button"
                     onClick={() => setRosterTab('guests')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                      rosterTab === 'guests'
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${rosterTab === 'guests'
                         ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                    }`}
+                      }`}
                   >
                     <UserCheck className="w-3 h-3 text-emerald-400" />
                     Pemain Loan ({guestPlayersAvailable.length})
@@ -778,11 +999,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             draggable
                             onDragStart={() => handleDragStart(p.id, false)}
                             onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${
-                              dragPlayerId === p.id
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
                                 ? 'opacity-40 scale-95'
                                 : 'bg-slate-800/60 border-slate-700 hover:border-sky-500/50 hover:bg-slate-800'
-                            }`}
+                              }`}
                           >
                             <GripVertical className="w-3 h-3 text-slate-600 shrink-0" />
                             <span className="w-6 h-6 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-[9px] font-black text-sky-400 shrink-0">
@@ -814,20 +1034,18 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               draggable
                               onDragStart={() => handleDragStart(p.id, false)}
                               onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${
-                                dragPlayerId === p.id
+                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
                                   ? 'opacity-40 scale-95'
                                   : isThisMatch
                                     ? 'bg-emerald-950/30 border-emerald-500/30 hover:border-emerald-400/50'
                                     : 'bg-amber-950/20 border-amber-500/30 hover:border-amber-400/50'
-                              }`}
+                                }`}
                             >
                               <GripVertical className={`w-3 h-3 shrink-0 ${isThisMatch ? 'text-emerald-500/60' : 'text-amber-500/60'}`} />
-                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
-                                isThisMatch
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${isThisMatch
                                   ? 'bg-emerald-600/20 border border-emerald-500/40 text-emerald-300'
                                   : 'bg-amber-600/20 border border-amber-500/40 text-amber-300'
-                              }`}>
+                                }`}>
                                 {p.number}
                               </span>
                               <span className="flex-1 min-w-0 flex items-center justify-between">
@@ -877,8 +1095,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                       {/* Guest Player Add Button */}
                       <div className="mt-3 pt-3 border-t border-slate-800">
-                        <button 
-                          onClick={() => setShowGuestModal(true)} 
+                        <button
+                          onClick={() => setShowGuestModal(true)}
                           className="w-full bg-emerald-950/40 border border-emerald-500/40 hover:bg-emerald-900/50 text-emerald-300 rounded-xl px-2 py-2 text-[10px] font-extrabold uppercase transition-colors flex items-center justify-center gap-1.5 shadow"
                         >
                           <Plus className="w-3.5 h-3.5 text-emerald-400" /> Tambah Pemain Loan Baru
@@ -892,9 +1110,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
             {/* ── BENCH ZONE (drop target) ── */}
             <div
-              className={`rounded-2xl border-2 border-dashed overflow-hidden transition-all ${
-                dragPlayerId ? 'border-sky-500/60 bg-sky-500/5' : 'border-slate-700/60 bg-slate-900/40'
-              }`}
+              className={`rounded-2xl border-2 border-dashed overflow-hidden transition-all ${dragPlayerId ? 'border-sky-500/60 bg-sky-500/5' : 'border-slate-700/60 bg-slate-900/40'
+                }`}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDropOnBench}
             >
@@ -961,11 +1178,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         key={et.value}
                         type="button"
                         onClick={() => setNewEvent({ ...newEvent, type: et.value })}
-                        className={`px-2 py-2 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight flex items-center gap-1.5 ${
-                          newEvent.type === et.value
+                        className={`px-2 py-2 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight flex items-center gap-1.5 ${newEvent.type === et.value
                             ? 'bg-sky-600/20 border-sky-400/60 text-sky-300'
                             : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
-                        }`}
+                          }`}
                       >
                         <EventIcon type={et.value} />
                         <span>{et.label}</span>
@@ -975,19 +1191,23 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </div>
 
                 {/* Player selectors */}
-                <div>
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Pemain Utama *</label>
-                  <select
-                    value={newEvent.playerId}
-                    onChange={(e) => setNewEvent({ ...newEvent, playerId: e.target.value })}
-                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
-                  >
-                    <option value="">-- Pilih Pemain --</option>
-                    {players.map((p) => (
-                      <option key={p.id} value={p.id}>#{p.number} {p.name} ({p.position})</option>
-                    ))}
-                  </select>
-                </div>
+                {!isMatchTimeEvent(newEvent.type) && (
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">
+                      {newEvent.type === 'own_goal' ? 'Pemain yang Melakukan Gol Bunuh Diri *' : 'Pemain Utama *'}
+                    </label>
+                    <select
+                      value={newEvent.playerId}
+                      onChange={(e) => setNewEvent({ ...newEvent, playerId: e.target.value })}
+                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                    >
+                      <option value="">-- Pilih Pemain --</option>
+                      {players.map((p) => (
+                        <option key={p.id} value={p.id}>#{p.number} {p.name} ({p.position})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {newEvent.type === 'goal' && (
                   <div>
@@ -1025,7 +1245,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   <div>
                     <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Menit</label>
                     <input
-                      type="number" min="1" max="120" value={newEvent.minute}
+                      type="number" min="1" max="999" value={newEvent.minute}
                       onChange={(e) => setNewEvent({ ...newEvent, minute: e.target.value })}
                       className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none text-center font-mono font-bold"
                     />
@@ -1044,7 +1264,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </div>
 
                 <button
-                  type="button" 
+                  type="button"
                   onClick={addEvent}
                   disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
                   className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1089,7 +1309,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <EventIcon type={ev.type} />
-                            <span className="text-xs font-black text-slate-100 uppercase">{playerObj?.name || '—'}</span>
+                            {!isMatchTimeEvent(ev.type) && (
+                              <span className="text-xs font-black text-slate-100 uppercase">{playerObj?.name || '—'}</span>
+                            )}
                             <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase"
                               style={{ background: `${evType?.color}20`, color: evType?.color, border: `1px solid ${evType?.color}40` }}>
                               {evType?.label || ev.type}
@@ -1106,7 +1328,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                           {ev.description && <p className="text-[9px] text-slate-500 italic truncate">{ev.description}</p>}
                         </div>
                         <button
-                          onClick={() => setEventsList((prev) => prev.filter((_, i) => i !== eventsList.indexOf(ev)))}
+                          onClick={() => handleDeleteEvent(eventsList.indexOf(ev))}
                           className="p-1 rounded text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1142,7 +1364,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
                     <img src={guestFormData.photoUrl || '/playertemplate.png'} alt="Preview" className="w-full h-full object-cover" />
                   </div>
-                  
+
                   <div className="flex-1 space-y-2 w-full">
                     <div className="flex items-center gap-2">
                       <label className="cursor-pointer px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
@@ -1150,12 +1372,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         {uploading ? 'Mengunggah...' : 'Upload Foto'}
                         <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="hidden" />
                       </label>
-                      
+
                       <button type="button" onClick={() => setGuestFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))} className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
                         Reset
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-400">Pilih file gambar dari laptop Anda.</p>
+                    <p className="text-[11px] text-slate-400">Pilih file gambar.</p>
                   </div>
                 </div>
               </div>

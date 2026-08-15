@@ -1,13 +1,37 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
+import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 
 export const revalidate = 0;
 
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+  if (!m) return 'scheduled';
+  if (m.status === 'finished') return 'finished';
+  const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+  if (hasFulltime) return 'finished';
+
+  const now = new Date();
+  const start = new Date(m.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  if (m.isLiveEnabled !== false) {
+    if (now >= start) return 'live';
+    return 'scheduled';
+  } else {
+    const durationMinutes = m.duration || 60;
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    if (now < start) return 'scheduled';
+    if (now >= start && now <= end) return 'live';
+    return 'finished';
+  }
+}
+
 function MatchCard({ match }: { match: any }) {
-  const our = match.isHome ? match.homeScore : match.awayScore;
-  const their = match.isHome ? match.awayScore : match.homeScore;
-  const result = match.status === 'finished'
+  const status = getDynamicMatchStatus(match);
+  const our = match.isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+  const their = match.isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
+  const result = status === 'finished'
     ? (our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW')
     : null;
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
@@ -20,7 +44,11 @@ function MatchCard({ match }: { match: any }) {
     >
       {/* Top Bar Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
-        {result ? (
+        {status === 'live' ? (
+          <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+          </span>
+        ) : result ? (
           <span
             className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border"
             style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
@@ -63,17 +91,32 @@ function MatchCard({ match }: { match: any }) {
 
         {/* Score / VS Badge */}
         <div className="space-y-0.5 sm:space-y-2">
-          <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-            {match.status === 'finished' ? 'FULL TIME' : `${new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
-          </p>
-          {match.status === 'finished' ? (
-            <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
-              {match.homeScore} : {match.awayScore}
-            </div>
+          {status === 'live' ? (
+            <LiveScoreDisplay
+              targetDate={match.matchDate}
+              duration={match.duration}
+              homeScore={match.homeScore ?? 0}
+              awayScore={match.awayScore ?? 0}
+              isLiveEnabled={match.isLiveEnabled !== false}
+              events={match.events}
+              status={status}
+            />
+          ) : status === 'finished' ? (
+            <>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+              <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
+                {match.homeScore ?? 0} : {match.awayScore ?? 0}
+              </div>
+            </>
           ) : (
-            <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
-              VS
-            </div>
+            <>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+                {`${new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
+              </p>
+              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+                VS
+              </div>
+            </>
           )}
           <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">
             {match.venue} ({match.isHome ? 'Kandang' : 'Tandang'})
@@ -113,20 +156,21 @@ export default async function MatchesPage({
     orderBy: { matchDate: 'asc' },
   });
 
-  // Hitung Matchday (chronological index)
+  // Hitung Matchday & Computed Dynamic Status
   const matchesWithMatchday = allMatches.map((m, index) => ({
     ...m,
-    matchday: index + 1
+    matchday: index + 1,
+    computedStatus: getDynamicMatchStatus(m),
   }));
 
-  // Upcoming: terdekat dulu (ASC)
+  // Upcoming / Live: terdekat dulu (ASC)
   const upcomingMatches = matchesWithMatchday
-    .filter((m) => m.status === 'scheduled')
+    .filter((m) => m.computedStatus === 'scheduled' || m.computedStatus === 'live')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
   // Finished: terbaru dulu (DESC)
   const finishedMatches = matchesWithMatchday
-    .filter((m) => m.status === 'finished')
+    .filter((m) => m.computedStatus === 'finished')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const filteredMatches =

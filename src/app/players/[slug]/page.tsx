@@ -37,6 +37,25 @@ function getPositionLabel(pos: string) {
   return p || 'FORWARD';
 }
 
+function formatDisplayName(fullName: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return fullName;
+
+  if (parts.length === 2) {
+    if (fullName.length > 20) return parts[0];
+    return fullName;
+  }
+
+  // 3 or more words: take first and middle name (first 2 words)
+  const firstTwo = `${parts[0]} ${parts[1]}`;
+  if (firstTwo.length > 18) {
+    return parts[0];
+  }
+  return firstTwo;
+}
+
+
 export default async function PlayerDetailPage({
   params,
 }: {
@@ -83,107 +102,123 @@ export default async function PlayerDetailPage({
   const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
   const specBg = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' };
 
+  const specs = [
+    {
+      label: 'Tanggal Lahir',
+      value: player.birthDate
+        ? new Date(player.birthDate).toLocaleDateString('id-ID', {
+          day: '2-digit', month: 'short', year: 'numeric',
+        })
+        : '—',
+    },
+    { label: 'Kewarganegaraan', value: player.nationality || 'Indonesia' },
+    { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
+    { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
+  ];
+
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/* PROFILE CARD                                        */}
-      {/* MOBILE: centered photo top, info below              */}
-      {/* DESKTOP: photo left, info right                     */}
+      {/* PROFILE HEADER & STATS                             */}
+      {/* MOBILE: Photo top with overlay, specs below (1 box)*/}
+      {/* DESKTOP: Photo 4:5 left, Biodata + Stats right     */}
       {/* ═══════════════════════════════════════════════════ */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* PROFILE CARD & PHOTO                                */}
-      {/* Format: Full Photo Box with Overlay (Same as homepage) */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* UNIFIED PROFILE CARD & SPECS                       */}
-      {/* Photo on top with smooth gradient background below */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <div className="rounded-2xl sm:rounded-3xl overflow-hidden border border-sky-400/20 shadow-2xl bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526]">
-        {/* Top Photo Box (Portrait Ratio) */}
-        <div className="group relative h-80 sm:h-[500px] overflow-hidden flex flex-col justify-end">
-          {/* Full Photo */}
-          <img
-            src={player.photoUrl || '/playertemplate.png'}
-            alt={player.name}
-            className="absolute inset-0 w-full h-full object-cover object-top"
-          />
-          
-          {/* Soft Black Gradient Overlay at Bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-[#060b14] via-[#060b14]/65 to-transparent pointer-events-none" />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
+        {/* LEFT COLUMN: Player Photo Card (Aspect Ratio 4:5) */}
+        <div className="md:col-span-5 lg:col-span-5 rounded-2xl sm:rounded-3xl overflow-hidden border border-sky-400/20 shadow-2xl bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526] flex flex-col">
+          {/* Top Photo Box (Aspect Ratio 4:5) */}
+          <div className="group relative aspect-[4/5] w-full overflow-hidden flex flex-col justify-end">
+            {/* Full Photo */}
+            <img
+              src={player.photoUrl || '/playertemplate.png'}
+              alt={player.name}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
+            
+            {/* Soft Black Gradient Overlay at Bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-[75%] bg-gradient-to-t from-[#060b14] via-[#060b14]/75 via-50% to-transparent pointer-events-none" />
 
-          {/* Bottom Info: Large Number alongside Name & Position */}
-          <div className="relative z-10 p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
-            <span className="text-3xl sm:text-5xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-md">
-              {player.number}
-            </span>
-            <div className="min-w-0 space-y-0.5 sm:space-y-1">
-              <h1 className="text-base sm:text-2xl md:text-3xl font-black text-white uppercase truncate leading-tight">
-                {player.name}
-              </h1>
-              <p className="text-[9px] sm:text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none">
-                {getPositionLabel(player.position)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Integrated Physical Specs Panel (Seamless without border line) */}
-        <div className="p-4 sm:p-6 bg-gradient-to-b from-[#060b14] via-[#091222]/80 to-[#0a1526]">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
-            {[
-              {
-                label: 'Tanggal Lahir',
-                value: player.birthDate
-                  ? new Date(player.birthDate).toLocaleDateString('id-ID', {
-                    day: '2-digit', month: 'short', year: 'numeric',
-                  })
-                  : '—',
-              },
-              { label: 'Kewarganegaraan', value: player.nationality || 'Indonesia' },
-              { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
-              { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl p-3 sm:p-4 bg-slate-900/80 border border-slate-800/80 shadow-inner">
-                <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  {item.label}
-                </span>
-                <span className="text-xs sm:text-base font-extrabold text-white">{item.value}</span>
+            {/* Bottom Info: Extra Large Number alongside Name & Position */}
+            <div className="relative z-10 p-5 sm:p-8 md:p-6 flex items-center gap-4 sm:gap-6 md:gap-5">
+              <span className="text-5xl sm:text-7xl md:text-7xl lg:text-8xl font-black font-mono text-sky-400 leading-none shrink-0 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                {player.number}
+              </span>
+              <div className="min-w-0 space-y-1 sm:space-y-1.5">
+                <h1 className="text-2xl sm:text-4xl md:text-3xl lg:text-4xl font-black text-white uppercase leading-tight drop-shadow-lg tracking-tight">
+                  {formatDisplayName(player.name)}
+                </h1>
+                <p className="text-xs sm:text-base md:text-sm text-sky-400 font-extrabold uppercase tracking-widest leading-none drop-shadow">
+                  {getPositionLabel(player.position)}
+                </p>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* MOBILE ONLY: Physical Specs integrated in same box (seamless without border line) */}
+          <div className="block md:hidden p-4 bg-gradient-to-b from-[#060b14] via-[#091222]/80 to-[#0a1526]">
+            <div className="grid grid-cols-2 gap-2.5">
+              {specs.map((item) => (
+                <div key={item.label} className="rounded-xl p-3 bg-slate-900/80 border border-slate-800/80 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    {item.label}
+                  </span>
+                  <span className="text-xs font-extrabold text-white">{item.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* AKUMULASI MUSIM INI                                 */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <BarChart2 className="w-5 h-5" style={{ color: '#f59e0b' }} />
-          <h2 className="text-base sm:text-lg font-black text-white">Akumulasi Musim Ini</h2>
-        </div>
-        <div className="grid grid-cols-5 gap-2 sm:gap-3">
-          {[
-            { label: 'GOL', value: totalGoals, color: '#f59e0b' },
-            { label: 'ASSIST', value: totalAssists, color: '#38bdf8' },
-            { label: 'MAIN', value: totalAppearances, color: '#a78bfa' },
-            { label: 'KUNING', value: totalYellowCards, color: '#facc15' },
-            { label: 'MERAH', value: totalRedCards, color: '#f87171' },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="rounded-xl flex flex-col items-center justify-center py-4 sm:py-5 gap-1 text-center"
-              style={panelBg}
-            >
-              <span className={`text-2xl sm:text-3xl font-black text-white ${oswald.className}`} style={{ letterSpacing: '0.02em' }}>
-                {s.value}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
-                {s.label}
-              </span>
+        {/* RIGHT COLUMN (DESKTOP): Biodata & Akumulasi Musim Ini */}
+        <div className="md:col-span-7 lg:col-span-7 space-y-4 md:space-y-6">
+          {/* DESKTOP ONLY: Physical Specs / Biodata Panel */}
+          <div className="hidden md:block rounded-3xl p-6 border border-sky-400/20 shadow-2xl bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526] space-y-4">
+            <div className="flex items-center gap-2 border-b border-sky-400/20 pb-3">
+              <Shield className="w-5 h-5 text-sky-400" />
+              <h2 className="text-base font-black text-white uppercase tracking-wider">Biodata Pemain</h2>
             </div>
-          ))}
+            <div className="grid grid-cols-2 gap-4">
+              {specs.map((item) => (
+                <div key={item.label} className="rounded-xl p-4 bg-slate-900/80 border border-slate-800/80 shadow-inner">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    {item.label}
+                  </span>
+                  <span className="text-base font-extrabold text-white">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* AKUMULASI MUSIM INI */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <BarChart2 className="w-5 h-5" style={{ color: '#f59e0b' }} />
+              <h2 className="text-base sm:text-lg font-black text-white">Akumulasi Musim Ini</h2>
+            </div>
+            <div className="grid grid-cols-5 gap-2 sm:gap-3">
+              {[
+                { label: 'GOL', value: totalGoals, color: '#f59e0b' },
+                { label: 'ASSIST', value: totalAssists, color: '#38bdf8' },
+                { label: 'MAIN', value: totalAppearances, color: '#a78bfa' },
+                { label: 'KUNING', value: totalYellowCards, color: '#facc15' },
+                { label: 'MERAH', value: totalRedCards, color: '#f87171' },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl flex flex-col items-center justify-center py-4 sm:py-5 gap-1 text-center"
+                  style={panelBg}
+                >
+                  <span className={`text-2xl sm:text-3xl font-black text-white ${oswald.className}`} style={{ letterSpacing: '0.02em' }}>
+                    {s.value}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

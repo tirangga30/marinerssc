@@ -6,28 +6,39 @@ import { CheckCircle2 } from 'lucide-react';
 interface MatchTimerProps {
   targetDate: string | Date;
   status: string;
+  duration?: number;
+  isLiveEnabled?: boolean;
 }
 
-export default function MatchTimer({ targetDate, status }: MatchTimerProps) {
+export default function MatchTimer({ targetDate, status, duration = 90, isLiveEnabled = true }: MatchTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
     minutes: number;
     seconds: number;
     isPast: boolean;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: false });
+    isLive: boolean;
+    elapsedMinute: number;
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: false, isLive: false, elapsedMinute: 0 });
 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const calculateTimeLeft = () => {
-      const difference = new Date(targetDate).getTime() - new Date().getTime();
+      const start = new Date(targetDate).getTime();
+      const now = new Date().getTime();
+      const durationMs = (duration || 90) * 60 * 1000;
+      const end = start + durationMs;
 
-      if (difference <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+      if (now >= end) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true, isLive: false, elapsedMinute: duration });
         return;
       }
+
+      const isLive = now >= start && now < end;
+      // If live, we show 00:00:00:00. Otherwise, count down to start time.
+      const difference = isLive ? 0 : Math.max(0, start - now);
 
       setTimeLeft({
         days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -35,13 +46,15 @@ export default function MatchTimer({ targetDate, status }: MatchTimerProps) {
         minutes: Math.floor((difference / 1000 / 60) % 60),
         seconds: Math.floor((difference / 1000) % 60),
         isPast: false,
+        isLive,
+        elapsedMinute: isLive ? Math.min(duration, Math.floor((now - start) / 60000) + 1) : 0,
       });
     };
 
     calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, [targetDate, duration]);
 
   if (!mounted) {
     return null;

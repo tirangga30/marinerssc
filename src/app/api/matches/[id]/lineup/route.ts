@@ -3,6 +3,24 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { recalculateAllPlayerStats } from '@/lib/stats';
 
+function parseNullableInt(val: any): number | null {
+  if (val === null || val === undefined || val === '') return null;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? null : parsed;
+}
+
+function parseIntDef(val: any, def: number): number {
+  if (val === null || val === undefined || val === '') return def;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? def : parsed;
+}
+
+function parseNullableFloat(val: any): number | null {
+  if (val === null || val === undefined || val === '') return null;
+  const parsed = parseFloat(val);
+  return isNaN(parsed) ? null : parsed;
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
@@ -11,14 +29,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id: matchId } = await params;
-    const { lineups, events, formation, status, homeScore, awayScore, duration } = await req.json();
+    const { lineups, events, formation, status, homeScore, awayScore, duration, isLiveEnabled } = await req.json();
 
     const updateData: any = {};
     if (formation !== undefined) updateData.formation = formation;
     if (status !== undefined) updateData.status = status;
-    if (homeScore !== undefined) updateData.homeScore = homeScore === '' ? null : parseInt(homeScore);
-    if (awayScore !== undefined) updateData.awayScore = awayScore === '' ? null : parseInt(awayScore);
-    if (duration !== undefined) updateData.duration = parseInt(duration);
+    if (homeScore !== undefined) updateData.homeScore = parseNullableInt(homeScore);
+    if (awayScore !== undefined) updateData.awayScore = parseNullableInt(awayScore);
+    if (duration !== undefined) updateData.duration = parseIntDef(duration, 60);
+    if (isLiveEnabled !== undefined) updateData.isLiveEnabled = Boolean(isLiveEnabled);
 
     if (Object.keys(updateData).length > 0) {
       await prisma.footballMatch.update({
@@ -40,8 +59,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           isStarter: Boolean(l.isStarter),
           pitchPosition: l.pitchPosition || 'SUB',
           positionName: l.positionName || 'Substitute',
-          x: l.x !== undefined ? parseFloat(l.x) : null,
-          y: l.y !== undefined ? parseFloat(l.y) : null,
+          x: parseNullableFloat(l.x),
+          y: parseNullableFloat(l.y),
         })),
       });
     }
@@ -54,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           playerId: e.playerId,
           assistPlayerId: e.assistPlayerId || null,
           type: e.type,
-          minute: parseInt(e.minute),
+          minute: parseIntDef(e.minute, 0),
           description: e.description || '',
         })),
       });
@@ -71,8 +90,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
 
     return NextResponse.json(updatedMatch);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Gagal memperbarui susunan pemain & event' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Lineup Save Error:', error);
+    return NextResponse.json({ error: error?.message || 'Gagal memperbarui susunan pemain & event' }, { status: 500 });
   }
 }

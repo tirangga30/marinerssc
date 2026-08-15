@@ -414,7 +414,7 @@ export default function AdminPlayersPage() {
                     <div className="flex items-center gap-2">
                       <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
                         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        {uploading ? 'Mengunggah...' : 'Upload Foto dari Laptop'}
+                        {uploading ? 'Mengunggah...' : 'Upload Foto'}
                         <input
                           type="file"
                           accept="image/*"
@@ -434,7 +434,7 @@ export default function AdminPlayersPage() {
                     </div>
 
                     <p className="text-[11px] text-slate-400">
-                      Pilih file gambar (.jpg, .png, .webp) dari laptop Anda. Jika tidak diunggah, akan menggunakan template default <strong>/playertemplate.png</strong>.
+                      Pilih file gambar (.jpg, .png, .webp)<strong>/playertemplate.png</strong>.
                     </p>
                   </div>
                 </div>

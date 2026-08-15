@@ -58,8 +58,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         homeScore: data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
         awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
         formation: data.formation || '4-3-3',
-        duration: data.duration !== undefined ? parseInt(data.duration) : 90,
+        duration: data.duration !== undefined ? parseInt(data.duration) : 60,
         extraTime: data.extraTime !== undefined ? parseInt(data.extraTime) : 0,
+        isLiveEnabled: data.isLiveEnabled !== undefined ? Boolean(data.isLiveEnabled) : undefined,
         summary: data.summary,
       },
     });

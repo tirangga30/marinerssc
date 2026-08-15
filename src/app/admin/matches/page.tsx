@@ -19,6 +19,28 @@ interface FootballMatch {
   summary: string | null;
 }
 
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+  if (!m) return 'scheduled';
+  if (m.status === 'finished') return 'finished';
+  const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+  if (hasFulltime) return 'finished';
+
+  const now = new Date();
+  const start = new Date(m.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  if (m.isLiveEnabled !== false) {
+    if (now >= start) return 'live';
+    return 'scheduled';
+  } else {
+    const durationMinutes = m.duration || 60;
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    if (now < start) return 'scheduled';
+    if (now >= start && now <= end) return 'live';
+    return 'finished';
+  }
+}
+
 export default function AdminMatchesPage() {
   const [matches, setMatches] = useState<FootballMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,17 +48,25 @@ export default function AdminMatchesPage() {
   const [editingMatch, setEditingMatch] = useState<FootballMatch | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const getDefaultMatchDate = () => {
+    const d = new Date();
+    d.setHours(19, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [formData, setFormData] = useState({
     opponentName: '',
     opponentLogo: '/marinerssc.png',
-    matchDate: new Date().toISOString().slice(0, 16),
+    matchDate: getDefaultMatchDate(),
     competition: 'Matchday 1',
     venue: 'Stadion Gelora Samudra, Jakarta',
     isHome: true,
-    status: 'scheduled',
-    homeScore: '',
-    awayScore: '',
-    formation: '4-3-3',
     summary: '',
   });
 
@@ -61,17 +91,25 @@ export default function AdminMatchesPage() {
     setFormData({
       opponentName: '',
       opponentLogo: '/marinerssc.png',
-      matchDate: new Date().toISOString().slice(0, 16),
+      matchDate: getDefaultMatchDate(),
       competition: 'Matchday 1',
       venue: 'Stadion Gelora Samudra, Jakarta',
       isHome: true,
-      status: 'scheduled',
-      homeScore: '',
-      awayScore: '',
-      formation: '4-3-3',
       summary: '',
     });
     setShowModal(true);
+  };
+
+  const formatDateForInput = (dateInput: Date | string) => {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const openEditModal = (m: FootballMatch) => {
@@ -79,14 +117,10 @@ export default function AdminMatchesPage() {
     setFormData({
       opponentName: m.opponentName,
       opponentLogo: m.opponentLogo,
-      matchDate: new Date(m.matchDate).toISOString().slice(0, 16),
+      matchDate: formatDateForInput(m.matchDate),
       competition: m.competition,
-      venue: m.venue,
+      venue: m.venue || 'Stadion Gelora Samudra, Jakarta',
       isHome: m.isHome,
-      status: m.status,
-      homeScore: m.homeScore !== null ? m.homeScore.toString() : '',
-      awayScore: m.awayScore !== null ? m.awayScore.toString() : '',
-      formation: m.formation,
       summary: m.summary || '',
     });
     setShowModal(true);
@@ -136,10 +170,18 @@ export default function AdminMatchesPage() {
       const url = editingMatch ? `/api/matches/${editingMatch.id}` : '/api/matches';
       const method = editingMatch ? 'PUT' : 'POST';
 
+      const payload = {
+        ...formData,
+        status: editingMatch ? editingMatch.status : 'scheduled',
+        formation: editingMatch ? editingMatch.formation : '4-3-3',
+        homeScore: editingMatch ? editingMatch.homeScore : null,
+        awayScore: editingMatch ? editingMatch.awayScore : null,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -188,57 +230,66 @@ export default function AdminMatchesPage() {
                 <th className="p-3">Tanggal Laga</th>
                 <th className="p-3">Lawan & Logo (Tanpa Box)</th>
                 <th className="p-3">Status / Skor</th>
-                <th className="p-3">Lokasi</th>
-                <th className="p-3">Formasi Taktis</th>
+                <th className="p-3">Stadion / Lapangan</th>
+                <th className="p-3">Tuan Rumah</th>
                 <th className="p-3 text-right">Aksi & Lineup Builder</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
-              {matches.map((m) => (
-                <tr key={m.id} className="hover:bg-slate-800/40">
-                  <td className="p-3 font-bold text-white">
-                    {new Date(m.matchDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="p-3 flex items-center gap-3">
-                    {/* NO BOX container */}
-                    <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />
-                    <span className="font-bold text-white uppercase">{m.opponentName}</span>
-                  </td>
-                  <td className="p-3">
-                    {m.status === 'finished' ? (
-                      <span className="font-mono font-black text-sky-400 text-sm">
-                        {m.homeScore} - {m.awayScore}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold uppercase">
-                        Mendatang
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3">{m.isHome ? 'Kandang' : 'Tandang'}</td>
-                  <td className="p-3 font-mono font-bold text-slate-200">{m.formation}</td>
-                  <td className="p-3 text-right space-x-2">
-                    <Link
-                      href={`/admin/matches/${m.id}/lineup`}
-                      className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
-                    >
-                      <Settings2 className="w-3.5 h-3.5" /> Lineup Builder
-                    </Link>
-                    <button
-                      onClick={() => openEditModal(m)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(m.id)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {matches.map((m) => {
+                const dynamicStatus = getDynamicMatchStatus(m);
+                return (
+                  <tr key={m.id} className="hover:bg-slate-800/40">
+                    <td className="p-3 font-bold text-white">
+                      {new Date(m.matchDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="p-3 flex items-center gap-3">
+                      <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />
+                      <span className="font-bold text-white uppercase">{m.opponentName}</span>
+                    </td>
+                    <td className="p-3">
+                      {dynamicStatus === 'live' ? (
+                        <span className="px-2.5 py-1 rounded bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] font-black uppercase tracking-wider animate-pulse inline-flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+                        </span>
+                      ) : dynamicStatus === 'finished' ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-black text-sky-400 text-sm">
+                            {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : '—'}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">(Selesai)</span>
+                        </div>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold uppercase">
+                          Mendatang
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-slate-300">{m.venue || '—'}</td>
+                    <td className="p-3">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
+                    <td className="p-3 text-right space-x-2">
+                      <Link
+                        href={`/admin/matches/${m.id}/lineup`}
+                        className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                      >
+                        <Settings2 className="w-3.5 h-3.5" /> Lineup Builder
+                      </Link>
+                      <button
+                        onClick={() => openEditModal(m)}
+                        className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -275,7 +326,7 @@ export default function AdminMatchesPage() {
                   <div className="flex-1 space-y-2">
                     <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold inline-flex items-center gap-2 text-xs transition-colors">
                       {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {uploading ? 'Mengunggah...' : 'Upload Logo Lawan dari Laptop'}
+                      {uploading ? 'Mengunggah...' : 'Upload Logo Lawan'}
                       <input
                         type="file"
                         accept="image/*"
@@ -285,7 +336,7 @@ export default function AdminMatchesPage() {
                       />
                     </label>
                     <p className="text-[11px] text-slate-400">
-                      Unggah file logo lawan (.png/.jpg) dari laptop Anda. Logo akan ditampilkan bersih tanpa kotak.
+                      Unggah file logo lawan (.png/.jpg).
                     </p>
                   </div>
                 </div>
@@ -313,48 +364,18 @@ export default function AdminMatchesPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Status Laga</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                  >
-                    <option value="scheduled">Mendatang (Scheduled)</option>
-                    <option value="finished">Selesai (Finished)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Formasi Utama</label>
-                  <input
-                    type="text"
-                    value={formData.formation}
-                    onChange={(e) => setFormData({ ...formData, formation: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="4-3-3"
-                  />
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tuan Rumah (Home)</label>
-                  <input
-                    type="number"
-                    value={formData.homeScore}
-                    onChange={(e) => setFormData({ ...formData, homeScore: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Skor Tamu (Away)</label>
-                  <input
-                    type="number"
-                    value={formData.awayScore}
-                    onChange={(e) => setFormData({ ...formData, awayScore: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white"
-                  />
-                </div>
+              <div>
+                <label className="font-bold text-slate-200 uppercase block mb-1">Lapangan / Stadion (Venue)</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  placeholder="Stadion Gelora Samudra, Jakarta"
+                />
               </div>
 
               <div className="flex items-center pt-2">

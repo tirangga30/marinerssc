@@ -226,7 +226,7 @@ export default function AdminArticlesPage() {
                   <div className="flex-1 space-y-2 w-full">
                     <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold inline-flex items-center gap-2 text-xs transition-colors">
                       {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {uploading ? 'Mengunggah...' : 'Upload Foto Berita dari Laptop'}
+                      {uploading ? 'Mengunggah...' : 'Upload Foto Berita'}
                       <input
                         type="file"
                         accept="image/*"
@@ -236,7 +236,7 @@ export default function AdminArticlesPage() {
                       />
                     </label>
                     <p className="text-[11px] text-slate-400">
-                      Pilih file foto (.jpg, .png, .webp) dari laptop Anda untuk dijadikan gambar header berita.
+                      Pilih file foto (.jpg, .png, .webp) untuk dijadikan gambar header berita.
                     </p>
                   </div>
                 </div>

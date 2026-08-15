@@ -55,12 +55,13 @@ model FootballMatch {
   competition  String        @default("BRI Liga 1")
   venue        String        @default("Stadion Gelora Samudra, Jakarta")
   isHome       Boolean       @default(true)
+  isLiveEnabled Boolean      @default(false)
   status       String        @default("scheduled") // scheduled, live, finished
   homeScore    Int?
   awayScore    Int?
   formation    String        @default("4-3-3")
   summary      String?
-  duration     Int           @default(90)
+  duration     Int           @default(60)
   extraTime    Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
