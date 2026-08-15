@@ -27,26 +27,33 @@ function formatBoxDisplayName(fullName: string): string {
 }
 
 
-function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
-  if (m.status === 'finished') return 'finished';
+
+  const hasScore = m.homeScore !== null && m.awayScore !== null && m.homeScore !== undefined && m.awayScore !== undefined;
   const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
-  if (hasFulltime) return 'finished';
+  const isExplicitlyFinished = m.status === 'finished' || hasFulltime;
 
   const now = new Date();
   const start = new Date(m.matchDate);
   if (isNaN(start.getTime())) return 'scheduled';
 
+  let isTimeFinished = false;
   if (m.isLiveEnabled !== false) {
-    if (now >= start) return 'live';
-    return 'scheduled';
+    isTimeFinished = isExplicitlyFinished;
   } else {
     const durationMinutes = m.duration || 60;
     const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
-    if (now < start) return 'scheduled';
-    if (now >= start && now <= end) return 'live';
+    isTimeFinished = isExplicitlyFinished || now >= end;
+  }
+
+  if (isTimeFinished) {
+    if (!hasScore) return 'score_pending';
     return 'finished';
   }
+
+  if (now >= start) return 'live';
+  return 'scheduled';
 }
 
 export default async function HomePage() {
@@ -239,6 +246,13 @@ export default async function HomePage() {
                       events={nextMatch.events}
                       status={featuredStatus}
                     />
+                  ) : featuredStatus === 'score_pending' ? (
+                    <>
+                      <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+                      <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+                        VS
+                      </div>
+                    </>
                   ) : featuredStatus === 'finished' ? (
                     <>
                       <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>

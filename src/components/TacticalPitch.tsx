@@ -60,8 +60,8 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
 
   return (
     <div className="space-y-6">
-      {/* Tactical Pitch Box */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto rounded-2xl overflow-hidden border-2 border-sky-400/40 tactical-pitch-bg shadow-2xl shadow-blue-950/60">
+      {/* Tactical Pitch (Direct Pitch Lines - No Outer Box) */}
+      <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto">
         
         {/* Pitch Lines Overlay */}
         <div className="absolute inset-0 pointer-events-none">

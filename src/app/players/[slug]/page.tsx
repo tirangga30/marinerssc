@@ -190,34 +190,24 @@ export default async function PlayerDetailPage({
             </div>
           </div>
 
-          {/* AKUMULASI MUSIM INI */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5" style={{ color: '#f59e0b' }} />
-              <h2 className="text-base sm:text-lg font-black text-white">Akumulasi Musim Ini</h2>
-            </div>
-            <div className="grid grid-cols-5 gap-2 sm:gap-3">
-              {[
-                { label: 'GOL', value: totalGoals, color: '#f59e0b' },
-                { label: 'ASSIST', value: totalAssists, color: '#38bdf8' },
-                { label: 'MAIN', value: totalAppearances, color: '#a78bfa' },
-                { label: 'KUNING', value: totalYellowCards, color: '#facc15' },
-                { label: 'MERAH', value: totalRedCards, color: '#f87171' },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="rounded-xl flex flex-col items-center justify-center py-4 sm:py-5 gap-1 text-center"
-                  style={panelBg}
-                >
-                  <span className={`text-2xl sm:text-3xl font-black text-white ${oswald.className}`} style={{ letterSpacing: '0.02em' }}>
-                    {s.value}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
-                    {s.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+          {/* STATS PANEL (Single Combined Wide Box - Clean & Uniform) */}
+          <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526] rounded-2xl sm:rounded-3xl border border-sky-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
+            {[
+              { label: 'GOL', value: totalGoals },
+              { label: 'ASSIST', value: totalAssists },
+              { label: 'MAIN', value: totalAppearances },
+              { label: 'KUNING', value: totalYellowCards },
+              { label: 'MERAH', value: totalRedCards },
+            ].map((s) => (
+              <div key={s.label} className="flex flex-col items-center justify-center px-1 sm:px-3 text-center">
+                <span className="text-2xl sm:text-4xl font-black font-mono text-white tracking-tight">
+                  {s.value}
+                </span>
+                <span className="text-[9px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mt-1">
+                  {s.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -19,26 +19,33 @@ interface FootballMatch {
   summary: string | null;
 }
 
-function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
-  if (m.status === 'finished') return 'finished';
+
+  const hasScore = m.homeScore !== null && m.awayScore !== null && m.homeScore !== undefined && m.awayScore !== undefined;
   const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
-  if (hasFulltime) return 'finished';
+  const isExplicitlyFinished = m.status === 'finished' || hasFulltime;
 
   const now = new Date();
   const start = new Date(m.matchDate);
   if (isNaN(start.getTime())) return 'scheduled';
 
+  let isTimeFinished = false;
   if (m.isLiveEnabled !== false) {
-    if (now >= start) return 'live';
-    return 'scheduled';
+    isTimeFinished = isExplicitlyFinished;
   } else {
     const durationMinutes = m.duration || 60;
     const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
-    if (now < start) return 'scheduled';
-    if (now >= start && now <= end) return 'live';
+    isTimeFinished = isExplicitlyFinished || now >= end;
+  }
+
+  if (isTimeFinished) {
+    if (!hasScore) return 'score_pending';
     return 'finished';
   }
+
+  if (now >= start) return 'live';
+  return 'scheduled';
 }
 
 export default function AdminMatchesPage() {
@@ -229,10 +236,10 @@ export default function AdminMatchesPage() {
               <tr>
                 <th className="p-3">Tanggal Laga</th>
                 <th className="p-3">Lawan & Logo (Tanpa Box)</th>
-                <th className="p-3">Status / Skor</th>
+                <th className="p-3 text-center">Status / Skor</th>
                 <th className="p-3">Stadion / Lapangan</th>
                 <th className="p-3">Tuan Rumah</th>
-                <th className="p-3 text-right">Aksi & Lineup Builder</th>
+                <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
@@ -247,18 +254,19 @@ export default function AdminMatchesPage() {
                       <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />
                       <span className="font-bold text-white uppercase">{m.opponentName}</span>
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       {dynamicStatus === 'live' ? (
                         <span className="px-2.5 py-1 rounded bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] font-black uppercase tracking-wider animate-pulse inline-flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
                         </span>
+                      ) : dynamicStatus === 'score_pending' ? (
+                        <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider inline-block">
+                          SKOR BELUM DIINPUT
+                        </span>
                       ) : dynamicStatus === 'finished' ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-black text-sky-400 text-sm">
-                            {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : '—'}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-400">(Selesai)</span>
-                        </div>
+                        <span className="font-mono font-black text-sky-400 text-sm">
+                          {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : '—'}
+                        </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold uppercase">
                           Mendatang
@@ -272,7 +280,7 @@ export default function AdminMatchesPage() {
                         href={`/admin/matches/${m.id}/lineup`}
                         className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
                       >
-                        <Settings2 className="w-3.5 h-3.5" /> Lineup Builder
+                        <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
                       <button
                         onClick={() => openEditModal(m)}

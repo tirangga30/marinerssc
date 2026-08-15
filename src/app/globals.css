@@ -96,14 +96,9 @@
   border-color: rgba(56, 189, 248, 0.5);
 }
 
-/* Tactical Pitch Background */
+/* Tactical Pitch Background (Plain Dark Navy matching container box) */
 .tactical-pitch-bg {
-  background: radial-gradient(circle at center, #1e3a8a 0%, #0f172a 100%);
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    radial-gradient(circle at center, #1d4ed8 0%, #091e42 100%);
-  background-size: 40px 40px, 40px 40px, 100% 100%;
+  background-color: #0d1628;
 }
 
 /* Custom Scrollbar */

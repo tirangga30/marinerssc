@@ -14,7 +14,7 @@ export default function Navbar() {
   const publicNavLinks = [
     { name: 'Beranda', href: '/', icon: Shield },
     { name: 'Jadwal & Hasil', href: '/matches', icon: Calendar },
-    { name: 'Skuad Tim', href: '/players', icon: Users },
+    { name: 'Pemain', href: '/players', icon: Users },
     { name: 'Berita', href: '/articles', icon: Newspaper },
     { name: 'Statistik', href: '/stats', icon: BarChart3 },
   ];

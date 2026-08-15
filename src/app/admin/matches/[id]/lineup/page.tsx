@@ -830,7 +830,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           <p className="text-[9px] font-bold px-2.5 py-1 rounded mt-0.5 bg-sky-500/10 text-sky-400">
             {(() => {
               const st = getEffectiveStatus();
-              if (st === 'finished') return 'Laga Selesai (Full Time)';
+              if (st === 'finished') {
+                if (matchDetails.homeScore === '' || matchDetails.awayScore === '' || matchDetails.homeScore === null || matchDetails.awayScore === null) {
+                  return 'SKOR BELUM DIINPUT';
+                }
+                return 'Laga Selesai (Full Time)';
+              }
               if (st === 'live') return 'Laga Sedang Berlangsung';
               return 'Laga Belum Dimulai';
             })()}
@@ -863,10 +868,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              {/* ── FOOTBALL PITCH (smaller, fixed height) ── */}
-              <div className="rounded-2xl overflow-hidden border border-slate-700/60 shadow-xl shadow-black/30">
-                {/* Pitch Header */}
-                <div className="bg-slate-900/70 px-3 py-2 border-b border-slate-800 flex items-center gap-2">
+              {/* ── FOOTBALL PITCH (Direct White Lines - No Outer Box) ── */}
+              <div>
+                {/* Pitch Header Controls */}
+                <div className="py-1 px-1 flex items-center gap-2 mb-2">
                   <Shield className="w-3.5 h-3.5 text-sky-400" />
                   <span className="text-xs font-black uppercase text-slate-200">Lapangan</span>
                   <input
@@ -881,34 +886,29 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   </span>
                 </div>
 
-                {/* Pitch area — fixed smaller height */}
+                {/* Pitch area — direct lines without box fill */}
                 <div
                   className="relative w-full select-none"
                   style={{
                     paddingBottom: '115%',
-                    background: 'linear-gradient(180deg, #15803d 0%, #14532d 20%, #166534 40%, #15803d 60%, #14532d 80%, #166534 100%)',
                   }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDropOnPitch}
                 >
                   {/* SVG Pitch Lines */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 115" preserveAspectRatio="none">
-                    <rect x="2" y="2" width="96" height="111" rx="0.5" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="0.5" />
-                    <line x1="2" y1="57.5" x2="98" y2="57.5" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
-                    <circle cx="50" cy="57.5" r="10" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <rect x="2" y="2" width="96" height="111" rx="0.5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
+                    <line x1="2" y1="57.5" x2="98" y2="57.5" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+                    <circle cx="50" cy="57.5" r="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
                     <circle cx="50" cy="57.5" r="0.7" fill="rgba(255,255,255,0.5)" />
                     {/* Top penalty area */}
-                    <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
-                    <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+                    <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
                     <circle cx="50" cy="13" r="0.6" fill="rgba(255,255,255,0.5)" />
                     {/* Bottom penalty area */}
-                    <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
-                    <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.4" />
+                    <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+                    <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
                     <circle cx="50" cy="102" r="0.6" fill="rgba(255,255,255,0.5)" />
-                    {/* Alternating grass stripes */}
-                    {[0, 1, 2, 3, 4].map(i => (
-                      <rect key={i} x="2" y={2 + i * 22} width="96" height="11" fill="rgba(0,0,0,0.035)" />
-                    ))}
                   </svg>
 
                   {/* Attack Arrow */}

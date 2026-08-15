@@ -5,33 +5,40 @@ import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 
 export const revalidate = 0;
 
-function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
+function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
-  if (m.status === 'finished') return 'finished';
+
+  const hasScore = m.homeScore !== null && m.awayScore !== null && m.homeScore !== undefined && m.awayScore !== undefined;
   const hasFulltime = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
-  if (hasFulltime) return 'finished';
+  const isExplicitlyFinished = m.status === 'finished' || hasFulltime;
 
   const now = new Date();
   const start = new Date(m.matchDate);
   if (isNaN(start.getTime())) return 'scheduled';
 
+  let isTimeFinished = false;
   if (m.isLiveEnabled !== false) {
-    if (now >= start) return 'live';
-    return 'scheduled';
+    isTimeFinished = isExplicitlyFinished;
   } else {
     const durationMinutes = m.duration || 60;
     const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
-    if (now < start) return 'scheduled';
-    if (now >= start && now <= end) return 'live';
+    isTimeFinished = isExplicitlyFinished || now >= end;
+  }
+
+  if (isTimeFinished) {
+    if (!hasScore) return 'score_pending';
     return 'finished';
   }
+
+  if (now >= start) return 'live';
+  return 'scheduled';
 }
 
 function MatchCard({ match }: { match: any }) {
   const status = getDynamicMatchStatus(match);
   const our = match.isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
   const their = match.isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
-  const result = status === 'finished'
+  const result = status === 'finished' && match.homeScore !== null && match.awayScore !== null
     ? (our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW')
     : null;
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
@@ -56,9 +63,7 @@ function MatchCard({ match }: { match: any }) {
             {result}
           </span>
         ) : (
-          <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
-            Laga Mendatang
-          </h3>
+          <div />
         )}
         <span className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-[9px] sm:text-xs font-medium text-slate-400">
@@ -101,6 +106,13 @@ function MatchCard({ match }: { match: any }) {
               events={match.events}
               status={status}
             />
+          ) : status === 'score_pending' ? (
+            <>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+                VS
+              </div>
+            </>
           ) : status === 'finished' ? (
             <>
               <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
@@ -168,9 +180,9 @@ export default async function MatchesPage({
     .filter((m) => m.computedStatus === 'scheduled' || m.computedStatus === 'live')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
-  // Finished: terbaru dulu (DESC)
+  // Finished / History: terbaru dulu (DESC) — termasuk match dengan status score_pending
   const finishedMatches = matchesWithMatchday
-    .filter((m) => m.computedStatus === 'finished')
+    .filter((m) => m.computedStatus === 'finished' || m.computedStatus === 'score_pending')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const filteredMatches =
