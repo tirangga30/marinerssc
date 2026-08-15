@@ -6,7 +6,51 @@ import { Trophy, Award, Flame, Shield, ArrowRight, Activity } from 'lucide-react
 export const revalidate = 0;
 
 export default async function StatsPage() {
-  const allPlayers = await prisma.player.findMany();
+  const rawPlayers = await prisma.player.findMany({
+    include: {
+      events: true,
+      assistedEvents: true,
+      lineups: { include: { match: true } },
+    },
+  });
+
+  const nowMs = new Date().getTime();
+
+  const allPlayers = rawPlayers.map((p) => {
+    const activeLineups = (p.lineups || []).filter((l: any) => {
+      if (!l.match) return false;
+      const m = l.match;
+      if (m.status === 'finished') return true;
+      const hasFT = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+      if (hasFT) return true;
+      const matchStartMs = new Date(m.matchDate).getTime();
+      return !isNaN(matchStartMs) && nowMs >= matchStartMs;
+    });
+
+    const calcGoals = (p.events || []).filter((e: any) => e.type === 'goal' || e.type === 'penalty').length;
+    const goals = Math.max(p.goals || 0, calcGoals);
+
+    const calcAssists = (p.events || []).filter((e: any) => e.type === 'assist').length + (p.assistedEvents || []).length;
+    const assists = Math.max(p.assists || 0, calcAssists);
+
+    const calcAppearances = activeLineups.length;
+    const appearances = Math.max(p.appearances || 0, calcAppearances);
+
+    const calcYellow = (p.events || []).filter((e: any) => e.type === 'yellow_card').length;
+    const yellowCards = Math.max(p.yellowCards || 0, calcYellow);
+
+    const calcRed = (p.events || []).filter((e: any) => e.type === 'red_card' || e.type === 'second_yellow').length;
+    const redCards = Math.max(p.redCards || 0, calcRed);
+
+    return {
+      ...p,
+      goals,
+      assists,
+      appearances,
+      yellowCards,
+      redCards,
+    };
+  });
 
   // Calculate points for Performance Table
   // Points system: Goal(5), Assist(3), Appearance(1), YellowCard(-1), RedCard(-3)

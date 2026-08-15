@@ -936,7 +936,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                           onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
                           className="w-10 h-10 rounded-full border-2 border-sky-400 bg-slate-900 shadow-lg shadow-sky-600/40 hover:scale-110 flex items-center justify-center transition-all overflow-hidden"
                         >
-                          <img src={player.photoUrl || '/playertemplate.png'} alt={player.name} className="w-full h-full object-cover" />
+                          <img src={player.photoUrl || '/playertemplate.png'} alt={player.name} className="w-full h-full object-cover object-top" />
                         </div>
                         {/* Name chip */}
                         <div className="px-1 py-px rounded text-[7px] font-black uppercase leading-none whitespace-nowrap max-w-[48px] truncate bg-slate-950/90 text-sky-300 border border-sky-500/30">

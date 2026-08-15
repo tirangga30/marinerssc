@@ -127,7 +127,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
                 <img
                   src={lineup.player.photoUrl || '/playertemplate.png'}
                   alt={lineup.player.name}
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover object-top rounded-full"
                 />
 
                 {/* Event Badges Overlay on Top-Right Corner */}

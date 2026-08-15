@@ -411,7 +411,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                           <img
                             src={item.player.photoUrl || '/playertemplate.png'}
                             alt={item.player.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                           />
                         </div>
 
@@ -510,7 +510,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                           <img
                             src={item.player.photoUrl || '/playertemplate.png'}
                             alt={item.player.name}
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                            className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-100"
                           />
                         </div>
 

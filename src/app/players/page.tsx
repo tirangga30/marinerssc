@@ -88,8 +88,8 @@ export default async function PlayersPage() {
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   
-                  {/* Soft Black Gradient Overlay at Bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
+                  {/* Compact Black Gradient Overlay at Bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
 
                   {/* Bottom Info: Number alongside Name & Position (Compact box font size) */}
                   <div className="relative z-10 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">

@@ -81,23 +81,44 @@ export default async function PlayerDetailPage({
 
   if (!player || player.isGuest) notFound();
 
-  const finishedLineups = (player.lineups || []).filter(
-    (l: any) => l.match.status === 'finished'
-  );
-  const recentMatches = finishedLineups.slice(0, 6);
+  const nowMs = new Date().getTime();
 
-  // Dynamic accurate season statistics calculations across all finished matches (Excluding own_goals!)
-  const totalGoals = Math.max(
-    player.goals,
-    (player.events || []).filter((e: any) => (e.type === 'goal' || e.type === 'penalty') && e.match?.status === 'finished').length
-  );
-  const totalAssists = Math.max(
-    player.assists,
-    (player.events || []).filter((e: any) => e.type === 'assist').length + (player.assistedEvents || []).length
-  );
-  const totalAppearances = Math.max(player.appearances, finishedLineups.length);
-  const totalYellowCards = Math.max(player.yellowCards, (player.events || []).filter((e: any) => e.type === 'yellow_card').length);
-  const totalRedCards = Math.max(player.redCards, (player.events || []).filter((e: any) => e.type === 'red_card').length);
+  // Any match that has started or finished or has events logged for this player
+  const activeLineups = (player.lineups || []).filter((l: any) => {
+    if (!l.match) return false;
+    const m = l.match;
+    if (m.status === 'finished') return true;
+    const hasFT = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
+    if (hasFT) return true;
+    const matchStartMs = new Date(m.matchDate).getTime();
+    return !isNaN(matchStartMs) && nowMs >= matchStartMs;
+  });
+
+  const recentMatches = activeLineups.slice(0, 10);
+
+  // Dynamic accurate season statistics calculations across all logged events
+  const calculatedGoals = (player.events || []).filter(
+    (e: any) => e.type === 'goal' || e.type === 'penalty'
+  ).length;
+  const totalGoals = Math.max(player.goals || 0, calculatedGoals);
+
+  const calculatedAssists =
+    (player.events || []).filter((e: any) => e.type === 'assist').length +
+    (player.assistedEvents || []).length;
+  const totalAssists = Math.max(player.assists || 0, calculatedAssists);
+
+  const calculatedAppearances = activeLineups.length;
+  const totalAppearances = Math.max(player.appearances || 0, calculatedAppearances);
+
+  const calculatedYellowCards = (player.events || []).filter(
+    (e: any) => e.type === 'yellow_card'
+  ).length;
+  const totalYellowCards = Math.max(player.yellowCards || 0, calculatedYellowCards);
+
+  const calculatedRedCards = (player.events || []).filter(
+    (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
+  ).length;
+  const totalRedCards = Math.max(player.redCards || 0, calculatedRedCards);
 
   const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
   const specBg = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' };
@@ -136,8 +157,8 @@ export default async function PlayerDetailPage({
               className="absolute inset-0 w-full h-full object-cover object-top"
             />
             
-            {/* Soft Black Gradient Overlay at Bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-[75%] bg-gradient-to-t from-[#060b14] via-[#060b14]/75 via-50% to-transparent pointer-events-none" />
+            {/* Compact Black Gradient Overlay at Bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />
 
             {/* Bottom Info: Extra Large Number alongside Name & Position */}
             <div className="relative z-10 p-5 sm:p-8 md:p-6 flex items-center gap-4 sm:gap-6 md:gap-5">
