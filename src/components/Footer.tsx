@@ -10,7 +10,7 @@ export default function Footer() {
   const isHome = pathname === '/';
 
   return (
-    <footer className="glass-panel border-t border-blue-500/20 text-slate-300 mt-20">
+    <footer className="glass-panel border-t border-blue-500/20 text-slate-300 mt-6 sm:mt-10">
       <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isHome ? 'py-12' : 'py-6'}`}>
         {isHome && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
