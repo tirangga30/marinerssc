@@ -220,7 +220,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   displayTimelineEvents.sort((a, b) => a.minute - b.minute);
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-4 sm:space-y-5">
       {/* ═══════════════════════════════════════════════════ */}
       {/* SLIDE TOGGLE BUTTONS                                */}
       {/* ═══════════════════════════════════════════════════ */}
@@ -401,16 +401,16 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* TAB CONTENT: LINEUP & TACTICAL PITCH                */}
       {/* ═══════════════════════════════════════════════════ */}
       {activeTab === 'lineup' && (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="space-y-4 animate-fadeIn">
           {/* Tactical Pitch 2D */}
           <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-sky-400/20">
             <TacticalPitch lineups={match.lineups} formation={match.formation} events={pitchEvents} />
           </div>
 
           {/* Lineup Detail Grid (Starting XI + Substitutes) */}
-          <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-6 sm:gap-8`}>
+          <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
             {/* Starting XI List */}
-            <div className="glass-panel p-5 sm:p-7 rounded-3xl border border-slate-800 space-y-4">
+            <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <UserCheck className="w-5 h-5 text-emerald-400" />
@@ -520,7 +520,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
 
             {/* Bench / Substitutes List - ONLY SHOW IF BENCH HAS PLAYERS */}
             {bench.length > 0 && (
-              <div className="glass-panel p-5 sm:p-7 rounded-3xl border border-slate-800 space-y-4">
+              <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-sky-400" />
