@@ -29,6 +29,9 @@ interface TacticalPitchProps {
     playerId: string;
     type: string;
     assistPlayerId?: string;
+    minute?: number;
+    player?: { id: string; name?: string };
+    assistPlayer?: { id: string; name?: string };
   }>;
 }
 
@@ -118,33 +121,33 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
           const rawEvts = events.filter((e) => e.playerId === lineup.player.id);
           const assistEvts = events.filter((e) => e.assistPlayerId === lineup.player.id && e.type !== 'sub');
 
-          const playerSubEvts = events
-            .filter((e) => e.type === 'sub' && (e.playerId === lineup.player.id || e.assistPlayerId === lineup.player.id))
-            .map((e, idx) => ({
-              id: `${e.id || idx}-${e.playerId === lineup.player.id ? 'in' : 'out'}`,
-              isSubIn: e.playerId === lineup.player.id,
-            }));
+          const chronEvents = (events || [])
+            .filter((e) => {
+              const isPlayer = e.player?.id === lineup.player.id || e.playerId === lineup.player.id;
+              const isAssist = e.assistPlayer?.id === lineup.player.id || e.assistPlayerId === lineup.player.id;
+              return isPlayer || isAssist;
+            })
+            .flatMap((e, idx) => {
+              const isPlayer = e.player?.id === lineup.player.id || e.playerId === lineup.player.id;
+              const isAssist = e.assistPlayer?.id === lineup.player.id || e.assistPlayerId === lineup.player.id;
+              const evts: Array<{ id: string; type: string; minute: number }> = [];
 
-          // Deduplicate card events: 1st yellow + 2nd yellow red card
-          const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
-          const hasSecondYellowEvt = rawEvts.some((e) => e.type === 'second_yellow');
+              const m = e.minute || 0;
+              if (e.type === 'sub') {
+                if (isPlayer) evts.push({ id: e.id || `subin-${idx}`, type: 'sub_in', minute: m });
+                if (isAssist) evts.push({ id: e.id || `subout-${idx}`, type: 'sub_out', minute: m });
+              } else if (e.type === 'goal' || e.type === 'own_goal' || e.type === 'penalty') {
+                if (isPlayer) evts.push({ id: e.id || `evt-${idx}`, type: e.type, minute: m });
+                if (isAssist) evts.push({ id: e.id || `ast-${idx}`, type: 'assist', minute: m });
+              } else if (e.type === 'yellow_card' || e.type === 'second_yellow' || e.type === 'red_card') {
+                if (isPlayer) evts.push({ id: e.id || `evt-${idx}`, type: e.type, minute: m });
+              }
+              return evts;
+            })
+            .sort((a, b) => a.minute - b.minute);
 
-          const playerEvts: Array<{ type: string }> = [];
-          rawEvts.forEach((e) => {
-            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
-              playerEvts.push(e);
-            }
-          });
-          assistEvts.forEach(() => {
-            playerEvts.push({ type: 'assist' });
-          });
-
-          if (hasSecondYellowEvt || yellowEvts.length >= 2) {
-            if (yellowEvts.length > 0) playerEvts.push({ type: 'yellow_card' });
-            playerEvts.push({ type: 'second_yellow' });
-          } else if (yellowEvts.length === 1) {
-            playerEvts.push({ type: 'yellow_card' });
-          }
+          const subEvents = chronEvents.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
+          const matchEvts = chronEvents.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
 
           const isGuest = (lineup.player as any)?.isGuest;
           const TokenContent = (
@@ -159,20 +162,11 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
                   />
                 </div>
 
-                {/* Event Badges Overlay on Top-Right Corner */}
-                {(playerEvts.length > 0 || playerSubEvts.length > 0) && (
+                {/* Match Event Badges Overlay on Top-Right Corner */}
+                {matchEvts.length > 0 && (
                   <div className="absolute -top-2.5 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/80 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/20 shadow-md">
-                    {playerSubEvts.map((sub) => (
-                      <i
-                        key={sub.id}
-                        className={`fa-solid fa-right-left text-[7px] sm:text-[9px] shrink-0 ${
-                          sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
-                        }`}
-                        title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
-                      />
-                    ))}
-                    {playerEvts.map((e, idx) => (
-                      <span key={idx} className="inline-flex items-center justify-center">
+                    {matchEvts.map((e) => (
+                      <span key={e.id} className="inline-flex items-center justify-center">
                         {e.type === 'goal' && <i className="fa-regular fa-futbol text-amber-400 text-[8px] sm:text-[9.5px]" />}
                         {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[8px] sm:text-[9.5px]" />}
                         {e.type === 'penalty' && (
@@ -197,6 +191,22 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
                         )}
                         {e.type === 'red_card' && (
                           <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-red-600 rounded-[1px] inline-block border border-red-400/40" />
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Substitution Event Badge Overlay on Bottom-Right Corner of Photo */}
+                {subEvents.length > 0 && (
+                  <div className="absolute -bottom-1 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/90 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/20 shadow-md">
+                    {subEvents.map((e) => (
+                      <span key={e.id} className="inline-flex items-center justify-center">
+                        {e.type === 'sub_in' && (
+                          <i className="fa-solid fa-right-left text-emerald-400 text-[7px] sm:text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
+                        )}
+                        {e.type === 'sub_out' && (
+                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Digantikan" />
                         )}
                       </span>
                     ))}

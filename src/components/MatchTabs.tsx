@@ -92,47 +92,26 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const starters = sortLineupsByPosition(match.lineups.filter((l) => l.isStarter));
   const bench = sortLineupsByPosition(match.lineups.filter((l) => !l.isStarter));
 
-  // Helper to find sub events for a specific player in chronological order
-  const getPlayerSubEvents = (playerId: string) => {
-    return (match.events || [])
-      .filter((e) => e.type === 'sub' && ((e.player && e.player.id === playerId) || (e.assistPlayer && e.assistPlayer.id === playerId)))
-      .map((e, idx) => ({
-        id: `${e.id || idx}-${e.player?.id === playerId ? 'in' : 'out'}`,
-        isSubIn: e.player ? e.player.id === playerId : false,
-      }));
-  };
-  const getPlayerEvents = (playerId: string) => {
-    const rawEvts: Array<{ id: string; type: string }> = [];
-    match.events.forEach((e) => {
-      if (e.player && e.player.id === playerId) {
-        rawEvts.push({ id: `${e.id}-${e.type}`, type: e.type });
-      }
-      if (e.assistPlayer && e.assistPlayer.id === playerId && e.type !== 'sub') {
-        rawEvts.push({ id: `${e.id}-assist`, type: 'assist' });
-      }
-    });
+  // Helper to find all events for a specific player in exact chronological minute order matching summary
+  const getPlayerChronologicalEvents = (playerId: string) => {
+    const rawEvts: Array<{ id: string; type: string; minute: number }> = [];
 
-    const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
-    const secondYellowEvt = rawEvts.find((e) => e.type === 'second_yellow');
+    (match.events || []).forEach((e, idx) => {
+      const isPlayer = (e.player && e.player.id === playerId);
+      const isAssist = (e.assistPlayer && e.assistPlayer.id === playerId);
 
-    const result: Array<{ id: string; type: string }> = [];
-    rawEvts.forEach((e) => {
-      if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
-        result.push(e);
+      if (e.type === 'sub') {
+        if (isPlayer) rawEvts.push({ id: `${e.id || idx}-subin`, type: 'sub_in', minute: e.minute });
+        if (isAssist) rawEvts.push({ id: `${e.id || idx}-subout`, type: 'sub_out', minute: e.minute });
+      } else if (e.type === 'goal' || e.type === 'own_goal' || e.type === 'penalty') {
+        if (isPlayer) rawEvts.push({ id: `${e.id || idx}-${e.type}`, type: e.type, minute: e.minute });
+        if (isAssist) rawEvts.push({ id: `${e.id || idx}-ast`, type: 'assist', minute: e.minute });
+      } else if (e.type === 'yellow_card' || e.type === 'second_yellow' || e.type === 'red_card') {
+        if (isPlayer) rawEvts.push({ id: `${e.id || idx}-${e.type}`, type: e.type, minute: e.minute });
       }
     });
 
-    if (secondYellowEvt) {
-      if (yellowEvts.length > 0) result.push(yellowEvts[0]);
-      result.push(secondYellowEvt);
-    } else if (yellowEvts.length >= 2) {
-      result.push(yellowEvts[0]);
-      result.push({ id: yellowEvts[1].id, type: 'second_yellow' });
-    } else if (yellowEvts.length === 1) {
-      result.push(yellowEvts[0]);
-    }
-
-    return result;
+    return rawEvts.sort((a, b) => a.minute - b.minute);
   };
 
   // Hitung berapa kali setiap pemain KELUAR (digantikan) - bisa lebih dari 1x
@@ -430,7 +409,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               ) : (
                 <div className="divide-y divide-slate-800/60">
                   {starters.map((item) => {
-                    const playerEvts = getPlayerEvents(item.player.id);
+                    const chronEvts = getPlayerChronologicalEvents(item.player.id);
+                    const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
+                    const matchEvts = chronEvts.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
                     const isGuest = item.player.isGuest;
                     const Content = (
                       <>
@@ -452,20 +433,20 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
-                          {getPlayerSubEvents(item.player.id).map((sub) => (
+                          {subEvts.map((sub) => (
                             <i
                               key={sub.id}
                               className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
+                                sub.type === 'sub_in' ? 'text-emerald-400' : 'text-red-500'
                               }`}
-                              title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
                           ))}
                         </span>
 
-                        {/* Match Event Badges — Smaller Icons */}
+                        {/* Match Event Badges — Chronological Order */}
                         <div className="flex items-center gap-1 shrink-0 ml-auto">
-                          {playerEvts.map((e) => (
+                          {matchEvts.map((e) => (
                             <span key={e.id} className="inline-flex items-center justify-center">
                               {e.type === 'goal' && <BallIcon size={11} />}
                               {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
@@ -535,7 +516,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
 
                 <div className="divide-y divide-slate-800/60">
                   {bench.map((item) => {
-                    const playerEvts = getPlayerEvents(item.player.id);
+                    const chronEvts = getPlayerChronologicalEvents(item.player.id);
+                    const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
+                    const matchEvts = chronEvts.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
                     const isGuest = item.player.isGuest;
                     const Content = (
                       <>
@@ -557,20 +540,20 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
-                          {getPlayerSubEvents(item.player.id).map((sub) => (
+                          {subEvts.map((sub) => (
                             <i
                               key={sub.id}
                               className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
+                                sub.type === 'sub_in' ? 'text-emerald-400' : 'text-red-500'
                               }`}
-                              title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
                           ))}
                         </span>
 
                         {/* Match Event Badges — Smaller Icons */}
                         <div className="flex items-center gap-1 shrink-0 ml-auto">
-                          {playerEvts.map((e) => (
+                          {matchEvts.map((e) => (
                             <span key={e.id} className="inline-flex items-center justify-center">
                               {e.type === 'goal' && <BallIcon size={11} />}
                               {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
