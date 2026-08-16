@@ -59,7 +59,7 @@ model FootballMatch {
   status       String        @default("scheduled") // scheduled, live, finished
   homeScore    Int?
   awayScore    Int?
-  formation    String        @default("4-3-3")
+  formation    String        @default("Belum Tersedia")
   summary      String?
   duration     Int           @default(60)
   extraTime    Int           @default(0)

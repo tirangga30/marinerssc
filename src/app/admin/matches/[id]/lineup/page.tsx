@@ -127,7 +127,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const [matchData, setMatchData] = useState<any>(null);
   const [matchDetails, setMatchDetails] = useState({
     status: 'scheduled',
-    formation: '4-3-3',
+    formation: 'Belum Tersedia',
     homeScore: '',
     awayScore: '',
     duration: 60,
@@ -391,7 +391,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         setMatchData(matchInfo);
         setMatchDetails({
           status: matchInfo.status || 'scheduled',
-          formation: matchInfo.formation || '4-3-3',
+          formation: matchInfo.formation || 'Belum Tersedia',
           homeScore: matchInfo.homeScore !== null ? matchInfo.homeScore.toString() : '',
           awayScore: matchInfo.awayScore !== null ? matchInfo.awayScore.toString() : '',
           duration: matchInfo.duration || 60,
@@ -954,7 +954,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   <span className="text-xs font-black uppercase text-slate-200">Lapangan</span>
                   <input
                     type="text"
-                    placeholder="Formasi (4-3-3)"
+                    placeholder="Formasi (2-3-2)"
                     value={matchDetails.formation}
                     onChange={(e) => setMatchDetails({ ...matchDetails, formation: e.target.value })}
                     className="w-16 sm:w-20 bg-slate-950 border border-slate-700 text-sky-400 text-[10px] font-mono font-bold text-center rounded px-1 py-0.5 outline-none focus:border-sky-500 transition-colors ml-2"

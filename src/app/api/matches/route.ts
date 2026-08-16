@@ -40,7 +40,7 @@ export async function POST(req: Request) {
         status: data.status || 'scheduled',
         homeScore: data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
         awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
-        formation: data.formation || '4-3-3',
+        formation: data.formation || 'Belum Tersedia',
         summary: data.summary || '',
       },
     });

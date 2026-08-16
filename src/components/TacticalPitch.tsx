@@ -54,7 +54,7 @@ const positionCoordinates: Record<string, { top: number; left: number }> = {
   CF: { top: 14, left: 50 },
 };
 
-export default function TacticalPitch({ lineups, formation = '4-3-3', events = [] }: TacticalPitchProps) {
+export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', events = [] }: TacticalPitchProps) {
   const getPosWeight = (pos: string, pitchPos?: string): number => {
     const p = (pos || '').toUpperCase();
     const pitchP = (pitchPos || '').toUpperCase();
@@ -83,7 +83,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
       {/* Formation Badge Only (Compact top-right) */}
       <div className="flex items-center justify-end pb-1">
         <span className="text-[10px] sm:text-xs font-black font-mono px-3 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-400/30 shadow-sm">
-          {formation || '4-3-3'}
+          {formation || 'Belum Tersedia'}
         </span>
       </div>
 
