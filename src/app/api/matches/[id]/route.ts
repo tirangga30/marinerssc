@@ -35,6 +35,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
+import { parseWibDate } from '@/lib/date';
+
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
@@ -50,7 +52,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: {
         opponentName: data.opponentName,
         opponentLogo: data.opponentLogo,
-        matchDate: new Date(data.matchDate),
+        matchDate: parseWibDate(data.matchDate),
         competition: data.competition || 'Matchday 1',
         venue: data.venue,
         isHome: Boolean(data.isHome),

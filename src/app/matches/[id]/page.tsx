@@ -7,6 +7,8 @@ import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 
+import { formatWibDate, formatWibTime } from '@/lib/date';
+
 export const revalidate = 0;
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
@@ -80,12 +82,12 @@ export default async function MatchDetailPage({
             </span>
           )}
           <span className="text-slate-400">
-            {new Date(match.matchDate).toLocaleDateString('id-ID', {
+            {formatWibDate(match.matchDate, {
               weekday: 'long',
               day: 'numeric',
               month: 'short',
               year: 'numeric',
-            })} • {new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+            })} • {formatWibTime(match.matchDate)}
           </span>
         </div>
 

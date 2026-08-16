@@ -92,7 +92,15 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const starters = sortLineupsByPosition(match.lineups.filter((l) => l.isStarter));
   const bench = sortLineupsByPosition(match.lineups.filter((l) => !l.isStarter));
 
-  // Helper to find events for a specific player in this match (Goals, Cards, Assists, Subs)
+  // Helper to find sub events for a specific player in chronological order
+  const getPlayerSubEvents = (playerId: string) => {
+    return (match.events || [])
+      .filter((e) => e.type === 'sub' && ((e.player && e.player.id === playerId) || (e.assistPlayer && e.assistPlayer.id === playerId)))
+      .map((e, idx) => ({
+        id: `${e.id || idx}-${e.player?.id === playerId ? 'in' : 'out'}`,
+        isSubIn: e.player ? e.player.id === playerId : false,
+      }));
+  };
   const getPlayerEvents = (playerId: string) => {
     const rawEvts: Array<{ id: string; type: string }> = [];
     match.events.forEach((e) => {
@@ -395,7 +403,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {activeTab === 'lineup' && (
         <div className="space-y-8 animate-fadeIn">
           {/* Tactical Pitch 2D */}
-          <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/20">
+          <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-sky-400/20">
             <TacticalPitch lineups={match.lineups} formation={match.formation} events={pitchEvents} />
           </div>
 
@@ -444,8 +452,14 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
-                          {Array.from({ length: subbedOutCount[item.player.id] || 0 }).map((_, i) => (
-                            <i key={i} className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0" title="Digantikan" />
+                          {getPlayerSubEvents(item.player.id).map((sub) => (
+                            <i
+                              key={sub.id}
+                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
+                                sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
+                              }`}
+                              title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                            />
                           ))}
                         </span>
 
@@ -543,11 +557,14 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         <span className="flex-1 text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
-                          {Array.from({ length: subbedInCount[item.player.id] || 0 }).map((_, i) => (
-                            <i key={`in-${i}`} className="fa-solid fa-right-left text-green-500 text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
-                          ))}
-                          {Array.from({ length: subbedOutCount[item.player.id] || 0 }).map((_, i) => (
-                            <i key={`out-${i}`} className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0" title="Digantikan" />
+                          {getPlayerSubEvents(item.player.id).map((sub) => (
+                            <i
+                              key={sub.id}
+                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
+                                sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
+                              }`}
+                              title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                            />
                           ))}
                         </span>
 

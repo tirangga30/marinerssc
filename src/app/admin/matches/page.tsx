@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, Plus, Edit, Trash2, ArrowLeft, X, Save, Settings2, Upload, Loader2 } from 'lucide-react';
+import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 
 interface FootballMatch {
   id: string;
@@ -105,18 +106,6 @@ export default function AdminMatchesPage() {
       summary: '',
     });
     setShowModal(true);
-  };
-
-  const formatDateForInput = (dateInput: Date | string) => {
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const year = d.getFullYear();
-    const month = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const openEditModal = (m: FootballMatch) => {
@@ -248,7 +237,7 @@ export default function AdminMatchesPage() {
                 return (
                   <tr key={m.id} className="hover:bg-slate-800/40">
                     <td className="p-3 font-bold text-white">
-                      {new Date(m.matchDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(m.matchDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: WIB_TIMEZONE })}
                     </td>
                     <td className="p-3 flex items-center gap-3">
                       <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { Calendar, ArrowRight, Flame, Sparkles } from 'lucide-react';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
+import { formatWibDate, formatWibTime } from '@/lib/date';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -206,7 +207,7 @@ export default async function HomePage() {
             <span className="flex items-center gap-1.5 sm:gap-2">
               {nextMatch && (
                 <span className="text-[9px] sm:text-xs font-medium text-slate-400">
-                  {new Date(nextMatch.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                  {formatWibDate(nextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               )}
               <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
@@ -263,7 +264,7 @@ export default async function HomePage() {
                   ) : (
                     <>
                       <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                        {`${new Date(nextMatch.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
+                        {formatWibTime(nextMatch.matchDate)}
                       </p>
                       <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
                         VS
@@ -337,7 +338,7 @@ export default async function HomePage() {
                         </span>
                         <span className="flex items-center gap-1.5 sm:gap-2">
                           <span className="text-[9px] sm:text-xs font-medium text-slate-400">
-                            {new Date(m.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                            {formatWibDate(m.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                           <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
                             Matchday {m.matchday}

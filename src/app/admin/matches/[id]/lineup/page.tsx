@@ -8,6 +8,7 @@ import {
   Clock, Zap, Shield, Star, AlertCircle, GripVertical, X,
   UserCheck, Upload, Loader2, Play
 } from 'lucide-react';
+import { formatWibDate, formatWibTime } from '@/lib/date';
 
 interface Player {
   id: string;
@@ -804,12 +805,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {matchData?.matchDate && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-400/30 shadow-inner my-0.5">
                 <Clock className="w-3.5 h-3.5 text-sky-400" />
-                {new Date(matchData.matchDate).toLocaleDateString('id-ID', {
+                {formatWibDate(matchData.matchDate, {
                   weekday: 'long',
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric',
-                })} • {new Date(matchData.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                })} • {formatWibTime(matchData.matchDate)}
               </span>
             )}
             <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
@@ -978,11 +979,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     {/* Top penalty area */}
                     <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
                     <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <circle cx="50" cy="13" r="0.6" fill="rgba(255,255,255,0.5)" />
                     {/* Bottom penalty area */}
                     <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
                     <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <circle cx="50" cy="102" r="0.6" fill="rgba(255,255,255,0.5)" />
                   </svg>
 
                   {/* Attack Arrow */}

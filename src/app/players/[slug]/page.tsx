@@ -325,11 +325,17 @@ export default async function PlayerDetailPage({
 
                   const isStarter = lineup.isStarter;
                   const matchEvents = match.events || [];
-                  const isSubbedIn = matchEvents.some((e: any) => e.type === 'sub' && (e.playerId === player.id || e.player?.id === player.id));
-                  const isSubbedOut = matchEvents.some((e: any) => e.type === 'sub' && (e.assistPlayerId === player.id || e.assistPlayer?.id === player.id));
+                  const playerSubEvts = matchEvents
+                    .filter((e: any) => e.type === 'sub' && (e.playerId === player.id || e.assistPlayerId === player.id))
+                    .map((e: any, idx: number) => ({
+                      id: `${e.id || idx}-${e.playerId === player.id ? 'in' : 'out'}`,
+                      isSubIn: e.playerId === player.id,
+                    }));
+
+                  const isSubbedIn = playerSubEvts.some((s: any) => s.isSubIn);
                   const isOnBenchOnly = !isStarter && !isSubbedIn;
 
-                  const hasEvents = goals > 0 || assists > 0 || rc > 0 || isSubbedIn || (isSubbedOut && isStarter);
+                  const hasEvents = goals > 0 || assists > 0 || rc > 0 || playerSubEvts.length > 0;
 
                   const MatchCell = () => (
                     <div className="flex items-center gap-2 min-w-0">
@@ -345,12 +351,13 @@ export default async function PlayerDetailPage({
                       ) : (
                         hasEvents && (
                           <div className="flex items-center gap-1 shrink-0">
-                            {isSubbedIn && (
-                              <i className="fa-solid fa-right-left text-emerald-400 text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
-                            )}
-                            {isSubbedOut && isStarter && (
-                              <i className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0" title="Digantikan" />
-                            )}
+                            {playerSubEvts.filter((sub: any) => !sub.isSubIn).map((sub: any) => (
+                              <i
+                                key={sub.id}
+                                className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0"
+                                title="Digantikan"
+                              />
+                            ))}
                             {Array.from({ length: Math.min(regularGoals, 3) }).map((_, i) => (
                               <BallIcon key={`g${i}`} size={11} />
                             ))}

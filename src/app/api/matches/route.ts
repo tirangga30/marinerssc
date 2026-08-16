@@ -17,6 +17,8 @@ export async function GET() {
   }
 }
 
+import { parseWibDate } from '@/lib/date';
+
 export async function POST(req: Request) {
   try {
     const session = await getAdminSession();
@@ -30,7 +32,7 @@ export async function POST(req: Request) {
       data: {
         opponentName: data.opponentName,
         opponentLogo: data.opponentLogo || '/defaultteam.png',
-        matchDate: new Date(data.matchDate),
+        matchDate: parseWibDate(data.matchDate),
         competition: data.competition || 'Matchday 1',
         venue: data.venue || '',
         isHome: Boolean(data.isHome),

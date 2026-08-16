@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
+import { formatWibDate, formatWibTime } from '@/lib/date';
 
 export const revalidate = 0;
 
@@ -67,7 +68,7 @@ function MatchCard({ match }: { match: any }) {
         )}
         <span className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-[9px] sm:text-xs font-medium text-slate-400">
-            {new Date(match.matchDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+            {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
           <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
             Matchday {match.matchday}
@@ -123,7 +124,7 @@ function MatchCard({ match }: { match: any }) {
           ) : (
             <>
               <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                {`${new Date(match.matchDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB`}
+                {formatWibTime(match.matchDate)}
               </p>
               <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
                 VS

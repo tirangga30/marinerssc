@@ -79,39 +79,32 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
   const bench = sortLineupsByPos(lineups.filter((l) => !l.isStarter));
 
   return (
-    <div className="space-y-6">
-      {/* Header Formasi */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-sky-400" />
-          <h4 className="text-sm font-black uppercase text-white tracking-wide">
-            Formasi Tim
-          </h4>
-        </div>
-        <span className="text-xs sm:text-sm font-black font-mono px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-400/30 shadow-xs">
+    <div className="space-y-2">
+      {/* Formation Badge Only (Compact top-right) */}
+      <div className="flex items-center justify-end pb-1">
+        <span className="text-[10px] sm:text-xs font-black font-mono px-3 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-400/30 shadow-sm">
           {formation || '4-3-3'}
         </span>
       </div>
 
-      {/* Tactical Pitch (Direct Pitch Lines - No Outer Box) */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto">
+      {/* Tactical Pitch (Tight Layout Filling Card) */}
+      <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] max-w-4xl mx-auto">
         
         {/* Pitch Lines Overlay */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Outer Boundary */}
-          <div className="absolute inset-4 border-2 border-white/20 rounded-lg"></div>
+          <div className="absolute inset-1 sm:inset-2 border-2 border-white/25 rounded-lg"></div>
           
           {/* Halfway Line & Center Circle */}
-          <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-white/20 -translate-y-1/2"></div>
-          <div className="absolute top-1/2 left-1/2 w-28 sm:w-32 h-28 sm:h-32 rounded-full border-2 border-white/20 -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/30 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1 right-1 sm:left-2 sm:right-2 h-0.5 bg-white/25 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-24 sm:w-32 h-24 sm:h-32 rounded-full border-2 border-white/25 -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/35 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           
           {/* Penalty Area Top (Opponent side) */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-b-2 border-x-2 border-white/20 rounded-b-lg"></div>
+          <div className="absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-b-2 border-x-2 border-white/25 rounded-b-lg"></div>
           
           {/* Penalty Area Bottom (Our side) */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-t-2 border-x-2 border-white/20 rounded-t-lg"></div>
-          <div className="absolute bottom-[20%] left-1/2 w-2 h-2 bg-white/30 rounded-full -translate-x-1/2"></div>
+          <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-t-2 border-x-2 border-white/25 rounded-t-lg"></div>
         </div>
 
         {/* Starter Markers on Pitch */}
@@ -125,25 +118,26 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
           const rawEvts = events.filter((e) => e.playerId === lineup.player.id);
           const assistEvts = events.filter((e) => e.assistPlayerId === lineup.player.id && e.type !== 'sub');
 
+          const playerSubEvts = events
+            .filter((e) => e.type === 'sub' && (e.playerId === lineup.player.id || e.assistPlayerId === lineup.player.id))
+            .map((e, idx) => ({
+              id: `${e.id || idx}-${e.playerId === lineup.player.id ? 'in' : 'out'}`,
+              isSubIn: e.playerId === lineup.player.id,
+            }));
+
           // Deduplicate card events: 1st yellow + 2nd yellow red card
           const yellowEvts = rawEvts.filter((e) => e.type === 'yellow_card');
           const hasSecondYellowEvt = rawEvts.some((e) => e.type === 'second_yellow');
 
           const playerEvts: Array<{ type: string }> = [];
           rawEvts.forEach((e) => {
-            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card', 'sub'].includes(e.type)) {
+            if (['goal', 'own_goal', 'penalty', 'assist', 'red_card'].includes(e.type)) {
               playerEvts.push(e);
             }
           });
           assistEvts.forEach(() => {
             playerEvts.push({ type: 'assist' });
           });
-
-          // Check if this starter was subbed out (their id appears as assistPlayerId in a sub event)
-          const isSubbedOut = events.some((e) => e.type === 'sub' && e.assistPlayerId === lineup.player.id);
-          if (isSubbedOut && !playerEvts.some((e) => e.type === 'sub')) {
-            playerEvts.push({ type: 'sub' });
-          }
 
           if (hasSecondYellowEvt || yellowEvts.length >= 2) {
             if (yellowEvts.length > 0) playerEvts.push({ type: 'yellow_card' });
@@ -166,8 +160,17 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
                 </div>
 
                 {/* Event Badges Overlay on Top-Right Corner */}
-                {playerEvts.length > 0 && (
+                {(playerEvts.length > 0 || playerSubEvts.length > 0) && (
                   <div className="absolute -top-2.5 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/80 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/20 shadow-md">
+                    {playerSubEvts.map((sub) => (
+                      <i
+                        key={sub.id}
+                        className={`fa-solid fa-right-left text-[7px] sm:text-[9px] shrink-0 ${
+                          sub.isSubIn ? 'text-emerald-400' : 'text-red-500'
+                        }`}
+                        title={sub.isSubIn ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                      />
+                    ))}
                     {playerEvts.map((e, idx) => (
                       <span key={idx} className="inline-flex items-center justify-center">
                         {e.type === 'goal' && <i className="fa-regular fa-futbol text-amber-400 text-[8px] sm:text-[9.5px]" />}
@@ -194,9 +197,6 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
                         )}
                         {e.type === 'red_card' && (
                           <span className="w-1.5 h-2.5 sm:w-2 sm:h-2.5 bg-red-600 rounded-[1px] inline-block border border-red-400/40" />
-                        )}
-                        {e.type === 'sub' && (
-                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Digantikan" />
                         )}
                       </span>
                     ))}
