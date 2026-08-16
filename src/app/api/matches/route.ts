@@ -29,10 +29,10 @@ export async function POST(req: Request) {
     const match = await prisma.footballMatch.create({
       data: {
         opponentName: data.opponentName,
-        opponentLogo: data.opponentLogo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=150&auto=format&fit=crop&q=80',
+        opponentLogo: data.opponentLogo || '/defaultteam.png',
         matchDate: new Date(data.matchDate),
         competition: data.competition || 'Matchday 1',
-        venue: data.venue || 'Stadion Gelora Samudra, Jakarta',
+        venue: data.venue || '',
         isHome: Boolean(data.isHome),
         isLiveEnabled: Boolean(data.isLiveEnabled),
         status: data.status || 'scheduled',

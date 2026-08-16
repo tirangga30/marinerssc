@@ -67,7 +67,7 @@ export default async function PlayerDetailPage({
     where: { slug },
     include: {
       lineups: {
-        include: { match: true },
+        include: { match: { include: { events: true } } },
         orderBy: { match: { matchDate: 'desc' } },
       },
       events: {
@@ -104,10 +104,15 @@ export default async function PlayerDetailPage({
 
   const calculatedAssists =
     (player.events || []).filter((e: any) => e.type === 'assist').length +
-    (player.assistedEvents || []).length;
+    (player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length;
   const totalAssists = Math.max(player.assists || 0, calculatedAssists);
 
-  const calculatedAppearances = activeLineups.length;
+  const calculatedAppearances = activeLineups.filter((l: any) => {
+    if (l.isStarter) return true;
+    const m = l.match;
+    const matchEvents = m?.events || [];
+    return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === player.id);
+  }).length;
   const totalAppearances = Math.max(player.appearances || 0, calculatedAppearances);
 
   const calculatedYellowCards = (player.events || []).filter(
@@ -274,7 +279,7 @@ export default async function PlayerDetailPage({
                   const result = getResult(match);
 
                   const evts = (player.events || []).filter((e: any) => e.matchId === match.id);
-                  const assistEvts = (player.assistedEvents || []).filter((e: any) => e.matchId === match.id);
+                  const assistEvts = (player.assistedEvents || []).filter((e: any) => e.matchId === match.id && e.type !== 'sub');
 
                   const ownGoals = evts.filter((e: any) => e.type === 'own_goal').length;
                   const penalties = evts.filter((e: any) => e.type === 'penalty').length;
@@ -318,7 +323,13 @@ export default async function PlayerDetailPage({
                       </div>
                     );
 
-                  const hasEvents = goals > 0 || assists > 0 || rc > 0;
+                  const isStarter = lineup.isStarter;
+                  const matchEvents = match.events || [];
+                  const isSubbedIn = matchEvents.some((e: any) => e.type === 'sub' && (e.playerId === player.id || e.player?.id === player.id));
+                  const isSubbedOut = matchEvents.some((e: any) => e.type === 'sub' && (e.assistPlayerId === player.id || e.assistPlayer?.id === player.id));
+                  const isOnBenchOnly = !isStarter && !isSubbedIn;
+
+                  const hasEvents = goals > 0 || assists > 0 || rc > 0 || isSubbedIn || (isSubbedOut && isStarter);
 
                   const MatchCell = () => (
                     <div className="flex items-center gap-2 min-w-0">
@@ -326,41 +337,53 @@ export default async function PlayerDetailPage({
                         <TopTeam />
                         <BottomTeam />
                       </div>
-                      {/* Event icons: Regular Goals / Own Goals / Penalty & Assists */}
-                      {hasEvents && (
-                        <div className="flex items-center gap-1 shrink-0">
-                          {Array.from({ length: Math.min(regularGoals, 3) }).map((_, i) => (
-                            <BallIcon key={`g${i}`} size={11} />
-                          ))}
-                          {Array.from({ length: Math.min(ownGoals, 3) }).map((_, i) => (
-                            <i key={`og${i}`} className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />
-                          ))}
-                          {Array.from({ length: Math.min(penalties, 3) }).map((_, i) => (
-                            <span key={`p${i}`} className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
-                              <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
-                              <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
-                                P
+                      {/* On the bench badge OR event icons */}
+                      {isOnBenchOnly ? (
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                          On the bench
+                        </span>
+                      ) : (
+                        hasEvents && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            {isSubbedIn && (
+                              <i className="fa-solid fa-right-left text-emerald-400 text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
+                            )}
+                            {isSubbedOut && isStarter && (
+                              <i className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0" title="Digantikan" />
+                            )}
+                            {Array.from({ length: Math.min(regularGoals, 3) }).map((_, i) => (
+                              <BallIcon key={`g${i}`} size={11} />
+                            ))}
+                            {Array.from({ length: Math.min(ownGoals, 3) }).map((_, i) => (
+                              <i key={`og${i}`} className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />
+                            ))}
+                            {Array.from({ length: Math.min(penalties, 3) }).map((_, i) => (
+                              <span key={`p${i}`} className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
+                                <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
+                                  P
+                                </span>
                               </span>
-                            </span>
-                          ))}
-                          {Array.from({ length: Math.min(assists, 3) }).map((_, i) => (
-                            <span
-                              key={`a${i}`}
-                              className="text-amber-400 font-black text-[10px] leading-none shrink-0"
-                              title="Assist"
-                            >
-                              A
-                            </span>
-                          ))}
-                          {hasSecondYellow ? (
-                            <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
-                              <span className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
-                              <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
-                            </span>
-                          ) : hasDirectRed ? (
-                            <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
-                          ) : null}
-                        </div>
+                            ))}
+                            {Array.from({ length: Math.min(assists, 3) }).map((_, i) => (
+                              <span
+                                key={`a${i}`}
+                                className="text-amber-400 font-black text-[10px] leading-none shrink-0"
+                                title="Assist"
+                              >
+                                A
+                              </span>
+                            ))}
+                            {hasSecondYellow ? (
+                              <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
+                                <span className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs" style={{ transform: 'translate(-1.5px, -0.5px)' }} />
+                                <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                              </span>
+                            ) : hasDirectRed ? (
+                              <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                            ) : null}
+                          </div>
+                        )
                       )}
                     </div>
                   );

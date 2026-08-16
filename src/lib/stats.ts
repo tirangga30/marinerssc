@@ -11,8 +11,13 @@ export async function recalculateAllPlayerStats() {
     });
 
     for (const p of players) {
-      const finishedLineups = (p.lineups || []).filter((l) => l.match.status === 'finished');
-      const appearances = finishedLineups.length;
+      const playedLineups = (p.lineups || []).filter((l) => {
+        if (l.match.status !== 'finished') return false;
+        if (l.isStarter) return true;
+        const matchEvents = (l.match as any).events || [];
+        return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === p.id);
+      });
+      const appearances = playedLineups.length;
 
       // Exclude own_goal! Only count regular goals and penalty goals
       const goals = (p.events || []).filter(
@@ -24,7 +29,7 @@ export async function recalculateAllPlayerStats() {
         (e) => e.type === 'assist' && e.match.status === 'finished'
       ).length;
       const assistedCount = (p.assistedEvents || []).filter(
-        (e) => e.match?.status === 'finished'
+        (e) => e.type !== 'sub' && e.match.status === 'finished'
       ).length;
       const assists = directAssists + assistedCount;
 

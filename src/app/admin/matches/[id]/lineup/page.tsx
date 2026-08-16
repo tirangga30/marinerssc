@@ -4,7 +4,7 @@ import React, { useState, useEffect, use, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Save, Plus, Trash2, CheckCircle2, Activity,
+  ArrowLeft, Save, Plus, Edit, Trash2, CheckCircle2, Activity,
   Clock, Zap, Shield, Star, AlertCircle, GripVertical, X,
   UserCheck, Upload, Loader2, Play
 } from 'lucide-react';
@@ -247,6 +247,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const [activeTab, setActiveTab] = useState<'lineup' | 'events'>('lineup');
   const [rosterTab, setRosterTab] = useState<'main' | 'guests'>('main');
 
+  const [editingGuestPlayer, setEditingGuestPlayer] = useState<Player | null>(null);
+
+  const openAddGuestModal = () => {
+    setEditingGuestPlayer(null);
+    setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.png' });
+    setShowGuestModal(true);
+  };
+
+  const openEditGuestModal = (player: Player) => {
+    setEditingGuestPlayer(player);
+    setGuestFormData({
+      name: player.name,
+      number: player.number.toString(),
+      position: player.position,
+      photoUrl: player.photoUrl || '/playertemplate.png',
+    });
+    setShowGuestModal(true);
+  };
+
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
@@ -301,7 +320,19 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     'GK': 'Goalkeeper',
     'DF': 'Defender',
     'MF': 'Midfielder',
-    'FW': 'Forward'
+    'FW': 'Forward',
+    'GOALKEEPER': 'Goalkeeper',
+    'DEFENDER': 'Defender',
+    'MIDFIELDER': 'Midfielder',
+    'FORWARD': 'Forward',
+  };
+
+  const formatPosition = (pos: string) => {
+    if (!pos) return '';
+    const upper = pos.toUpperCase();
+    if (posNameMap[upper]) return posNameMap[upper];
+    if (posNameMap[pos]) return posNameMap[pos];
+    return pos.charAt(0).toUpperCase() + pos.slice(1).toLowerCase();
   };
 
   const handleAddGuest = async (e: React.FormEvent) => {
@@ -309,8 +340,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     if (!guestFormData.name.trim() || !guestFormData.number) return;
     setAddingGuest(true);
     try {
-      const res = await fetch('/api/players', {
-        method: 'POST',
+      const url = editingGuestPlayer ? `/api/players/${editingGuestPlayer.id}` : '/api/players';
+      const method = editingGuestPlayer ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...guestFormData,
@@ -319,9 +353,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         })
       });
       if (res.ok) {
-        const newPlayer = await res.json();
-        setPlayers([...players, newPlayer]);
+        const savedPlayer = await res.json();
+        if (editingGuestPlayer) {
+          setPlayers((prev) => prev.map((p) => (p.id === savedPlayer.id ? savedPlayer : p)));
+        } else {
+          setPlayers((prev) => [...prev, savedPlayer]);
+        }
         setShowGuestModal(false);
+        setEditingGuestPlayer(null);
         setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.png' });
       } else {
         const err = await res.json();
@@ -400,14 +439,19 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   }, [matchId]);
 
   /* ─── Drag helpers ─── */
-  const handleDragStart = (playerId: string, fromPitch: boolean) => {
+  const handleDragStart = (playerId: string, fromPitch: boolean, e?: React.DragEvent) => {
     setDragPlayerId(playerId);
     setDragFromPitch(fromPitch);
+    if (e?.dataTransfer) {
+      e.dataTransfer.setData('text/plain', playerId);
+      e.dataTransfer.effectAllowed = 'move';
+    }
   };
 
   const handleDropOnPitch = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (!dragPlayerId) return;
+    const pId = dragPlayerId || e.dataTransfer?.getData('text/plain');
+    if (!pId) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     let x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -424,7 +468,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     y = Math.max(0, Math.min(100, y));
 
     setStarters((prev) => {
-      const filtered = prev.filter((p) => p.playerId !== dragPlayerId);
+      const filtered = prev.filter((p) => p.playerId !== pId);
 
       let posName = 'Midfielder';
       let pKey = 'CM';
@@ -432,30 +476,42 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       else if (y > 85) { posName = 'Goalkeeper'; pKey = 'GK'; }
       else if (y < 30) { posName = 'Attacker'; pKey = 'ST'; }
 
-      const existing = prev.find((p) => p.playerId === dragPlayerId);
+      const existing = prev.find((p) => p.playerId === pId);
       if (existing) {
         posName = existing.positionName;
         pKey = existing.pitchPosition;
       }
 
-      return [...filtered, { playerId: dragPlayerId, x, y, positionName: posName, pitchPosition: pKey }];
+      return [...filtered, { playerId: pId, x, y, positionName: posName, pitchPosition: pKey }];
     });
 
     if (!dragFromPitch) {
-      setBenchPlayerIds((prev) => prev.filter((id) => id !== dragPlayerId));
+      setBenchPlayerIds((prev) => prev.filter((id) => id !== pId));
     }
     setDragPlayerId(null);
     setDragFromPitch(false);
   };
 
-  const handleDropOnBench = () => {
-    if (!dragPlayerId) return;
+  const handleDropOnBench = (e?: React.DragEvent) => {
+    const pId = dragPlayerId || e?.dataTransfer?.getData('text/plain');
+    if (!pId) return;
     if (dragFromPitch) {
-      setStarters((prev) => prev.filter((p) => p.playerId !== dragPlayerId));
+      setStarters((prev) => prev.filter((p) => p.playerId !== pId));
     }
     setBenchPlayerIds((prev) =>
-      prev.includes(dragPlayerId) ? prev : [...prev, dragPlayerId]
+      prev.includes(pId) ? prev : [...prev, pId]
     );
+    setDragPlayerId(null);
+    setDragFromPitch(false);
+  };
+
+  const handleDropOnRoster = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const pId = dragPlayerId || e.dataTransfer?.getData('text/plain');
+    if (!pId) return;
+    setStarters((prev) => prev.filter((p) => p.playerId !== pId));
+    setBenchPlayerIds((prev) => prev.filter((id) => id !== pId));
     setDragPlayerId(null);
     setDragFromPitch(false);
   };
@@ -659,8 +715,29 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const benchSet = new Set(benchPlayerIds);
   const availablePlayers = players.filter((p) => !pitchedIds.has(p.id) && !benchSet.has(p.id));
 
-  const mainSquadAvailable = availablePlayers.filter((p) => !p.isGuest);
-  const guestPlayersAvailable = availablePlayers.filter((p) => p.isGuest);
+  const getPosWeight = (pos: string): number => {
+    const p = (pos || '').toUpperCase();
+    if (p === 'GK' || p === 'GOALKEEPER') return 1;
+    if (p === 'DF' || p === 'DEFENDER' || p.includes('CB') || p.includes('LB') || p.includes('RB')) return 2;
+    if (p === 'MF' || p === 'MIDFIELDER' || p.includes('CM') || p.includes('CAM') || p.includes('CDM')) return 3;
+    if (p === 'FW' || p === 'FORWARD' || p.includes('ST') || p.includes('LW') || p.includes('RW')) return 4;
+    return 5;
+  };
+
+  const sortRosterList = (list: Player[]) => {
+    return [...list].sort((a, b) => {
+      const wA = getPosWeight(a.position);
+      const wB = getPosWeight(b.position);
+      if (wA !== wB) return wA - wB;
+      return a.number - b.number;
+    });
+  };
+
+  const mainSquadAvailable = sortRosterList(availablePlayers.filter((p) => !p.isGuest));
+  const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
+
+  const activeMatchPlayerIds = new Set([...pitchedIds, ...benchSet]);
+  const matchPlayers = players.filter((p) => activeMatchPlayerIds.has(p.id));
 
   if (loading) {
     return (
@@ -771,7 +848,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {/* Home Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-4 text-center sm:text-right">
               <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1">{matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
-              <img src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/marinerssc.png')} alt="Home" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2" />
+              <img src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')} alt="Home" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2" />
             </div>
 
             {/* Score Inputs */}
@@ -806,7 +883,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
             {/* Away Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-start gap-2 sm:gap-4 text-center sm:text-left">
-              <img src={!matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/marinerssc.png')} alt="Away" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1" />
+              <img src={!matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')} alt="Away" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1" />
               <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2">{!matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
             </div>
           </div>
@@ -881,9 +958,6 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     onChange={(e) => setMatchDetails({ ...matchDetails, formation: e.target.value })}
                     className="w-16 sm:w-20 bg-slate-950 border border-slate-700 text-sky-400 text-[10px] font-mono font-bold text-center rounded px-1 py-0.5 outline-none focus:border-sky-500 transition-colors ml-2"
                   />
-                  <span className="ml-auto text-[9px] text-slate-500 font-mono">
-                    {starterCount < 11 ? `${11 - starterCount} kosong` : '✓ Penuh'}
-                  </span>
                 </div>
 
                 {/* Pitch area — direct lines without box fill */}
@@ -926,21 +1000,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     return (
                       <div
                         key={player.id}
-                        className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 z-10 cursor-grab active:cursor-grabbing"
+                        draggable
+                        onDragStart={(e) => handleDragStart(player.id, true, e)}
+                        onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 z-10 cursor-grab active:cursor-grabbing group"
                         style={{ left: `${starter.x}%`, top: `${starter.y}%` }}
                       >
                         {/* Token circle */}
                         <div
-                          draggable
-                          onDragStart={() => handleDragStart(player.id, true)}
-                          onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
                           className="w-10 h-10 rounded-full border-2 border-sky-400 bg-slate-900 shadow-lg shadow-sky-600/40 hover:scale-110 flex items-center justify-center transition-all overflow-hidden"
                         >
-                          <img src={player.photoUrl || '/playertemplate.png'} alt={player.name} className="w-full h-full object-cover object-top" />
+                          <img src={player.photoUrl || '/playertemplate.png'} alt={player.name} className="w-full h-full object-cover object-top scale-[1.35] origin-top" />
                         </div>
-                        {/* Name chip */}
-                        <div className="px-1 py-px rounded text-[7px] font-black uppercase leading-none whitespace-nowrap max-w-[48px] truncate bg-slate-950/90 text-sky-300 border border-sky-500/30">
-                          {player.name.split(' ')[0]}
+                        {/* Name chip with squad number on the left */}
+                        <div className="mt-0.5 z-10 px-1 py-px rounded text-[7px] font-black leading-none whitespace-nowrap max-w-[64px] truncate bg-slate-950/90 text-sky-300 border border-sky-500/30 flex items-center gap-0.5">
+                          <span className="text-sky-400 font-mono">{player.number}</span>
+                          <span className="truncate">{player.name.split(' ')[0]}</span>
                         </div>
                         {/* Clear X button when filled */}
                         <button
@@ -957,8 +1032,15 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </div>
               </div>
 
-              {/* ── PLAYER ROSTER (drag source with tabs) ── */}
-              <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden flex flex-col">
+              {/* ── PLAYER ROSTER (drag source & drop target with tabs) ── */}
+              <div
+                className={`rounded-2xl bg-slate-900/60 border overflow-hidden flex flex-col transition-all ${
+                  dragPlayerId ? 'border-sky-500/80 bg-sky-500/10 ring-2 ring-sky-500/30' : 'border-slate-800'
+                }`}
+                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                onDragEnter={(e) => e.preventDefault()}
+                onDrop={handleDropOnRoster}
+              >
                 {/* Roster Header Tabs */}
                 <div className="px-2 py-2 border-b border-slate-800 bg-slate-950/60 flex items-center gap-1.5 shrink-0">
                   <button
@@ -986,18 +1068,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   </button>
                 </div>
 
-                <div className="p-2 space-y-1.5 overflow-y-auto flex-1 max-h-[calc(115%+32px)]">
+                <div
+                  className="p-2 space-y-1.5 overflow-y-auto flex-1 max-h-[calc(115%+32px)]"
+                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                  onDragEnter={(e) => e.preventDefault()}
+                  onDrop={handleDropOnRoster}
+                >
                   {/* TAB 1: SKUAD UTAMA */}
                   {rosterTab === 'main' && (
                     <>
                       {mainSquadAvailable.length === 0 ? (
-                        <p className="text-[10px] text-slate-500 text-center py-6">Semua pemain skuad utama sudah ditempatkan.</p>
+                        <p className="text-[10px] text-slate-500 text-center py-6">
+                          {dragPlayerId ? '📥 Lepas pemain di sini untuk kembalikan ke skuad utama' : 'Semua pemain skuad utama sudah ditempatkan.'}
+                        </p>
                       ) : (
                         mainSquadAvailable.map((p) => (
                           <div
                             key={p.id}
                             draggable
-                            onDragStart={() => handleDragStart(p.id, false)}
+                            onDragStart={(e) => handleDragStart(p.id, false, e)}
                             onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
                             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
                                 ? 'opacity-40 scale-95'
@@ -1005,12 +1094,16 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               }`}
                           >
                             <GripVertical className="w-3 h-3 text-slate-600 shrink-0" />
-                            <span className="w-6 h-6 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-[9px] font-black text-sky-400 shrink-0">
+                            {/* Foto Pemain */}
+                            <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                              <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                            </div>
+                            <span className="font-mono font-black text-[11px] text-sky-400 shrink-0 min-w-[18px] text-center">
                               {p.number}
                             </span>
                             <span className="flex-1 min-w-0">
                               <span className="block text-[10px] font-bold text-slate-200 truncate">{p.name}</span>
-                              <span className="text-[8px] text-slate-500">{posNameMap[p.position] || p.position}</span>
+                              <span className="text-[8px] text-slate-500">{formatPosition(p.position)}</span>
                             </span>
                           </div>
                         ))
@@ -1032,7 +1125,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             <div
                               key={p.id}
                               draggable
-                              onDragStart={() => handleDragStart(p.id, false)}
+                              onDragStart={(e) => handleDragStart(p.id, false, e)}
                               onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
                               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
                                   ? 'opacity-40 scale-95'
@@ -1042,28 +1135,39 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 }`}
                             >
                               <GripVertical className={`w-3 h-3 shrink-0 ${isThisMatch ? 'text-emerald-500/60' : 'text-amber-500/60'}`} />
-                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${isThisMatch
-                                  ? 'bg-emerald-600/20 border border-emerald-500/40 text-emerald-300'
-                                  : 'bg-amber-600/20 border border-amber-500/40 text-amber-300'
-                                }`}>
+                              {/* Foto Pemain */}
+                              <div className={`w-7 h-7 rounded-full overflow-hidden border shrink-0 bg-slate-900 ${isThisMatch ? 'border-emerald-400/40' : 'border-amber-400/40'}`}>
+                                <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                              </div>
+                              <span className={`font-mono font-black text-[11px] shrink-0 min-w-[18px] text-center ${isThisMatch ? 'text-emerald-300' : 'text-amber-300'}`}>
                                 {p.number}
                               </span>
-                              <span className="flex-1 min-w-0 flex items-center justify-between">
-                                <span className="block">
+                              <span className="flex-1 min-w-0 flex items-center justify-between gap-1">
+                                <span className="block min-w-0">
                                   <span className={`block text-[10px] font-bold truncate ${isThisMatch ? 'text-emerald-200' : 'text-amber-200'}`}>{p.name}</span>
                                   <span className={`text-[8px] ${isThisMatch ? 'text-emerald-400/70' : 'text-amber-400/70'}`}>
-                                    {isThisMatch ? 'Loan Match Ini' : 'Rekomendasi Match Lain'}
+                                    {formatPosition(p.position)} • {isThisMatch ? 'Loan Match Ini' : ''}
                                   </span>
                                 </span>
                                 {isThisMatch ? (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
-                                    className="p-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                                    title="Hapus Pemain Loan"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
+                                      className="p-1 rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-white transition-colors"
+                                      title="Edit Pemain Loan"
+                                    >
+                                      <Edit className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
+                                      className="p-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                                      title="Hapus Pemain Loan"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
                                 ) : (
                                   <div className="flex items-center gap-1">
                                     <button
@@ -1075,7 +1179,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                       className="px-2 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-400 hover:text-slate-950 transition-colors text-[9px] font-bold uppercase flex items-center gap-1 border border-amber-500/40"
                                       title="Masukkan ke Cadangan Match Ini"
                                     >
-                                      <Plus className="w-3 h-3" /> Pakai
+                                      
+                                      <Edit className="w-3 h-3" />
                                     </button>
                                     <button
                                       type="button"
@@ -1096,7 +1201,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       {/* Guest Player Add Button */}
                       <div className="mt-3 pt-3 border-t border-slate-800">
                         <button
-                          onClick={() => setShowGuestModal(true)}
+                          onClick={openAddGuestModal}
                           className="w-full bg-emerald-950/40 border border-emerald-500/40 hover:bg-emerald-900/50 text-emerald-300 rounded-xl px-2 py-2 text-[10px] font-extrabold uppercase transition-colors flex items-center justify-center gap-1.5 shadow"
                         >
                           <Plus className="w-3.5 h-3.5 text-emerald-400" /> Tambah Pemain Loan Baru
@@ -1135,17 +1240,26 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       <div
                         key={pId}
                         draggable
-                        onDragStart={() => handleDragStart(p.id, false)}
+                        onDragStart={(e) => handleDragStart(p.id, false, e)}
                         onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-800 border border-sky-500/25 text-[10px] font-bold text-sky-300 cursor-grab active:cursor-grabbing select-none"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-800/90 border border-sky-500/30 text-sky-300 cursor-grab active:cursor-grabbing select-none shadow-sm hover:border-sky-400/50 transition-all"
                       >
-                        <span className="text-[9px] text-sky-400/70">#{p.number}</span>
-                        <span className="truncate max-w-[70px]">{p.name}</span>
+                        <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                          <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                        </div>
+                        <span className="font-mono font-black text-xs text-sky-400 shrink-0 min-w-[16px] text-center">{p.number}</span>
+                        <div className="flex flex-col min-w-0 pr-1">
+                          <span className="text-[10px] font-bold text-slate-100 truncate max-w-[80px] leading-tight">{p.name.split(' ')[0]}</span>
+                          <span className="text-[8.5px] font-semibold text-sky-400/80 leading-none mt-0.5">
+                            {formatPosition(p.position)}
+                          </span>
+                        </div>
                         <button
                           onClick={() => removeBenchPlayer(p.id)}
-                          className="ml-0.5 text-slate-500 hover:text-red-400 transition-colors"
+                          className="ml-0.5 text-slate-500 hover:text-red-400 transition-colors shrink-0"
+                          title="Keluarkan dari cadangan"
                         >
-                          <X className="w-2.5 h-2.5" />
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     );
@@ -1202,8 +1316,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
                     >
                       <option value="">-- Pilih Pemain --</option>
-                      {players.map((p) => (
-                        <option key={p.id} value={p.id}>#{p.number} {p.name} ({p.position})</option>
+                      {matchPlayers.map((p) => (
+                        <option key={p.id} value={p.id}>{p.number}. {p.name} ({p.position})</option>
                       ))}
                     </select>
                   </div>
@@ -1218,8 +1332,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
                     >
                       <option value="">-- Tidak ada assist --</option>
-                      {players.filter(p => p.id !== newEvent.playerId).map((p) => (
-                        <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
+                      {matchPlayers.filter(p => p.id !== newEvent.playerId).map((p) => (
+                        <option key={p.id} value={p.id}>{p.number}. {p.name}</option>
                       ))}
                     </select>
                   </div>
@@ -1234,8 +1348,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
                     >
                       <option value="">-- Pilih Pemain Keluar --</option>
-                      {players.filter(p => p.id !== newEvent.playerId).map((p) => (
-                        <option key={p.id} value={p.id}>#{p.number} {p.name}</option>
+                      {matchPlayers.filter(p => p.id !== newEvent.playerId).map((p) => (
+                        <option key={p.id} value={p.id}>{p.number}. {p.name}</option>
                       ))}
                     </select>
                   </div>
@@ -1351,7 +1465,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             <div className="p-5 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
               <h2 className="text-lg font-black uppercase text-white flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-sky-400" />
-                Tambah Pemain Loan
+                {editingGuestPlayer ? 'Edit Pemain Loan' : 'Tambah Pemain Loan'}
               </h2>
               <button onClick={() => setShowGuestModal(false)} className="p-2 bg-slate-800/80 rounded-full text-slate-400 hover:text-white hover:bg-red-500 transition-colors">
                 <X className="w-4 h-4" />

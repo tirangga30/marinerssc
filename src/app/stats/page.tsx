@@ -5,6 +5,15 @@ import { Trophy, Award, Flame, Shield, ArrowRight, Activity } from 'lucide-react
 
 export const revalidate = 0;
 
+const formatPosition = (pos: string) => {
+  const p = (pos || '').toUpperCase();
+  if (p === 'GK' || p === 'GOALKEEPER') return 'Goalkeeper';
+  if (p === 'DF' || p === 'DEFENDER') return 'Defender';
+  if (p === 'MF' || p === 'MIDFIELDER') return 'Midfielder';
+  if (p === 'FW' || p === 'FORWARD') return 'Forward';
+  return pos;
+};
+
 export default async function StatsPage() {
   const rawPlayers = await prisma.player.findMany({
     include: {
@@ -30,10 +39,17 @@ export default async function StatsPage() {
     const calcGoals = (p.events || []).filter((e: any) => e.type === 'goal' || e.type === 'penalty').length;
     const goals = Math.max(p.goals || 0, calcGoals);
 
-    const calcAssists = (p.events || []).filter((e: any) => e.type === 'assist').length + (p.assistedEvents || []).length;
+    const calcAssists =
+      (p.events || []).filter((e: any) => e.type === 'assist').length +
+      (p.assistedEvents || []).filter((e: any) => e.type !== 'sub').length;
     const assists = Math.max(p.assists || 0, calcAssists);
 
-    const calcAppearances = activeLineups.length;
+    const calcAppearances = activeLineups.filter((l: any) => {
+      if (l.isStarter) return true;
+      const m = l.match;
+      const matchEvents = m?.events || [];
+      return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === p.id);
+    }).length;
     const appearances = Math.max(p.appearances || 0, calcAppearances);
 
     const calcYellow = (p.events || []).filter((e: any) => e.type === 'yellow_card').length;
@@ -96,12 +112,15 @@ export default async function StatsPage() {
                 <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center ${rank === 0 ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
                   {rank + 1}
                 </span>
-                <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40">
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
                   <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-100">{player.name}</p>
-                  <p className="text-[10px] text-sky-400/80 font-semibold">{player.position}</p>
+                  <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                    <span className="text-sky-400 font-mono font-black">{player.number}</span>
+                    <span>{player.name}</span>
+                  </p>
+                  <p className="text-[9px] text-slate-400 font-medium mt-0.5">{formatPosition(player.position)}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -137,11 +156,15 @@ export default async function StatsPage() {
                   <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center ${rank === 0 ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
                     {rank + 1}
                   </span>
-                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40">
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
                     <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-100">{player.name}</p>
+                    <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                      <span className="text-sky-400 font-mono font-black">{player.number}</span>
+                      <span>{player.name}</span>
+                    </p>
+                    <p className="text-[9px] text-slate-400 font-medium mt-0.5">{formatPosition(player.position)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -170,11 +193,15 @@ export default async function StatsPage() {
                   <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center ${rank === 0 ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
                     {rank + 1}
                   </span>
-                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40">
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
                     <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-100">{player.name}</p>
+                    <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                      <span className="text-sky-400 font-mono font-black">{player.number}</span>
+                      <span>{player.name}</span>
+                    </p>
+                    <p className="text-[9px] text-slate-400 font-medium mt-0.5">{formatPosition(player.position)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -203,11 +230,15 @@ export default async function StatsPage() {
                   <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center ${rank === 0 ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
                     {rank + 1}
                   </span>
-                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40">
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
                     <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-100">{player.name}</p>
+                    <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                      <span className="text-sky-400 font-mono font-black">{player.number}</span>
+                      <span>{player.name}</span>
+                    </p>
+                    <p className="text-[9px] text-slate-400 font-medium mt-0.5">{formatPosition(player.position)}</p>
                   </div>
                 </div>
                 <div className="text-right">

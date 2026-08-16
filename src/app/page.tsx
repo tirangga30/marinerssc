@@ -359,7 +359,7 @@ export default async function HomePage() {
                       </div>
                       <div className="order-1 sm:order-2 flex items-center justify-center">
                         <img
-                          src={m.isHome ? '/marinerssc.png' : m.opponentLogo}
+                          src={m.isHome ? '/marinerssc.png' : (m.opponentLogo || '/defaultteam.png')}
                           alt={m.isHome ? 'Mariners SC' : m.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
@@ -374,16 +374,14 @@ export default async function HomePage() {
                       <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                         {m.homeScore} : {m.awayScore}
                       </div>
-                      <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">
-                        {m.venue} ({m.isHome ? 'Kandang' : 'Tandang'})
-                      </p>
+                      <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{m.venue}</p>
                     </div>
 
                     {/* Away Team */}
                     <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                       <div className="flex items-center justify-center">
                         <img
-                          src={!m.isHome ? '/marinerssc.png' : m.opponentLogo}
+                          src={!m.isHome ? '/marinerssc.png' : (m.opponentLogo || '/defaultteam.png')}
                           alt={!m.isHome ? 'Mariners SC' : m.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
@@ -445,7 +443,7 @@ export default async function HomePage() {
             href="/players"
             className="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-sky-400 hover:text-white flex items-center gap-0.5"
           >
-            Semua Pemain ({featuredPlayers.length}+) <ArrowRight className="w-3 h-3" />
+            Semua Pemain <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 

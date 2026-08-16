@@ -69,8 +69,28 @@ interface MatchTabsProps {
 export default function MatchTabs({ match }: MatchTabsProps) {
   const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('lineup');
 
-  const starters = match.lineups.filter((l) => l.isStarter);
-  const bench = match.lineups.filter((l) => !l.isStarter);
+  const getPosWeight = (pos: string, pitchPos?: string): number => {
+    const p = (pos || '').toUpperCase();
+    const pitchP = (pitchPos || '').toUpperCase();
+
+    if (p === 'GK' || p === 'GOALKEEPER' || pitchP === 'GK') return 1;
+    if (p === 'DF' || p === 'DEFENDER' || ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DF'].includes(pitchP)) return 2;
+    if (p === 'MF' || p === 'MIDFIELDER' || ['CM', 'CAM', 'CDM', 'LM', 'RM', 'MF'].includes(pitchP)) return 3;
+    if (p === 'FW' || p === 'FORWARD' || ['ST', 'CF', 'LW', 'RW', 'FW'].includes(pitchP)) return 4;
+    return 5;
+  };
+
+  const sortLineupsByPosition = (list: LineupItem[]) => {
+    return [...list].sort((a, b) => {
+      const wA = getPosWeight(a.player?.position || a.positionName, a.pitchPosition);
+      const wB = getPosWeight(b.player?.position || b.positionName, b.pitchPosition);
+      if (wA !== wB) return wA - wB;
+      return (a.player?.number || 0) - (b.player?.number || 0);
+    });
+  };
+
+  const starters = sortLineupsByPosition(match.lineups.filter((l) => l.isStarter));
+  const bench = sortLineupsByPosition(match.lineups.filter((l) => !l.isStarter));
 
   // Helper to find events for a specific player in this match (Goals, Cards, Assists, Subs)
   const getPlayerEvents = (playerId: string) => {
@@ -79,7 +99,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       if (e.player && e.player.id === playerId) {
         rawEvts.push({ id: `${e.id}-${e.type}`, type: e.type });
       }
-      if (e.assistPlayer && e.assistPlayer.id === playerId) {
+      if (e.assistPlayer && e.assistPlayer.id === playerId && e.type !== 'sub') {
         rawEvts.push({ id: `${e.id}-assist`, type: 'assist' });
       }
     });
@@ -510,7 +530,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                           <img
                             src={item.player.photoUrl || '/playertemplate.png'}
                             alt={item.player.name}
-                            className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-100"
+                            className="w-full h-full object-cover object-top scale-[1.35] origin-top opacity-80 group-hover:opacity-100"
                           />
                         </div>
 

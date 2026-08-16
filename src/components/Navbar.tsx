@@ -174,7 +174,7 @@ export default function Navbar() {
                 MARINERS SC
               </span>
               <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-sky-200/80 font-semibold block mt-0.5 sm:mt-1">
-                Official Soccer Club
+                Website Official
               </span>
             </div>
           </Link>

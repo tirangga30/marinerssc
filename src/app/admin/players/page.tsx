@@ -10,6 +10,7 @@ interface Player {
   number: number;
   position: string;
   nationality: string;
+  birthDate?: string | Date | null;
   heightCm: number | null;
   weightKg: number | null;
   photoUrl: string;
@@ -33,6 +34,14 @@ export default function AdminPlayersPage() {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const formatDateForInput = (d?: string | Date | null) => {
+    if (!d) return '';
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  };
+
   const normalizePos = (pos: string) => {
     const p = pos?.toUpperCase();
     if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
@@ -48,6 +57,7 @@ export default function AdminPlayersPage() {
     number: '',
     position: 'FORWARD',
     nationality: 'Indonesia',
+    birthDate: '',
     heightCm: '',
     weightKg: '',
     photoUrl: '/playertemplate.png',
@@ -62,15 +72,33 @@ export default function AdminPlayersPage() {
     redCards: '0',
   });
 
+  const getPosWeight = (pos: string): number => {
+    const p = (pos || '').toUpperCase();
+    if (p === 'GK' || p === 'GOALKEEPER') return 1;
+    if (p === 'DF' || p === 'DEFENDER' || p.includes('CB') || p.includes('LB') || p.includes('RB')) return 2;
+    if (p === 'MF' || p === 'MIDFIELDER' || p.includes('CM') || p.includes('CAM') || p.includes('CDM')) return 3;
+    if (p === 'FW' || p === 'FORWARD' || p.includes('ST') || p.includes('LW') || p.includes('RW')) return 4;
+    return 5;
+  };
+
+  const sortPlayersByPos = (list: Player[]) => {
+    return [...list].sort((a, b) => {
+      const wA = getPosWeight(a.position);
+      const wB = getPosWeight(b.position);
+      if (wA !== wB) return wA - wB;
+      return a.number - b.number;
+    });
+  };
+
   const fetchPlayers = async () => {
     try {
       const res = await fetch('/api/players');
       const data = await res.json();
-      setPlayers(data);
+      setPlayers(sortPlayersByPos(data));
 
       const guestRes = await fetch('/api/players?guestsOnly=true');
       const guestData = await guestRes.json();
-      setGuestPlayers(guestData);
+      setGuestPlayers(sortPlayersByPos(guestData));
     } catch {
       console.error('Gagal mengambil pemain');
     } finally {
@@ -86,6 +114,16 @@ export default function AdminPlayersPage() {
   const toggleStar = async (player: Player) => {
     try {
       const newFeaturedState = !player.isFeatured;
+
+      // Limit maximum 6 featured players on homepage
+      if (newFeaturedState) {
+        const currentFeaturedCount = players.filter((p) => p.isFeatured).length;
+        if (currentFeaturedCount >= 6) {
+          alert('Maksimal 6 pemain yang dapat ditambahkan ke Beranda Utama.');
+          return;
+        }
+      }
+
       const res = await fetch(`/api/players/${player.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +137,8 @@ export default function AdminPlayersPage() {
           prev.map((p) => (p.id === player.id ? { ...p, isFeatured: newFeaturedState } : p))
         );
       } else {
-        alert('Gagal mengedit status pemain bintang');
+        const errData = await res.json();
+        alert(errData.error || 'Gagal mengubah status pemain bintang');
       }
     } catch {
       alert('Terjadi kesalahan saat mengubah status pemain bintang');
@@ -113,6 +152,7 @@ export default function AdminPlayersPage() {
       number: '',
       position: 'FW',
       nationality: 'Indonesia',
+      birthDate: '',
       heightCm: '',
       weightKg: '',
       photoUrl: '/playertemplate.png',
@@ -138,6 +178,7 @@ export default function AdminPlayersPage() {
         number: guest.number.toString(),
         position: guest.position,
         nationality: guest.nationality || 'Indonesia',
+        birthDate: formatDateForInput(guest.birthDate),
         heightCm: guest.heightCm?.toString() || '',
         weightKg: guest.weightKg?.toString() || '',
         photoUrl: guest.photoUrl || '/playertemplate.png',
@@ -163,6 +204,7 @@ export default function AdminPlayersPage() {
       number: player.number.toString(),
       position: player.position,
       nationality: player.nationality,
+      birthDate: formatDateForInput(player.birthDate),
       heightCm: player.heightCm?.toString() || '',
       weightKg: player.weightKg?.toString() || '',
       photoUrl: player.photoUrl || '/playertemplate.png',
@@ -269,64 +311,77 @@ export default function AdminPlayersPage() {
 
         {/* Players Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-200">
-            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
-              <tr>
-                <th className="p-3">No</th>
-                <th className="p-3">Pemain</th>
-                <th className="p-3">Posisi</th>
-                <th className="p-3">Gol / Assist</th>
-                <th className="p-3">Laga</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-center">Pemain Beranda </th>
-                <th className="p-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
-              {players.map((player) => (
-                <tr key={player.id} className="hover:bg-slate-800/40">
-                  <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
-                  <td className="p-3 flex items-center gap-3">
-                    <img
-                      src={player.photoUrl || '/playertemplate.png'}
-                      alt={player.name}
-                      className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
-                    />
-                    <div>
-                      <span className="font-bold text-white uppercase">{player.name}</span>
-                      {player.isCaptain && (
-                        <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
-                          👑 Kapten
+          {(() => {
+            const featuredCount = players.filter((p) => p.isFeatured).length;
+            const isLimitReached = featuredCount >= 6;
+            return (
+              <table className="w-full text-left text-xs text-slate-200">
+                <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th className="p-3">No</th>
+                    <th className="p-3">Pemain</th>
+                    <th className="p-3">Posisi</th>
+                    <th className="p-3">Gol / Assist</th>
+                    <th className="p-3">Laga</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-center">Beranda ({featuredCount}/6)</th>
+                    <th className="p-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-medium">
+                  {players.map((player) => (
+                    <tr key={player.id} className="hover:bg-slate-800/40">
+                      <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
+                      <td className="p-3 flex items-center gap-3">
+                        <img
+                          src={player.photoUrl || '/playertemplate.png'}
+                          alt={player.name}
+                          className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
+                        />
+                        <div>
+                          <span className="font-bold text-white">{player.name}</span>
+                          {player.isCaptain && (
+                            <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                              👑 Kapten
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 font-bold text-sky-300">
+                        {normalizePos(player.position)}
+                        {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
+                      </td>
+                      <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
+                      <td className="p-3">{player.appearances}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
+                          {player.status}
                         </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-3 font-bold text-sky-300">
-                    {normalizePos(player.position)}
-                    {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
-                  </td>
-                  <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
-                  <td className="p-3">{player.appearances}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                      {player.status}
-                    </span>
-                  </td>
+                      </td>
 
-                  {/* TOMBOL BINTANG (FAVORIT BERANDA) */}
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => toggleStar(player)}
-                      title={player.isFeatured ? 'Hapus dari Pemain Beranda' : 'Tampilkan di Pemain Beranda'}
-                      className={`p-2 rounded-xl border transition-all ${
-                        player.isFeatured
-                          ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
-                          : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
-                      }`}
-                    >
-                      <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
-                    </button>
-                  </td>
+                      {/* TOMBOL BINTANG (FAVORIT BERANDA - MAX 6) */}
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => toggleStar(player)}
+                          disabled={isLimitReached && !player.isFeatured}
+                          title={
+                            player.isFeatured
+                              ? 'Hapus dari Pemain Beranda'
+                              : isLimitReached
+                              ? 'Maksimal 6 Pemain Beranda Tercapai'
+                              : 'Tampilkan di Pemain Beranda'
+                          }
+                          className={`p-2 rounded-xl border transition-all ${
+                            player.isFeatured
+                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                              : isLimitReached
+                              ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
+                              : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                          }`}
+                        >
+                          <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
+                        </button>
+                      </td>
 
                   <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
                     {player.isGuest && (
@@ -364,6 +419,8 @@ export default function AdminPlayersPage() {
               ))}
             </tbody>
           </table>
+        );
+      })()}
         </div>
       </div>
 
@@ -484,6 +541,15 @@ export default function AdminPlayersPage() {
                   />
                 </div>
                 <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Tanggal Lahir</label>
+                  <input
+                    type="date"
+                    value={formData.birthDate}
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  />
+                </div>
+                <div>
                   <label className="font-bold text-slate-200 uppercase block mb-1">Tinggi (cm)</label>
                   <input
                     type="number"
@@ -511,7 +577,7 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, isCaptain: e.target.checked })}
                     className="w-4 h-4 rounded text-amber-500"
                   />
-                  <span>Jadikan Kapten 👑</span>
+                  <span>Kapten Tim</span>
                 </label>
               </div>
 

@@ -55,11 +55,44 @@ const positionCoordinates: Record<string, { top: number; left: number }> = {
 };
 
 export default function TacticalPitch({ lineups, formation = '4-3-3', events = [] }: TacticalPitchProps) {
-  const starters = lineups.filter((l) => l.isStarter);
-  const bench = lineups.filter((l) => !l.isStarter);
+  const getPosWeight = (pos: string, pitchPos?: string): number => {
+    const p = (pos || '').toUpperCase();
+    const pitchP = (pitchPos || '').toUpperCase();
+
+    if (p === 'GK' || p === 'GOALKEEPER' || pitchP === 'GK') return 1;
+    if (p === 'DF' || p === 'DEFENDER' || ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DF'].includes(pitchP)) return 2;
+    if (p === 'MF' || p === 'MIDFIELDER' || ['CM', 'CAM', 'CDM', 'LM', 'RM', 'MF'].includes(pitchP)) return 3;
+    if (p === 'FW' || p === 'FORWARD' || ['ST', 'CF', 'LW', 'RW', 'FW'].includes(pitchP)) return 4;
+    return 5;
+  };
+
+  const sortLineupsByPos = (list: LineupPlayer[]) => {
+    return [...list].sort((a, b) => {
+      const wA = getPosWeight(a.player?.position || a.positionName, a.pitchPosition);
+      const wB = getPosWeight(b.player?.position || b.positionName, b.pitchPosition);
+      if (wA !== wB) return wA - wB;
+      return (a.player?.number || 0) - (b.player?.number || 0);
+    });
+  };
+
+  const starters = sortLineupsByPos(lineups.filter((l) => l.isStarter));
+  const bench = sortLineupsByPos(lineups.filter((l) => !l.isStarter));
 
   return (
     <div className="space-y-6">
+      {/* Header Formasi */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-sky-400" />
+          <h4 className="text-sm font-black uppercase text-white tracking-wide">
+            Formasi Tim
+          </h4>
+        </div>
+        <span className="text-xs sm:text-sm font-black font-mono px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-400/30 shadow-xs">
+          {formation || '4-3-3'}
+        </span>
+      </div>
+
       {/* Tactical Pitch (Direct Pitch Lines - No Outer Box) */}
       <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] max-w-3xl mx-auto">
         
@@ -124,15 +157,17 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
             <>
               {/* Player Avatar Circle */}
               <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
-                <img
-                  src={lineup.player.photoUrl || '/playertemplate.png'}
-                  alt={lineup.player.name}
-                  className="w-full h-full object-cover object-top rounded-full"
-                />
+                <div className="w-full h-full rounded-full overflow-hidden">
+                  <img
+                    src={lineup.player.photoUrl || '/playertemplate.png'}
+                    alt={lineup.player.name}
+                    className="w-full h-full object-cover object-top scale-[1.35] origin-top rounded-full"
+                  />
+                </div>
 
                 {/* Event Badges Overlay on Top-Right Corner */}
                 {playerEvts.length > 0 && (
-                  <div className="absolute -top-2.5 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/40 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/10 shadow-sm">
+                  <div className="absolute -top-2.5 -right-1 flex items-center gap-0.5 z-30 pointer-events-none bg-slate-950/80 backdrop-blur-xs px-1 py-0.5 rounded-full border border-white/20 shadow-md">
                     {playerEvts.map((e, idx) => (
                       <span key={idx} className="inline-flex items-center justify-center">
                         {e.type === 'goal' && <i className="fa-regular fa-futbol text-amber-400 text-[8px] sm:text-[9.5px]" />}
@@ -171,7 +206,7 @@ export default function TacticalPitch({ lineups, formation = '4-3-3', events = [
               </div>
 
               {/* Player Name Tag with squad number on the left in blue */}
-              <div className="mt-1 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20 flex items-center gap-1 shadow-md">
+              <div className="mt-0.5 z-10 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20 flex items-center gap-1 shadow-md">
                 <span className="text-sky-400 font-black font-mono">
                   {lineup.player.number}
                 </span>

@@ -21,6 +21,23 @@ export async function GET(req: Request) {
       where: whereClause,
       orderBy: { number: 'asc' },
     });
+
+    const getPositionWeight = (pos: string): number => {
+      const p = (pos || '').toUpperCase();
+      if (p === 'GK' || p === 'GOALKEEPER') return 1;
+      if (p === 'DF' || p === 'DEFENDER' || p.includes('CB') || p.includes('LB') || p.includes('RB')) return 2;
+      if (p === 'MF' || p === 'MIDFIELDER' || p.includes('CM') || p.includes('CAM') || p.includes('CDM')) return 3;
+      if (p === 'FW' || p === 'FORWARD' || p.includes('ST') || p.includes('LW') || p.includes('RW')) return 4;
+      return 5;
+    };
+
+    players.sort((a, b) => {
+      const wA = getPositionWeight(a.position);
+      const wB = getPositionWeight(b.position);
+      if (wA !== wB) return wA - wB;
+      return a.number - b.number;
+    });
+
     return NextResponse.json(players);
   } catch (error) {
     return NextResponse.json({ error: 'Gagal mengambil data pemain' }, { status: 500 });
@@ -53,13 +70,36 @@ export async function POST(req: Request) {
       }
     }
 
+    // Check for duplicate photo file (ignore default placeholders / template photos)
+    const rawPhotoUrl = (data.photoUrl || '').trim();
+    const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.png' || rawPhotoUrl.includes('unsplash.com');
+
+    if (!isDefaultTemplate) {
+      const existingPhotoPlayer = await prisma.player.findFirst({
+        where: { photoUrl: rawPhotoUrl },
+      });
+      if (existingPhotoPlayer) {
+        return NextResponse.json(
+          { error: `Foto ini sudah digunakan oleh pemain lain (${existingPhotoPlayer.name}). Silakan gunakan file foto lain.` },
+          { status: 400 }
+        );
+      }
+    }
+
     const player = await prisma.player.create({
       data: {
         name: data.name,
         slug,
         number: finalNumber,
-        position: data.position,
+        position: (() => {
+          const p = (data.position || '').trim().toUpperCase();
+          if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
+          if (p === 'DF' || p === 'DEFENDER' || p.includes('CB') || p.includes('LB') || p.includes('RB')) return 'DEFENDER';
+          if (p === 'MF' || p === 'MIDFIELDER' || p.includes('CM') || p.includes('CAM') || p.includes('CDM')) return 'MIDFIELDER';
+          return 'FORWARD';
+        })(),
         nationality: data.nationality || 'Indonesia',
+        birthDate: data.birthDate ? new Date(data.birthDate) : null,
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
         weightKg: data.weightKg ? parseInt(data.weightKg) : null,
         photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',

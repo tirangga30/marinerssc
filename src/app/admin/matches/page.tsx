@@ -69,10 +69,10 @@ export default function AdminMatchesPage() {
 
   const [formData, setFormData] = useState({
     opponentName: '',
-    opponentLogo: '/marinerssc.png',
+    opponentLogo: '/defaultteam.png',
     matchDate: getDefaultMatchDate(),
     competition: 'Matchday 1',
-    venue: 'Stadion Gelora Samudra, Jakarta',
+    venue: '',
     isHome: true,
     summary: '',
   });
@@ -97,10 +97,10 @@ export default function AdminMatchesPage() {
     setEditingMatch(null);
     setFormData({
       opponentName: '',
-      opponentLogo: '/marinerssc.png',
+      opponentLogo: '/defaultteam.png',
       matchDate: getDefaultMatchDate(),
       competition: 'Matchday 1',
-      venue: 'Stadion Gelora Samudra, Jakarta',
+      venue: '',
       isHome: true,
       summary: '',
     });
@@ -126,7 +126,7 @@ export default function AdminMatchesPage() {
       opponentLogo: m.opponentLogo,
       matchDate: formatDateForInput(m.matchDate),
       competition: m.competition,
-      venue: m.venue || 'Stadion Gelora Samudra, Jakarta',
+      venue: m.venue || '',
       isHome: m.isHome,
       summary: m.summary || '',
     });
@@ -325,7 +325,7 @@ export default function AdminMatchesPage() {
                   {/* NO BOX around preview logo */}
                   <div className="w-16 h-16 flex items-center justify-center shrink-0">
                     <img
-                      src={formData.opponentLogo || '/marinerssc.png'}
+                      src={formData.opponentLogo || '/defaultteam.png'}
                       alt="Logo Lawan"
                       className="w-14 h-14 object-contain drop-shadow-xl"
                     />
@@ -359,7 +359,7 @@ export default function AdminMatchesPage() {
                     value={formData.opponentName}
                     onChange={(e) => setFormData({ ...formData, opponentName: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                    placeholder="Persija Jakarta"
+                    placeholder="Masukan Tim Lawan"
                   />
                 </div>
                 <div>
@@ -382,7 +382,7 @@ export default function AdminMatchesPage() {
                   value={formData.venue}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                   className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                  placeholder="Stadion Gelora Samudra, Jakarta"
+                  placeholder="Masukkan lokasi / nama stadion..."
                 />
               </div>
 
