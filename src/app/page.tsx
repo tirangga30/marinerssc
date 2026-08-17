@@ -116,19 +116,31 @@ export default async function HomePage() {
   const finishedMatches = matchesWithStatus.filter((m: any) => m.computedStatus === 'finished');
   const totalFinished = finishedMatches.length;
 
-  const wins = finishedMatches.filter(
-    (m: any) =>
-      m.homeScore !== null &&
-      m.awayScore !== null &&
-      ((m.isHome && m.homeScore > m.awayScore) || (!m.isHome && m.awayScore > m.homeScore))
-  ).length;
+  let wins = 0;
+  let draws = 0;
+  let losses = 0;
+  let totalGoals = 0;
+  let concededGoals = 0;
+
+  finishedMatches.forEach((m: any) => {
+    const marinersScore = m.isHome ? m.homeScore : m.awayScore;
+    const opponentScore = m.isHome ? m.awayScore : m.homeScore;
+
+    if (marinersScore !== null && opponentScore !== null) {
+      totalGoals += marinersScore;
+      concededGoals += opponentScore;
+
+      if (marinersScore > opponentScore) {
+        wins++;
+      } else if (marinersScore === opponentScore) {
+        draws++;
+      } else {
+        losses++;
+      }
+    }
+  });
 
   const winRate = totalFinished > 0 ? Math.round((wins / totalFinished) * 100) : 0;
-
-  const totalGoals = finishedMatches.reduce((acc: number, m: any) => {
-    const sc = m.isHome ? m.homeScore : m.awayScore;
-    return acc + (sc || 0);
-  }, 0);
 
   return (
     <div className="space-y-8 sm:space-y-16 pb-12">
@@ -411,22 +423,34 @@ export default async function HomePage() {
             <p className="text-[9px] sm:text-xs text-slate-300">Performa resmi klub Mariners SC di musim ini</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-6 text-center">
-            <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-lg sm:text-3xl font-black font-mono blue-gradient-text block">{winRate}%</span>
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block">Win Rate</span>
+          <div className="grid grid-cols-7 gap-1 sm:gap-4 text-center">
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{winRate}%</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Win Rate</span>
             </div>
-            <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-lg sm:text-3xl font-black font-mono text-white block">{totalGoals}</span>
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block">Total Gol Mariners</span>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{totalFinished}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Main</span>
             </div>
-            <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-lg sm:text-3xl font-black font-mono text-emerald-400 block">{wins}</span>
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block">Kemenangan</span>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{wins}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Menang</span>
             </div>
-            <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-lg sm:text-3xl font-black font-mono text-sky-400 block">{totalFinished}</span>
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block">Laga Selesai</span>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{draws}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Seri</span>
+            </div>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{losses}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Kalah</span>
+            </div>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{totalGoals}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Gol</span>
+            </div>
+            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{concededGoals}</span>
+              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Kemasukan</span>
             </div>
           </div>
         </div>

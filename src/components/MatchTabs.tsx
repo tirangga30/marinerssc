@@ -394,7 +394,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                 <div className="flex items-center gap-2">
                   <UserCheck className="w-5 h-5 text-emerald-400" />
                   <h4 className="text-sm sm:text-base font-black uppercase text-white">
-                    Starting XI
+                    Starting
                   </h4>
                 </div>
                 <span className="text-xs font-bold text-slate-400">
@@ -506,7 +506,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-sky-400" />
                     <h4 className="text-sm sm:text-base font-black uppercase text-white">
-                      Substitutions
+                      Substitution
                     </h4>
                   </div>
                   <span className="text-xs font-bold text-slate-400">
