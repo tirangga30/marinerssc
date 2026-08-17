@@ -32,16 +32,26 @@ export async function POST(req: Request) {
       slug = `${slug}-${Date.now()}`;
     }
 
+    let validPhotos: string[] = [];
+    if (Array.isArray(data.images) && data.images.length > 0) {
+      validPhotos = data.images.filter(Boolean);
+    } else if (data.thumbnail) {
+      validPhotos = [data.thumbnail];
+    }
+
+    const thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/stadium_hero.png';
+
+    const articleData: any = {
+      title: data.title,
+      slug,
+      category: data.category || 'Kabar Tim',
+      thumbnail: thumbnailValue,
+      content: data.content,
+      publishedAt: data.publishedAt ? parseWibDate(data.publishedAt) : new Date(),
+    };
+
     const article = await prisma.article.create({
-      data: {
-        title: data.title,
-        slug,
-        category: data.category || 'Kabar Tim',
-        thumbnail: data.thumbnail || (Array.isArray(data.images) && data.images[0]) || '/stadium_hero.png',
-        images: Array.isArray(data.images) ? JSON.stringify(data.images) : (typeof data.images === 'string' ? data.images : null),
-        content: data.content,
-        publishedAt: data.publishedAt ? parseWibDate(data.publishedAt) : new Date(),
-      },
+      data: articleData,
     });
 
     return NextResponse.json(article);

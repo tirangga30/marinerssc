@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { Calendar, ArrowLeft, Share2, Tag } from 'lucide-react';
 
 import ArticleSlider from '@/components/ArticleSlider';
+import { getArticlePhotos } from '@/lib/articles';
 
 export const revalidate = 0;
 
@@ -23,20 +24,7 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
-  let articleImages: string[] = [];
-  try {
-    if ((article as any).images) {
-      const parsed = JSON.parse((article as any).images);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        articleImages = parsed.filter(Boolean);
-      }
-    }
-  } catch {
-    articleImages = [];
-  }
-  if (articleImages.length === 0 && article.thumbnail) {
-    articleImages = [article.thumbnail];
-  }
+  const articleImages = getArticlePhotos(article);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

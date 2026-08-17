@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { ArrowRight, Calendar } from 'lucide-react';
+import { getMainThumbnail } from '@/lib/articles';
 
 export const revalidate = 0;
 
@@ -81,7 +82,7 @@ export default async function ArticlesPage({
           >
             <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-900">
               <img
-                src={article.thumbnail}
+                src={getMainThumbnail(article.thumbnail)}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

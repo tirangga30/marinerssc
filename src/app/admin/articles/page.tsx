@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Calendar } from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
+import { getArticlePhotos, getMainThumbnail } from '@/lib/articles';
 
 interface Article {
   id: string;
@@ -70,18 +71,7 @@ export default function AdminArticlesPage() {
 
   const openEditModal = (art: Article) => {
     setEditingArticle(art);
-    let parsedPhotos: string[] = [];
-    try {
-      if (art.images) {
-        const arr = JSON.parse(art.images);
-        if (Array.isArray(arr)) parsedPhotos = arr;
-      }
-    } catch {
-      parsedPhotos = [];
-    }
-    if (parsedPhotos.length === 0 && art.thumbnail) {
-      parsedPhotos = [art.thumbnail];
-    }
+    const parsedPhotos = getArticlePhotos(art);
     while (parsedPhotos.length < 3) {
       parsedPhotos.push('');
     }
@@ -220,15 +210,8 @@ export default function AdminArticlesPage() {
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
               {articles.map((art) => {
-                let photosCount = 1;
-                try {
-                  if (art.images) {
-                    const parsed = JSON.parse(art.images);
-                    if (Array.isArray(parsed) && parsed.length > 0) photosCount = parsed.length;
-                  }
-                } catch {
-                  photosCount = 1;
-                }
+                const photos = getArticlePhotos(art);
+                const mainThumb = getMainThumbnail(art.thumbnail);
 
                 return (
                   <tr key={art.id} className="hover:bg-slate-800/40">
@@ -236,12 +219,12 @@ export default function AdminArticlesPage() {
                       {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: WIB_TIMEZONE })}
                     </td>
                     <td className="p-3 flex items-center gap-3">
-                      <img src={art.thumbnail} alt={art.title} className="w-8 aspect-[4/5] rounded-lg object-cover border border-sky-400/30 shadow-sm" />
+                      <img src={mainThumb} alt={art.title} className="w-8 aspect-[4/5] rounded-lg object-cover border border-sky-400/30 shadow-sm" />
                       <span className="font-bold text-white">{art.title}</span>
                     </td>
                     <td className="p-3">
                       <span className="px-2 py-0.5 rounded bg-slate-800 text-sky-300 font-bold text-[10px] border border-slate-700">
-                        {photosCount} Foto
+                        {photos.length} Foto
                       </span>
                     </td>
                     <td className="p-3 font-bold text-sky-300">{art.category}</td>

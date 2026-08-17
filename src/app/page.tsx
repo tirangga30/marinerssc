@@ -6,6 +6,8 @@ import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
+import { getMainThumbnail } from '@/lib/articles';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -525,7 +527,7 @@ export default async function HomePage() {
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-900">
                 <img
-                  src={article.thumbnail}
+                  src={getMainThumbnail(article.thumbnail)}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
