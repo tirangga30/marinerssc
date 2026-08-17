@@ -167,11 +167,6 @@ export default async function HomePage() {
             <span>Musim 2026/2027</span>
           </div>
 
-          <h1 className="text-2xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white leading-tight sm:leading-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-            BERJUANG DENGAN KEHORMATAN, <br />
-            <span className="blue-gradient-text">MERAIH KEJAYAAN</span>
-          </h1>
-
           <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-slate-200 font-medium leading-normal sm:leading-relaxed">
             Selamat datang di rumah resmi <strong className="text-sky-300">Mariners SC</strong>. Saksikan aksi terbaik pertahanan dan gol-gol spektakuler laskar Samudra.
           </p>
