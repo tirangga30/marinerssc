@@ -168,7 +168,7 @@ export default async function HomePage() {
           </div>
 
           <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-slate-200 font-medium leading-normal sm:leading-relaxed">
-            Selamat datang di rumah resmi <strong className="text-sky-300">Mariners SC</strong>. Saksikan aksi terbaik pertahanan dan gol-gol spektakuler laskar Samudra.
+            Selamat datang di website resmi <strong className="text-sky-300">Mariners SC</strong>.
           </p>
 
           {/* COMPACT HERO BUTTONS ON MOBILE */}
