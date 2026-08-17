@@ -80,6 +80,7 @@ model MatchLineup {
   positionName  String        // e.g. Goalkeeper, Right Back, Striker
   x             Float?
   y             Float?
+  createdAt     DateTime      @default(now())
 
   match         FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player        Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -93,6 +94,7 @@ model MatchEvent {
   type           String        // goal, assist, yellow_card, red_card, sub
   minute         Int
   description    String?
+  createdAt      DateTime      @default(now())
 
   match          FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player         Player        @relation("PlayerEvents", fields: [playerId], references: [id], onDelete: Cascade)
