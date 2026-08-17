@@ -147,19 +147,19 @@ export default async function HomePage() {
   return (
     <div className="space-y-8 sm:space-y-16 pb-12">
       
-      {/* HERO SECTION - 1:1 ASPECT RATIO ON MOBILE & VERY BOTTOM ALIGNED TEXT */}
-      <section className="relative aspect-square sm:aspect-none sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3 pb-3 sm:pb-16 pt-24 sm:pt-64">
+      {/* HERO SECTION - MOBILE 1:1 ASPECT RATIO, DESKTOP 85VH */}
+      <section className="relative aspect-square sm:aspect-auto w-full sm:min-h-[85vh] flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3 pb-3 sm:pb-16">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat filter brightness-95 contrast-105 scale-105 transform duration-1000"
           style={{ backgroundImage: `url('/mainposter.jpeg')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/65 to-[#060b14]/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/60 to-[#060b14]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#060b14]/50 via-transparent to-[#060b14]/50" />
 
         {/* Floating Blue Spotlight Effect */}
         <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-48 sm:w-96 h-48 sm:h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-2 text-center space-y-2 sm:space-y-5 pb-1 sm:pb-4">
+        <div className="relative z-10 max-w-5xl mx-auto px-2 text-center space-y-3 sm:space-y-5 pb-2 sm:pb-4">
           
           {/* Badge Top */}
           <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse">
