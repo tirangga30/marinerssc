@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2 } from 'lucide-react';
+import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Calendar } from 'lucide-react';
+import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 
 interface Article {
   id: string;
   title: string;
   category: string;
   thumbnail: string;
+  images?: string | null;
   content: string;
   publishedAt: string;
 }
@@ -18,13 +20,24 @@ export default function AdminArticlesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
-  const [formData, setFormData] = useState({
+  const getDefaultPublishedAt = () => {
+    return formatDateForInput(new Date());
+  };
+
+  const [formData, setFormData] = useState<{
+    title: string;
+    category: string;
+    photos: string[];
+    content: string;
+    publishedAt: string;
+  }>({
     title: '',
     category: 'Kabar Tim',
-    thumbnail: '/stadium_hero.png',
+    photos: ['', '', ''],
     content: '',
+    publishedAt: getDefaultPublishedAt(),
   });
 
   const fetchArticles = async () => {
@@ -48,29 +61,47 @@ export default function AdminArticlesPage() {
     setFormData({
       title: '',
       category: 'Kabar Tim',
-      thumbnail: '/stadium_hero.png',
+      photos: ['', '', ''],
       content: '',
+      publishedAt: getDefaultPublishedAt(),
     });
     setShowModal(true);
   };
 
   const openEditModal = (art: Article) => {
     setEditingArticle(art);
+    let parsedPhotos: string[] = [];
+    try {
+      if (art.images) {
+        const arr = JSON.parse(art.images);
+        if (Array.isArray(arr)) parsedPhotos = arr;
+      }
+    } catch {
+      parsedPhotos = [];
+    }
+    if (parsedPhotos.length === 0 && art.thumbnail) {
+      parsedPhotos = [art.thumbnail];
+    }
+    while (parsedPhotos.length < 3) {
+      parsedPhotos.push('');
+    }
+
     setFormData({
       title: art.title,
       category: art.category,
-      thumbnail: art.thumbnail,
+      photos: parsedPhotos.slice(0, 3),
       content: art.content,
+      publishedAt: formatDateForInput(art.publishedAt),
     });
     setShowModal(true);
   };
 
-  // Direct Thumbnail Upload Handler
-  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Direct Photo Upload Handler for Slot 0, 1, or 2
+  const handleSlotUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setUploadingIndex(index);
     const body = new FormData();
     body.append('file', file);
 
@@ -82,15 +113,27 @@ export default function AdminArticlesPage() {
 
       const data = await res.json();
       if (res.ok && data.url) {
-        setFormData((prev) => ({ ...prev, thumbnail: data.url }));
+        setFormData((prev) => {
+          const updated = [...prev.photos];
+          updated[index] = data.url;
+          return { ...prev, photos: updated };
+        });
       } else {
-        alert(data.error || 'Gagal mengunggah gambar berita');
+        alert(data.error || 'Gagal mengunggah foto');
       }
     } catch {
-      alert('Terjadi kesalahan saat mengunggah gambar berita');
+      alert('Terjadi kesalahan saat mengunggah foto');
     } finally {
-      setUploading(false);
+      setUploadingIndex(null);
     }
+  };
+
+  const removePhotoSlot = (index: number) => {
+    setFormData((prev) => {
+      const updated = [...prev.photos];
+      updated[index] = '';
+      return { ...prev, photos: updated };
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -109,10 +152,20 @@ export default function AdminArticlesPage() {
       const url = editingArticle ? `/api/articles/${editingArticle.id}` : '/api/articles';
       const method = editingArticle ? 'PUT' : 'POST';
 
+      const validPhotos = formData.photos.filter(Boolean);
+      const payload = {
+        title: formData.title,
+        category: formData.category,
+        thumbnail: validPhotos[0] || '/stadium_hero.png',
+        images: validPhotos,
+        content: formData.content,
+        publishedAt: formData.publishedAt,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -160,37 +213,55 @@ export default function AdminArticlesPage() {
               <tr>
                 <th className="p-3">Tanggal Terbit</th>
                 <th className="p-3">Judul Artikel</th>
+                <th className="p-3">Foto (Max 3)</th>
                 <th className="p-3">Kategori</th>
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
-              {articles.map((art) => (
-                <tr key={art.id} className="hover:bg-slate-800/40">
-                  <td className="p-3 font-bold text-slate-300">
-                    {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </td>
-                  <td className="p-3 flex items-center gap-3">
-                    <img src={art.thumbnail} alt={art.title} className="w-12 h-9 rounded-lg object-cover border border-sky-400/30 shadow-sm" />
-                    <span className="font-bold text-white">{art.title}</span>
-                  </td>
-                  <td className="p-3 font-bold text-sky-300">{art.category}</td>
-                  <td className="p-3 text-right space-x-2">
-                    <button
-                      onClick={() => openEditModal(art)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(art.id)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {articles.map((art) => {
+                let photosCount = 1;
+                try {
+                  if (art.images) {
+                    const parsed = JSON.parse(art.images);
+                    if (Array.isArray(parsed) && parsed.length > 0) photosCount = parsed.length;
+                  }
+                } catch {
+                  photosCount = 1;
+                }
+
+                return (
+                  <tr key={art.id} className="hover:bg-slate-800/40">
+                    <td className="p-3 font-bold text-slate-300">
+                      {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: WIB_TIMEZONE })}
+                    </td>
+                    <td className="p-3 flex items-center gap-3">
+                      <img src={art.thumbnail} alt={art.title} className="w-8 aspect-[4/5] rounded-lg object-cover border border-sky-400/30 shadow-sm" />
+                      <span className="font-bold text-white">{art.title}</span>
+                    </td>
+                    <td className="p-3">
+                      <span className="px-2 py-0.5 rounded bg-slate-800 text-sky-300 font-bold text-[10px] border border-slate-700">
+                        {photosCount} Foto
+                      </span>
+                    </td>
+                    <td className="p-3 font-bold text-sky-300">{art.category}</td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => openEditModal(art)}
+                        className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(art.id)}
+                        className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -211,47 +282,93 @@ export default function AdminArticlesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               
-              {/* DIRECT THUMBNAIL UPLOAD SECTION */}
+              {/* MULTI-PHOTO UPLOAD SECTION (UP TO 3 PHOTOS - IG STYLE) */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                <label className="font-bold text-sky-300 uppercase block">Foto Header / Gambar Berita (Direct Upload)</label>
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="relative w-28 h-20 rounded-xl overflow-hidden bg-slate-800 border border-sky-400/40 shrink-0">
-                    <img
-                      src={formData.thumbnail || '/stadium_hero.png'}
-                      alt="Thumbnail Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="flex-1 space-y-2 w-full">
-                    <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold inline-flex items-center gap-2 text-xs transition-colors">
-                      {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {uploading ? 'Mengunggah...' : 'Upload Foto Berita'}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleThumbnailUpload}
-                        disabled={uploading}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-[11px] text-slate-400">
-                      Pilih file foto (.jpg, .png, .webp) untuk dijadikan gambar header berita.
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-sky-300 uppercase block">
+                    Foto Berita (Maksimal 3 Foto - Slide seperti IG)
+                  </label>
+                  <span className="text-[11px] text-slate-400 font-bold">
+                    {formData.photos.filter(Boolean).length}/3 Ter-upload
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {[0, 1, 2].map((idx) => {
+                    const photoUrl = formData.photos[idx];
+                    return (
+                      <div key={idx} className="space-y-2">
+                        <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center group">
+                          {photoUrl ? (
+                            <>
+                              <img src={photoUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => removePhotoSlot(idx)}
+                                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-red-600/80 text-white hover:bg-red-600 transition-colors shadow"
+                                title="Hapus Foto"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                              {idx === 0 && (
+                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-black text-[8px] uppercase">
+                                  Utama
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <div className="text-center p-2 space-y-1">
+                              <Upload className="w-5 h-5 mx-auto text-slate-600" />
+                              <span className="text-[10px] text-slate-500 font-bold block">Foto {idx + 1}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <label className="cursor-pointer block text-center px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-sky-600 hover:text-white text-slate-300 font-bold text-[10px] transition-colors">
+                          {uploadingIndex === idx ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-sky-400" />
+                          ) : photoUrl ? (
+                            'Ganti Foto'
+                          ) : (
+                            `+ Foto ${idx + 1}`
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleSlotUpload(idx, e)}
+                            disabled={uploadingIndex !== null}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1">Judul Artikel</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                  placeholder="Judul Berita Terbaru..."
-                />
+              {/* PUBLISHED DATE & TIME INPUT FIELD */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Judul Artikel</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    placeholder="Judul Berita Terbaru..."
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">Tanggal & Waktu Berita</label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={formData.publishedAt}
+                    onChange={(e) => setFormData({ ...formData, publishedAt: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  />
+                </div>
               </div>
 
               <div>
@@ -290,7 +407,7 @@ export default function AdminArticlesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={uploadingIndex !== null}
                   className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow"
                 >
                   <Save className="w-4 h-4 text-blue-600" /> Terbitkan Artikel

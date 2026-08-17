@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { Calendar, ArrowLeft, Share2, Tag } from 'lucide-react';
 
+import ArticleSlider from '@/components/ArticleSlider';
+
 export const revalidate = 0;
 
 export default async function ArticleDetailPage({
@@ -21,10 +23,24 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  let articleImages: string[] = [];
+  try {
+    if ((article as any).images) {
+      const parsed = JSON.parse((article as any).images);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        articleImages = parsed.filter(Boolean);
+      }
+    }
+  } catch {
+    articleImages = [];
+  }
+  if (articleImages.length === 0 && article.thumbnail) {
+    articleImages = [article.thumbnail];
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-
 
       <article className="glass-panel p-6 sm:p-10 rounded-3xl border border-sky-400/30 space-y-8">
         
@@ -50,14 +66,8 @@ export default async function ArticleDetailPage({
           </h1>
         </div>
 
-        {/* Thumbnail Image */}
-        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-900">
-          <img
-            src={article.thumbnail}
-            alt={article.title}
-            className="w-full h-auto"
-          />
-        </div>
+        {/* Article IG-style Photo Slider */}
+        <ArticleSlider images={articleImages} altTitle={article.title} />
 
         {/* Article Body Content */}
         <div className="prose prose-invert max-w-none text-slate-300 text-sm sm:text-base leading-relaxed space-y-4">

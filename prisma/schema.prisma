@@ -33,6 +33,7 @@ model Player {
   isFeatured     Boolean      @default(false)
   status         String       @default("Active") // Active, Injured
   isGuest        Boolean      @default(false)
+  hidePhoto      Boolean      @default(false)
   guestMatchId   String?
   goals          Int          @default(0)
   assists        Int          @default(0)
@@ -104,6 +105,7 @@ model Article {
   slug        String   @unique
   category    String   @default("Kabar Tim") // Laporan Pertandingan, Kabar Tim, Transfer
   thumbnail   String
+  images      String?
   content     String
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())

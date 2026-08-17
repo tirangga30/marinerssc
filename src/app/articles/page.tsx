@@ -79,11 +79,11 @@ export default async function ArticlesPage({
             href={`/articles/${article.slug}`}
             className="group glass-panel rounded-lg sm:rounded-2xl overflow-hidden border border-slate-800 card-glow-hover flex flex-col justify-between"
           >
-            <div className="relative w-full overflow-hidden bg-slate-900">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-900">
               <img
                 src={article.thumbnail}
                 alt={article.title}
-                className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute top-1 sm:top-3 left-1 sm:left-3 px-1 sm:px-2.5 py-0.5 rounded bg-white text-blue-950 font-black text-[7px] sm:text-[10px] uppercase tracking-wider shadow">
                 {article.category}
