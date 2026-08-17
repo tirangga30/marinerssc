@@ -151,7 +151,7 @@ export default async function HomePage() {
       <section className="relative py-6 sm:py-20 min-h-0 sm:min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat filter brightness-95 contrast-105 scale-105 transform duration-1000"
-          style={{ backgroundImage: `url('/players.jpeg')` }}
+          style={{ backgroundImage: `url('/mainposter.jpeg')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/55 to-[#060b14]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#060b14]/50 via-transparent to-[#060b14]/50" />
