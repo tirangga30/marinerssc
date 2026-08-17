@@ -51,11 +51,11 @@ export default async function ArticleDetailPage({
         </div>
 
         {/* Thumbnail Image */}
-        <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-900">
+        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-900">
           <img
             src={article.thumbnail}
             alt={article.title}
-            className="w-full h-full object-cover"
+            className="w-full h-auto"
           />
         </div>
 

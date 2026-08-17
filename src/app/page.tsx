@@ -417,41 +417,31 @@ export default async function HomePage() {
 
       {/* SEASON STATS OVERVIEW - MOVED TO DIRECTLY BELOW BOXMATCH */}
       <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/20 bg-gradient-to-r from-blue-950/60 via-[#060b14] to-blue-950/60">
-          <div className="text-center max-w-xl mx-auto mb-3 sm:mb-8 space-y-0.5">
+        <div className="glass-panel p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-sky-400/20 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526]">
+          <div className="text-center max-w-xl mx-auto mb-3 sm:mb-6 space-y-0.5">
             <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2026/2027</h2>
             <p className="text-[9px] sm:text-xs text-slate-300">Performa resmi klub Mariners SC di musim ini</p>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 sm:gap-4 text-center">
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{winRate}%</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Win Rate</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{totalFinished}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Main</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{wins}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Menang</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{draws}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Seri</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{losses}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Kalah</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{totalGoals}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Gol</span>
-            </div>
-            <div className="p-1.5 sm:p-4 rounded-lg sm:rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-sm sm:text-2xl md:text-3xl font-black font-mono text-white block">{concededGoals}</span>
-              <span className="text-[8px] sm:text-xs font-semibold uppercase text-slate-400 mt-0.5 block truncate">Kemasukan</span>
-            </div>
+          <div className="grid grid-cols-7 divide-x divide-slate-800/80 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526] rounded-2xl sm:rounded-3xl border border-sky-400/20 shadow-2xl overflow-hidden py-3 sm:py-5">
+            {[
+              { label: 'WIN RATE', value: `${winRate}%` },
+              { label: 'MAIN', value: totalFinished },
+              { label: 'MENANG', value: wins },
+              { label: 'SERI', value: draws },
+              { label: 'KALAH', value: losses },
+              { label: 'GOL', value: totalGoals },
+              { label: 'KEMASUKAN', value: concededGoals },
+            ].map((s) => (
+              <div key={s.label} className="flex flex-col items-center justify-center px-1 sm:px-3 text-center">
+                <span className="text-sm sm:text-3xl md:text-4xl font-black font-mono text-white tracking-tight">
+                  {s.value}
+                </span>
+                <span className="text-[8px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mt-1 truncate max-w-full">
+                  {s.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -533,11 +523,11 @@ export default async function HomePage() {
               href={`/articles/${article.slug}`}
               className="group glass-panel rounded-lg sm:rounded-2xl overflow-hidden border border-slate-800 card-glow-hover flex flex-col"
             >
-              <div className="relative h-20 sm:h-48 overflow-hidden bg-slate-900">
+              <div className="relative w-full overflow-hidden bg-slate-900">
                 <img
                   src={article.thumbnail}
                   alt={article.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-1 sm:top-3 left-1 sm:left-3 px-1 sm:px-2.5 py-0.5 rounded bg-white text-blue-950 font-black text-[7px] sm:text-[10px] uppercase tracking-wider shadow">
                   {article.category}
