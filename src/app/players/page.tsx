@@ -28,8 +28,18 @@ function formatBoxDisplayName(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length <= 1) return fullName;
 
-  // If full name is short (<= 14 chars), display full name, otherwise first name only
-  if (fullName.length <= 14) return fullName;
+  // 1. If complete full name fits in card box (<= 18 chars), display full name
+  if (fullName.length <= 18) return fullName;
+
+  // 2. If middle/second name exists and first 2 words fit (<= 18 chars), display first + middle name
+  if (parts.length >= 2) {
+    const firstTwo = `${parts[0]} ${parts[1]}`;
+    if (firstTwo.length <= 18) {
+      return firstTwo;
+    }
+  }
+
+  // 3. Otherwise fallback to first name
   return parts[0];
 }
 
