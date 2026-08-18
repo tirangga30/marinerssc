@@ -167,9 +167,6 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#060b14]/40 via-transparent to-[#060b14]/40" />
 
-        {/* Floating Blue Spotlight Effect */}
-        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-32 sm:w-96 h-32 sm:h-96 bg-blue-500/20 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none" />
-
         <div className="relative z-10 max-w-5xl mx-auto px-2 text-center space-y-1.5 sm:space-y-5 pb-2 sm:pb-6">
           
           {/* Badge Top */}
