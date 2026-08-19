@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
+import { renamePlayerPhotoFile } from '@/lib/fileNaming';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,6 +14,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const { id } = await params;
     const data = await req.json();
+
+    const existingPlayer = await prisma.player.findUnique({ where: { id } });
+    if (!existingPlayer) {
+      return NextResponse.json({ error: 'Pemain tidak ditemukan' }, { status: 404 });
+    }
 
     const updateData: any = {};
     if (data.name !== undefined) {
@@ -61,6 +67,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.appearances !== undefined) updateData.appearances = parseInt(data.appearances || 0);
     if (data.yellowCards !== undefined) updateData.yellowCards = parseInt(data.yellowCards || 0);
     if (data.redCards !== undefined) updateData.redCards = parseInt(data.redCards || 0);
+
+    // Auto-rename photo file on disk if position, number, or name changed
+    const finalPos = updateData.position || existingPlayer.position;
+    const finalNum = updateData.number !== undefined ? updateData.number : existingPlayer.number;
+    const finalName = updateData.name || existingPlayer.name;
+    const sourcePhoto = updateData.photoUrl !== undefined ? updateData.photoUrl : existingPlayer.photoUrl;
+
+    if (sourcePhoto && sourcePhoto.startsWith('/uploads/players/')) {
+      const renamedUrl = renamePlayerPhotoFile(sourcePhoto, finalPos, finalNum, finalName);
+      if (renamedUrl) {
+        updateData.photoUrl = renamedUrl;
+      }
+    }
 
     const player = await prisma.player.update({
       where: { id },

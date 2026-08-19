@@ -1,18 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-
-function sanitizeFilename(name: string): string {
-  return name.replace(/[\\/*?:"<>|]/g, '').trim();
-}
-
-function getPosShort(position?: string | null): string {
-  const p = (position || '').trim().toUpperCase();
-  if (p === 'GK' || p === 'GOALKEEPER') return 'GK';
-  if (p === 'DF' || p === 'DEFENDER' || p.includes('CB') || p.includes('LB') || p.includes('RB')) return 'DF';
-  if (p === 'MF' || p === 'MIDFIELDER' || p.includes('CM') || p.includes('CAM') || p.includes('CDM')) return 'MF';
-  return 'FW';
-}
+import { sanitizeFilename, getPosShort } from '@/lib/fileNaming';
 
 export async function POST(req: Request) {
   try {

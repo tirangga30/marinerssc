@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { parseWibDate } from '@/lib/date';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
+import { renameArticleFolder } from '@/lib/fileNaming';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,6 +14,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const { id } = await params;
     const data = await req.json();
+
+    const existingArticle = await prisma.article.findUnique({ where: { id } });
+    if (!existingArticle) {
+      return NextResponse.json({ error: 'Artikel tidak ditemukan' }, { status: 404 });
+    }
+
     let slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (!slug) slug = `article-${Date.now()}`;
 
@@ -30,11 +37,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       validPhotos = [data.thumbnail];
     }
 
-    const thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/stadium_hero.png';
+    let thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/stadium_hero.png';
+
+    // Auto-rename article subfolder if slug changed
+    const oldSlug = existingArticle.slug || '';
+    const newSlug = slug;
+    if (oldSlug && newSlug && oldSlug !== newSlug) {
+      const { newThumbnail } = renameArticleFolder(
+        oldSlug,
+        newSlug,
+        thumbnailValue,
+        validPhotos
+      );
+      thumbnailValue = newThumbnail;
+    }
 
     const articleData: any = {
       title: data.title,
-      slug,
+      slug: newSlug,
       category: data.category,
       thumbnail: thumbnailValue,
       content: data.content,

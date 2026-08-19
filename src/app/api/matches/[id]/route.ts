@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { recalculateAllPlayerStats } from '@/lib/stats';
 import { parseWibDate } from '@/lib/date';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
+import { renameMatchLogoFile } from '@/lib/fileNaming';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -47,11 +48,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const data = await req.json();
 
+    const existingMatch = await prisma.footballMatch.findUnique({ where: { id } });
+    if (!existingMatch) {
+      return NextResponse.json({ error: 'Laga tidak ditemukan' }, { status: 404 });
+    }
+
+    const finalOpponentName = data.opponentName || existingMatch.opponentName;
+    let finalLogo = data.opponentLogo !== undefined ? data.opponentLogo : existingMatch.opponentLogo;
+
+    // Auto-rename logo file on disk if opponent name changed and logo exists
+    if (finalLogo && finalLogo.startsWith('/uploads/matches/')) {
+      const renamedUrl = renameMatchLogoFile(finalLogo, finalOpponentName);
+      if (renamedUrl) {
+        finalLogo = renamedUrl;
+      }
+    }
+
     const match = await prisma.footballMatch.update({
       where: { id },
       data: {
-        opponentName: data.opponentName,
-        opponentLogo: data.opponentLogo,
+        opponentName: finalOpponentName,
+        opponentLogo: finalLogo,
         matchDate: parseWibDate(data.matchDate),
         competition: data.competition || 'Matchday 1',
         venue: data.venue,
