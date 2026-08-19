@@ -130,6 +130,7 @@ export default function AdminMatchesPage() {
     setUploading(true);
     const body = new FormData();
     body.append('file', file);
+    body.append('folder', 'matches');
 
     try {
       const res = await fetch('/api/upload', {

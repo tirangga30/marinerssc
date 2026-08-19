@@ -3,16 +3,16 @@ import path from 'path';
 import { prisma } from '@/lib/db';
 
 /**
- * Utility to sweep public/uploads and delete files that are not referenced
- * anywhere in the database (Player photoUrl, FootballMatch opponentLogo, Article thumbnail & images).
+ * Utility to sweep public/uploads (and subfolders players, matches, articles, general)
+ * and delete files that are not referenced anywhere in the database.
  */
 export async function cleanupUnusedUploads(): Promise<{
   deletedCount: number;
   freedBytes: number;
   deletedFiles: string[];
 }> {
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-  if (!fs.existsSync(uploadsDir)) {
+  const uploadsBaseDir = path.join(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(uploadsBaseDir)) {
     return { deletedCount: 0, freedBytes: 0, deletedFiles: [] };
   }
 
@@ -50,34 +50,43 @@ export async function cleanupUnusedUploads(): Promise<{
     console.error('Error fetching referenced images from DB:', error);
   }
 
-  // 2. Read files in public/uploads
+  // 2. Read files across all upload subfolders
   let deletedCount = 0;
   let freedBytes = 0;
   const deletedFiles: string[] = [];
 
-  try {
-    const files = fs.readdirSync(uploadsDir);
-    for (const filename of files) {
-      const fullPath = path.join(uploadsDir, filename);
-      const relUrl = `/uploads/${filename}`;
+  const scanFolders = ['', 'players', 'matches', 'articles', 'general'];
 
-      // If file is not referenced in database, remove it
-      if (!referenced.has(relUrl)) {
-        try {
-          const stat = fs.statSync(fullPath);
-          if (stat.isFile()) {
+  for (const sub of scanFolders) {
+    const folderPath = sub ? path.join(uploadsBaseDir, sub) : uploadsBaseDir;
+    if (!fs.existsSync(folderPath)) continue;
+
+    try {
+      const items = fs.readdirSync(folderPath);
+      for (const item of items) {
+        const fullPath = path.join(folderPath, item);
+        const stat = fs.statSync(fullPath);
+
+        // Skip directories inside
+        if (stat.isDirectory()) continue;
+
+        const relUrl = sub ? `/uploads/${sub}/${item}` : `/uploads/${item}`;
+
+        // If file is not referenced in database, remove it
+        if (!referenced.has(relUrl)) {
+          try {
             freedBytes += stat.size;
             fs.unlinkSync(fullPath);
             deletedCount++;
-            deletedFiles.push(filename);
+            deletedFiles.push(relUrl);
+          } catch (err) {
+            console.error(`Gagal menghapus file ${relUrl}:`, err);
           }
-        } catch (err) {
-          console.error(`Gagal menghapus file ${filename}:`, err);
         }
       }
+    } catch (err) {
+      console.error(`Error reading directory ${folderPath}:`, err);
     }
-  } catch (err) {
-    console.error('Error reading uploads directory:', err);
   }
 
   return { deletedCount, freedBytes, deletedFiles };

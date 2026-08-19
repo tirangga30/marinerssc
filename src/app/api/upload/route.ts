@@ -6,16 +6,23 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
+    const requestedFolder = formData.get('folder') as string | null;
 
     if (!file) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
     }
 
+    // Allowed subfolders: players, matches, articles, general
+    const validFolders = ['players', 'matches', 'articles', 'general'];
+    const targetFolder = requestedFolder && validFolders.includes(requestedFolder.toLowerCase())
+      ? requestedFolder.toLowerCase()
+      : 'general';
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create public/uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    // Create target directory public/uploads/{folder} if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', targetFolder);
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
@@ -26,7 +33,7 @@ export async function POST(req: Request) {
 
     await fs.promises.writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/${fileName}`;
+    const publicUrl = `/uploads/${targetFolder}/${fileName}`;
 
     return NextResponse.json({ url: publicUrl, success: true });
   } catch (error: any) {

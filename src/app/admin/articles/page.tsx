@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Calendar } from 'lucide-react';
+import { Newspaper, Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Calendar, Crop } from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 import { getArticlePhotos, getMainThumbnail } from '@/lib/articles';
+import ImageCropperModal from '@/components/ImageCropperModal';
 
 interface Article {
   id: string;
@@ -23,6 +24,13 @@ export default function AdminArticlesPage() {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
+  // Cropper Modal State
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperImageSrc, setCropperImageSrc] = useState<string | null>(null);
+  const [cropperSlotIndex, setCropperSlotIndex] = useState<number | null>(null);
+
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const getDefaultPublishedAt = () => {
     return formatDateForInput(new Date());
   };
@@ -36,7 +44,7 @@ export default function AdminArticlesPage() {
   }>({
     title: '',
     category: 'Kabar Tim',
-    photos: ['', '', ''],
+    photos: ['', '', '', '', ''],
     content: '',
     publishedAt: getDefaultPublishedAt(),
   });
@@ -62,7 +70,7 @@ export default function AdminArticlesPage() {
     setFormData({
       title: '',
       category: 'Kabar Tim',
-      photos: ['', '', ''],
+      photos: ['', '', '', '', ''],
       content: '',
       publishedAt: getDefaultPublishedAt(),
     });
@@ -72,28 +80,54 @@ export default function AdminArticlesPage() {
   const openEditModal = (art: Article) => {
     setEditingArticle(art);
     const parsedPhotos = getArticlePhotos(art);
-    while (parsedPhotos.length < 3) {
+    while (parsedPhotos.length < 5) {
       parsedPhotos.push('');
     }
 
     setFormData({
       title: art.title,
       category: art.category,
-      photos: parsedPhotos.slice(0, 3),
+      photos: parsedPhotos.slice(0, 5),
       content: art.content,
       publishedAt: formatDateForInput(art.publishedAt),
     });
     setShowModal(true);
   };
 
-  // Direct Photo Upload Handler for Slot 0, 1, or 2
-  const handleSlotUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  // Trigger file selection for slot
+  const handleSelectFileForCrop = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingIndex(index);
+    const objectUrl = URL.createObjectURL(file);
+    setCropperImageSrc(objectUrl);
+    setCropperSlotIndex(index);
+    setCropperOpen(true);
+
+    // Reset input so re-selecting same file triggers change
+    e.target.value = '';
+  };
+
+  // Re-crop an existing uploaded photo
+  const handleOpenCropperForExisting = (index: number) => {
+    const existingUrl = formData.photos[index];
+    if (!existingUrl) return;
+
+    setCropperImageSrc(existingUrl);
+    setCropperSlotIndex(index);
+    setCropperOpen(true);
+  };
+
+  // After crop is confirmed in modal -> Upload to /api/upload?folder=articles
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    if (cropperSlotIndex === null) return;
+    const targetIndex = cropperSlotIndex;
+
+    setUploadingIndex(targetIndex);
     const body = new FormData();
-    body.append('file', file);
+    const fileName = `article_${Date.now()}_${targetIndex + 1}.jpg`;
+    body.append('file', croppedBlob, fileName);
+    body.append('folder', 'articles');
 
     try {
       const res = await fetch('/api/upload', {
@@ -105,7 +139,7 @@ export default function AdminArticlesPage() {
       if (res.ok && data.url) {
         setFormData((prev) => {
           const updated = [...prev.photos];
-          updated[index] = data.url;
+          updated[targetIndex] = data.url;
           return { ...prev, photos: updated };
         });
       } else {
@@ -115,6 +149,8 @@ export default function AdminArticlesPage() {
       alert('Terjadi kesalahan saat mengunggah foto');
     } finally {
       setUploadingIndex(null);
+      setCropperSlotIndex(null);
+      setCropperImageSrc(null);
     }
   };
 
@@ -158,26 +194,27 @@ export default function AdminArticlesPage() {
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        setShowModal(false);
-        fetchArticles();
-      } else {
-        const errorData = await res.json();
-        alert(errorData.error || 'Gagal menyimpan artikel');
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Gagal menyimpan artikel');
+        return;
       }
+
+      setShowModal(false);
+      fetchArticles();
     } catch {
       alert('Terjadi kesalahan');
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="space-y-6">
       
-      {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Top Header & Breadcrumbs */}
+      <div className="flex items-center justify-between">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          className="flex items-center gap-2 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Dashboard Admin
         </Link>
@@ -203,7 +240,7 @@ export default function AdminArticlesPage() {
               <tr>
                 <th className="p-3">Tanggal Terbit</th>
                 <th className="p-3">Judul Artikel</th>
-                <th className="p-3">Foto (Max 3)</th>
+                <th className="p-3">Foto (Maks 5)</th>
                 <th className="p-3">Kategori</th>
                 <th className="p-3 text-right">Aksi</th>
               </tr>
@@ -231,13 +268,15 @@ export default function AdminArticlesPage() {
                     <td className="p-3 text-right space-x-2">
                       <button
                         onClick={() => openEditModal(art)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                        className="p-1.5 rounded-lg bg-sky-500/20 text-sky-400 hover:bg-sky-500/30"
+                        title="Edit Berita"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(art.id)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                        className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                        title="Hapus Berita"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -252,8 +291,8 @@ export default function AdminArticlesPage() {
 
       {/* Modal Add / Edit Article */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-3xl glass-panel p-5 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-black uppercase text-sky-400">
                 {editingArticle ? 'Edit Artikel' : 'Tulis Artikel Baru'}
@@ -265,36 +304,54 @@ export default function AdminArticlesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               
-              {/* MULTI-PHOTO UPLOAD SECTION (UP TO 3 PHOTOS - IG STYLE) */}
+              {/* MULTI-PHOTO UPLOAD SECTION (UP TO 5 PHOTOS WITH 4:5 CROP - IG STYLE) */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-sky-300 uppercase block">
-                    Foto Berita (Maksimal 3 Foto - Slide seperti IG)
-                  </label>
-                  <span className="text-[11px] text-slate-400 font-bold">
-                    {formData.photos.filter(Boolean).length}/3 Ter-upload
+                  <div>
+                    <label className="font-bold text-sky-300 uppercase block text-xs">
+                      Foto Berita (Maksimal 5 Foto - Rasio 4:5 Slider IG)
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      Pilih foto untuk membuka alat crop (4:5) sebelum mengunggah.
+                    </span>
+                  </div>
+                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-sky-400 font-bold">
+                    {formData.photos.filter(Boolean).length}/5 Ter-upload
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  {[0, 1, 2].map((idx) => {
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+                  {[0, 1, 2, 3, 4].map((idx) => {
                     const photoUrl = formData.photos[idx];
                     return (
-                      <div key={idx} className="space-y-2">
+                      <div key={idx} className="space-y-1.5">
                         <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center group">
                           {photoUrl ? (
                             <>
                               <img src={photoUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => removePhotoSlot(idx)}
-                                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-red-600/80 text-white hover:bg-red-600 transition-colors shadow"
-                                title="Hapus Foto"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
+                              
+                              {/* Action Overlay */}
+                              <div className="absolute top-1 right-1 flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenCropperForExisting(idx)}
+                                  className="p-1 rounded-full bg-sky-600/80 text-white hover:bg-sky-600 transition-colors shadow"
+                                  title="Crop Ulang Foto"
+                                >
+                                  <Crop className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removePhotoSlot(idx)}
+                                  className="p-1 rounded-full bg-red-600/80 text-white hover:bg-red-600 transition-colors shadow"
+                                  title="Hapus Foto"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+
                               {idx === 0 && (
-                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-black text-[8px] uppercase">
+                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-black text-[8px] uppercase tracking-wide">
                                   Utama
                                 </span>
                               )}
@@ -302,12 +359,14 @@ export default function AdminArticlesPage() {
                           ) : (
                             <div className="text-center p-2 space-y-1">
                               <Upload className="w-5 h-5 mx-auto text-slate-600" />
-                              <span className="text-[10px] text-slate-500 font-bold block">Foto {idx + 1}</span>
+                              <span className="text-[10px] text-slate-500 font-bold block">
+                                {idx === 0 ? 'Foto 1 (Utama)' : `Foto ${idx + 1}`}
+                              </span>
                             </div>
                           )}
                         </div>
 
-                        <label className="cursor-pointer block text-center px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-sky-600 hover:text-white text-slate-300 font-bold text-[10px] transition-colors">
+                        <label className="cursor-pointer block text-center px-1.5 py-1.5 rounded-lg bg-slate-800 hover:bg-sky-600 hover:text-white text-slate-300 font-bold text-[10px] transition-colors">
                           {uploadingIndex === idx ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-sky-400" />
                           ) : photoUrl ? (
@@ -316,9 +375,10 @@ export default function AdminArticlesPage() {
                             `+ Foto ${idx + 1}`
                           )}
                           <input
+                            ref={(el) => { fileInputRefs.current[idx] = el; }}
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleSlotUpload(idx, e)}
+                            onChange={(e) => handleSelectFileForCrop(idx, e)}
                             disabled={uploadingIndex !== null}
                             className="hidden"
                           />
@@ -400,6 +460,20 @@ export default function AdminArticlesPage() {
           </div>
         </div>
       )}
+
+      {/* Interactive 4:5 Cropper Modal */}
+      <ImageCropperModal
+        isOpen={cropperOpen}
+        imageSrc={cropperImageSrc}
+        aspectRatio={4 / 5}
+        title={`Sesuaikan & Crop Foto ${cropperSlotIndex !== null ? cropperSlotIndex + 1 : ''} (Rasio 4:5)`}
+        onCropComplete={handleCropComplete}
+        onClose={() => {
+          setCropperOpen(false);
+          setCropperImageSrc(null);
+          setCropperSlotIndex(null);
+        }}
+      />
 
     </div>
   );
