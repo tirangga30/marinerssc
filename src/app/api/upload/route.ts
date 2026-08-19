@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       // Articles have their own subfolder per article title/slug
       targetDir = path.join(process.cwd(), 'public', 'uploads', 'articles', slug);
       const slotNum = slotIndex !== null && slotIndex !== undefined && slotIndex !== '' ? parseInt(slotIndex) + 1 : 1;
-      fileName = `foto_${slotNum}${ext}`;
+      fileName = `foto_${slotNum}_${Date.now()}${ext}`;
       publicUrl = `/uploads/articles/${slug}/${fileName}`;
     } else {
       const cleanFileName = sanitizeFilename(file.name.replace(/[^a-zA-Z0-9.-]/g, '_'));

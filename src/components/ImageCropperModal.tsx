@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, ZoomIn, ZoomOut, RotateCcw, Check, Move, Crop } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, Check, Move, Crop, Sparkles } from 'lucide-react';
 
 interface ImageCropperModalProps {
   isOpen: boolean;
@@ -23,7 +23,6 @@ export default function ImageCropperModal({
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgElement, setImgElement] = useState<HTMLImageElement | null>(null);
   const [scale, setScale] = useState(1);
-  const [minScale, setMinScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -31,15 +30,24 @@ export default function ImageCropperModal({
 
   // Load image whenever imageSrc changes
   useEffect(() => {
-    if (!imageSrc || !isOpen) return;
+    if (!imageSrc || !isOpen) {
+      setImgElement(null);
+      return;
+    }
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Only set crossOrigin for remote absolute HTTP URLs to avoid canvas taint on local/blob
+    if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+      img.crossOrigin = 'anonymous';
+    }
     img.onload = () => {
       setImgElement(img);
-      // Reset position and calculate initial scale to cover the 4:5 box
       setPosition({ x: 0, y: 0 });
       setScale(1);
+    };
+    img.onerror = (e) => {
+      console.error('Failed to load image for cropper:', e);
+      alert('Gagal memuat gambar untuk di-crop.');
     };
     img.src = imageSrc;
   }, [imageSrc, isOpen]);
@@ -126,7 +134,6 @@ export default function ImageCropperModal({
         throw new Error('Canvas context tidak tersedia');
       }
 
-      // Smooth image rendering
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
@@ -138,27 +145,22 @@ export default function ImageCropperModal({
       let baseRenderHeight = 0;
 
       if (imgAspect > containerAspect) {
-        // Image is wider: fit height first
         baseRenderHeight = containerHeight;
         baseRenderWidth = containerHeight * imgAspect;
       } else {
-        // Image is taller: fit width first
         baseRenderWidth = containerWidth;
         baseRenderHeight = containerWidth / imgAspect;
       }
 
-      // Actual render width & height inside container given current scale
       const currentRenderWidth = baseRenderWidth * scale;
       const currentRenderHeight = baseRenderHeight * scale;
 
-      // Position of image center relative to container center
       const centerX = containerWidth / 2 + position.x;
       const centerY = containerHeight / 2 + position.y;
 
       const imgLeftInContainer = centerX - currentRenderWidth / 2;
       const imgTopInContainer = centerY - currentRenderHeight / 2;
 
-      // Map container coordinates to output canvas coordinates
       const scaleMultiplier = targetWidth / containerWidth;
 
       const destX = imgLeftInContainer * scaleMultiplier;
@@ -166,7 +168,7 @@ export default function ImageCropperModal({
       const destW = currentRenderWidth * scaleMultiplier;
       const destH = currentRenderHeight * scaleMultiplier;
 
-      // Fill background dark slate just in case
+      // Fill background dark slate
       ctx.fillStyle = '#060b14';
       ctx.fillRect(0, 0, targetWidth, targetHeight);
 
@@ -180,15 +182,17 @@ export default function ImageCropperModal({
             const previewUrl = URL.createObjectURL(blob);
             onCropComplete(blob, previewUrl);
             onClose();
+          } else {
+            alert('Gagal menghasilkan file crop');
           }
           setIsProcessing(false);
         },
         'image/jpeg',
         0.92
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error('Gagal melakukan crop foto:', err);
-      alert('Terjadi kesalahan saat memotong foto');
+      alert(`Terjadi kesalahan saat memotong foto: ${err?.message || 'Error canvas'}`);
       setIsProcessing(false);
     }
   };
@@ -196,7 +200,7 @@ export default function ImageCropperModal({
   if (!isOpen || !imageSrc) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
       <div className="w-full max-w-md glass-panel p-5 sm:p-6 rounded-3xl border border-sky-400/30 space-y-4 shadow-2xl my-auto">
         
         {/* Header */}
@@ -285,7 +289,7 @@ export default function ImageCropperModal({
             <button
               type="button"
               onClick={handleReset}
-              className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 font-normal transition-colors"
+              className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 font-normal transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" /> Reset Posisi
             </button>
@@ -295,7 +299,7 @@ export default function ImageCropperModal({
             <button
               type="button"
               onClick={() => setScale((prev) => Math.max(1, +(prev - 0.1).toFixed(2)))}
-              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200"
+              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
               title="Perkecil"
             >
               <ZoomOut className="w-4 h-4" />
@@ -312,7 +316,7 @@ export default function ImageCropperModal({
             <button
               type="button"
               onClick={() => setScale((prev) => Math.min(3, +(prev + 0.1).toFixed(2)))}
-              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200"
+              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
               title="Perbesar"
             >
               <ZoomIn className="w-4 h-4" />
@@ -326,7 +330,7 @@ export default function ImageCropperModal({
             type="button"
             onClick={onClose}
             disabled={isProcessing}
-            className="px-4 py-2 rounded-xl glass-panel text-slate-300 hover:text-white font-bold text-xs transition-colors"
+            className="px-4 py-2 rounded-xl glass-panel text-slate-300 hover:text-white font-bold text-xs transition-colors cursor-pointer"
           >
             Batal
           </button>
@@ -334,7 +338,7 @@ export default function ImageCropperModal({
             type="button"
             onClick={handleConfirmCrop}
             disabled={isProcessing}
-            className="px-5 py-2 rounded-xl white-blue-btn font-black uppercase text-xs flex items-center gap-1.5 shadow-lg"
+            className="px-5 py-2 rounded-xl white-blue-btn font-black uppercase text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
           >
             <Check className="w-4 h-4 text-blue-600" />
             {isProcessing ? 'Memproses...' : 'Terapkan & Unggah'}
