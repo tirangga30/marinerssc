@@ -52,6 +52,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+import { cleanupUnusedUploads } from '@/lib/cleanup';
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
@@ -61,6 +63,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     const { id } = await params;
     await prisma.article.delete({ where: { id } });
+
+    cleanupUnusedUploads().catch(() => {});
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Gagal menghapus artikel' }, { status: 500 });

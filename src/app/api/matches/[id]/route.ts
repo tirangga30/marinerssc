@@ -80,6 +80,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+import { cleanupUnusedUploads } from '@/lib/cleanup';
+
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
@@ -94,6 +96,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     await prisma.footballMatch.delete({ where: { id } });
 
     await recalculateAllPlayerStats();
+    cleanupUnusedUploads().catch(() => {});
 
     revalidatePath('/');
     revalidatePath('/matches');
