@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { parseWibDate } from '@/lib/date';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function GET() {
   try {
@@ -16,8 +18,6 @@ export async function GET() {
     return NextResponse.json({ error: 'Gagal mengambil data pertandingan' }, { status: 500 });
   }
 }
-
-import { parseWibDate } from '@/lib/date';
 
 export async function POST(req: Request) {
   try {
@@ -44,6 +44,8 @@ export async function POST(req: Request) {
         summary: data.summary || '',
       },
     });
+
+    await cleanupUnusedUploads();
 
     return NextResponse.json(match);
   } catch (error) {

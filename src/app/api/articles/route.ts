@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { parseWibDate } from '@/lib/date';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function GET() {
   try {
@@ -53,6 +54,8 @@ export async function POST(req: Request) {
     const article = await prisma.article.create({
       data: articleData,
     });
+
+    await cleanupUnusedUploads();
 
     return NextResponse.json(article);
   } catch (error: any) {

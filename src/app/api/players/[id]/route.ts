@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
-    // Allow edit in local development mode or if session exists
     if (!session && process.env.NODE_ENV === 'production') {
       return NextResponse.json({ error: 'Sesi berakhir. Silakan login ulang di portal admin.' }, { status: 401 });
     }
@@ -67,6 +67,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: updateData,
     });
 
+    // Automatically remove replaced unreferenced files from disk
+    await cleanupUnusedUploads();
+
     revalidatePath('/');
     revalidatePath('/players');
     revalidatePath(`/players/${player.slug}`);
@@ -82,8 +85,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-import { cleanupUnusedUploads } from '@/lib/cleanup';
-
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();
@@ -94,7 +95,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     await prisma.player.delete({ where: { id } });
 
-    cleanupUnusedUploads().catch(() => {});
+    // Automatically remove deleted player's files from disk
+    await cleanupUnusedUploads();
 
     revalidatePath('/');
     revalidatePath('/players');

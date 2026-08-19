@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function GET(req: Request) {
   try {
@@ -102,7 +103,7 @@ export async function POST(req: Request) {
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
         weightKg: data.weightKg ? parseInt(data.weightKg) : null,
-        photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&auto=format&fit=crop&q=80',
+        photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80',
         bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
         isFeatured: Boolean(data.isFeatured),
@@ -116,6 +117,8 @@ export async function POST(req: Request) {
         redCards: parseInt(data.redCards || 0),
       },
     });
+
+    await cleanupUnusedUploads();
 
     revalidatePath('/');
     revalidatePath('/players');

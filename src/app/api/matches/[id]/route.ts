@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { recalculateAllPlayerStats } from '@/lib/stats';
+import { parseWibDate } from '@/lib/date';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -34,8 +36,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: error?.message || 'Gagal mengambil data laga' }, { status: 500 });
   }
 }
-
-import { parseWibDate } from '@/lib/date';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -69,6 +69,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     await recalculateAllPlayerStats();
 
+    // Automatically remove replaced unreferenced files from disk
+    await cleanupUnusedUploads();
+
     revalidatePath('/');
     revalidatePath('/matches');
     revalidatePath(`/matches/${id}`);
@@ -79,8 +82,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: error?.message || 'Gagal memperbarui laga' }, { status: 500 });
   }
 }
-
-import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -96,7 +97,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     await prisma.footballMatch.delete({ where: { id } });
 
     await recalculateAllPlayerStats();
-    cleanupUnusedUploads().catch(() => {});
+
+    // Automatically remove deleted match's files from disk
+    await cleanupUnusedUploads();
 
     revalidatePath('/');
     revalidatePath('/matches');

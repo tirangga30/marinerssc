@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { parseWibDate } from '@/lib/date';
+import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -45,14 +46,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: articleData,
     });
 
+    // Automatically remove old replaced/unreferenced files from disk
+    await cleanupUnusedUploads();
+
     return NextResponse.json(article);
   } catch (error: any) {
     console.error('Error updating article:', error);
     return NextResponse.json({ error: error?.message || 'Gagal memperbarui artikel' }, { status: 500 });
   }
 }
-
-import { cleanupUnusedUploads } from '@/lib/cleanup';
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -64,7 +66,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     await prisma.article.delete({ where: { id } });
 
-    cleanupUnusedUploads().catch(() => {});
+    // Automatically remove deleted article's files from disk
+    await cleanupUnusedUploads();
 
     return NextResponse.json({ success: true });
   } catch (error) {
