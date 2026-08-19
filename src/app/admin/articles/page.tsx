@@ -208,13 +208,13 @@ export default function AdminArticlesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
       {/* Top Header & Breadcrumbs */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <Link
           href="/admin/dashboard"
-          className="flex items-center gap-2 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Dashboard Admin
         </Link>
