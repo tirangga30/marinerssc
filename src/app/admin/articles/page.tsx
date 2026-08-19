@@ -10,6 +10,7 @@ import ImageCropperModal from '@/components/ImageCropperModal';
 interface Article {
   id: string;
   title: string;
+  slug?: string;
   category: string;
   thumbnail: string;
   images?: string | null;
@@ -125,9 +126,14 @@ export default function AdminArticlesPage() {
 
     setUploadingIndex(targetIndex);
     const body = new FormData();
-    const fileName = `article_${Date.now()}_${targetIndex + 1}.jpg`;
-    body.append('file', croppedBlob, fileName);
+    const articleSlug = formData.title
+      ? formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+      : (editingArticle?.slug || `article-${Date.now()}`);
+
+    body.append('file', croppedBlob, `foto_${targetIndex + 1}.jpg`);
     body.append('folder', 'articles');
+    body.append('articleSlug', articleSlug);
+    body.append('slotIndex', targetIndex.toString());
 
     try {
       const res = await fetch('/api/upload', {

@@ -3,7 +3,42 @@ import path from 'path';
 import { prisma } from '@/lib/db';
 
 /**
- * Utility to sweep public/uploads (and subfolders players, matches, articles, general)
+ * Recursively gets all files in a directory.
+ */
+function getAllFilesRecursive(dir: string): string[] {
+  let results: string[] = [];
+  if (!fs.existsSync(dir)) return results;
+
+  const list = fs.readdirSync(dir);
+  for (const file of list) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(getAllFilesRecursive(filePath));
+    } else {
+      results.push(filePath);
+    }
+  }
+  return results;
+}
+
+/**
+ * Removes empty directories recursively.
+ */
+function removeEmptyDirsRecursive(dir: string, baseDir: string) {
+  if (!fs.existsSync(dir) || dir === baseDir) return;
+
+  const files = fs.readdirSync(dir);
+  if (files.length === 0) {
+    try {
+      fs.rmdirSync(dir);
+      removeEmptyDirsRecursive(path.dirname(dir), baseDir);
+    } catch {}
+  }
+}
+
+/**
+ * Utility to sweep public/uploads (and all subfolders recursively)
  * and delete files that are not referenced anywhere in the database.
  */
 export async function cleanupUnusedUploads(): Promise<{
@@ -50,42 +85,32 @@ export async function cleanupUnusedUploads(): Promise<{
     console.error('Error fetching referenced images from DB:', error);
   }
 
-  // 2. Read files across all upload subfolders
+  // 2. Read all files recursively in public/uploads
   let deletedCount = 0;
   let freedBytes = 0;
   const deletedFiles: string[] = [];
 
-  const scanFolders = ['', 'players', 'matches', 'articles', 'general'];
+  const allFiles = getAllFilesRecursive(uploadsBaseDir);
 
-  for (const sub of scanFolders) {
-    const folderPath = sub ? path.join(uploadsBaseDir, sub) : uploadsBaseDir;
-    if (!fs.existsSync(folderPath)) continue;
+  for (const fullPath of allFiles) {
+    // Relative URL format: /uploads/...
+    const relativeToPublic = path.relative(path.join(process.cwd(), 'public'), fullPath);
+    const relUrl = '/' + relativeToPublic.replace(/\\/g, '/');
 
-    try {
-      const items = fs.readdirSync(folderPath);
-      for (const item of items) {
-        const fullPath = path.join(folderPath, item);
+    // If file is not referenced in database, remove it
+    if (!referenced.has(relUrl)) {
+      try {
         const stat = fs.statSync(fullPath);
+        freedBytes += stat.size;
+        fs.unlinkSync(fullPath);
+        deletedCount++;
+        deletedFiles.push(relUrl);
 
-        // Skip directories inside
-        if (stat.isDirectory()) continue;
-
-        const relUrl = sub ? `/uploads/${sub}/${item}` : `/uploads/${item}`;
-
-        // If file is not referenced in database, remove it
-        if (!referenced.has(relUrl)) {
-          try {
-            freedBytes += stat.size;
-            fs.unlinkSync(fullPath);
-            deletedCount++;
-            deletedFiles.push(relUrl);
-          } catch (err) {
-            console.error(`Gagal menghapus file ${relUrl}:`, err);
-          }
-        }
+        // Also clean up parent directory if now empty
+        removeEmptyDirsRecursive(path.dirname(fullPath), uploadsBaseDir);
+      } catch (err) {
+        console.error(`Gagal menghapus file ${relUrl}:`, err);
       }
-    } catch (err) {
-      console.error(`Error reading directory ${folderPath}:`, err);
     }
   }
 

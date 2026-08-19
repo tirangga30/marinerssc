@@ -285,6 +285,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', 'players');
+    formData.append('position', guestFormData.position);
+    formData.append('number', guestFormData.number);
+    formData.append('playerName', guestFormData.name);
 
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });

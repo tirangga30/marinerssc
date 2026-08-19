@@ -230,6 +230,9 @@ export default function AdminPlayersPage() {
     const body = new FormData();
     body.append('file', file);
     body.append('folder', 'players');
+    body.append('position', formData.position);
+    body.append('number', formData.number);
+    body.append('playerName', formData.name);
 
     try {
       const res = await fetch('/api/upload', {
