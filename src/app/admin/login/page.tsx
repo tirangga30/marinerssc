@@ -41,28 +41,24 @@ export default function AdminLoginPage() {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
 
-      {/* Background: Stadium Photo */}
+      {/* Pure Original Background Photo - No Darkening / No Overlay */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{ backgroundImage: "url('/LOGIN.jpeg')" }}
+        aria-hidden="true"
       />
 
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-blue-950/75 to-slate-950/95" />
-
-      {/* Subtle vignette edges */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.7)_100%)]" />
-
-      {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
-
-
+      {/* Frosted Glass Login Box */}
+      <div className="relative z-10 w-full max-w-md mx-4 my-8">
         <div
-          className="rounded-3xl border border-white/10 shadow-2xl shadow-black/60 overflow-hidden"
-          style={{ background: 'rgba(6, 11, 20, 0.72)', backdropFilter: 'blur(24px)' }}
+          className="rounded-3xl border border-white/25 overflow-hidden backdrop-blur-2xl bg-slate-950/45 transition-all"
+          style={{
+            boxShadow:
+              '0 25px 60px -15px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.25)',
+          }}
         >
           {/* Card Header */}
-          <div className="px-8 pt-8 pb-6 text-center border-b border-white/[0.07]">
+          <div className="px-8 pt-8 pb-6 text-center border-b border-white/10">
             <div className="flex justify-center mb-4">
               <img
                 src="/marinerssc.png"
@@ -70,18 +66,19 @@ export default function AdminLoginPage() {
                 className="h-16 w-auto object-contain drop-shadow-2xl"
               />
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-wide text-white">
+            <h1 className="text-2xl font-black uppercase tracking-wide text-white drop-shadow-md">
               Portal <span className="text-sky-400">Admin</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1 font-medium">Mariners SC — Akses Pengelola Klub</p>
+            <p className="text-xs text-slate-300 mt-1 font-medium drop-shadow-sm">
+              Mariners SC — Akses Pengelola Klub
+            </p>
           </div>
 
           {/* Card Body */}
           <div className="px-8 py-7 space-y-5">
-
             {error && (
-              <div className="p-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-semibold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="p-3.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold flex items-center gap-2 backdrop-blur-md">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                 <span>{error}</span>
               </div>
             )}
@@ -89,15 +86,17 @@ export default function AdminLoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email field */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Email</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-200 drop-shadow-sm">
+                  Email
+                </label>
                 <div className="relative group">
-                  <Mail className="w-4 h-4 text-slate-500 group-focus-within:text-sky-400 absolute left-3.5 top-3.5 transition-colors" />
+                  <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-sky-400 absolute left-3.5 top-3.5 transition-colors" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-sky-500/60 focus:bg-white/[0.08] text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950/50 border border-white/20 focus:border-sky-400 focus:bg-slate-950/75 text-sm text-white placeholder-slate-400 outline-none backdrop-blur-md transition-all"
                     placeholder="email@marinersfc.com"
                   />
                 </div>
@@ -105,15 +104,17 @@ export default function AdminLoginPage() {
 
               {/* Password field */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Kata Sandi</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-200 drop-shadow-sm">
+                  Kata Sandi
+                </label>
                 <div className="relative group">
-                  <Lock className="w-4 h-4 text-slate-500 group-focus-within:text-sky-400 absolute left-3.5 top-3.5 transition-colors" />
+                  <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-sky-400 absolute left-3.5 top-3.5 transition-colors" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-sky-500/60 focus:bg-white/[0.08] text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950/50 border border-white/20 focus:border-sky-400 focus:bg-slate-950/75 text-sm text-white placeholder-slate-400 outline-none backdrop-blur-md transition-all"
                     placeholder="••••••••••••"
                   />
                 </div>
@@ -123,12 +124,12 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 mt-2 rounded-xl font-extrabold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3 mt-2 rounded-xl font-extrabold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg cursor-pointer"
                 style={{
                   background: loading
                     ? 'rgba(59,130,246,0.4)'
-                    : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  boxShadow: loading ? 'none' : '0 4px 24px rgba(59,130,246,0.35)',
+                    : 'linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)',
+                  boxShadow: loading ? 'none' : '0 4px 24px rgba(56,189,248,0.4)',
                   color: '#fff',
                 }}
               >
@@ -149,11 +150,10 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-[11px] text-slate-600 mt-5 font-medium">
+        <p className="text-center text-[11px] text-slate-300 drop-shadow-md mt-4 font-semibold">
           © 2026 Mariners SC · Akses terbatas untuk pengelola resmi klub
         </p>
       </div>
     </div>
   );
 }
-

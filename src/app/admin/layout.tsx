@@ -1,13 +1,21 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 /**
  * Admin Layout
  * Wraps all /admin/* pages with a full-screen stadium background image
- * and a dark overlay, so the glass-panel content pops on top.
- * The /admin/login page has its own background logic but inherits this too —
- * the overlay is subtle enough not to clash.
+ * and a dark overlay for table readability (except login page, which displays the pure original photo).
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="relative min-h-screen">
       {/* ── Stadium background photo ── */}
@@ -17,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         aria-hidden="true"
       />
 
-      {/* ── Multi-layer dark overlay for readability ── */}
+      {/* ── Multi-layer dark overlay for readability on admin dashboard/tables ── */}
       <div
         className="fixed inset-0"
         style={{
