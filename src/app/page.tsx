@@ -164,18 +164,18 @@ export default async function HomePage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url('/LOGIN.jpeg')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#060b14]/40 via-transparent to-[#060b14]/40" />
+        {/* Subtle bottom-only gradient so poster stays clear without dark overlays reaching high */}
+        <div className="absolute bottom-0 inset-x-0 h-28 sm:h-48 bg-gradient-to-t from-[#060b14] via-[#060b14]/60 to-transparent pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-2 text-center space-y-1.5 sm:space-y-5 pb-2 sm:pb-6">
           
           {/* Badge Top */}
-          <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse">
+          <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse drop-shadow-md">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
             <span>Musim 2026/2027</span>
           </div>
 
-          <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-slate-200 font-medium leading-normal sm:leading-relaxed">
+          <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-white font-semibold leading-normal sm:leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             Selamat datang di website resmi <strong className="text-sky-300">Mariners SC</strong>.
           </p>
 
