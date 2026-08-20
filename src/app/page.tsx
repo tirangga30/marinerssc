@@ -161,8 +161,8 @@ export default async function HomePage() {
       {/* HERO SECTION - MOBILE: ORIGINAL PHOTO ASPECT RATIO (16:9), DESKTOP: FULL VIEWPORT */}
       <section className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat filter brightness-95 contrast-105 scale-100 sm:scale-105 transform duration-1000"
-          style={{ backgroundImage: `url('/mainposter.jpeg')` }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('/LOGIN.jpeg')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#060b14] via-[#060b14]/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#060b14]/40 via-transparent to-[#060b14]/40" />

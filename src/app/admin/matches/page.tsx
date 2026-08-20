@@ -131,7 +131,6 @@ export default function AdminMatchesPage() {
     const body = new FormData();
     body.append('file', file);
     body.append('folder', 'matches');
-    body.append('opponentName', formData.opponentName);
 
     try {
       const res = await fetch('/api/upload', {
