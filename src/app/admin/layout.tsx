@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* ── Stadium background photo ── */}
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/stadium_hero.png')", zIndex: 0 }}
+        style={{ backgroundImage: "url('/LOGIN.jpeg')", zIndex: 0 }}
         aria-hidden="true"
       />
 

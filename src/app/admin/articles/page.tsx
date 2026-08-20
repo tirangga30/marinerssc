@@ -81,12 +81,12 @@ export default function AdminArticlesPage() {
     if (art.thumbnail) {
       return art.thumbnail.split('|||').filter(Boolean);
     }
-    return ['/stadium_hero.png'];
+    return ['/LOGIN.jpeg'];
   };
 
   const getMainThumbnail = (thumbnail: string): string => {
-    if (!thumbnail) return '/stadium_hero.png';
-    return thumbnail.split('|||')[0] || '/stadium_hero.png';
+    if (!thumbnail) return '/LOGIN.jpeg';
+    return thumbnail.split('|||')[0] || '/LOGIN.jpeg';
   };
 
   const formatDateForInput = (dateStr: string) => {
@@ -236,7 +236,7 @@ export default function AdminArticlesPage() {
       const payload = {
         title: formData.title,
         category: formData.category,
-        thumbnail: validPhotos[0] || '/stadium_hero.png',
+        thumbnail: validPhotos[0] || '/LOGIN.jpeg',
         images: validPhotos,
         content: formData.content,
         publishedAt: formData.publishedAt,

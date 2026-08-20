@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
       {/* Background: Stadium Photo */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/stadium_hero.png')" }}
+        style={{ backgroundImage: "url('/LOGIN.jpeg')" }}
       />
 
       {/* Dark gradient overlay */}

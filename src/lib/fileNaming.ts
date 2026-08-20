@@ -127,7 +127,7 @@ export function renameArticleFolder(
     return url;
   };
 
-  let newThumbnail = currentThumbnail || '/stadium_hero.png';
+  let newThumbnail = currentThumbnail || '/LOGIN.jpeg';
   if (newThumbnail.includes('|||')) {
     newThumbnail = newThumbnail.split('|||').map(updateUrl).join('|||');
   } else {

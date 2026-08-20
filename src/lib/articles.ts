@@ -23,9 +23,9 @@ export function getArticlePhotos(article: { thumbnail?: string | null; images?: 
 }
 
 export function getMainThumbnail(thumbnail: string | null | undefined): string {
-  if (!thumbnail) return '/stadium_hero.png';
+  if (!thumbnail) return '/LOGIN.jpeg';
   if (thumbnail.includes('|||')) {
-    return thumbnail.split('|||')[0] || '/stadium_hero.png';
+    return thumbnail.split('|||')[0] || '/LOGIN.jpeg';
   }
   return thumbnail;
 }
