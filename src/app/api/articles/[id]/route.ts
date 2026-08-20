@@ -37,7 +37,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       validPhotos = [data.thumbnail];
     }
 
-    let thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/LOGIN.jpeg';
+    let thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/newposter.jpeg';
 
     // Auto-rename article subfolder if slug changed
     const oldSlug = existingArticle.slug || '';

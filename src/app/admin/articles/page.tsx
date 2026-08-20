@@ -81,12 +81,12 @@ export default function AdminArticlesPage() {
     if (art.thumbnail) {
       return art.thumbnail.split('|||').filter(Boolean);
     }
-    return ['/LOGIN.jpeg'];
+    return ['/newposter.jpeg'];
   };
 
   const getMainThumbnail = (thumbnail: string): string => {
-    if (!thumbnail) return '/LOGIN.jpeg';
-    return thumbnail.split('|||')[0] || '/LOGIN.jpeg';
+    if (!thumbnail) return '/newposter.jpeg';
+    return thumbnail.split('|||')[0] || '/newposter.jpeg';
   };
 
   const formatDateForInput = (dateStr: string) => {
@@ -236,7 +236,7 @@ export default function AdminArticlesPage() {
       const payload = {
         title: formData.title,
         category: formData.category,
-        thumbnail: validPhotos[0] || '/LOGIN.jpeg',
+        thumbnail: validPhotos[0] || '/newposter.jpeg',
         images: validPhotos,
         content: formData.content,
         publishedAt: formData.publishedAt,

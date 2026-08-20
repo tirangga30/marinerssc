@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       validPhotos = [data.thumbnail];
     }
 
-    const thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/LOGIN.jpeg';
+    const thumbnailValue = validPhotos.length > 0 ? validPhotos.join('|||') : '/newposter.jpeg';
 
     const articleData: any = {
       title: data.title,
