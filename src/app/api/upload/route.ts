@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Determine extension
+    // Determine extension & MIME
     let ext = path.extname(file.name);
     if (!ext) {
       if (file.type === 'image/png') ext = '.png';
@@ -29,6 +29,9 @@ export async function POST(req: Request) {
       else if (file.type === 'image/svg+xml') ext = '.svg';
       else ext = '.jpg';
     }
+
+    const mimeType = file.type || (ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : ext === '.svg' ? 'image/svg+xml' : 'image/jpeg');
+    const base64DataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
     let targetDir = path.join(process.cwd(), 'public', 'uploads', targetFolder);
     let fileName = '';
@@ -78,15 +81,23 @@ export async function POST(req: Request) {
       publicUrl = `/uploads/general/${fileName}`;
     }
 
-    // Ensure target directory exists
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+    // If running in Vercel / serverless with read-only filesystem, return Data URL
+    if (process.env.VERCEL) {
+      return NextResponse.json({ url: base64DataUrl, success: true });
     }
 
-    const filePath = path.join(targetDir, fileName);
-    await fs.promises.writeFile(filePath, buffer);
-
-    return NextResponse.json({ url: publicUrl, success: true });
+    // On local environment, write to public/uploads
+    try {
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      const filePath = path.join(targetDir, fileName);
+      await fs.promises.writeFile(filePath, buffer);
+      return NextResponse.json({ url: publicUrl, success: true });
+    } catch (fsErr) {
+      console.warn('Local fs write failed, falling back to base64:', fsErr);
+      return NextResponse.json({ url: base64DataUrl, success: true });
+    }
   } catch (error: any) {
     console.error('Upload API Error:', error);
     return NextResponse.json(

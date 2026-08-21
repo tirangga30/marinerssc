@@ -7,18 +7,20 @@ import { prisma } from '@/lib/db';
  */
 function getAllFilesRecursive(dir: string): string[] {
   let results: string[] = [];
-  if (!fs.existsSync(dir)) return results;
+  try {
+    if (!fs.existsSync(dir)) return results;
 
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getAllFilesRecursive(filePath));
-    } else {
-      results.push(filePath);
+    const list = fs.readdirSync(dir);
+    for (const file of list) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(getAllFilesRecursive(filePath));
+      } else {
+        results.push(filePath);
+      }
     }
-  }
+  } catch {}
   return results;
 }
 
@@ -26,15 +28,15 @@ function getAllFilesRecursive(dir: string): string[] {
  * Removes empty directories recursively.
  */
 function removeEmptyDirsRecursive(dir: string, baseDir: string) {
-  if (!fs.existsSync(dir) || dir === baseDir) return;
+  try {
+    if (!fs.existsSync(dir) || dir === baseDir) return;
 
-  const files = fs.readdirSync(dir);
-  if (files.length === 0) {
-    try {
+    const files = fs.readdirSync(dir);
+    if (files.length === 0) {
       fs.rmdirSync(dir);
       removeEmptyDirsRecursive(path.dirname(dir), baseDir);
-    } catch {}
-  }
+    }
+  } catch {}
 }
 
 /**
@@ -46,6 +48,11 @@ export async function cleanupUnusedUploads(): Promise<{
   freedBytes: number;
   deletedFiles: string[];
 }> {
+  // Skip on Vercel read-only filesystem
+  if (process.env.VERCEL) {
+    return { deletedCount: 0, freedBytes: 0, deletedFiles: [] };
+  }
+
   const uploadsBaseDir = path.join(process.cwd(), 'public', 'uploads');
   if (!fs.existsSync(uploadsBaseDir)) {
     return { deletedCount: 0, freedBytes: 0, deletedFiles: [] };
@@ -93,11 +100,9 @@ export async function cleanupUnusedUploads(): Promise<{
   const allFiles = getAllFilesRecursive(uploadsBaseDir);
 
   for (const fullPath of allFiles) {
-    // Relative URL format: /uploads/...
     const relativeToPublic = path.relative(path.join(process.cwd(), 'public'), fullPath);
     const relUrl = '/' + relativeToPublic.replace(/\\/g, '/');
 
-    // If file is not referenced in database, remove it
     if (!referenced.has(relUrl)) {
       try {
         const stat = fs.statSync(fullPath);
@@ -106,10 +111,9 @@ export async function cleanupUnusedUploads(): Promise<{
         deletedCount++;
         deletedFiles.push(relUrl);
 
-        // Also clean up parent directory if now empty
         removeEmptyDirsRecursive(path.dirname(fullPath), uploadsBaseDir);
       } catch (err) {
-        console.error(`Gagal menghapus file ${relUrl}:`, err);
+        console.warn(`Could not delete file ${relUrl}:`, err);
       }
     }
   }

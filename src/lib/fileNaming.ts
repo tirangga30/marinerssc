@@ -22,7 +22,7 @@ export function renamePlayerPhotoFile(
   newNumber: number | string,
   newPlayerName: string
 ): string | null {
-  if (!currentPhotoUrl || !currentPhotoUrl.startsWith('/uploads/players/')) {
+  if (!currentPhotoUrl || !currentPhotoUrl.startsWith('/uploads/players/') || process.env.VERCEL) {
     return currentPhotoUrl || null;
   }
 
@@ -47,7 +47,7 @@ export function renamePlayerPhotoFile(
 
     return `/uploads/players/${newFileName}`;
   } catch (err) {
-    console.error('Error renaming player photo file:', err);
+    console.warn('Could not rename player photo file on disk (likely read-only environment):', err);
     return currentPhotoUrl;
   }
 }
@@ -59,7 +59,7 @@ export function renameMatchLogoFile(
   currentLogoUrl: string | null | undefined,
   newOpponentName: string
 ): string | null {
-  if (!currentLogoUrl || !currentLogoUrl.startsWith('/uploads/matches/')) {
+  if (!currentLogoUrl || !currentLogoUrl.startsWith('/uploads/matches/') || process.env.VERCEL) {
     return currentLogoUrl || null;
   }
 
@@ -82,7 +82,7 @@ export function renameMatchLogoFile(
 
     return `/uploads/matches/${newFileName}`;
   } catch (err) {
-    console.error('Error renaming match logo file:', err);
+    console.warn('Could not rename match logo file on disk:', err);
     return currentLogoUrl;
   }
 }
@@ -96,26 +96,28 @@ export function renameArticleFolder(
   currentThumbnail: string | null | undefined,
   currentImages: string[] | null | undefined
 ): { newThumbnail: string; newImages: string[] } {
-  const oldFolder = path.join(process.cwd(), 'public', 'uploads', 'articles', oldSlug);
-  const newFolder = path.join(process.cwd(), 'public', 'uploads', 'articles', newSlug);
+  if (!process.env.VERCEL) {
+    const oldFolder = path.join(process.cwd(), 'public', 'uploads', 'articles', oldSlug);
+    const newFolder = path.join(process.cwd(), 'public', 'uploads', 'articles', newSlug);
 
-  if (oldSlug !== newSlug && fs.existsSync(oldFolder)) {
-    try {
-      if (!fs.existsSync(newFolder)) {
-        fs.renameSync(oldFolder, newFolder);
-        console.log(`Renamed article folder: ${oldFolder} -> ${newFolder}`);
-      } else {
-        // Move files from old to new folder
-        const files = fs.readdirSync(oldFolder);
-        for (const file of files) {
-          const src = path.join(oldFolder, file);
-          const dest = path.join(newFolder, file);
-          fs.renameSync(src, dest);
+    if (oldSlug !== newSlug && fs.existsSync(oldFolder)) {
+      try {
+        if (!fs.existsSync(newFolder)) {
+          fs.renameSync(oldFolder, newFolder);
+          console.log(`Renamed article folder: ${oldFolder} -> ${newFolder}`);
+        } else {
+          // Move files from old to new folder
+          const files = fs.readdirSync(oldFolder);
+          for (const file of files) {
+            const src = path.join(oldFolder, file);
+            const dest = path.join(newFolder, file);
+            fs.renameSync(src, dest);
+          }
+          try { fs.rmdirSync(oldFolder); } catch {}
         }
-        try { fs.rmdirSync(oldFolder); } catch {}
+      } catch (err) {
+        console.warn('Could not rename article folder on disk:', err);
       }
-    } catch (err) {
-      console.error('Error renaming article folder:', err);
     }
   }
 
