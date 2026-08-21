@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star, Crop } from 'lucide-react';
+import ImageCropperModal from '@/components/ImageCropperModal';
 
 interface Player {
   id: string;
@@ -33,6 +34,11 @@ export default function AdminPlayersPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Player Photo Cropper Modal State
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperImageSrc, setCropperImageSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const formatDateForInput = (d?: string | Date | null) => {
     if (!d) return '';
@@ -221,14 +227,52 @@ export default function AdminPlayersPage() {
     setShowModal(true);
   };
 
-  // Direct File Upload Handler
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Photo Cropper Handlers ──
+  const handleSelectFileForCrop = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setCropperImageSrc(event.target.result as string);
+        setCropperOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleOpenCropperForExisting = async () => {
+    if (!formData.photoUrl || formData.photoUrl === '/playertemplate.png') return;
+
+    if (formData.photoUrl.startsWith('data:')) {
+      setCropperImageSrc(formData.photoUrl);
+      setCropperOpen(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(formData.photoUrl);
+      const blob = await res.blob();
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setCropperImageSrc(event.target.result as string);
+          setCropperOpen(true);
+        }
+      };
+      reader.readAsDataURL(blob);
+    } catch {
+      setCropperImageSrc(formData.photoUrl);
+      setCropperOpen(true);
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setUploading(true);
     const body = new FormData();
-    body.append('file', file);
+    body.append('file', croppedBlob, 'player_photo.jpg');
     body.append('folder', 'players');
     body.append('position', formData.position);
     body.append('number', formData.number);
@@ -250,6 +294,7 @@ export default function AdminPlayersPage() {
       alert('Terjadi kesalahan saat mengunggah foto');
     } finally {
       setUploading(false);
+      setCropperImageSrc(null);
     }
   };
 
@@ -459,47 +504,69 @@ export default function AdminPlayersPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                {/* Photo Upload Section */}
-                <div className="p-5 sm:p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-3">
-                <label className="font-bold text-sky-300 uppercase block">Foto Pemain (Direct Upload)</label>
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
-                    <img
-                      src={formData.photoUrl || '/playertemplate.png'}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
+                {/* Photo Upload Section with Cropper */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-sky-300 uppercase block text-xs">Foto Pemain (Rasio 4:5)</label>
+                    <span className="text-[10px] text-slate-400">Dapat di-crop dan digeser sebelum simpan</span>
                   </div>
-                  
-                  <div className="flex-1 space-y-2 w-full">
-                    <div className="flex items-center gap-2">
-                      <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        {uploading ? 'Mengunggah...' : 'Upload Foto'}
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-20 aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border-2 border-sky-400/40 shrink-0 shadow-lg">
+                      <img
+                        src={formData.photoUrl || '/playertemplate.png'}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    
+                    <div className="flex-1 space-y-2 w-full">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 text-xs transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          {uploading ? 'Mengunggah...' : 'Pilih & Crop Foto'}
+                        </button>
+
+                        {formData.photoUrl && formData.photoUrl !== '/playertemplate.png' && (
+                          <button
+                            type="button"
+                            onClick={handleOpenCropperForExisting}
+                            disabled={uploading}
+                            className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-bold flex items-center gap-1.5 text-xs transition-colors border border-sky-400/30 cursor-pointer"
+                          >
+                            <Crop className="w-3.5 h-3.5" />
+                            Crop Ulang
+                          </button>
+                        )}
+                        
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))}
+                          className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs cursor-pointer"
+                        >
+                          Reset Template
+                        </button>
+
                         <input
+                          ref={fileInputRef}
                           type="file"
                           accept="image/*"
-                          onChange={handleFileUpload}
+                          onChange={handleSelectFileForCrop}
                           disabled={uploading}
                           className="hidden"
                         />
-                      </label>
-                      
-                      <button
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))}
-                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
-                      >
-                        Reset Template
-                      </button>
-                    </div>
+                      </div>
 
-                    <p className="text-[11px] text-slate-400">
-                      Pilih file gambar (.jpg, .png, .webp)<strong>/playertemplate.png</strong>.
-                    </p>
+                      <p className="text-[11px] text-slate-400">
+                        Pilih foto (.jpg, .png, .webp) untuk membuka alat crop 4:5 otomatis.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -601,11 +668,24 @@ export default function AdminPlayersPage() {
                   <Save className="w-4 h-4 text-blue-600" /> Simpan Pemain
                 </button>
               </div>
-              </form>
-            </div>
+            </form>
           </div>
         </div>
+      </div>
       )}
+
+      {/* Image Cropper Modal (4:5 Aspect Ratio) */}
+      <ImageCropperModal
+        isOpen={cropperOpen}
+        imageSrc={cropperImageSrc}
+        aspectRatio={4 / 5}
+        title="Sesuaikan & Crop Foto Pemain (Rasio 4:5)"
+        onCropComplete={handleCropComplete}
+        onClose={() => {
+          setCropperOpen(false);
+          setCropperImageSrc(null);
+        }}
+      />
 
     </div>
   );
