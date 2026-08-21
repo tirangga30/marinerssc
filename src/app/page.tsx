@@ -162,7 +162,7 @@ export default async function HomePage() {
       <section className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('/newposter.jpeg')` }}
+          style={{ backgroundImage: `url('/LOGIN.jpeg')` }}
         />
         {/* Subtle bottom-only gradient so poster stays clear without dark overlays reaching high */}
         <div className="absolute bottom-0 inset-x-0 h-28 sm:h-48 bg-gradient-to-t from-[#060b14] via-[#060b14]/60 to-transparent pointer-events-none" />
