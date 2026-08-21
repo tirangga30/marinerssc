@@ -849,15 +849,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-6 justify-center w-full max-w-3xl">
+          <div className="flex items-center gap-2 sm:gap-6 justify-center w-full max-w-3xl px-1">
             {/* Home Team */}
-            <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-4 text-center sm:text-right">
-              <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1">{matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
-              <img src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')} alt="Home" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2" />
+            <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-1.5 sm:gap-4 text-center sm:text-right min-w-0">
+              <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
+                {matchData?.isHome ? 'Mariners SC' : matchData?.opponentName}
+              </span>
+              <img
+                src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')}
+                alt="Home"
+                className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2 shrink-0"
+              />
             </div>
 
             {/* Score Inputs */}
-            <div className="flex items-center gap-2 sm:gap-3 bg-slate-950 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-slate-700 shadow-inner shrink-0 relative group">
+            <div className="flex items-center gap-1.5 sm:gap-3 bg-slate-950 px-2 sm:px-4 py-1.5 sm:py-3 rounded-xl border border-slate-700 shadow-inner shrink-0 relative group">
               {matchData?.matchDate && new Date() < new Date(matchData.matchDate) && (
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-amber-500/90 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
                   Skor belum bisa diisi (Laga Belum Dimulai)
@@ -870,10 +876,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 value={matchDetails.homeScore}
                 onChange={(e) => handleScoreChange('home', e.target.value)}
                 disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
-                className="w-10 sm:w-14 bg-transparent text-white text-2xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 sm:w-14 bg-transparent text-white text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={matchData?.matchDate && new Date() < new Date(matchData.matchDate) ? "Skor baru bisa diisi setelah jam laga terlewati" : "Skor Kandang"}
               />
-              <span className="text-slate-500 font-bold text-xl sm:text-2xl">-</span>
+              <span className="text-slate-500 font-bold text-lg sm:text-2xl">-</span>
               <input
                 type="number"
                 min="0"
@@ -881,15 +887,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 value={matchDetails.awayScore}
                 onChange={(e) => handleScoreChange('away', e.target.value)}
                 disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
-                className="w-10 sm:w-14 bg-transparent text-white text-2xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 sm:w-14 bg-transparent text-white text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={matchData?.matchDate && new Date() < new Date(matchData.matchDate) ? "Skor baru bisa diisi setelah jam laga terlewati" : "Skor Tamu"}
               />
             </div>
 
             {/* Away Team */}
-            <div className="flex-1 flex flex-col sm:flex-row items-center justify-start gap-2 sm:gap-4 text-center sm:text-left">
-              <img src={!matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')} alt="Away" className="w-12 sm:w-16 h-12 sm:h-16 object-contain drop-shadow-md order-1" />
-              <span className="font-bold text-white uppercase text-xs sm:text-lg line-clamp-2 sm:line-clamp-1 order-2">{!matchData?.isHome ? 'Mariners FC' : matchData?.opponentName}</span>
+            <div className="flex-1 flex flex-col sm:flex-row items-center justify-start gap-1.5 sm:gap-4 text-center sm:text-left min-w-0">
+              <img
+                src={!matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')}
+                alt="Away"
+                className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 shrink-0"
+              />
+              <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
+                {!matchData?.isHome ? 'Mariners SC' : matchData?.opponentName}
+              </span>
             </div>
           </div>
 

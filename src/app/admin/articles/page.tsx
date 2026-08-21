@@ -262,33 +262,89 @@ export default function AdminArticlesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
       
-      {/* Top Header & Breadcrumbs */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between gap-2">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Dashboard Admin
+          <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
         </Link>
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg cursor-pointer"
+          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-blue-600" /> Tulis Artikel Berita Baru
+          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tulis Artikel
         </button>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl border border-sky-400/30 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h1 className="text-xl font-black uppercase text-white blue-gradient-text">
-            Manajemen Berita & Artikel Mariners SC ({articles.length})
+      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
+          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
+            Manajemen Berita & Artikel ({articles.length})
           </h1>
         </div>
 
-        {/* Articles Table */}
-        <div className="overflow-x-auto">
+        {/* ── MOBILE ARTICLES CARDS (Block on mobile, hidden on tablet/desktop) ── */}
+        <div className="block md:hidden space-y-2.5">
+          {articles.length === 0 && !loading ? (
+            <p className="text-xs text-slate-500 py-6 text-center">Belum ada artikel berita terdaftar.</p>
+          ) : (
+            articles.map((art) => {
+              const photos = getArticlePhotos(art);
+              const mainThumb = getMainThumbnail(art.thumbnail);
+
+              return (
+                <div
+                  key={art.id}
+                  className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-md"
+                >
+                  {/* Thumbnail 4:5 */}
+                  <div className="relative w-12 aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
+                    <img src={mainThumb} alt={art.title} className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
+                        {art.category}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: WIB_TIMEZONE })}
+                      </span>
+                    </div>
+                    <h3 className="text-xs font-bold text-white line-clamp-2 leading-snug">{art.title}</h3>
+                    <p className="text-[10px] text-slate-400 font-semibold">{photos.length} Foto</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => openEditModal(art)}
+                      className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer"
+                      title="Edit Artikel"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(art.id)}
+                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                      title="Hapus Artikel"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ── DESKTOP ARTICLES TABLE (Hidden on mobile) ── */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
@@ -350,7 +406,7 @@ export default function AdminArticlesPage() {
               {articles.length === 0 && !loading && (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-slate-500">
-                    Belum ada berita atau artikel yang dibuat.
+                    Belum ada artikel berita yang dibuat.
                   </td>
                 </tr>
               )}
@@ -362,23 +418,23 @@ export default function AdminArticlesPage() {
       {/* MODAL FORM (ADD / EDIT) */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-3xl glass-panel p-5 sm:p-6 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h2 className="text-lg font-black uppercase text-white tracking-wide">
+          <div className="w-full max-w-3xl glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
+              <h2 className="text-base sm:text-lg font-black uppercase text-white tracking-wide">
                 {editingArticle ? 'Edit Berita / Artikel' : 'Tulis Berita / Artikel Baru'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Judul Berita
+                  <FileText className="w-3.5 h-3.5" /> Judul Berita
                 </label>
                 <input
                   type="text"
@@ -386,19 +442,19 @@ export default function AdminArticlesPage() {
                   placeholder="Contoh: Kemenangan Dramatis di Laga Pamungkas"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
                   <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                    <Layers className="w-4 h-4" /> Kategori Berita
+                    <Layers className="w-3.5 h-3.5" /> Kategori Berita
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
                   >
                     <option value="Kabar Tim">Kabar Tim</option>
                     <option value="Hasil Pertandingan">Hasil Pertandingan</option>
@@ -408,37 +464,37 @@ export default function AdminArticlesPage() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Tanggal Terbit
+                    <Calendar className="w-3.5 h-3.5" /> Tanggal Terbit
                   </label>
                   <input
                     type="date"
                     required
                     value={formData.publishedAt}
                     onChange={(e) => setFormData({ ...formData, publishedAt: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
                   />
                 </div>
               </div>
 
               {/* 5 PHOTO SLOTS WITH INTEGRATED CROPPER */}
-              <div className="space-y-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <div className="space-y-3 p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="font-bold text-sky-300 uppercase block text-xs">
-                      Foto Berita (Maksimal 5 Foto - Rasio 4:5 Slider IG)
+                      Foto Berita (Maks 5 Foto - Rasio 4:5)
                     </label>
                     <span className="text-[10px] text-slate-400 font-normal">
-                      Setiap foto dapat dipotong (crop) presisi rasio 4:5 sebelum diunggah.
+                      Setiap foto dapat dipotong (crop 4:5) sebelum diunggah.
                     </span>
                   </div>
-                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-sky-400 font-bold">
-                    {formData.photos.filter(Boolean).length}/5 Ter-upload
+                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-sky-400 font-bold">
+                    {formData.photos.filter(Boolean).length}/5
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                   {[0, 1, 2, 3, 4].map((idx) => {
                     const photoUrl = formData.photos[idx];
                     return (

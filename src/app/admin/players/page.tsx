@@ -333,160 +333,246 @@ export default function AdminPlayersPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
       
       {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Dashboard Admin
+          <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
         </Link>
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg"
+          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-blue-600" /> Tambah Pemain Baru
+          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pemain
         </button>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl border border-sky-400/30 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h1 className="text-xl font-black uppercase text-white blue-gradient-text">
-            Daftar Pemain Skuad Mariners SC ({players.length})
+      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
+          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
+            Daftar Pemain Skuad ({players.length})
           </h1>
+          <span className="text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
+            ★ Beranda: {players.filter(p => p.isFeatured).length}/6
+          </span>
         </div>
 
-        {/* Players Table */}
-        <div className="overflow-x-auto">
-          {(() => {
-            const featuredCount = players.filter((p) => p.isFeatured).length;
-            const isLimitReached = featuredCount >= 6;
-            return (
-              <table className="w-full text-left text-xs text-slate-200">
-                <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
-                  <tr>
-                    <th className="p-3">No</th>
-                    <th className="p-3">Pemain</th>
-                    <th className="p-3">Posisi</th>
-                    <th className="p-3">Gol / Assist</th>
-                    <th className="p-3">Laga</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-center">Beranda ({featuredCount}/6)</th>
-                    <th className="p-3 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {players.map((player) => (
-                    <tr key={player.id} className="hover:bg-slate-800/40">
-                      <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
-                      <td className="p-3 flex items-center gap-3">
+        {(() => {
+          const featuredCount = players.filter((p) => p.isFeatured).length;
+          const isLimitReached = featuredCount >= 6;
+
+          return (
+            <>
+              {/* ── MOBILE PLAYER CARDS (Block on mobile, hidden on tablet/desktop) ── */}
+              <div className="block md:hidden space-y-2.5">
+                {players.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-6 text-center">Belum ada pemain terdaftar.</p>
+                ) : (
+                  players.map((player) => (
+                    <div
+                      key={player.id}
+                      className="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center gap-2.5 shadow-sm"
+                    >
+                      {/* 4:5 Photo Avatar */}
+                      <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
                         <img
                           src={player.photoUrl || '/playertemplate.png'}
                           alt={player.name}
-                          className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
+                          className="w-full h-full object-cover"
                         />
-                        <div>
-                          <span className="font-bold text-white">{player.name}</span>
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono font-black text-sky-400 text-xs">#{player.number}</span>
+                          <span className="font-bold text-white text-xs truncate max-w-[120px]">{player.name}</span>
                           {player.isCaptain && (
-                            <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
-                              👑 Kapten
+                            <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] font-black uppercase">
+                              👑
+                            </span>
+                          )}
+                          {player.isGuest && (
+                            <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase">
+                              Loan
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="p-3 font-bold text-sky-300">
-                        {normalizePos(player.position)}
-                        {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
-                      </td>
-                      <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
-                      <td className="p-3">{player.appearances}</td>
-                      <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                          {player.status}
-                        </span>
-                      </td>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                          <span className="font-bold text-sky-300">{normalizePos(player.position)}</span>
+                          <span>•</span>
+                          <span>{player.goals}G {player.assists}A</span>
+                          <span>•</span>
+                          <span>{player.appearances} Laga</span>
+                        </div>
+                      </div>
 
-                      {/* TOMBOL BINTANG (FAVORIT BERANDA - MAX 6) */}
-                      <td className="p-3 text-center">
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => toggleStar(player)}
                           disabled={isLimitReached && !player.isFeatured}
-                          title={
+                          title={player.isFeatured ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
+                          className={`p-1.5 rounded-lg border transition-all ${
                             player.isFeatured
-                              ? 'Hapus dari Pemain Beranda'
-                              : isLimitReached
-                              ? 'Maksimal 6 Pemain Beranda Tercapai'
-                              : 'Tampilkan di Pemain Beranda'
-                          }
-                          className={`p-2 rounded-xl border transition-all ${
-                            player.isFeatured
-                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
-                              : isLimitReached
-                              ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
-                              : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
+                              : 'bg-slate-800 border-slate-700 text-slate-500'
                           }`}
                         >
-                          <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
+                          <Star className={`w-3.5 h-3.5 ${player.isFeatured ? 'fill-amber-400' : ''}`} />
                         </button>
-                      </td>
+                        <button
+                          onClick={() => openEditModal(player)}
+                          className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                          title="Edit Pemain"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(player.id)}
+                          className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                          title="Hapus Pemain"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
-                  <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                    {player.isGuest && (
-                      <button
-                        onClick={async () => {
-                          if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
-                            await fetch('/api/players/' + player.id, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ isGuest: false })
-                            });
-                            fetchPlayers();
-                          }
-                        }}
-                        title="Promosikan ke Skuad Utama"
-                        className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30"
-                      >
-                        <Star className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => openEditModal(player)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(player.id)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        );
-      })()}
-        </div>
+              {/* ── DESKTOP PLAYERS TABLE (Hidden on mobile) ── */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-200">
+                  <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th className="p-3">No</th>
+                      <th className="p-3">Pemain</th>
+                      <th className="p-3">Posisi</th>
+                      <th className="p-3">Gol / Assist</th>
+                      <th className="p-3">Laga</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-center">Beranda ({featuredCount}/6)</th>
+                      <th className="p-3 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-medium">
+                    {players.map((player) => (
+                      <tr key={player.id} className="hover:bg-slate-800/40">
+                        <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
+                        <td className="p-3 flex items-center gap-3">
+                          <img
+                            src={player.photoUrl || '/playertemplate.png'}
+                            alt={player.name}
+                            className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
+                          />
+                          <div>
+                            <span className="font-bold text-white">{player.name}</span>
+                            {player.isCaptain && (
+                              <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                                👑 Kapten
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 font-bold text-sky-300">
+                          {normalizePos(player.position)}
+                          {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
+                        </td>
+                        <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
+                        <td className="p-3">{player.appearances}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
+                            {player.status}
+                          </span>
+                        </td>
+
+                        {/* TOMBOL BINTANG (FAVORIT BERANDA - MAX 6) */}
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => toggleStar(player)}
+                            disabled={isLimitReached && !player.isFeatured}
+                            title={
+                              player.isFeatured
+                                ? 'Hapus dari Pemain Beranda'
+                                : isLimitReached
+                                ? 'Maksimal 6 Pemain Beranda Tercapai'
+                                : 'Tampilkan di Pemain Beranda'
+                            }
+                            className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                              player.isFeatured
+                                ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                                : isLimitReached
+                                ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
+                                : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                            }`}
+                          >
+                            <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
+                          </button>
+                        </td>
+
+                        <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
+                          {player.isGuest && (
+                            <button
+                              onClick={async () => {
+                                if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
+                                  await fetch('/api/players/' + player.id, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ isGuest: false })
+                                  });
+                                  fetchPlayers();
+                                }
+                              }}
+                              title="Promosikan ke Skuad Utama"
+                              className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
+                            >
+                              <Star className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openEditModal(player)}
+                            className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
+                            title="Edit Pemain"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(player.id)}
+                            className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                            title="Hapus Pemain"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Modal Add / Edit Player */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-2xl glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-xl font-black uppercase text-white tracking-wide">
+              <h2 className="text-base sm:text-xl font-black uppercase text-white tracking-wide">
                 {editingPlayer ? 'Edit Pemain' : 'Tambah Pemain Baru'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors">
-                <X className="w-5 h-5" />
+              <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
               {!editingPlayer && guestPlayers.length > 0 && (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
                   <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>

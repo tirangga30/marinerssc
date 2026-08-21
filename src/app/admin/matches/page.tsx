@@ -194,38 +194,125 @@ export default function AdminMatchesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
+      
       {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Dashboard Admin
+          <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
         </Link>
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg"
+          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-blue-600" /> Tambah Pertandingan Baru
+          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pertandingan
         </button>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl border border-sky-400/30 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h1 className="text-xl font-black uppercase text-white blue-gradient-text">
+      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
+          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
             Manajemen Pertandingan ({matches.length})
           </h1>
         </div>
 
-        {/* Matches Table */}
-        <div className="overflow-x-auto">
+        {/* ── MOBILE MATCH CARDS (Block on mobile, hidden on tablet/desktop) ── */}
+        <div className="block md:hidden space-y-3">
+          {matches.length === 0 ? (
+            <p className="text-xs text-slate-500 py-6 text-center">Belum ada pertandingan terdaftar.</p>
+          ) : (
+            matches.map((m) => {
+              const dynamicStatus = getDynamicMatchStatus(m);
+              return (
+                <div
+                  key={m.id}
+                  className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md"
+                >
+                  {/* Top Meta Row */}
+                  <div className="flex items-center justify-between text-[11px] border-b border-slate-800/80 pb-2">
+                    <span className="font-bold text-slate-300">
+                      {new Date(m.matchDate).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: WIB_TIMEZONE,
+                      })}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold uppercase text-[9px]">
+                        {m.isHome ? 'Home' : 'Away'}
+                      </span>
+                      {dynamicStatus === 'live' ? (
+                        <span className="px-2 py-0.5 rounded-md bg-red-600/30 text-red-400 border border-red-500/50 text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" /> LIVE
+                        </span>
+                      ) : dynamicStatus === 'score_pending' ? (
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                          Skor Pending
+                        </span>
+                      ) : dynamicStatus === 'finished' ? (
+                        <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-400 font-mono font-black text-[11px]">
+                          {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : 'Selesai'}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 text-[9px] font-bold uppercase">
+                          Mendatang
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Opponent Info Row */}
+                  <div className="flex items-center gap-3">
+                    <img src={m.opponentLogo} alt={m.opponentName} className="w-10 h-10 object-contain drop-shadow" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-black text-white uppercase truncate">{m.opponentName}</h3>
+                      <p className="text-[11px] text-slate-400 truncate">{m.venue || 'Stadion Gelora Samudra, Jakarta'}</p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href={`/admin/matches/${m.id}/lineup`}
+                      className="flex-1 py-2 px-3 rounded-xl bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[11px] flex items-center justify-center gap-1.5"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" /> Match Options
+                    </Link>
+                    <button
+                      onClick={() => openEditModal(m)}
+                      className="p-2 rounded-xl bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                      title="Edit Pertandingan"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(m.id)}
+                      className="p-2 rounded-xl bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                      title="Hapus Pertandingan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ── DESKTOP MATCHES TABLE (Hidden on mobile) ── */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3">Tanggal Laga</th>
-                <th className="p-3">Lawan & Logo (Tanpa Box)</th>
+                <th className="p-3">Lawan & Logo</th>
                 <th className="p-3 text-center">Status / Skor</th>
                 <th className="p-3">Stadion / Lapangan</th>
                 <th className="p-3">Tuan Rumah</th>
@@ -275,12 +362,14 @@ export default function AdminMatchesPage() {
                       <button
                         onClick={() => openEditModal(m)}
                         className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                        title="Edit Pertandingan"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(m.id)}
                         className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                        title="Hapus Pertandingan"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -295,14 +384,14 @@ export default function AdminMatchesPage() {
 
       {/* Modal Add / Edit Match */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-xl glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6 shadow-2xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-xl glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-black uppercase text-sky-400">
+              <h3 className="text-base sm:text-lg font-black uppercase text-sky-400">
                 {editingMatch ? 'Edit Pertandingan' : 'Tambah Pertandingan Baru'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
-                <X className="w-6 h-6" />
+              <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
