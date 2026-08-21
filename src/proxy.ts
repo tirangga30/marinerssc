@@ -9,14 +9,6 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ─── BLOKIR ADMIN DI PRODUCTION ───────────────────────────────────────────
-  // Set ADMIN_ENABLED=true di environment variable untuk mengaktifkan admin.
-  // Jika tidak diset (misal di Vercel), semua /admin/* akan diblokir.
-  if (pathname.startsWith('/admin') && process.env.ADMIN_ENABLED !== 'true') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-  // ──────────────────────────────────────────────────────────────────────────
-
   // Proteksi semua halaman /admin/* kecuali halaman login itu sendiri
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const token = request.cookies.get('auth_token')?.value;
