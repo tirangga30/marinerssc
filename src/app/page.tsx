@@ -76,29 +76,29 @@ export default async function HomePage() {
   let featuredPlayers: any[] = [];
 
   try {
-    const rawMatches = await prisma.footballMatch.findMany({
-      include: {
-        events: true,
-      },
-      orderBy: { matchDate: 'asc' },
-    });
+    const [rawMatches, fetchedArticles, starredPlayers] = await Promise.all([
+      prisma.footballMatch.findMany({
+        include: { events: true },
+        orderBy: { matchDate: 'asc' },
+      }),
+      prisma.article.findMany({
+        orderBy: { publishedAt: 'desc' },
+        take: 3,
+      }),
+      prisma.player.findMany({
+        where: { isFeatured: true },
+        orderBy: { number: 'asc' },
+        take: 6,
+      }),
+    ]);
 
     matches = rawMatches.map((m: any, idx: number) => ({
       ...m,
       matchday: idx + 1
     }));
 
-    articles = await prisma.article.findMany({
-      orderBy: { publishedAt: 'desc' },
-      take: 3,
-    });
-
-    // Fetch players starred/favorited by admin (isFeatured = true), or fallback to top players
-    featuredPlayers = await prisma.player.findMany({
-      where: { isFeatured: true },
-      orderBy: { number: 'asc' },
-      take: 6,
-    });
+    articles = fetchedArticles;
+    featuredPlayers = starredPlayers;
 
     if (featuredPlayers.length === 0) {
       featuredPlayers = await prisma.player.findMany({

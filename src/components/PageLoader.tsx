@@ -4,81 +4,61 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function PageLoader() {
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [navigating, setNavigating] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Initial load effect: shows loading screen briefly and fades out
+  // Instant dismiss initial splash as soon as React hydrates
   useEffect(() => {
-    setMounted(true);
     const timer = setTimeout(() => {
-      setLoading(false);
-    }, 600);
-
+      setInitialLoad(false);
+    }, 150);
     return () => clearTimeout(timer);
   }, []);
 
-  // Route change effect: short smooth transition
+  // When pathname or searchParams change, show quick top progress bar then complete
   useEffect(() => {
-    if (!mounted) return;
-    setLoading(true);
+    if (initialLoad) return;
+
+    setNavigating(true);
     const timer = setTimeout(() => {
-      setLoading(false);
-    }, 350);
+      setNavigating(false);
+    }, 200);
 
     return () => clearTimeout(timer);
-  }, [pathname, searchParams, mounted]);
-
-  if (!loading) return null;
+  }, [pathname, searchParams]);
 
   return (
-    <div
-      className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-[#060b14] transition-opacity duration-500 pointer-events-auto"
-      style={{
-        background: 'radial-gradient(ellipse at center, rgba(14, 30, 64, 0.9) 0%, #060b14 75%)',
-      }}
-      aria-live="polite"
-      aria-busy="true"
-    >
-      {/* Glow Backdrop */}
-      <div className="absolute w-72 h-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none animate-pulse" />
-
-      {/* Central Logo & Orbit Spinners */}
-      <div className="relative flex items-center justify-center w-28 h-28 sm:w-32 sm:h-32 mb-6">
-        
-        {/* Outer glowing spinning ring */}
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-sky-400 border-r-blue-500 animate-spin" />
-        
-        {/* Middle counter-spinning ring */}
-        <div className="absolute inset-2 rounded-full border border-sky-400/20 border-b-sky-300 animate-spin-reverse" />
-
-        {/* Pulsing club logo */}
-        <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-          <img
-            src="/marinerssc.png"
-            alt="Mariners SC"
-            className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.5)] animate-pulse"
-          />
+    <>
+      {/* ── TOP ULTRA-FAST SLICK PROGRESS BAR (Like YouTube / GitHub) ── */}
+      {navigating && (
+        <div className="fixed top-0 left-0 right-0 z-9999 h-1 pointer-events-none overflow-hidden bg-slate-900/50">
+          <div className="h-full bg-gradient-to-r from-blue-600 via-sky-400 to-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.9)] animate-shimmer" />
         </div>
-      </div>
+      )}
 
-      {/* Club Branding & Loading Text */}
-      <div className="text-center space-y-2 z-10">
-        <h2 className="text-lg sm:text-xl font-black uppercase tracking-[0.2em] text-white blue-gradient-text">
-          Mariners SC
-        </h2>
-        
-        <p className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-sky-400/90 animate-pulse flex items-center justify-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />
-          Memuat Data...
-        </p>
-
-        {/* Shimmering Progress Bar */}
-        <div className="w-36 sm:w-44 h-1 rounded-full bg-slate-800/80 overflow-hidden relative mx-auto mt-3 border border-slate-700/50">
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-sky-400 to-transparent animate-shimmer" />
+      {/* ── INITIAL FAST SPLASH (Only on first cold reload, disappears in <150ms) ── */}
+      {initialLoad && (
+        <div
+          className="fixed inset-0 z-9998 flex flex-col items-center justify-center bg-[#060b14] transition-opacity duration-200 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(14, 30, 64, 0.95) 0%, #060b14 75%)',
+          }}
+        >
+          <div className="relative flex items-center justify-center w-24 h-24 mb-4">
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-sky-400 border-r-blue-500 animate-spin" />
+            <img
+              src="/marinerssc.png"
+              alt="Mariners SC"
+              className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.6)]"
+            />
+          </div>
+          <p className="text-[11px] font-black uppercase tracking-[0.25em] text-sky-400 blue-gradient-text animate-pulse">
+            Mariners SC
+          </p>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
