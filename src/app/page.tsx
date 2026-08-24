@@ -8,8 +8,8 @@ import { formatWibDate, formatWibTime } from '@/lib/date';
 
 import { getMainThumbnail } from '@/lib/articles';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
+
 
 const normalizePos = (pos: string) => {
   const p = pos?.toUpperCase();

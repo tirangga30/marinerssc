@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Shield, ArrowRight } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
+
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {

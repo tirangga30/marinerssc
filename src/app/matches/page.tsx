@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Trophy, Award, Flame, Shield, ArrowRight, Activity } from 'lucide-react';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 const formatPosition = (pos: string) => {
   const p = (pos || '').toUpperCase();
