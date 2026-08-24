@@ -188,7 +188,7 @@ export default function ImageCropperModal({
           setIsProcessing(false);
         },
         'image/jpeg',
-        0.92
+        0.85
       );
     } catch (err: any) {
       console.error('Gagal melakukan crop foto:', err);
