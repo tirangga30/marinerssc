@@ -57,6 +57,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       slug: newSlug,
       category: data.category,
       thumbnail: thumbnailValue,
+      images: JSON.stringify(validPhotos),
       content: data.content,
       publishedAt: data.publishedAt ? parseWibDate(data.publishedAt) : new Date(),
     };

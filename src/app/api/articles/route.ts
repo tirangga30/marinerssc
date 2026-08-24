@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       slug,
       category: data.category || 'Kabar Tim',
       thumbnail: thumbnailValue,
+      images: JSON.stringify(validPhotos),
       content: data.content,
       publishedAt: data.publishedAt ? parseWibDate(data.publishedAt) : new Date(),
     };
