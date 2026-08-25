@@ -7,7 +7,7 @@ import { Calendar, ArrowLeft, Share2, Tag } from 'lucide-react';
 import ArticleSlider from '@/components/ArticleSlider';
 import { getArticlePhotos } from '@/lib/articles';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function ArticleDetailPage({
   params,

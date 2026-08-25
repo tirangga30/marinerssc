@@ -6,7 +6,6 @@ import { getAdminSession } from '@/lib/auth';
 import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default async function AdminDashboardPage() {
   const session = await getAdminSession();

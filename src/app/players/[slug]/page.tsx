@@ -13,7 +13,6 @@ const BallIcon = ({ size = 16 }: { size?: number }) => (
 );
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 function getResult(match: {
   isHome: boolean;

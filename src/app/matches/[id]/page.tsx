@@ -9,7 +9,7 @@ import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
   if (!m) return 'scheduled';

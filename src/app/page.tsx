@@ -8,7 +8,7 @@ import { formatWibDate, formatWibTime } from '@/lib/date';
 
 import { getMainThumbnail } from '@/lib/articles';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 
 const normalizePos = (pos: string) => {

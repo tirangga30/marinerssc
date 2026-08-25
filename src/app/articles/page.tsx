@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { getMainThumbnail } from '@/lib/articles';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function ArticlesPage({
   searchParams,
