@@ -237,16 +237,17 @@ export default async function HomePage() {
             <>
               <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
                 
-                {/* Mariners SC (Home/Away) - NO BOX */}
+                {/* Home Team (Kandang) - Left */}
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                   <div className="order-2 sm:order-1 text-center sm:text-right">
-                    <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">MARINERS SC</h4>
-
+                    <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                      {nextMatch.isHome ? 'MARINERS SC' : nextMatch.opponentName}
+                    </h4>
                   </div>
                   <div className="order-1 sm:order-2 flex items-center justify-center">
                     <img
-                      src="/marinerssc.png"
-                      alt="Mariners SC Logo"
+                      src={nextMatch.isHome ? '/marinerssc.png' : (nextMatch.opponentLogo || '/defaultteam.png')}
+                      alt={nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
                       className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -291,18 +292,19 @@ export default async function HomePage() {
                   <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{nextMatch.venue}</p>
                 </div>
 
-                {/* Opponent - NO BOX */}
+                {/* Away Team (Tandang) - Right */}
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                   <div className="flex items-center justify-center">
                     <img
-                      src={nextMatch.opponentLogo}
-                      alt={nextMatch.opponentName}
+                      src={!nextMatch.isHome ? '/marinerssc.png' : (nextMatch.opponentLogo || '/defaultteam.png')}
+                      alt={!nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
                       className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <div className="text-center sm:text-left">
-                    <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">{nextMatch.opponentName}</h4>
-
+                    <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+                      {!nextMatch.isHome ? 'MARINERS SC' : nextMatch.opponentName}
+                    </h4>
                   </div>
                 </div>
 
