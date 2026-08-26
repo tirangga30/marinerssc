@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Save, Plus, Edit, Trash2, CheckCircle2, Activity,
   Clock, Zap, Shield, Star, AlertCircle, GripVertical, X,
-  UserCheck, Upload, Loader2, Play
+  UserCheck, Upload, Loader2, Play, Users, UserPlus
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
@@ -246,7 +246,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   }, [matchDetails.isLiveEnabled, matchDetails.duration, matchDetails.status, matchData?.matchDate, eventsList]);
 
   const [activeTab, setActiveTab] = useState<'lineup' | 'events'>('lineup');
-  const [rosterTab, setRosterTab] = useState<'main' | 'guests'>('main');
+  const [rosterTab, setRosterTab] = useState<'main' | 'members' | 'guests'>('main');
+  const [communityMembers, setCommunityMembers] = useState<any[]>([]);
+  const [matchAttendances, setMatchAttendances] = useState<any[]>([]);
+  const [invitingMemberId, setInvitingMemberId] = useState<string | null>(null);
 
   const [editingGuestPlayer, setEditingGuestPlayer] = useState<Player | null>(null);
 
@@ -379,20 +382,52 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     }
   };
 
+  const handleInviteMember = async (memberId: string) => {
+    setInvitingMemberId(memberId);
+    try {
+      const res = await fetch(`/api/admin/matches/${matchId}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'INVITE_MEMBER', memberId }),
+      });
+      if (res.ok) {
+        const [attRes, pRes] = await Promise.all([
+          fetch(`/api/admin/matches/${matchId}/attendance`),
+          fetch('/api/players?matchId=' + matchId),
+        ]);
+        const attData = await attRes.json();
+        const pData = await pRes.json();
+        if (attData.attendances) setMatchAttendances(attData.attendances);
+        if (pData) setPlayers(pData);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setInvitingMemberId(null);
+    }
+  };
+
   useEffect(() => {
     async function loadData() {
       try {
-        const [playersRes, matchRes] = await Promise.all([
+        const [playersRes, matchRes, attRes, memRes] = await Promise.all([
           fetch('/api/players?matchId=' + matchId),
           fetch(`/api/matches/${matchId}`),
+          fetch(`/api/admin/matches/${matchId}/attendance`),
+          fetch('/api/admin/members?status=ACTIVE'),
         ]);
         if (!playersRes.ok || !matchRes.ok) throw new Error('Gagal fetch data');
 
         const playersData = await playersRes.json();
         const matchInfo = await matchRes.json();
+        const attData = attRes.ok ? await attRes.json() : null;
+        const memData = memRes.ok ? await memRes.json() : null;
 
         setPlayers(playersData);
         setMatchData(matchInfo);
+        if (attData?.attendances) setMatchAttendances(attData.attendances);
+        if (memData?.members) setCommunityMembers(memData.members);
+
         setMatchDetails({
           status: matchInfo.status || 'scheduled',
           formation: matchInfo.formation || 'Belum Tersedia',
@@ -1046,8 +1081,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   })}
                 </div>
               </div>
-
-              {/* ── PLAYER ROSTER (drag source & drop target with tabs) ── */}
+            {/* ── PLAYER ROSTER (drag source & drop target with tabs) ── */}
               <div
                 className={`rounded-2xl bg-slate-900/60 border overflow-hidden flex flex-col transition-all ${
                   dragPlayerId ? 'border-sky-500/80 bg-sky-500/10 ring-2 ring-sky-500/30' : 'border-slate-800'
@@ -1057,29 +1091,41 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 onDrop={handleDropOnRoster}
               >
                 {/* Roster Header Tabs */}
-                <div className="px-2 py-2 border-b border-slate-800 bg-slate-950/60 flex items-center gap-1.5 shrink-0">
+                <div className="px-2 py-2 border-b border-slate-800 bg-slate-950/60 flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => setRosterTab('main')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${rosterTab === 'main'
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'main'
                         ? 'bg-sky-600/30 text-sky-300 border border-sky-500/50 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                       }`}
                   >
                     <Star className="w-3 h-3 text-sky-400" />
-                    Skuad Utama ({mainSquadAvailable.length})
+                    Skuad ({mainSquadAvailable.length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRosterTab('members')}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'members'
+                        ? 'bg-amber-600/30 text-amber-300 border border-amber-500/50 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                      }`}
+                  >
+                    <Users className="w-3 h-3 text-amber-400" />
+                    Member ({communityMembers.length})
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setRosterTab('guests')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 ${rosterTab === 'guests'
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'guests'
                         ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                       }`}
                   >
                     <UserCheck className="w-3 h-3 text-emerald-400" />
-                    Pemain Loan ({guestPlayersAvailable.length})
+                    Loan ({guestPlayersAvailable.length})
                   </button>
                 </div>
 
@@ -1126,7 +1172,135 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     </>
                   )}
 
-                  {/* TAB 2: PEMAIN LOAN (DIGABUNGKAN) */}
+                  {/* TAB 2: MEMBER KOMUNITAS (DENGAN STATUS UNDANGAN & MERAH JIKA DITOLAK) */}
+                  {rosterTab === 'members' && (
+                    <div className="space-y-2">
+                      {communityMembers.length === 0 ? (
+                        <p className="text-[10px] text-slate-500 text-center py-6">
+                          Belum ada data member komunitas aktif.
+                        </p>
+                      ) : (
+                        communityMembers.map((m) => {
+                          const att = matchAttendances.find((a) => a.memberId === m.id);
+                          const attStatus = att ? att.status : 'NOT_INVITED';
+                          const isInviting = invitingMemberId === m.id;
+
+                          // Find if already converted to player
+                          const matchedPlayer = players.find((p) => p.name === m.fullName || (m.playerId && p.id === m.playerId));
+                          const isPitched = matchedPlayer ? pitchedIds.has(matchedPlayer.id) : false;
+                          const isBenched = matchedPlayer ? benchSet.has(matchedPlayer.id) : false;
+
+                          return (
+                            <div
+                              key={m.id}
+                              draggable={attStatus === 'CONFIRMED' && matchedPlayer && !isPitched && !isBenched}
+                              onDragStart={(e) => {
+                                if (matchedPlayer) handleDragStart(matchedPlayer.id, false, e);
+                              }}
+                              onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
+                              className={`p-2 rounded-xl border transition-all text-xs ${
+                                attStatus === 'DECLINED'
+                                  ? 'bg-red-950/40 border-red-500/60 text-red-200'
+                                  : attStatus === 'CONFIRMED'
+                                  ? 'bg-emerald-950/30 border-emerald-500/40 text-white'
+                                  : attStatus === 'INVITED'
+                                  ? 'bg-amber-950/30 border-amber-500/40 text-white'
+                                  : 'bg-slate-900/80 border-slate-800 text-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={m.photoUrl || '/defaultplayer.png'}
+                                  alt={m.fullName}
+                                  className="w-7 h-7 rounded-full object-cover bg-slate-900 border border-slate-700 shrink-0"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-[10px] truncate block text-white">
+                                      {m.nickname || m.fullName}
+                                    </span>
+                                    <span className="text-[10px] font-black text-amber-400 shrink-0">
+                                      #{m.jerseyNumber}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <span className="text-[8px] font-extrabold uppercase px-1 rounded bg-slate-800 text-sky-300">
+                                      {m.position}
+                                    </span>
+                                    <span className="text-[8px] text-slate-400">{m.tier}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Status & Actions */}
+                              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between gap-1 text-[9px]">
+                                {attStatus === 'NOT_INVITED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleInviteMember(m.id)}
+                                    disabled={isInviting}
+                                    className="w-full py-1 rounded-lg bg-sky-600/30 hover:bg-sky-600/50 border border-sky-500/40 text-sky-300 font-bold uppercase transition-all flex items-center justify-center gap-1"
+                                  >
+                                    <UserPlus className="w-2.5 h-2.5" />
+                                    {isInviting ? 'Memanggil...' : 'Panggil ke Laga Ini'}
+                                  </button>
+                                )}
+
+                                {attStatus === 'INVITED' && (
+                                  <div className="w-full flex items-center justify-between">
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold uppercase text-[8px] border border-amber-500/30">
+                                      Menunggu Konfirmasi
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleInviteMember(m.id)}
+                                      className="text-slate-400 hover:text-red-400 text-[8px]"
+                                    >
+                                      Batal
+                                    </button>
+                                  </div>
+                                )}
+
+                                {attStatus === 'CONFIRMED' && (
+                                  <div className="w-full flex items-center justify-between">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black uppercase text-[8px] border border-emerald-500/30">
+                                      ✓ Terkonfirmasi Ikut
+                                    </span>
+                                    {matchedPlayer && !isPitched && !isBenched && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setBenchPlayerIds((prev) => [...prev, matchedPlayer.id])}
+                                        className="text-sky-400 hover:underline text-[8px] font-bold"
+                                      >
+                                        + Cadangan
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+
+                                {attStatus === 'DECLINED' && (
+                                  <div className="w-full flex items-center justify-between">
+                                    <span className="px-2 py-0.5 rounded-md bg-red-500/30 text-red-300 font-black uppercase text-[8px] border border-red-500/50">
+                                      ✗ Ditolak oleh Member
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleInviteMember(m.id)}
+                                      className="text-sky-400 hover:underline text-[8px] font-bold"
+                                    >
+                                      Undang Lagi
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+
+                  {/* TAB 3: PEMAIN LOAN (DIGABUNGKAN) */}
                   {rosterTab === 'guests' && (
                     <>
                       {guestPlayersAvailable.length === 0 ? (
@@ -1194,7 +1368,6 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                       className="px-2 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-400 hover:text-slate-950 transition-colors text-[9px] font-bold uppercase flex items-center gap-1 border border-amber-500/40"
                                       title="Masukkan ke Cadangan Match Ini"
                                     >
-                                      
                                       <Edit className="w-3 h-3" />
                                     </button>
                                     <button

@@ -44,31 +44,34 @@ model Player {
   updatedAt      DateTime     @updatedAt
 
   lineups        MatchLineup[]
-  events         MatchEvent[]  @relation("PlayerEvents")
-  assistedEvents MatchEvent[]  @relation("AssistPlayerEvents")
+  events         MatchEvent[]       @relation("PlayerEvents")
+  assistedEvents MatchEvent[]       @relation("AssistPlayerEvents")
+  attendances    MatchAttendance[]
+  member         Member?
 }
 
 model FootballMatch {
-  id           String        @id @default(uuid())
-  opponentName String
-  opponentLogo String
-  matchDate    DateTime
-  competition  String        @default("BRI Liga 1")
-  venue        String        @default("Stadion Gelora Samudra, Jakarta")
-  isHome       Boolean       @default(true)
-  isLiveEnabled Boolean      @default(false)
-  status       String        @default("scheduled") // scheduled, live, finished
-  homeScore    Int?
-  awayScore    Int?
-  formation    String        @default("Belum Tersedia")
-  summary      String?
-  duration     Int           @default(60)
-  extraTime    Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id            String        @id @default(uuid())
+  opponentName  String
+  opponentLogo  String
+  matchDate     DateTime
+  competition   String        @default("BRI Liga 1")
+  venue         String        @default("Stadion Gelora Samudra, Jakarta")
+  isHome        Boolean       @default(true)
+  isLiveEnabled Boolean       @default(false)
+  status        String        @default("scheduled") // scheduled, live, finished
+  homeScore     Int?
+  awayScore     Int?
+  formation     String        @default("Belum Tersedia")
+  summary       String?
+  duration      Int           @default(60)
+  extraTime     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  lineups      MatchLineup[]
-  events       MatchEvent[]
+  lineups       MatchLineup[]
+  events        MatchEvent[]
+  attendances   MatchAttendance[]
 }
 
 model MatchLineup {
@@ -91,7 +94,7 @@ model MatchEvent {
   matchId        String
   playerId       String
   assistPlayerId String?
-  type           String        // goal, assist, yellow_card, red_card, sub
+  type           String        // goal, assist, yellow_card, red_card, sub, own_goal, penalty
   minute         Int
   description    String?
   createdAt      DateTime      @default(now())
@@ -123,4 +126,101 @@ model Competition {
   isPrimary Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────
+// SOCCER COMMUNITY & MEMBER MODELS
+// ──────────────────────────────────────────
+
+model Member {
+  id              String       @id @default(uuid())
+  memberCode      String       @unique // Login ID e.g. MSC-M1024
+  password        String       // Plain / hashed password for member login
+  fullName        String
+  nickname        String?
+  origin          String       // Asal / Domisili
+  phone           String       // WhatsApp Number
+  photoUrl        String?
+  position        String       @default("MF") // GK, DF, MF, FW
+  altPosition     String?
+  jerseyNumber    Int          // 30 - 99 random or custom
+  tier            String       @default("FAN") // FAN, PRO, ELITE
+  status          String       @default("ACTIVE") // ACTIVE, INACTIVE, PENDING
+  paymentProof    String?
+  paymentStatus   String       @default("VERIFIED") // PENDING, VERIFIED, REJECTED
+  joinedAt        DateTime     @default(now())
+  expiresAt       DateTime?
+  isPermanent     Boolean      @default(false)
+  playerId        String?      @unique
+  player          Player?      @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  // Personal Stats
+  funAppearances  Int          @default(0)
+  mainAppearances Int          @default(0)
+  goals           Int          @default(0)
+  assists         Int          @default(0)
+  yellowCards     Int          @default(0)
+  redCards        Int          @default(0)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  matchAttendances MatchAttendance[]
+  funMatchEvents   FunMatchEvent[]
+}
+
+model FunMatch {
+  id          String        @id @default(uuid())
+  title       String        @default("Fun Match Community")
+  matchDate   DateTime
+  venue       String        @default("Stadion Gelora Samudra, Jakarta")
+  teamAName   String        @default("TIM A (NAVY)")
+  teamBName   String        @default("TIM B (GOLD)")
+  teamALogo   String?       @default("/marinerssc.png")
+  teamBLogo   String?       @default("/defaultteam.png")
+  teamAScore  Int?
+  teamBScore  Int?
+  status      String        @default("scheduled") // scheduled, live, finished
+  duration    Int           @default(60)
+  summary     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  attendances MatchAttendance[]
+  events      FunMatchEvent[]
+}
+
+model MatchAttendance {
+  id            String         @id @default(uuid())
+  matchId       String?        // Tim Utama (FootballMatch)
+  funMatchId    String?        // Fun Match (FunMatch)
+  memberId      String?        // Jika player adalah Member
+  playerId      String?        // Jika player adalah Skuad Utama / Tamu
+  playerType    String         @default("MEMBER") // "SQUAD" | "MEMBER" | "GUEST"
+  playerName    String?
+  status        String         @default("INVITED") // "INVITED" (Menunggu Konfirmasi), "CONFIRMED" (Ikut), "DECLINED" (Tidak Ikut)
+  declineReason String?
+  assignedTeam  String?        // For Fun Match: "TEAM_A" | "TEAM_B" | null
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  footballMatch FootballMatch? @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  funMatch      FunMatch?      @relation(fields: [funMatchId], references: [id], onDelete: Cascade)
+  member        Member?        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  player        Player?        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model FunMatchEvent {
+  id          String        @id @default(uuid())
+  funMatchId  String
+  memberId    String?
+  playerName  String?
+  team        String        // "TEAM_A" | "TEAM_B"
+  type        String        // goal, assist, yellow_card, red_card
+  minute      Int
+  description String?
+  createdAt   DateTime      @default(now())
+
+  funMatch    FunMatch      @relation(fields: [funMatchId], references: [id], onDelete: Cascade)
+  member      Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { Calendar, ArrowRight, Flame, Sparkles } from 'lucide-react';
+import { Calendar, ArrowRight, Flame, Sparkles, Users } from 'lucide-react';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
@@ -185,15 +185,15 @@ export default async function HomePage() {
               href="/players"
               className="flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-3.5 rounded-lg sm:rounded-xl font-extrabold uppercase white-blue-btn text-[10px] sm:text-sm"
             >
-              Skuad Tim
+              MARINERS SC
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
             </Link>
             <Link
-              href="/matches"
+              href="/community"
               className="flex items-center gap-1.5 px-3 sm:px-6 py-1.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold uppercase text-white glass-panel border border-slate-700 hover:border-sky-400 hover:text-sky-300 transition-all text-[10px] sm:text-sm"
             >
-              Jadwal Laga
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
+              SOCCER COMMUNITY
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
             </Link>
           </div>
 

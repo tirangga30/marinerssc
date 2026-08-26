@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Calendar, Users, Newspaper, BarChart3, Menu, X, LayoutDashboard, ExternalLink, LogOut } from 'lucide-react';
+import { Shield, Calendar, Users, Newspaper, BarChart3, Menu, X, LayoutDashboard, ExternalLink, LogOut, Sparkles } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,6 +15,7 @@ export default function Navbar() {
     { name: 'Beranda', href: '/', icon: Shield },
     { name: 'Jadwal & Hasil', href: '/matches', icon: Calendar },
     { name: 'Pemain', href: '/players', icon: Users },
+    { name: 'Komunitas', href: '/community', icon: Sparkles },
     { name: 'Berita', href: '/articles', icon: Newspaper },
     { name: 'Statistik', href: '/stats', icon: BarChart3 },
   ];
@@ -23,6 +24,7 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Kelola Pemain', href: '/admin/players', icon: Users },
     { name: 'Kelola Laga', href: '/admin/matches', icon: Calendar },
+    { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
     { name: 'Kelola Berita', href: '/admin/articles', icon: Newspaper },
   ];
 

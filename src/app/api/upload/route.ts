@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
     }
 
-    const validFolders = ['players', 'matches', 'articles', 'general'];
+    const validFolders = ['players', 'matches', 'articles', 'members', 'general'];
     const targetFolder = requestedFolder && validFolders.includes(requestedFolder.toLowerCase())
       ? requestedFolder.toLowerCase()
       : 'general';
