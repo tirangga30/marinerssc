@@ -2,11 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import {
-  ArrowLeft, Calendar, MapPin, Users, Activity,
-  Clock, Shield, Award, CheckCircle2, Play
-} from 'lucide-react';
+import CommunityMatchTabs from '@/components/CommunityMatchTabs';
 import { formatWibDate, formatWibTime } from '@/lib/date';
+import { Calendar, MapPin, Sparkles, ArrowLeft, Shield } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,34 +33,40 @@ export default async function FunMatchDetailPage({
     notFound();
   }
 
-  const teamAPlayers = funMatch.attendances.filter((a) => a.assignedTeam === 'TEAM_A' && a.status === 'CONFIRMED');
-  const teamBPlayers = funMatch.attendances.filter((a) => a.assignedTeam === 'TEAM_B' && a.status === 'CONFIRMED');
-  const unassignedPlayers = funMatch.attendances.filter((a) => !a.assignedTeam && a.status === 'CONFIRMED');
-
-  const teamAEvents = funMatch.events.filter((e) => e.team === 'TEAM_A');
-  const teamBEvents = funMatch.events.filter((e) => e.team === 'TEAM_B');
+  const isLive = funMatch.status === 'live';
+  const isFinished = funMatch.status === 'finished';
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
       
-      {/* Back Button */}
-      <div>
+      {/* Back Link */}
+      <div className="flex items-center justify-between">
         <Link
-          href="/community"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase text-slate-400 hover:text-sky-300 transition-colors"
+          href="/community/matches"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Kembali ke Soccer Community
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali ke Jadwal Fun Match</span>
         </Link>
+        <span className="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
+          SOCCER COMMUNITY
+        </span>
       </div>
 
-      {/* Main Match Header Scorecard */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 text-center space-y-6 relative overflow-hidden bg-gradient-to-b from-slate-900 via-blue-950/40 to-slate-900 shadow-2xl">
+      {/* Main Score Board Header - EXACT MATCHING DESIGN */}
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-400/30 text-center space-y-4 relative overflow-hidden bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] shadow-2xl">
         
-        {/* Matchday & Status Bar */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-xs font-bold uppercase">
-          <span className="text-sky-400 flex items-center gap-1.5">
-            <Shield className="w-4 h-4" /> Fun Match Internal Community
-          </span>
+        {/* Top bar with matchday & time */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-[10px] sm:text-xs font-bold uppercase">
+          {isLive ? (
+            <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE FUN MATCH
+            </span>
+          ) : (
+            <span className="text-amber-400">
+              {funMatch.title || 'Fun Match Weekly'}
+            </span>
+          )}
           <span className="text-slate-400">
             {formatWibDate(funMatch.matchDate, {
               weekday: 'long',
@@ -73,239 +77,67 @@ export default async function FunMatchDetailPage({
           </span>
         </div>
 
-        {/* Teams & Score */}
         <div className="grid grid-cols-3 gap-2 sm:gap-6 items-center">
           
           {/* Team A */}
           <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-blue-900/60 border-2 border-sky-400/50 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-sky-500/10">
+            <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-2xl bg-blue-950/90 border border-sky-400/50 flex items-center justify-center text-sky-400 font-black text-xl sm:text-3xl shadow-xl">
               A
             </div>
-            <h3 className="text-sm sm:text-lg font-black uppercase text-white tracking-wide">
+            <h2 className="text-xs sm:text-xl font-black text-sky-300 uppercase">
               {funMatch.teamAName}
-            </h3>
-            <span className="text-[10px] sm:text-xs font-bold uppercase text-sky-400">
-              {teamAPlayers.length} Pemain
-            </span>
+            </h2>
           </div>
 
-          {/* Center Score */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-2 sm:gap-4 bg-slate-950/80 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl border border-slate-800">
-              <span className="text-3xl sm:text-5xl font-black text-white">
-                {funMatch.teamAScore !== null ? funMatch.teamAScore : '-'}
-              </span>
-              <span className="text-xl sm:text-3xl font-black text-slate-600">:</span>
-              <span className="text-3xl sm:text-5xl font-black text-white">
-                {funMatch.teamBScore !== null ? funMatch.teamBScore : '-'}
-              </span>
-            </div>
-            <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400 mt-1">
-              {funMatch.status === 'finished' ? (
-                <span className="text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Full Time ({funMatch.duration} Menit)
+          {/* Score Box */}
+          <div className="-mt-2 space-y-1">
+            {isFinished ? (
+              <div>
+                <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
+                  Full Time
                 </span>
-              ) : funMatch.status === 'live' ? (
-                <span className="text-red-400 animate-pulse flex items-center gap-1">
-                  <Play className="w-3.5 h-3.5 fill-red-400" /> Sedang Berlangsung
+                <div className="text-3xl sm:text-6xl font-black font-mono text-amber-400 tracking-widest">
+                  {funMatch.teamAScore ?? 0} : {funMatch.teamBScore ?? 0}
+                </div>
+              </div>
+            ) : isLive ? (
+              <div>
+                <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-red-600/30 text-red-400 text-[10px] sm:text-xs font-bold uppercase border border-red-500/50 animate-pulse">
+                  Sedang Berlangsung
                 </span>
-              ) : (
-                'Jadwal Mendatang'
-              )}
-            </span>
+                <div className="text-3xl sm:text-6xl font-black font-mono text-amber-400 tracking-widest">
+                  {funMatch.teamAScore ?? 0} : {funMatch.teamBScore ?? 0}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-[10px] sm:text-xs text-amber-400 font-bold uppercase mb-1.5">Mendatang</p>
+                <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl bg-amber-600/30 text-amber-300 text-xl sm:text-3xl font-black border border-amber-400/40">
+                  VS
+                </div>
+              </div>
+            )}
+            <p className="text-[10px] sm:text-xs text-slate-300 font-medium mt-1 truncate max-w-xs mx-auto">
+              📍 {funMatch.venue}
+            </p>
           </div>
 
           {/* Team B */}
           <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-950/60 border-2 border-amber-400/50 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-amber-500/10">
+            <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-2xl bg-amber-950/90 border border-amber-400/50 flex items-center justify-center text-amber-400 font-black text-xl sm:text-3xl shadow-xl">
               B
             </div>
-            <h3 className="text-sm sm:text-lg font-black uppercase text-white tracking-wide">
+            <h2 className="text-xs sm:text-xl font-black text-amber-300 uppercase">
               {funMatch.teamBName}
-            </h3>
-            <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-400">
-              {teamBPlayers.length} Pemain
-            </span>
+            </h2>
           </div>
 
-        </div>
-
-        {/* Venue Info */}
-        <div className="text-[11px] sm:text-xs text-slate-400 flex items-center justify-center gap-1.5 pt-2">
-          <MapPin className="w-3.5 h-3.5 text-sky-400" />
-          <span>{funMatch.venue}</span>
         </div>
 
       </div>
 
-      {/* 2 SISI SUMMARY (TIM A vs TIM B) */}
-      <div className="space-y-4">
-        <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-          <Activity className="w-5 h-5 text-sky-400" />
-          Ringkasan Pertandingan (Match Summary)
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Tim A Summary Box */}
-          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-blue-500/30 bg-blue-950/10 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-black uppercase text-sky-300">{funMatch.teamAName}</span>
-              <span className="text-xs font-bold text-white">{teamAEvents.filter(e => e.type === 'goal').length} Gol</span>
-            </div>
-            {teamAEvents.length === 0 ? (
-              <p className="text-xs text-slate-500 italic py-2">Belum ada catatan event gol/kartu.</p>
-            ) : (
-              <div className="space-y-2">
-                {teamAEvents.map((e) => (
-                  <div key={e.id} className="flex items-center gap-2 text-xs text-slate-200">
-                    <span className="font-mono text-sky-400 font-bold">{e.minute}&apos;</span>
-                    <span className="font-bold">
-                      {e.type === 'goal' && '⚽ Gol:'}
-                      {e.type === 'assist' && '👟 Assist:'}
-                      {e.type === 'yellow_card' && '🟨 Kartu Kuning:'}
-                      {e.type === 'red_card' && '🟥 Kartu Merah:'}
-                    </span>
-                    <span>{e.member?.fullName || e.playerName || 'Pemain'}</span>
-                    {e.description && <span className="text-slate-400">({e.description})</span>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Tim B Summary Box */}
-          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-amber-500/30 bg-amber-950/10 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-black uppercase text-amber-300">{funMatch.teamBName}</span>
-              <span className="text-xs font-bold text-white">{teamBEvents.filter(e => e.type === 'goal').length} Gol</span>
-            </div>
-            {teamBEvents.length === 0 ? (
-              <p className="text-xs text-slate-500 italic py-2">Belum ada catatan event gol/kartu.</p>
-            ) : (
-              <div className="space-y-2">
-                {teamBEvents.map((e) => (
-                  <div key={e.id} className="flex items-center gap-2 text-xs text-slate-200">
-                    <span className="font-mono text-amber-400 font-bold">{e.minute}&apos;</span>
-                    <span className="font-bold">
-                      {e.type === 'goal' && '⚽ Gol:'}
-                      {e.type === 'assist' && '👟 Assist:'}
-                      {e.type === 'yellow_card' && '🟨 Kartu Kuning:'}
-                      {e.type === 'red_card' && '🟥 Kartu Merah:'}
-                    </span>
-                    <span>{e.member?.fullName || e.playerName || 'Pemain'}</span>
-                    {e.description && <span className="text-slate-400">({e.description})</span>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-      </div>
-
-      {/* 2 SISI LINEUP (SUSUNAN PEMAIN TIM A vs TIM B) */}
-      <div className="space-y-4 pt-4 border-t border-slate-800">
-        <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-          <Users className="w-5 h-5 text-sky-400" />
-          Susunan Pemain (Lineup Tim A & Tim B)
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Tim A Lineup Box */}
-          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="text-xs font-black uppercase text-sky-400">
-                Lineup {funMatch.teamAName} ({teamAPlayers.length} Pemain)
-              </h3>
-            </div>
-            {teamAPlayers.length === 0 ? (
-              <p className="text-xs text-slate-500 italic py-4 text-center">Belum ada pemain di Tim A.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {teamAPlayers.map((p) => (
-                  <div key={p.id} className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-slate-800">
-                    <img
-                      src={p.member?.photoUrl || '/defaultplayer.png'}
-                      alt={p.playerName || ''}
-                      className="w-9 h-9 rounded-lg object-cover bg-slate-900 border border-slate-700"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white truncate block">
-                          {p.member?.nickname || p.playerName}
-                        </span>
-                        <span className="text-[10px] font-black text-amber-400">
-                          #{p.member?.jerseyNumber || 30}
-                        </span>
-                      </div>
-                      <span className="text-[9px] font-extrabold uppercase text-sky-400">
-                        {p.member?.position || 'MF'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Tim B Lineup Box */}
-          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="text-xs font-black uppercase text-amber-400">
-                Lineup {funMatch.teamBName} ({teamBPlayers.length} Pemain)
-              </h3>
-            </div>
-            {teamBPlayers.length === 0 ? (
-              <p className="text-xs text-slate-500 italic py-4 text-center">Belum ada pemain di Tim B.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {teamBPlayers.map((p) => (
-                  <div key={p.id} className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-slate-800">
-                    <img
-                      src={p.member?.photoUrl || '/defaultplayer.png'}
-                      alt={p.playerName || ''}
-                      className="w-9 h-9 rounded-lg object-cover bg-slate-900 border border-slate-700"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white truncate block">
-                          {p.member?.nickname || p.playerName}
-                        </span>
-                        <span className="text-[10px] font-black text-amber-400">
-                          #{p.member?.jerseyNumber || 30}
-                        </span>
-                      </div>
-                      <span className="text-[9px] font-extrabold uppercase text-amber-400">
-                        {p.member?.position || 'MF'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-
-        {/* Unassigned Pool If any */}
-        {unassignedPlayers.length > 0 && (
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
-            <span className="text-[11px] font-bold uppercase text-slate-400">
-              Pemain Konfirmasi Hadir (Belum Dibagi Tim oleh Admin):
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {unassignedPlayers.map((p) => (
-                <span key={p.id} className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-300">
-                  {p.member?.fullName} (#{p.member?.jerseyNumber}) - {p.member?.position}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </div>
+      {/* 2 SISI CONTENT TABS (LINE UP & SUMMARY) */}
+      <CommunityMatchTabs funMatch={funMatch as any} />
 
     </div>
   );

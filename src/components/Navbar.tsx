@@ -30,10 +30,10 @@ export default function Navbar() {
   // Soccer Community Nav Links
   const communityNavLinks = [
     { name: 'Beranda', href: '/', icon: Shield },
-    { name: 'Jadwal Fun Match', href: '/community/matches', icon: Calendar },
-    { name: 'Squad Member', href: '/community/players', icon: Users },
-    { name: 'Statistik Member', href: '/community/stats', icon: BarChart3 },
-    { name: 'Portal Member', href: '/community', icon: Sparkles },
+    { name: 'Jadwal & Hasil', href: '/community/matches', icon: Calendar },
+    { name: 'Pemain', href: '/community/players', icon: Users },
+    { name: 'Statistik', href: '/community/stats', icon: BarChart3 },
+    { name: 'Member', href: '/community', icon: Sparkles },
   ];
 
   const adminNavLinks = [
