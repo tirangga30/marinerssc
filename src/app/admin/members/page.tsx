@@ -6,7 +6,8 @@ import {
   Users, Plus, Search, Filter, Shield, Award, Flame,
   Edit, Trash2, CheckCircle2, XCircle, AlertCircle,
   Crown, Shuffle, Key, Eye, EyeOff, Loader2, ArrowRight,
-  Calendar, Clock, MapPin, Check, ChevronRight, UserPlus
+  Calendar, Clock, MapPin, Check, ChevronRight, UserPlus,
+  MessageCircle, ExternalLink, Receipt, Sparkles, X
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
@@ -23,7 +24,9 @@ interface Member {
   altPosition: string | null;
   jerseyNumber: number;
   tier: string;
-  status: string;
+  status: string; // PENDING, ACTIVE, INACTIVE
+  paymentProof: string | null;
+  paymentStatus: string; // PENDING, VERIFIED, REJECTED
   isPermanent: boolean;
   playerId: string | null;
   createdAt: string;
@@ -55,6 +58,9 @@ export default function AdminMembersPage() {
   // Password visibility map
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
 
+  // Payment Proof Preview Modal
+  const [previewMember, setPreviewMember] = useState<Member | null>(null);
+
   // Member Modal State
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -68,6 +74,7 @@ export default function AdminMembersPage() {
   const [formTier, setFormTier] = useState('FAN');
   const [formStatus, setFormStatus] = useState('ACTIVE');
   const [formPassword, setFormPassword] = useState('');
+  const [formPaymentStatus, setFormPaymentStatus] = useState('VERIFIED');
   const [savingMember, setSavingMember] = useState(false);
 
   // Promote to Squad Modal State
@@ -86,7 +93,7 @@ export default function AdminMembersPage() {
   const [matchDuration, setMatchDuration] = useState(60);
   const [savingFunMatch, setSavingFunMatch] = useState(false);
 
-  const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string; memberToSend?: Member } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -95,7 +102,6 @@ export default function AdminMembersPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch members
       const query = new URLSearchParams();
       if (statusFilter !== 'ALL') query.set('status', statusFilter);
       if (tierFilter !== 'ALL') query.set('tier', tierFilter);
@@ -123,6 +129,91 @@ export default function AdminMembersPage() {
     fetchData();
   };
 
+  // WhatsApp Sender Helper
+  const handleSendWhatsAppCredentials = (m: Member) => {
+    let cleanPhone = m.phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62' + cleanPhone.slice(1);
+    } else if (!cleanPhone.startsWith('62')) {
+      cleanPhone = '62' + cleanPhone;
+    }
+
+    const host = typeof window !== 'undefined' ? window.location.origin : 'https://marinerssc.com';
+    const message = 
+`Halo *${m.fullName}*! 👋
+Terima kasih telah mendaftar di *Soccer Community Mariners SC* (Paket *${m.tier}*).
+
+Pembayaran pendaftaran Anda telah *DIVERIFIKASI* oleh Admin. Berikut adalah data akun resmi Anda untuk login:
+
+👤 *ID Member (Username):* \`${m.memberCode}\`
+🔑 *Kata Sandi:* \`${m.password}\`
+👕 *Nomor Punggung:* #${m.jerseyNumber}
+📍 *Posisi:* ${m.position}
+
+Silakan login ke portal member resmi kami untuk konfirmasi kehadiran fun match:
+👉 ${host}/community
+
+Sampai jumpa di jadwal pertandingan berikutnya dan salam Mariners SC! ⚓⚽`;
+
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  // Verify Payment & Activate Member
+  const handleVerifyMemberPayment = async (m: Member) => {
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'ACTIVE',
+          paymentStatus: 'VERIFIED',
+        }),
+      });
+
+      if (res.ok) {
+        setAlertMsg({
+          type: 'success',
+          text: `Pembayaran ${m.fullName} berhasil diverifikasi! Member telah AKTIF. Klik tombol di bawah untuk kirimkan ID & Password via WA.`,
+          memberToSend: m,
+        });
+        if (previewMember?.id === m.id) setPreviewMember(null);
+        fetchData();
+      } else {
+        const data = await res.json();
+        setAlertMsg({ type: 'error', text: data.error || 'Gagal memverifikasi' });
+      }
+    } catch (e: any) {
+      setAlertMsg({ type: 'error', text: e.message || 'Terjadi kesalahan' });
+    }
+  };
+
+  // Reject Payment
+  const handleRejectMemberPayment = async (m: Member) => {
+    if (!confirm(`Tolak bukti pembayaran ${m.fullName}?`)) return;
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'INACTIVE',
+          paymentStatus: 'REJECTED',
+        }),
+      });
+
+      if (res.ok) {
+        setAlertMsg({
+          type: 'success',
+          text: `Pembayaran ${m.fullName} telah ditandai DITOLAK.`,
+        });
+        if (previewMember?.id === m.id) setPreviewMember(null);
+        fetchData();
+      }
+    } catch (e: any) {
+      setAlertMsg({ type: 'error', text: e.message || 'Terjadi kesalahan' });
+    }
+  };
+
   const openAddMemberModal = () => {
     setEditingMember(null);
     setFormFullName('');
@@ -135,6 +226,7 @@ export default function AdminMembersPage() {
     setFormJerseyNumber(random);
     setFormTier('FAN');
     setFormStatus('ACTIVE');
+    setFormPaymentStatus('VERIFIED');
     setFormPassword('mariners2026');
     setMemberModalOpen(true);
   };
@@ -150,6 +242,7 @@ export default function AdminMembersPage() {
     setFormJerseyNumber(m.jerseyNumber);
     setFormTier(m.tier);
     setFormStatus(m.status);
+    setFormPaymentStatus(m.paymentStatus || 'VERIFIED');
     setFormPassword(m.password);
     setMemberModalOpen(true);
   };
@@ -176,6 +269,7 @@ export default function AdminMembersPage() {
           jerseyNumber: formJerseyNumber,
           tier: formTier,
           status: formStatus,
+          paymentStatus: formPaymentStatus,
           password: formPassword,
         }),
       });
@@ -286,6 +380,8 @@ export default function AdminMembersPage() {
     }
   };
 
+  const pendingCount = members.filter((m) => m.status === 'PENDING' || m.paymentStatus === 'PENDING').length;
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
       
@@ -296,56 +392,72 @@ export default function AdminMembersPage() {
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-sky-500/20 text-sky-300 border border-sky-400/30">
               Admin Community Panel
             </span>
+            {pendingCount > 0 && (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/40 animate-pulse">
+                {pendingCount} Verifikasi Pending
+              </span>
+            )}
           </div>
           <h1 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight mt-1">
-            Kelola Member & Soccer Community
+            Manajemen Member & Fun Match
           </h1>
           <p className="text-xs text-slate-400">
-            Kelola database member, akun login, penarikan ke skuad utama, serta jadwal Fun Match komunitas.
+            Verifikasi bukti pembayaran, kirim akun login via WA, dan jadwalkan fun match komunitas.
           </p>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shrink-0">
+        {/* Tab Selector */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-2xl border border-slate-800 self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('MEMBERS')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${
               activeTab === 'MEMBERS'
-                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Users className="w-4 h-4" />
-            Data Member ({members.length})
+            <span>Data Member ({members.length})</span>
           </button>
+
           <button
             onClick={() => setActiveTab('FUN_MATCHES')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${
               activeTab === 'FUN_MATCHES'
-                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Calendar className="w-4 h-4" />
-            Fun Matches ({funMatches.length})
+            <span>Jadwal Fun Match ({funMatches.length})</span>
           </button>
         </div>
       </div>
 
-      {/* Alert Banner */}
+      {/* Alert Notification */}
       {alertMsg && (
-        <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border ${
+        <div className={`p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-bold border ${
           alertMsg.type === 'success'
             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
             : 'bg-red-500/10 border-red-500/30 text-red-400'
         }`}>
-          {alertMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
-          <span>{alertMsg.text}</span>
+          <div className="flex items-center gap-2">
+            {alertMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+            <span>{alertMsg.text}</span>
+          </div>
+          {alertMsg.memberToSend && (
+            <button
+              onClick={() => handleSendWhatsAppCredentials(alertMsg.memberToSend!)}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold uppercase text-[10px] flex items-center gap-1.5 shrink-0 shadow-md"
+            >
+              <MessageCircle className="w-3.5 h-3.5" /> Kirim ID & Password via WA Sekarang
+            </button>
+          )}
         </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          TAB 1: DATA MEMBER KOMUNITAS
+          TAB 1: DATA MEMBER (DENGAN VERIFIKASI BUKTI TRANSFER & WA)
          ───────────────────────────────────────────────────────────── */}
       {activeTab === 'MEMBERS' && (
         <div className="space-y-4">
@@ -359,7 +471,7 @@ export default function AdminMembersPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari nama, ID, asal..."
+                  placeholder="Cari nama, ID, no WA, domisili..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-hidden focus:border-sky-400"
@@ -372,8 +484,9 @@ export default function AdminMembersPage() {
                 className="px-3 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
               >
                 <option value="ALL">Semua Status</option>
-                <option value="ACTIVE">Aktif</option>
-                <option value="INACTIVE">Non-Aktif (Arsip)</option>
+                <option value="PENDING">🟡 Menunggu Verifikasi ({pendingCount})</option>
+                <option value="ACTIVE">🟢 Aktif</option>
+                <option value="INACTIVE">⚪ Non-Aktif (Arsip)</option>
               </select>
 
               <select
@@ -426,15 +539,18 @@ export default function AdminMembersPage() {
                       <th className="p-3.5">ID & Password</th>
                       <th className="p-3.5">No & Posisi</th>
                       <th className="p-3.5">Tier</th>
+                      <th className="p-3.5">Bukti Bayar</th>
                       <th className="p-3.5">Status</th>
-                      <th className="p-3.5 text-right">Aksi</th>
+                      <th className="p-3.5 text-right">Aksi & Kirim Akun</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {members.map((m) => {
                       const isPwdVisible = showPassword[m.id];
+                      const isPending = m.status === 'PENDING' || m.paymentStatus === 'PENDING';
+
                       return (
-                        <tr key={m.id} className="hover:bg-slate-900/40 transition-colors">
+                        <tr key={m.id} className={`transition-colors ${isPending ? 'bg-amber-950/20 hover:bg-amber-950/30' : 'hover:bg-slate-900/40'}`}>
                           
                           {/* Member Photo & Name */}
                           <td className="p-3.5">
@@ -446,7 +562,13 @@ export default function AdminMembersPage() {
                               />
                               <div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-white text-xs">{m.fullName}</span>
+                                  <Link
+                                    href={`/community/players/${m.id}`}
+                                    target="_blank"
+                                    className="font-bold text-white text-xs hover:text-sky-300 transition-colors"
+                                  >
+                                    {m.fullName}
+                                  </Link>
                                   {m.isPermanent && (
                                     <span className="px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] font-black uppercase">
                                       Skuad Utama
@@ -496,37 +618,76 @@ export default function AdminMembersPage() {
                             </span>
                           </td>
 
-                          {/* Status & Non-aktif toggle */}
+                          {/* Bukti Bayar */}
                           <td className="p-3.5">
-                            <button
-                              onClick={() => toggleMemberStatus(m)}
-                              title="Klik untuk ubah status aktif/non-aktif (data tidak dihapus)"
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
-                                m.status === 'ACTIVE'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                                  : 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${m.status === 'ACTIVE' ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                              {m.status === 'ACTIVE' ? 'Aktif' : 'Non-Aktif (Arsip)'}
-                            </button>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="p-3.5 text-right space-x-1.5">
-                            {!m.isPermanent ? (
+                            {m.paymentProof ? (
                               <button
-                                onClick={() => openPromoteModal(m)}
-                                className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-[10px] uppercase shadow-sm transition-all"
+                                onClick={() => setPreviewMember(m)}
+                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-sky-400 text-sky-300 text-[10px] font-bold transition-colors"
                               >
-                                Tarik ke Skuad Utama
+                                <Receipt className="w-3.5 h-3.5" />
+                                Lihat Struk
                               </button>
                             ) : (
-                              <span className="text-[10px] text-emerald-400 font-bold px-2 py-1">
-                                ✓ Skuad Utama
+                              <span className="text-[10px] text-slate-500 italic">Tanpa Struk</span>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="p-3.5">
+                            {isPending ? (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 w-max animate-pulse">
+                                <Clock className="w-3 h-3" /> Menunggu Verifikasi
                               </span>
+                            ) : (
+                              <button
+                                onClick={() => toggleMemberStatus(m)}
+                                title="Klik untuk ubah status aktif/non-aktif"
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
+                                  m.status === 'ACTIVE'
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                                    : 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'
+                                }`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${m.status === 'ACTIVE' ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                {m.status === 'ACTIVE' ? 'Aktif' : 'Non-Aktif'}
+                              </button>
+                            )}
+                          </td>
+
+                          {/* Actions & WhatsApp */}
+                          <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                            
+                            {/* Tombol Verifikasi Cepat jika status PENDING */}
+                            {isPending && (
+                              <button
+                                onClick={() => handleVerifyMemberPayment(m)}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] uppercase shadow-sm transition-all inline-flex items-center gap-1"
+                              >
+                                <Check className="w-3 h-3" /> Verifikasi
+                              </button>
                             )}
 
+                            {/* Tombol Kirim Akun via WhatsApp */}
+                            <button
+                              onClick={() => handleSendWhatsAppCredentials(m)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/50 text-emerald-300 font-extrabold text-[10px] uppercase shadow-sm transition-all inline-flex items-center gap-1"
+                              title="Kirimkan username dan password member via WhatsApp"
+                            >
+                              <MessageCircle className="w-3 h-3" /> Kirim WA
+                            </button>
+
+                            {/* Tarik ke Skuad Utama */}
+                            {!m.isPermanent && (
+                              <button
+                                onClick={() => openPromoteModal(m)}
+                                className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-[10px] uppercase transition-all"
+                              >
+                                Tarik ke Skuad
+                              </button>
+                            )}
+
+                            {/* Edit Member */}
                             <button
                               onClick={() => openEditMemberModal(m)}
                               className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors inline-block align-middle"
@@ -549,21 +710,18 @@ export default function AdminMembersPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          TAB 2: KELOLA FUN MATCH KOMUNITAS
+          TAB 2: JADWAL FUN MATCH (MATCHMAKING KOMUNITAS)
          ───────────────────────────────────────────────────────────── */}
       {activeTab === 'FUN_MATCHES' && (
         <div className="space-y-4">
           
           <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border border-slate-800">
             <div>
-              <h3 className="text-sm font-bold uppercase text-white">Jadwal Fun Match Soccer Community</h3>
-              <p className="text-[11px] text-slate-400">Buat jadwal baru dan atur skor serta lineup 2 tim (Tim A vs Tim B).</p>
+              <h2 className="text-base font-black uppercase text-white">Daftar Pertandingan Fun Match</h2>
+              <p className="text-xs text-slate-400">Atur skor, line up, dan event summary untuk masing-masing tim.</p>
             </div>
             <button
-              onClick={() => {
-                setMatchDate('');
-                setFunMatchModalOpen(true);
-              }}
+              onClick={() => setFunMatchModalOpen(true)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-md shadow-sky-500/10"
             >
               <Plus className="w-4 h-4 text-blue-600" />
@@ -573,55 +731,60 @@ export default function AdminMembersPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {funMatches.length === 0 ? (
-              <div className="col-span-2 glass-panel p-12 rounded-2xl border border-slate-800 text-center text-slate-400 text-xs space-y-2">
-                <Calendar className="w-8 h-8 text-slate-600 mx-auto" />
-                <p>Belum ada jadwal fun match. Klik tombol di atas untuk membuat yang pertama!</p>
+              <div className="col-span-2 p-12 text-center text-slate-500 text-xs glass-panel rounded-2xl border border-slate-800">
+                Belum ada jadwal Fun Match. Klik &quot;Buat Fun Match Baru&quot; untuk membuat jadwal.
               </div>
             ) : (
               funMatches.map((fm) => (
                 <div
                   key={fm.id}
-                  className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-sky-400/40 transition-all space-y-4"
+                  className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4 hover:border-amber-400/40 transition-all"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 text-xs">
-                    <span className="font-bold text-white uppercase">{fm.title}</span>
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                      {fm.title}
+                    </span>
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                      fm.status === 'finished' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+                      fm.status === 'finished' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-sky-500/20 text-sky-300'
                     }`}>
-                      {fm.status === 'finished' ? 'Selesai' : 'Mendatang'}
+                      {fm.status}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 items-center text-center gap-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                    <div className="text-xs font-black text-white">{fm.teamAName}</div>
-                    <div className="text-lg font-black text-amber-400">
-                      {fm.teamAScore !== null && fm.teamBScore !== null ? `${fm.teamAScore} - ${fm.teamBScore}` : 'VS'}
+                  <div className="flex items-center justify-between py-2 text-center">
+                    <div className="flex-1">
+                      <span className="text-xs font-black uppercase text-sky-300 block">{fm.teamAName}</span>
+                      <span className="text-[10px] text-slate-400">Tim A</span>
                     </div>
-                    <div className="text-xs font-black text-white">{fm.teamBName}</div>
+                    <div className="px-4 py-1.5 rounded-xl bg-slate-950 border border-slate-800 font-mono font-black text-lg text-white">
+                      {fm.teamAScore !== null ? `${fm.teamAScore} : ${fm.teamBScore}` : 'VS'}
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-xs font-black uppercase text-amber-300 block">{fm.teamBName}</span>
+                      <span className="text-[10px] text-slate-400">Tim B</span>
+                    </div>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 space-y-0.5">
-                    <p>📅 {formatWibDate(fm.matchDate)} • {formatWibTime(fm.matchDate)} WIB</p>
-                    <p>📍 {fm.venue} ({fm.duration} Menit)</p>
+                  <div className="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800/80">
+                    <p className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                      {formatWibDate(fm.matchDate)} • {formatWibTime(fm.matchDate)} WIB ({fm.duration} Menit)
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                      {fm.venue}
+                    </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                    <Link
-                      href={`/community/matches/${fm.id}`}
-                      target="_blank"
-                      className="text-[11px] text-slate-400 hover:text-sky-300 font-bold"
-                    >
-                      Lihat Halaman Publik ↗
-                    </Link>
+                  <div className="pt-2 flex items-center justify-between gap-2 border-t border-slate-800">
                     <Link
                       href={`/admin/members/fun-match/${fm.id}`}
-                      className="flex items-center gap-1 px-4 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs uppercase transition-all shadow-md shadow-sky-500/20"
+                      className="flex-1 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs text-center flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/10"
                     >
-                      Atur Match Option & Lineup
-                      <ChevronRight className="w-4 h-4" />
+                      <Shield className="w-3.5 h-3.5 text-blue-600" />
+                      Match Option (Atur Tim & Skor)
                     </Link>
                   </div>
-
                 </div>
               ))
             )}
@@ -631,92 +794,196 @@ export default function AdminMembersPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL: ADD / EDIT MEMBER
+          MODAL: PREVIEW BUKTI PEMBAYARAN & KONFIRMASI ADMIN
          ───────────────────────────────────────────────────────────── */}
-      {memberModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-          <div className="relative w-full max-w-xl bg-slate-900 border border-sky-400/40 rounded-2xl p-6 shadow-2xl space-y-4 my-auto">
-            <h3 className="text-base font-black uppercase text-white">
-              {editingMember ? 'Edit Data Member' : 'Tambah Member Komunitas Manual'}
-            </h3>
+      {previewMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-amber-400/40 rounded-3xl shadow-2xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+                  VERIFIKASI BUKTI PEMBAYARAN
+                </span>
+                <h3 className="text-base font-black uppercase text-white">
+                  {previewMember.fullName} ({previewMember.memberCode})
+                </h3>
+              </div>
+              <button
+                onClick={() => setPreviewMember(null)}
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSaveMember} className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Lengkap *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formFullName}
-                    onChange={(e) => setFormFullName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+            {/* Member Details */}
+            <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-2xl border border-slate-800">
+              <div>
+                <span className="text-slate-500 block text-[10px]">Paket Membership:</span>
+                <strong className="text-amber-300 font-bold">{previewMember.tier}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[10px]">Nomor WhatsApp:</span>
+                <strong className="text-white font-mono">{previewMember.phone}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[10px]">Nomor Jersey:</span>
+                <strong className="text-sky-300 font-mono">#{previewMember.jerseyNumber}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[10px]">Status Saat Ini:</span>
+                <strong className={previewMember.status === 'ACTIVE' ? 'text-emerald-400' : 'text-amber-400'}>
+                  {previewMember.status}
+                </strong>
+              </div>
+            </div>
+
+            {/* Receipt Image */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-300">Foto Bukti Transfer:</span>
+              {previewMember.paymentProof ? (
+                <div className="rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 max-h-80 flex items-center justify-center">
+                  <img
+                    src={previewMember.paymentProof}
+                    alt="Bukti Transfer"
+                    className="w-full h-auto max-h-80 object-contain"
                   />
                 </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic py-4 text-center">
+                  Tidak ada file bukti pembayaran yang diunggah.
+                </p>
+              )}
+            </div>
+
+            {/* Verification Actions */}
+            <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+              <button
+                onClick={() => handleRejectMemberPayment(previewMember)}
+                className="px-4 py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 font-bold text-xs"
+              >
+                Tolak Pembayaran
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleVerifyMemberPayment(previewMember)}
+                  className="px-5 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-md shadow-sky-500/20"
+                >
+                  ✓ Verifikasi & Aktifkan Member
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: TAMBAH / EDIT MEMBER MANUAL
+         ───────────────────────────────────────────────────────────── */}
+      {memberModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/40 rounded-3xl shadow-2xl overflow-hidden my-auto p-6 space-y-4">
+            
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-black uppercase text-white">
+                {editingMember ? 'Edit Data Member' : 'Tambah Member Manual'}
+              </h3>
+              <button onClick={() => setMemberModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMember} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 font-bold mb-1">Nama Lengkap</label>
+                <input
+                  type="text"
+                  required
+                  value={formFullName}
+                  onChange={(e) => setFormFullName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Panggilan</label>
+                  <label className="block text-slate-400 font-bold mb-1">Nama Panggilan</label>
                   <input
                     type="text"
                     value={formNickname}
                     onChange={(e) => setFormNickname(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Asal / Domisili *</label>
+                  <label className="block text-slate-400 font-bold mb-1">Asal / Domisili</label>
                   <input
                     type="text"
                     required
                     value={formOrigin}
                     onChange={(e) => setFormOrigin(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">No WhatsApp *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Posisi Utama</label>
+                  <label className="block text-slate-400 font-bold mb-1">No WhatsApp</label>
+                  <input
+                    type="text"
+                    required
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Kata Sandi Login</label>
+                  <input
+                    type="text"
+                    required
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Posisi</label>
                   <select
                     value={formPosition}
                     onChange={(e) => setFormPosition(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
                   >
-                    <option value="FW">Forward (FW)</option>
-                    <option value="MF">Midfielder (MF)</option>
-                    <option value="DF">Defender (DF)</option>
-                    <option value="GK">Goalkeeper (GK)</option>
+                    <option value="GK">Goalkeeper</option>
+                    <option value="DF">Defender</option>
+                    <option value="MF">Midfielder</option>
+                    <option value="FW">Forward</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">No Punggung (30-99)</label>
+                  <label className="block text-slate-400 font-bold mb-1">No Punggung</label>
                   <input
                     type="number"
                     min="30"
                     max="99"
                     value={formJerseyNumber}
                     onChange={(e) => setFormJerseyNumber(parseInt(e.target.value) || 30)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-center font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Tier Membership</label>
+                  <label className="block text-slate-400 font-bold mb-1">Tier Paket</label>
                   <select
                     value={formTier}
                     onChange={(e) => setFormTier(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
                   >
                     <option value="FAN">FAN</option>
                     <option value="PRO">PRO</option>
@@ -725,31 +992,34 @@ export default function AdminMembersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Kata Sandi Login Member *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formPassword}
-                    onChange={(e) => setFormPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:outline-hidden focus:border-sky-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Status Member</label>
+                  <label className="block text-slate-400 font-bold mb-1">Status Keanggotaan</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
                   >
-                    <option value="ACTIVE">Aktif</option>
-                    <option value="INACTIVE">Non-Aktif (Arsip)</option>
+                    <option value="ACTIVE">Aktif (ACTIVE)</option>
+                    <option value="PENDING">Menunggu Konfirmasi (PENDING)</option>
+                    <option value="INACTIVE">Non-Aktif (INACTIVE)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Status Pembayaran</label>
+                  <select
+                    value={formPaymentStatus}
+                    onChange={(e) => setFormPaymentStatus(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                  >
+                    <option value="VERIFIED">Terverifikasi (VERIFIED)</option>
+                    <option value="PENDING">Menunggu (PENDING)</option>
+                    <option value="REJECTED">Ditolak (REJECTED)</option>
                   </select>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setMemberModalOpen(false)}
@@ -760,41 +1030,36 @@ export default function AdminMembersPage() {
                 <button
                   type="submit"
                   disabled={savingMember}
-                  className="px-5 py-2 rounded-xl white-blue-btn font-extrabold uppercase disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-md"
                 >
-                  {savingMember ? 'Menyimpan...' : 'Simpan Data'}
+                  {savingMember ? 'Menyimpan...' : 'Simpan Member'}
                 </button>
               </div>
             </form>
+
           </div>
         </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL: PROMOTE TO SQUAD UTAMA
+          MODAL: TARIK KE SKUAD UTAMA
          ───────────────────────────────────────────────────────────── */}
       {promoteModalOpen && promotingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-400/50 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400">
-                <Crown className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto">
+                <Award className="w-6 h-6" />
               </div>
-              <div>
-                <h3 className="text-sm font-black uppercase text-white">Tarik ke Skuad Utama</h3>
-                <p className="text-xs text-amber-300">{promotingMember.fullName}</p>
-              </div>
+              <h3 className="text-lg font-black uppercase text-white">Tarik ke Skuad Utama</h3>
+              <p className="text-xs text-slate-400">
+                Pilih nomor punggung resmi untuk <strong className="text-white">{promotingMember.fullName}</strong> di Skuad Utama.
+              </p>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Member ini akan dipromosikan menjadi pemain resmi di <strong>Skuad Utama Mariners SC</strong>. Profilnya akan muncul di halaman Skuad Tim utama dan dapat dimainkan di seluruh pertandingan resmi.
-            </p>
-
-            <form onSubmit={handlePromoteToSquad} className="space-y-3 text-xs">
+            <form onSubmit={handlePromoteToSquad} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">
-                  Sesuaikan Nomor Punggung di Skuad Utama:
-                </label>
+                <label className="block text-slate-300 font-bold mb-1">Nomor Punggung Skuad Utama</label>
                 <input
                   type="number"
                   min="1"
@@ -802,24 +1067,24 @@ export default function AdminMembersPage() {
                   required
                   value={promoteJerseyNumber}
                   onChange={(e) => setPromoteJerseyNumber(parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold text-sm focus:outline-hidden focus:border-amber-400"
+                  className="w-full py-2.5 text-center text-2xl font-mono font-black rounded-xl bg-slate-950 border border-amber-500/50 text-amber-400"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setPromoteModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={promotingLoading}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black uppercase disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-xl font-black uppercase bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20"
                 >
-                  {promotingLoading ? 'Memproses...' : 'Konfirmasi Promosi'}
+                  {promotingLoading ? 'Menyimpan...' : 'Jadikan Pemain Tetap'}
                 </button>
               </div>
             </form>
@@ -828,85 +1093,90 @@ export default function AdminMembersPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL: CREATE FUN MATCH
+          MODAL: BUAT FUN MATCH BARU
          ───────────────────────────────────────────────────────────── */}
       {funMatchModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/40 rounded-2xl p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-black uppercase text-white">Buat Jadwal Fun Match Baru</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/40 rounded-3xl shadow-2xl p-6 space-y-4">
+            
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-black uppercase text-white">Buat Jadwal Fun Match Baru</h3>
+              <button onClick={() => setFunMatchModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <form onSubmit={handleCreateFunMatch} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Judul Pertandingan *</label>
+                <label className="block text-slate-400 font-bold mb-1">Judul Laga</label>
                 <input
                   type="text"
                   required
                   value={matchTitle}
                   onChange={(e) => setMatchTitle(e.target.value)}
-                  placeholder="Contoh: Weekly Fun Match #12"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Tanggal & Waktu WIB *</label>
+                  <label className="block text-slate-400 font-bold mb-1">Tanggal & Waktu (WIB)</label>
                   <input
                     type="datetime-local"
                     required
                     value={matchDate}
                     onChange={(e) => setMatchDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Durasi (Menit)</label>
+                  <label className="block text-slate-400 font-bold mb-1">Durasi Laga (Menit)</label>
                   <input
                     type="number"
                     min="30"
                     max="120"
                     value={matchDuration}
                     onChange={(e) => setMatchDuration(parseInt(e.target.value) || 60)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Lokasi / Venue *</label>
+                <label className="block text-slate-400 font-bold mb-1">Lokasi / Venue</label>
                 <input
                   type="text"
                   required
                   value={matchVenue}
                   onChange={(e) => setMatchVenue(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Tim A</label>
+                  <label className="block text-sky-400 font-bold mb-1">Nama Tim A</label>
                   <input
                     type="text"
                     required
                     value={teamAName}
                     onChange={(e) => setTeamAName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Tim B</label>
+                  <label className="block text-amber-400 font-bold mb-1">Nama Tim B</label>
                   <input
                     type="text"
                     required
                     value={teamBName}
                     onChange={(e) => setTeamBName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-hidden focus:border-sky-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setFunMatchModalOpen(false)}
@@ -917,12 +1187,13 @@ export default function AdminMembersPage() {
                 <button
                   type="submit"
                   disabled={savingFunMatch}
-                  className="px-5 py-2 rounded-xl white-blue-btn font-extrabold uppercase disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-md"
                 >
-                  {savingFunMatch ? 'Membuat...' : 'Buat Fun Match'}
+                  {savingFunMatch ? 'Menyimpan...' : 'Terbitkan Fun Match'}
                 </button>
               </div>
             </form>
+
           </div>
         </div>
       )}

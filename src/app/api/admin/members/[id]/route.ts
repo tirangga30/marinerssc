@@ -35,6 +35,8 @@ export async function PUT(
         jerseyNumber: data.jerseyNumber !== undefined ? parseInt(data.jerseyNumber) : existing.jerseyNumber,
         tier: data.tier !== undefined ? data.tier.toUpperCase() : existing.tier,
         status: data.status !== undefined ? data.status.toUpperCase() : existing.status,
+        paymentStatus: data.paymentStatus !== undefined ? data.paymentStatus.toUpperCase() : existing.paymentStatus,
+        paymentProof: data.paymentProof !== undefined ? data.paymentProof : existing.paymentProof,
         password: data.password !== undefined && data.password.trim() !== '' ? data.password.trim() : existing.password,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : existing.expiresAt,
       },

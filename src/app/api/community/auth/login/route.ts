@@ -42,6 +42,20 @@ export async function POST(req: Request) {
       );
     }
 
+    if (member.status === 'PENDING' || member.paymentStatus === 'PENDING') {
+      return NextResponse.json(
+        { error: 'Akun Anda sedang dalam proses verifikasi pembayaran oleh Admin. Data akun (ID & Password) akan dikirimkan via WhatsApp setelah diverifikasi.' },
+        { status: 403 }
+      );
+    }
+
+    if (member.paymentStatus === 'REJECTED') {
+      return NextResponse.json(
+        { error: 'Pembayaran pendaftaran ditolak oleh Admin. Silakan hubungi admin untuk konfirmasi bukti transfer.' },
+        { status: 403 }
+      );
+    }
+
     if (member.status === 'INACTIVE') {
       return NextResponse.json(
         { error: 'Akun member Anda saat ini non-aktif. Silakan hubungi admin.' },

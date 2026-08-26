@@ -39,11 +39,12 @@ export default function CommunityRegistrationModal({
   const [uploadingProof, setUploadingProof] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [registeredMember, setRegisteredMember] = useState<any | null>(null);
 
   useEffect(() => {
     if (initialTier) setTier(initialTier);
-    // Random jersey number between 30 and 99
     rollRandomNumber();
+    setRegisteredMember(null);
   }, [initialTier, isOpen]);
 
   const rollRandomNumber = () => {
@@ -137,14 +138,70 @@ export default function CommunityRegistrationModal({
         throw new Error(data.error || 'Gagal mendaftar');
       }
 
+      setRegisteredMember(data.member);
       onSuccess(data.member);
-      onClose();
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan');
     } finally {
       setLoading(false);
     }
   };
+
+  if (registeredMember) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/50 rounded-3xl shadow-2xl p-6 sm:p-8 text-center space-y-5">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 mx-auto">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+              PENDAFTARAN & BUKTI BAYAR TERKIRIM
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black uppercase text-white">
+              Menunggu Verifikasi Admin
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+              Terima kasih, <strong className="text-white">{registeredMember.fullName}</strong>! Bukti transfer pembayaran pendaftaran paket <strong>{registeredMember.tier}</strong> telah kami terima dan sedang diverifikasi oleh Admin.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-left space-y-2 text-xs">
+            <div className="flex justify-between border-b border-slate-900 pb-2">
+              <span className="text-slate-400">Nomor Registrasi:</span>
+              <span className="font-mono font-black text-sky-300">{registeredMember.memberCode}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-900 pb-2">
+              <span className="text-slate-400">Nomor Punggung Dipilih:</span>
+              <span className="font-mono font-black text-amber-400">#{registeredMember.jerseyNumber}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Status Akun:</span>
+              <span className="font-bold text-amber-300">Menunggu Konfirmasi Admin</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/30 text-sky-200 text-xs text-left flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <p className="leading-normal text-[11px]">
+              Setelah bukti transfer diverifikasi, <strong>Admin akan mengirimkan ID Member & Kata Sandi login</strong> langsung melalui WhatsApp ke nomor <strong className="text-white">{registeredMember.phone}</strong>.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              setRegisteredMember(null);
+              onClose();
+            }}
+            className="w-full py-3 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20"
+          >
+            Tutup & Selesai
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">

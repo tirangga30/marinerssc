@@ -84,22 +84,14 @@ export async function POST(req: Request) {
         altPosition: altPosition ? altPosition.toUpperCase() : null,
         jerseyNumber: jerseyNum,
         tier: tier.toUpperCase(),
-        status: 'ACTIVE',
+        status: 'PENDING', // Menunggu konfirmasi bukti pembayaran dari admin
         paymentProof: paymentProof || null,
-        paymentStatus: 'VERIFIED',
+        paymentStatus: 'PENDING',
         expiresAt,
       },
     });
 
-    // Auto-login session cookie
-    const token = await signMemberToken({
-      memberId: newMember.id,
-      memberCode: newMember.memberCode,
-      fullName: newMember.fullName,
-      tier: newMember.tier,
-    });
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       member: {
         id: newMember.id,
@@ -109,20 +101,12 @@ export async function POST(req: Request) {
         jerseyNumber: newMember.jerseyNumber,
         position: newMember.position,
         photoUrl: newMember.photoUrl,
-        password: defaultPassword,
+        phone: newMember.phone,
+        status: newMember.status,
+        paymentStatus: newMember.paymentStatus,
       },
-      message: 'Pendaftaran berhasil! Akun member aktif.',
+      message: 'Pendaftaran berhasil! Bukti pembayaran sedang menunggu konfirmasi admin.',
     });
-
-    response.cookies.set('member_auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     console.error('Member registration error:', error);
     return NextResponse.json(
