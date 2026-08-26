@@ -17,13 +17,10 @@ export async function POST(req: Request) {
 
     const cleanCode = memberCode.trim().toUpperCase();
 
-    // Find member by memberCode (case-insensitive)
+    // Find member by memberCode
     const member = await prisma.member.findFirst({
       where: {
-        memberCode: {
-          equals: cleanCode,
-          mode: 'insensitive',
-        },
+        memberCode: cleanCode,
       },
     });
 

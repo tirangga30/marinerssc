@@ -30,10 +30,10 @@ export async function GET(req: Request) {
     }
     if (search) {
       where.OR = [
-        { fullName: { contains: search, mode: 'insensitive' } },
-        { memberCode: { contains: search, mode: 'insensitive' } },
+        { fullName: { contains: search } },
+        { memberCode: { contains: search } },
         { phone: { contains: search } },
-        { origin: { contains: search, mode: 'insensitive' } },
+        { origin: { contains: search } },
       ];
     }
 
