@@ -33,25 +33,19 @@ export default async function FunMatchDetailPage({
     notFound();
   }
 
+  const allFunMatches = await prisma.funMatch.findMany({
+    orderBy: { matchDate: 'asc' },
+    select: { id: true },
+  });
+
+  const matchdayIndex = allFunMatches.findIndex((m) => m.id === id) + 1;
+  const matchdayLabel = matchdayIndex > 0 ? `Matchday ${matchdayIndex}` : 'Fun Match';
+
   const isLive = funMatch.status === 'live';
   const isFinished = funMatch.status === 'finished';
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
-      
-      {/* Back Link */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/community/matches"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Jadwal Fun Match</span>
-        </Link>
-        <span className="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
-          SOCCER COMMUNITY
-        </span>
-      </div>
 
       {/* Main Score Board Header - EXACT MATCHING DESIGN */}
       <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-400/30 text-center space-y-4 relative overflow-hidden bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] shadow-2xl">
@@ -64,7 +58,7 @@ export default async function FunMatchDetailPage({
             </span>
           ) : (
             <span className="text-amber-400">
-              {funMatch.title || 'Fun Match Weekly'}
+              {matchdayLabel}
             </span>
           )}
           <span className="text-slate-400">
@@ -73,7 +67,7 @@ export default async function FunMatchDetailPage({
               day: 'numeric',
               month: 'short',
               year: 'numeric',
-            })} • {formatWibTime(funMatch.matchDate)} WIB
+            })} • {formatWibTime(funMatch.matchDate)}
           </span>
         </div>
 

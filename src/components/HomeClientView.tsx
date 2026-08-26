@@ -120,29 +120,29 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           </p>
 
           {/* ─── SLIDE TOGGLE SWITCHER (SEPERTI TOMBOL LINEUP/SUMMARY) ─── */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 glass-panel rounded-2xl max-w-xs sm:max-w-md mx-auto border border-sky-400/40 shadow-2xl shadow-slate-950">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 glass-panel rounded-2xl max-w-[340px] sm:max-w-[400px] w-full mx-auto border border-sky-400/40 shadow-2xl shadow-slate-950">
             <button
               onClick={() => setClubMode('main')}
-              className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 ${
+              className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                 clubMode === 'main'
                   ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/40 scale-[1.02]'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
               }`}
             >
-              <Shield className="w-3.5 h-3.5 text-sky-300" />
-              <span>MARINERS SC</span>
+              <Shield className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+              <span className="whitespace-nowrap">MARINERS SC</span>
             </button>
 
             <button
               onClick={() => setClubMode('community')}
-              className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 ${
+              className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                 clubMode === 'community'
                   ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/40 scale-[1.02]'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
               }`}
             >
-              <Users className="w-3.5 h-3.5 text-sky-300" />
-              <span>SOCCER COMMUNITY</span>
+              <Users className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+              <span className="whitespace-nowrap">COMMUNITY</span>
             </button>
           </div>
 
@@ -169,7 +169,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   </span>
                 ) : featuredStatus === 'scheduled' ? (
                   <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
-                    Laga Mendatang Tim Utama
+                    Laga Mendatang
                   </h3>
                 ) : (
                   <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
@@ -522,19 +522,19 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                     </span>
                   ) : nextFunMatch.status === 'finished' ? (
                     <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-amber-300 transition-colors">
-                      Hasil Fun Match Terakhir
+                      Hasil Pertandingan Terakhir
                     </h3>
                   ) : (
-                    <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-amber-400 group-hover:text-white transition-colors">
-                      Jadwal Fun Match Komunitas
+                    <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-amber-300 transition-colors">
+                      Laga Mendatang
                     </h3>
                   )}
                   <span className="flex items-center gap-1.5 sm:gap-2">
                     <span className="text-[9px] sm:text-xs font-medium text-slate-400">
-                      {formatWibDate(nextFunMatch.matchDate)} • {formatWibTime(nextFunMatch.matchDate)} WIB
+                      {formatWibDate(nextFunMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                     <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-400/30">
-                      SOCCER COMMUNITY
+                      Matchday {nextFunMatch.matchday || 1}
                     </span>
                   </span>
                 </div>
@@ -544,17 +544,16 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   {/* Team A */}
                   <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                     <div className="order-2 sm:order-1 text-center sm:text-right">
-                      <h4 className="text-[10px] sm:text-xl font-black text-sky-300 uppercase group-hover:text-sky-200 transition-colors">
+                      <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-amber-200 transition-colors">
                         {nextFunMatch.teamAName}
                       </h4>
-                      <span className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase">Tim A</span>
                     </div>
-                    <div className="order-1 sm:order-2 w-10 sm:w-16 h-10 sm:h-16 rounded-2xl bg-blue-950/80 border border-sky-400/40 flex items-center justify-center text-sky-400 font-black text-lg sm:text-2xl shadow-lg">
+                    <div className="order-1 sm:order-2 w-8 h-8 sm:w-16 sm:h-16 rounded-2xl bg-blue-950/80 border border-sky-400/40 flex items-center justify-center text-sky-400 font-black text-sm sm:text-2xl shadow-lg">
                       A
                     </div>
                   </div>
 
-                  {/* Score */}
+                  {/* Score / VS */}
                   <div className="space-y-0.5 sm:space-y-2">
                     {nextFunMatch.status === 'finished' ? (
                       <>
@@ -566,30 +565,36 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                     ) : (
                       <>
                         <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                          {formatWibTime(nextFunMatch.matchDate)} WIB
+                          {formatWibTime(nextFunMatch.matchDate)}
                         </p>
                         <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-amber-600/30 text-amber-300 font-black text-xs sm:text-2xl border border-amber-400/50">
                           VS
                         </div>
                       </>
                     )}
-                    <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">📍 {nextFunMatch.venue}</p>
+                    <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{nextFunMatch.venue}</p>
                   </div>
 
                   {/* Team B */}
                   <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
-                    <div className="w-10 sm:w-16 h-10 sm:h-16 rounded-2xl bg-amber-950/80 border border-amber-400/40 flex items-center justify-center text-amber-400 font-black text-lg sm:text-2xl shadow-lg">
+                    <div className="w-8 h-8 sm:w-16 sm:h-16 rounded-2xl bg-amber-950/80 border border-amber-400/40 flex items-center justify-center text-amber-400 font-black text-sm sm:text-2xl shadow-lg">
                       B
                     </div>
                     <div className="text-center sm:text-left">
-                      <h4 className="text-[10px] sm:text-xl font-black text-amber-300 uppercase group-hover:text-amber-200 transition-colors">
+                      <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-amber-200 transition-colors">
                         {nextFunMatch.teamBName}
                       </h4>
-                      <span className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase">Tim B</span>
                     </div>
                   </div>
 
                 </div>
+
+                <MatchTimer
+                  targetDate={nextFunMatch.matchDate}
+                  status={nextFunMatch.status}
+                  duration={nextFunMatch.duration || 60}
+                  isLiveEnabled={true}
+                />
               </Link>
             ) : (
               <div className="glass-panel p-6 sm:p-10 rounded-2xl border border-amber-500/30 text-center space-y-3">
@@ -604,66 +609,75 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
 
           {/* 3 PERTANDINGAN FUN MATCH TERAKHIR */}
           {recentFunMatches.length > 0 && (
-            <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 space-y-3">
-              <div className="flex items-center gap-2">
+            <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+              <div className="mb-3 sm:mb-5 flex items-center gap-2">
                 <span className="w-1 h-5 rounded-full bg-amber-400 inline-block" />
                 <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">
-                  Hasil Fun Match Terakhir
+                  3 Pertandingan Terakhir
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-2">
                 {recentFunMatches.map((fm: any) => (
                   <Link
                     key={fm.id}
                     href={`/community/matches/${fm.id}`}
-                    className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/50 transition-all block group space-y-2"
+                    className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-amber-400/30 hover:border-amber-400/60 shadow-2xl shadow-slate-950 hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer"
                   >
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold border-b border-slate-900 pb-2">
-                      <span>{formatWibDate(fm.matchDate)}</span>
-                      <span className="text-amber-400 group-hover:underline">Lihat Detail ↗</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1">
-                      <span className="font-extrabold text-xs text-sky-300 uppercase">{fm.teamAName}</span>
-                      <span className="px-3 py-1 rounded-xl bg-slate-900 font-mono font-black text-sm text-white border border-slate-700">
-                        {fm.teamAScore ?? 0} : {fm.teamBScore ?? 0}
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
+                      <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border bg-emerald-500/15 text-emerald-400 border-emerald-500/40">
+                        SELESAI
                       </span>
-                      <span className="font-extrabold text-xs text-amber-300 uppercase">{fm.teamBName}</span>
+                      <span className="flex items-center gap-1.5 sm:gap-2">
+                        <span className="text-[9px] sm:text-xs font-medium text-slate-400">
+                          {formatWibDate(fm.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-400/30">
+                          Matchday {fm.matchday || 1}
+                        </span>
+                      </span>
                     </div>
-                    <p className="text-[9px] text-slate-500 truncate">📍 {fm.venue}</p>
+
+                    <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
+                      {/* Team A */}
+                      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
+                        <div className="order-2 sm:order-1 text-center sm:text-right">
+                          <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-amber-200 transition-colors">
+                            {fm.teamAName}
+                          </h4>
+                        </div>
+                        <div className="order-1 sm:order-2 w-8 h-8 sm:w-16 sm:h-16 rounded-2xl bg-blue-950/80 border border-sky-400/40 flex items-center justify-center text-sky-400 font-black text-sm sm:text-2xl shadow-lg">
+                          A
+                        </div>
+                      </div>
+
+                      {/* Score */}
+                      <div className="space-y-0.5 sm:space-y-2">
+                        <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+                        <div className="text-xl sm:text-5xl font-black font-mono text-amber-400 tracking-widest">
+                          {fm.teamAScore ?? 0} : {fm.teamBScore ?? 0}
+                        </div>
+                        <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{fm.venue}</p>
+                      </div>
+
+                      {/* Team B */}
+                      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
+                        <div className="w-8 h-8 sm:w-16 sm:h-16 rounded-2xl bg-amber-950/80 border border-amber-400/40 flex items-center justify-center text-amber-400 font-black text-sm sm:text-2xl shadow-lg">
+                          B
+                        </div>
+                        <div className="text-center sm:text-left">
+                          <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-amber-200 transition-colors">
+                            {fm.teamBName}
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
             </section>
           )}
 
-          {/* COMMUNITY STATS OVERVIEW */}
-          <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-            <div className="glass-panel p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-amber-400/20 bg-gradient-to-b from-[#131109] via-[#0b0c14] to-[#060b14]">
-              <div className="text-center max-w-xl mx-auto mb-3 sm:mb-6 space-y-0.5">
-                <h2 className="text-base sm:text-2xl font-black uppercase text-amber-300">Statistik Soccer Community</h2>
-                <p className="text-[9px] sm:text-xs text-slate-300">Aktivitas dan pencapaian seluruh member komunitas</p>
-              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950/60 p-4 rounded-2xl border border-amber-500/20 text-center">
-                <div>
-                  <span className="text-2xl sm:text-4xl font-black font-mono text-amber-300">{totalMembers}</span>
-                  <span className="block text-[9px] sm:text-[11px] font-bold uppercase text-slate-400 mt-1">Total Member</span>
-                </div>
-                <div>
-                  <span className="text-2xl sm:text-4xl font-black font-mono text-white">{totalFunMatches}</span>
-                  <span className="block text-[9px] sm:text-[11px] font-bold uppercase text-slate-400 mt-1">Fun Match Dimainkan</span>
-                </div>
-                <div>
-                  <span className="text-2xl sm:text-4xl font-black font-mono text-sky-400">{totalCommunityGoals}</span>
-                  <span className="block text-[9px] sm:text-[11px] font-bold uppercase text-slate-400 mt-1">Total Gol Komunitas</span>
-                </div>
-                <div>
-                  <span className="text-base sm:text-xl font-black text-amber-400 truncate block">{topScorerName}</span>
-                  <span className="block text-[9px] sm:text-[11px] font-bold uppercase text-slate-400 mt-1">Top Scorer ({topScorerGoals} Gol)</span>
-                </div>
-              </div>
-            </div>
-          </section>
 
           {/* SOCCER COMMUNITY MEMBERS SQUAD GRID - 4:5 EXACT LAYOUT */}
           <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 space-y-3 sm:space-y-8">
@@ -673,7 +687,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   SOCCER COMMUNITY ROSTER
                 </span>
                 <h2 className="text-base sm:text-3xl font-black uppercase text-white mt-0.5">
-                  Skuad Member Komunitas
+                  Skuad Member Aktif
                 </h2>
               </div>
               <Link
@@ -709,11 +723,6 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
-
-                    {/* Tier Pill Top Left */}
-                    <div className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-amber-400/40 text-amber-300 font-extrabold uppercase text-[8px] sm:text-[9px] tracking-wider shadow">
-                      {member.tier}
-                    </div>
 
                     {/* Gradient Overlay */}
                     <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />

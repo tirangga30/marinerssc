@@ -29,6 +29,8 @@ interface Member {
   paymentProof: string | null;
   paymentStatus: string; // PENDING, VERIFIED, REJECTED
   isPermanent: boolean;
+  expiresAt: string | null;
+  joinedAt?: string;
   playerId: string | null;
   createdAt: string;
 }
@@ -75,7 +77,9 @@ export default function AdminMembersPage() {
   const [formTier, setFormTier] = useState('FAN');
   const [formStatus, setFormStatus] = useState('ACTIVE');
   const [formPaymentStatus, setFormPaymentStatus] = useState('VERIFIED');
+  const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [formPassword, setFormPassword] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [savingMember, setSavingMember] = useState(false);
 
   // Promote to Squad Modal State
@@ -198,16 +202,47 @@ export default function AdminMembersPage() {
     }
   };
 
+  const getFullPositionName = (pos: string) => {
+    switch (pos?.toUpperCase()) {
+      case 'GK': return 'Goalkeeper (Kiper)';
+      case 'DF': return 'Defender (Bek)';
+      case 'MF': return 'Midfielder (Gelandang)';
+      case 'FW': return 'Forward (Penyerang)';
+      default: return pos || 'Pemain';
+    }
+  };
+
   // Send Account via WhatsApp
   const handleSendWhatsAppAccount = (m: Member) => {
-    let cleanPhone = m.phone.replace(/[^0-9]/g, '');
+    let cleanPhone = m.phone ? m.phone.replace(/[^0-9]/g, '') : '';
     if (cleanPhone.startsWith('0')) {
       cleanPhone = '62' + cleanPhone.slice(1);
     } else if (!cleanPhone.startsWith('62')) {
       cleanPhone = '62' + cleanPhone;
     }
 
-    const message = `Halo *${m.fullName}*,\n\nPendaftaran Anda sebagai Member *${m.tier}* di *Mariners SC Soccer Community* telah *DISETUJUI & AKTIF*! 🎉⚓\n\nBerikut detail akun login Anda:\n🆔 *ID Member / Username*: \`${m.memberCode}\`\n🔑 *Kata Sandi*: \`${m.password}\`\n🔢 *Nomor Punggung*: \`#${m.jerseyNumber}\`\n📍 *Posisi*: ${m.position}\n\nSilakan login ke portal resmi untuk konfirmasi ikut pertandingan fun match mingguan:\n🌐 https://marinerssc.com/community\n\nSelamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
+    const fullPos = getFullPositionName(m.position);
+    const altPos = m.altPosition ? ` / ${getFullPositionName(m.altPosition)}` : '';
+    const expiryText = m.isPermanent
+      ? 'Permanen (Lifetime)'
+      : m.expiresAt
+      ? new Date(m.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+      : 'Aktif';
+
+    const message = `Halo *${m.fullName}*,
+
+Berikut detail akun login Member *${m.tier}* Anda di *Mariners SC Soccer Community*:
+
+🆔 *ID Member / Username*: \`${m.memberCode}\`
+🔑 *Kata Sandi*: \`${m.password}\`
+🔢 *Nomor Punggung*: \`#${m.jerseyNumber}\`
+📍 *Posisi*: ${fullPos}${altPos}
+⏳ *Masa Aktif*: ${expiryText}
+
+Silakan login ke portal resmi Mariners SC untuk konfirmasi jadwal fun match mingguan:
+🌐 https://marinerssc.com/community
+
+Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
 
     const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
@@ -220,6 +255,7 @@ export default function AdminMembersPage() {
     setFormNickname(member.nickname || '');
     setFormOrigin(member.origin);
     setFormPhone(member.phone);
+    setFormPhotoUrl(member.photoUrl || '');
     setFormPosition(member.position);
     setFormAltPosition(member.altPosition || '');
     setFormJerseyNumber(member.jerseyNumber);
@@ -237,6 +273,7 @@ export default function AdminMembersPage() {
     setFormNickname('');
     setFormOrigin('');
     setFormPhone('');
+    setFormPhotoUrl('');
     setFormPosition('MF');
     setFormAltPosition('');
     setFormJerseyNumber(Math.floor(Math.random() * (99 - 30 + 1)) + 30);
@@ -245,6 +282,32 @@ export default function AdminMembersPage() {
     setFormPaymentStatus('VERIFIED');
     setFormPassword('');
     setMemberModalOpen(true);
+  };
+
+  const handleAdminPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'members');
+      formData.append('playerName', formFullName || 'Member');
+      formData.append('position', formPosition || 'MF');
+      formData.append('number', String(formJerseyNumber || 30));
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal upload foto');
+      setFormPhotoUrl(data.url);
+    } catch (err: any) {
+      alert(err.message || 'Gagal upload foto pemain');
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   // Save Member (Create / Update)
@@ -262,6 +325,7 @@ export default function AdminMembersPage() {
         nickname: formNickname,
         origin: formOrigin,
         phone: formPhone,
+        photoUrl: formPhotoUrl || null,
         position: formPosition,
         altPosition: formAltPosition,
         jerseyNumber: formJerseyNumber,
@@ -523,6 +587,7 @@ export default function AdminMembersPage() {
                       <th className="p-3 sm:p-4">Member & Profil</th>
                       <th className="p-3 sm:p-4">ID & Kata Sandi Login</th>
                       <th className="p-3 sm:p-4">Paket & Bayar</th>
+                      <th className="p-3 sm:p-4">Durasi Masa Aktif</th>
                       <th className="p-3 sm:p-4">Kontak WA & Asal</th>
                       <th className="p-3 sm:p-4">Status Akun</th>
                       <th className="p-3 sm:p-4 text-right">Aksi Admin</th>
@@ -545,19 +610,21 @@ export default function AdminMembersPage() {
                               <img
                                 src={m.photoUrl || '/playertemplate.png'}
                                 alt={m.fullName}
-                                className="w-10 h-10 rounded-xl object-cover bg-slate-950 border border-slate-700 shrink-0"
+                                className="w-10 h-10 rounded-full object-cover bg-slate-950 border border-slate-700 shrink-0"
                               />
                               <div>
                                 <div className="flex items-center gap-1.5">
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono font-black text-xs">
+                                    #{m.jerseyNumber}
+                                  </span>
                                   <span className="font-black text-white text-xs sm:text-sm">
                                     {m.fullName}
                                   </span>
-                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono font-black text-[10px]">
-                                    #{m.jerseyNumber}
-                                  </span>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
-                                  <span className="font-extrabold text-sky-400 uppercase">{m.position}</span>
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                                  <span className="font-bold text-sky-400">
+                                    {getFullPositionName(m.position)}
+                                  </span>
                                   {m.nickname && <span>• &ldquo;{m.nickname}&rdquo;</span>}
                                   {m.playerId && (
                                     <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase text-[8px]">
@@ -569,28 +636,41 @@ export default function AdminMembersPage() {
                             </div>
                           </td>
 
-                          {/* ID & Password Login Member */}
+                          {/* ID & Password Login Member + WhatsApp Send Icon */}
                           <td className="p-3 sm:p-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-1 font-mono font-bold text-sky-300">
-                                <Key className="w-3 h-3 text-sky-400" />
-                                <span>{m.memberCode}</span>
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1 font-mono font-bold text-sky-300">
+                                  <Key className="w-3 h-3 text-sky-400" />
+                                  <span>{m.memberCode}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="font-mono text-[11px] text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                                    {showPassword[m.id] ? m.password : '••••••••'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowPassword((prev) => ({ ...prev, [m.id]: !prev[m.id] }))
+                                    }
+                                    className="text-slate-400 hover:text-white p-1"
+                                    title="Lihat / Sembunyikan Password"
+                                  >
+                                    {showPassword[m.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <span className="font-mono text-[11px] text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                                  {showPassword[m.id] ? m.password : '••••••••'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setShowPassword((prev) => ({ ...prev, [m.id]: !prev[m.id] }))
-                                  }
-                                  className="text-slate-400 hover:text-white p-1"
-                                  title="Lihat / Sembunyikan Password"
-                                >
-                                  {showPassword[m.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                </button>
-                              </div>
+
+                              {/* Ikon Kirim WA */}
+                              <button
+                                type="button"
+                                onClick={() => handleSendWhatsAppAccount(m)}
+                                className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1 text-[10px] font-bold shrink-0 shadow-sm"
+                                title="Kirim ID & Password ke WhatsApp Member"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                <span className="hidden xl:inline">Kirim WA</span>
+                              </button>
                             </div>
                           </td>
 
@@ -621,6 +701,57 @@ export default function AdminMembersPage() {
                               ) : (
                                 <span className="text-[10px] text-slate-500 block italic">Tanpa bukti</span>
                               )}
+                            </div>
+                          </td>
+
+                          {/* Durasi / Masa Aktif & Tanggal Gabung */}
+                          <td className="p-3 sm:p-4">
+                            <div className="space-y-1">
+                              {m.isPermanent ? (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-[10px] whitespace-nowrap inline-block">
+                                  Permanen
+                                </span>
+                              ) : m.expiresAt ? (
+                                (() => {
+                                  const diff = new Date(m.expiresAt).getTime() - Date.now();
+                                  if (diff <= 0) {
+                                    return (
+                                      <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 font-bold text-[10px] whitespace-nowrap flex items-center gap-1 w-fit">
+                                        <Clock className="w-3 h-3" /> Expired
+                                      </span>
+                                    );
+                                  }
+                                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                  return (
+                                    <div className="space-y-0.5">
+                                      <span className={`px-2 py-0.5 rounded-full font-mono font-bold text-[10px] whitespace-nowrap flex items-center gap-1 w-fit ${
+                                        days > 7 ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30' : 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                                      }`}>
+                                        <Clock className="w-3 h-3 text-sky-400" />
+                                        <span>{days}h {hours}j lagi</span>
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 block">
+                                        s.d {new Date(m.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </span>
+                                    </div>
+                                  );
+                                })()
+                              ) : (
+                                <span className="text-[10px] text-slate-500">-</span>
+                              )}
+
+                              {/* Tanggal Bergabung */}
+                              <div className="text-[10px] text-slate-400 flex items-center gap-1 pt-0.5">
+                                <span className="text-slate-500">Gabung:</span>
+                                <span className="font-semibold text-slate-300">
+                                  {new Date(m.joinedAt || m.createdAt).toLocaleDateString('id-ID', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                              </div>
                             </div>
                           </td>
 
@@ -782,7 +913,7 @@ export default function AdminMembersPage() {
                   <div className="text-[11px] text-slate-400 space-y-1">
                     <p className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-sky-400" />
-                      <span>{formatWibDate(fm.matchDate)} • {formatWibTime(fm.matchDate)} WIB</span>
+                      <span>{formatWibDate(fm.matchDate)} • {formatWibTime(fm.matchDate)}</span>
                     </p>
                     <p className="flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-amber-400" />
@@ -868,6 +999,45 @@ export default function AdminMembersPage() {
             </div>
 
             <form onSubmit={handleSaveMember} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+              
+              {/* Foto Profil Member Upload */}
+              <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-950 border border-slate-800">
+                <img
+                  src={formPhotoUrl || '/defaultplayer.png'}
+                  alt="Preview"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-sky-400/60 bg-slate-900 shrink-0"
+                />
+                <div className="space-y-1.5 flex-1">
+                  <label className="block text-xs font-bold text-slate-300">
+                    Foto Profil Member
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-300 text-xs font-bold cursor-pointer transition-colors">
+                    {uploadingPhoto ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <ImageIcon className="w-3.5 h-3.5" />
+                    )}
+                    <span>{uploadingPhoto ? 'Mengunggah...' : formPhotoUrl ? 'Ganti Foto' : 'Upload Foto'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingPhoto}
+                      onChange={handleAdminPhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {formPhotoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormPhotoUrl('')}
+                      className="text-[10px] text-red-400 hover:text-red-300 ml-2"
+                    >
+                      Hapus Foto
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-bold mb-1">Nama Lengkap *</label>
@@ -927,13 +1097,28 @@ export default function AdminMembersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nomor Punggung (30-99)</label>
+                  <label className="block text-slate-400 font-bold mb-1">Posisi Alternatif</label>
+                  <select
+                    value={formAltPosition}
+                    onChange={(e) => setFormAltPosition(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                  >
+                    <option value="">Tidak Ada / Fleksibel</option>
+                    <option value="GK">Goalkeeper (Kiper)</option>
+                    <option value="DF">Defender (Bek)</option>
+                    <option value="MF">Midfielder (Gelandang)</option>
+                    <option value="FW">Forward (Penyerang)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Nomor Punggung (1-99)</label>
                   <input
                     type="number"
-                    min="30"
+                    min="1"
                     max="99"
                     value={formJerseyNumber}
-                    onChange={(e) => setFormJerseyNumber(parseInt(e.target.value) || 30)}
+                    onChange={(e) => setFormJerseyNumber(parseInt(e.target.value) || 1)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono font-bold text-center"
                   />
                 </div>

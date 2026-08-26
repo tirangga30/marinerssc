@@ -323,7 +323,7 @@ export default function AdminFunMatchOptionPage({
               {funMatch.title}
             </h1>
             <p className="text-xs text-slate-400">
-              {formatWibDate(funMatch.matchDate)} • {formatWibTime(funMatch.matchDate)} WIB • 📍 {funMatch.venue}
+              {formatWibDate(funMatch.matchDate)} • {formatWibTime(funMatch.matchDate)} • 📍 {funMatch.venue}
             </p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-black uppercase self-start sm:self-auto ${

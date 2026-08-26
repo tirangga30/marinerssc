@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import {
   Shield, Users, Trophy, Award, Flame, Calendar, MapPin,
   CheckCircle2, XCircle, AlertCircle, LogOut, ArrowRight,
-  Sparkles, Check, UserCheck, Star, Activity, Clock, Crown
+  Sparkles, Check, UserCheck, Star, Activity, Clock, Crown,
+  Camera, Upload, Loader2
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
 import CommunityLoginModal from '@/components/CommunityLoginModal';
+import MemberDurationCountdown from '@/components/MemberDurationCountdown';
 
 interface CommunityPortalProps {
   initialMember: any | null;
@@ -38,12 +40,56 @@ export default function CommunityPortal({
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [rsvpLoading, setRsvpLoading] = useState(false);
   const [mainSquadRsvpLoading, setMainSquadRsvpLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Check if member already confirmed for the upcoming fun match
   const myFunMatchAttendance = upcomingFunMatch && member
     ? allConfirmedFunMatchPlayers.find((p) => p.memberId === member.id)
     : null;
+
+  const isPlayingInMainSquad = upcomingMainSquadInvitation?.status === 'CONFIRMED';
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !member) return;
+    setUploadingPhoto(true);
+    setMessage(null);
+
+    try {
+      // 1. Upload photo file to server
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'members');
+      formData.append('playerName', member.fullName || 'Member');
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || 'Gagal mengunggah foto');
+
+      const newPhotoUrl = uploadData.url;
+
+      // 2. Update member photo in database
+      const updateRes = await fetch('/api/community/auth/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoUrl: newPhotoUrl }),
+      });
+      const updateData = await updateRes.json();
+      if (!updateRes.ok) throw new Error(updateData.error || 'Gagal menyimpan foto profil baru');
+
+      setMember((prev: any) => ({ ...prev, photoUrl: newPhotoUrl }));
+      setMessage({ type: 'success', text: 'Foto profil Anda berhasil diubah!' });
+      router.refresh();
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Gagal mengubah foto profil' });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -75,8 +121,10 @@ export default function CommunityPortal({
       setMessage({
         type: 'success',
         text: action === 'JOIN'
-          ? 'Anda berhasil terdaftar di Fun Match! Nama Anda sudah masuk ke daftar pemain ikut.'
-          : 'Status kehadiran Anda dibatalkan.',
+          ? isPlayingInMainSquad
+            ? 'Luar biasa! Anda resmi terdaftar di Fun Match (Bermain 2x bersama Skuad Utama).'
+            : 'Anda berhasil terdaftar di Fun Match! Nama Anda sudah masuk ke daftar pemain ikut.'
+          : 'Status kehadiran Fun Match Anda dibatalkan.',
       });
       router.refresh();
     } catch (err: any) {
@@ -98,18 +146,23 @@ export default function CommunityPortal({
         body: JSON.stringify({
           matchId: upcomingMainSquadInvitation.footballMatch.id,
           action,
-          reason: action === 'DECLINE' ? 'Menolak undangan squad utama' : null,
+          reason: action === 'DECLINE' ? 'Menolak panggilan squad utama' : null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal merespons undangan');
 
-      setMessage({
-        type: 'success',
-        text: action === 'JOIN'
-          ? 'Luar biasa! Anda resmi bergabung dalam daftar pemain Tim Utama untuk pertandingan ini.'
-          : 'Undangan telah ditolak dan dicatat di riwayat penolakan Anda.',
-      });
+      if (action === 'JOIN') {
+        setMessage({
+          type: 'success',
+          text: 'Luar biasa! Anda resmi bergabung di Tim Utama. Jadwal Fun Match otomatis disesuaikan (klik Tetap Ikut di Fun Match jika ingin bermain 2x).',
+        });
+      } else {
+        setMessage({
+          type: 'success',
+          text: 'Panggilan Tim Utama ditolak. Anda tetap dapat mengikuti Fun Match komunitas.',
+        });
+      }
       router.refresh();
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Terjadi kesalahan' });
@@ -136,38 +189,65 @@ export default function CommunityPortal({
           <div className="space-y-3 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>MARINERS SOCCER COMMUNITY</span>
+              <span>MARINERS Sc COMMUNITY</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
               {member ? (
                 <>Selamat Datang, <span className="blue-gradient-text">{member.nickname || member.fullName}</span></>
               ) : (
-                <>Komunitas Sepak Bola <span className="blue-gradient-text">Mariners SC</span></>
+                <>Komunitas Mini Soccer <span className="blue-gradient-text">Mariners SC</span></>
               )}
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
               {member
                 ? 'Pantau jadwal fun match mingguan, konfirmasi kehadiran Anda, dan terima kesempatan terpilih bermain bersama Skuad Utama Mariners SC!'
-                : 'Wadah resmi komunitas sepak bola Mariners SC. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!'}
+                : 'Wadah resmi komunitas Mini Soccer Mariners SC. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!'}
             </p>
           </div>
 
           {/* Right: Member Badge or Guest Actions */}
           {member ? (
             <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-950/80 border border-slate-800 shrink-0">
-              <div className="relative">
+              <div className="relative group">
                 <img
                   src={member.photoUrl || '/defaultplayer.png'}
                   alt={member.fullName}
                   className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-sky-400/60 bg-slate-900 shadow-lg"
                 />
-                <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-[10px] shadow-sm">
+
+                {/* Ganti Foto Profil Overlay */}
+                <label
+                  className={`absolute inset-0 rounded-2xl bg-slate-950/80 border border-sky-400 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-xs ${
+                    uploadingPhoto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
+                  title="Klik untuk ganti foto profil"
+                >
+                  {uploadingPhoto ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-sky-300 drop-shadow" />
+                      <span className="text-[8px] sm:text-[9px] font-black uppercase text-white tracking-wider mt-0.5">
+                        Ubah Foto
+                      </span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingPhoto}
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                </label>
+
+                <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-[10px] shadow-sm pointer-events-none">
                   #{member.jerseyNumber}
                 </span>
               </div>
-              <div className="space-y-1 text-center sm:text-left">
+              <div className="space-y-1.5 text-center sm:text-left min-w-[220px]">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="text-sm font-black text-white">{member.fullName}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
@@ -184,7 +264,17 @@ export default function CommunityPortal({
                 <p className="text-[11px] text-slate-400">
                   Posisi: <strong className="text-white">{member.position}</strong> • {member.origin}
                 </p>
-                <div className="pt-2">
+
+                {/* Live Countdown Timer Durasi Pemain & Masa Aktif */}
+                <div className="pt-1">
+                  <MemberDurationCountdown
+                    expiresAt={member.expiresAt}
+                    joinedAt={member.joinedAt || member.createdAt}
+                    isPermanent={member.isPermanent}
+                  />
+                </div>
+
+                <div className="pt-1.5">
                   <button
                     onClick={handleLogout}
                     className="inline-flex items-center gap-1.5 text-[10px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider"
@@ -198,15 +288,9 @@ export default function CommunityPortal({
             <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
               <button
                 onClick={() => setLoginModalOpen(true)}
-                className="px-5 py-3 rounded-xl border border-sky-400/40 bg-slate-900/80 hover:bg-slate-800 text-sky-300 text-xs font-extrabold uppercase tracking-wider transition-all"
+                className="px-6 py-3 rounded-xl border border-sky-400/40 bg-slate-900/80 hover:bg-slate-800 text-sky-300 text-xs font-extrabold uppercase tracking-wider transition-all shadow-lg shadow-sky-950"
               >
                 Login Member
-              </button>
-              <button
-                onClick={() => openRegisterWithTier('PRO')}
-                className="px-6 py-3 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20"
-              >
-                Gabung Komunitas
               </button>
             </div>
           )}
@@ -284,7 +368,7 @@ export default function CommunityPortal({
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',
-                    })} • {formatWibTime(upcomingMainSquadInvitation.footballMatch.matchDate)} WIB
+                    })} • {formatWibTime(upcomingMainSquadInvitation.footballMatch.matchDate)}
                   </p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
                     Lokasi: {upcomingMainSquadInvitation.footballMatch.venue} • {upcomingMainSquadInvitation.footballMatch.competition}
@@ -293,9 +377,32 @@ export default function CommunityPortal({
 
                 <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
                   {upcomingMainSquadInvitation.status === 'CONFIRMED' ? (
-                    <span className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4" /> Anda Terkonfirmasi Ikut Skuad Utama
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4" /> Anda Terkonfirmasi Ikut Skuad Utama
+                      </span>
+                      <button
+                        onClick={() => handleMainSquadRsvp('DECLINE')}
+                        disabled={mainSquadRsvpLoading}
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  ) : upcomingMainSquadInvitation.status === 'DECLINED' ? (
+                    <div className="flex items-center gap-2">
+                      <span className="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <XCircle className="w-4 h-4 text-red-400" /> Anda Tidak Bisa Ikut
+                      </span>
+                      <button
+                        onClick={() => handleMainSquadRsvp('JOIN')}
+                        disabled={mainSquadRsvpLoading}
+                        className="px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20 disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                        Ubah: Ikut Skuad Utama
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <button
@@ -303,15 +410,15 @@ export default function CommunityPortal({
                         disabled={mainSquadRsvpLoading}
                         className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-red-950 hover:text-red-400 hover:border-red-500/50 border border-slate-700 text-slate-300 text-xs font-bold transition-all disabled:opacity-50"
                       >
-                        Tidak Bisa Ikut
+                        Tidak Bisa
                       </button>
                       <button
                         onClick={() => handleMainSquadRsvp('JOIN')}
                         disabled={mainSquadRsvpLoading}
-                        className="px-6 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center gap-1.5"
+                        className="px-6 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20 disabled:opacity-50 flex items-center gap-1.5"
                       >
                         <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                        Ikut Squad Utama
+                        Ikut Skuad Utama
                       </button>
                     </>
                   )}
@@ -336,7 +443,7 @@ export default function CommunityPortal({
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric',
-                      })} • {formatWibTime(upcomingFunMatch.matchDate)} WIB
+                      })} • {formatWibTime(upcomingFunMatch.matchDate)}
                     </span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white mt-1">
@@ -352,7 +459,8 @@ export default function CommunityPortal({
                   {myFunMatchAttendance?.status === 'CONFIRMED' ? (
                     <div className="flex items-center gap-2">
                       <span className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4" /> Anda Terdaftar Ikut
+                        <CheckCircle2 className="w-4 h-4" />
+                        {isPlayingInMainSquad ? 'Anda Terdaftar Ikut (Bermain 2x)' : 'Anda Terdaftar Ikut'}
                       </span>
                       <button
                         onClick={() => handleFunMatchRsvp('DECLINE')}
@@ -360,6 +468,36 @@ export default function CommunityPortal({
                         className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold"
                       >
                         Batal
+                      </button>
+                    </div>
+                  ) : isPlayingInMainSquad ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-bold flex items-center gap-1.5">
+                        <XCircle className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Fokus Skuad Utama (Tidak Ikut)</span>
+                      </span>
+                      <button
+                        onClick={() => handleFunMatchRsvp('JOIN')}
+                        disabled={rsvpLoading}
+                        className="px-4 py-2 rounded-xl font-extrabold uppercase bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5"
+                        title="Tetap ikut Fun Match agar bermain 2x"
+                      >
+                        <Sparkles className="w-4 h-4 text-slate-950" />
+                        Tetap Ikut (Bermain 2x)
+                      </button>
+                    </div>
+                  ) : myFunMatchAttendance?.status === 'DECLINED' ? (
+                    <div className="flex items-center gap-2">
+                      <span className="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <XCircle className="w-4 h-4 text-red-400" /> Anda Tidak Bisa Ikut
+                      </span>
+                      <button
+                        onClick={() => handleFunMatchRsvp('JOIN')}
+                        disabled={rsvpLoading}
+                        className="px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20 flex items-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                        Ubah: Ikut Pertandingan
                       </button>
                     </div>
                   ) : (
@@ -668,50 +806,7 @@ export default function CommunityPortal({
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          4. RECENT FUN MATCHES LIST
-         ───────────────────────────────────────────────────────────── */}
-      {recentFunMatches.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-white">
-              Hasil & Pertandingan Fun Match
-            </h3>
-            <span className="text-xs text-sky-400 font-bold">Soccer Community</span>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {recentFunMatches.map((fm) => (
-              <Link
-                key={fm.id}
-                href={`/community/matches/${fm.id}`}
-                className="block glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 hover:border-sky-400/50 transition-all group"
-              >
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 border-b border-slate-800/80 pb-2.5 mb-3">
-                  <span>{formatWibDate(fm.matchDate)}</span>
-                  <span className={fm.status === 'finished' ? 'text-emerald-400' : 'text-sky-400'}>
-                    {fm.status === 'finished' ? 'Selesai' : 'Mendatang'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 items-center text-center gap-2">
-                  <div className="text-xs font-black text-white">{fm.teamAName}</div>
-                  <div className="text-base sm:text-lg font-black text-amber-400 bg-slate-950/80 py-1 px-3 rounded-xl border border-slate-800">
-                    {fm.teamAScore !== null && fm.teamBScore !== null ? `${fm.teamAScore} - ${fm.teamBScore}` : 'VS'}
-                  </div>
-                  <div className="text-xs font-black text-white">{fm.teamBName}</div>
-                </div>
-
-                <div className="mt-3 text-center">
-                  <span className="text-[10px] text-sky-400 group-hover:underline font-bold inline-flex items-center gap-1">
-                    Lihat Lineup & Summary <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* MODALS */}
       <CommunityRegistrationModal

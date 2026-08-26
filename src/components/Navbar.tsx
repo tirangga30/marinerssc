@@ -40,8 +40,8 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Kelola Pemain', href: '/admin/players', icon: Users },
     { name: 'Kelola Laga', href: '/admin/matches', icon: Calendar },
-    { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
     { name: 'Kelola Berita', href: '/admin/articles', icon: Newspaper },
+    { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
   ];
 
   // Active public nav links based on clubMode
@@ -94,14 +94,14 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs lg:text-sm font-bold transition-all duration-200 ${
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs lg:text-sm font-bold transition-colors duration-200 ${
                       isActive
-                        ? 'bg-blue-600/40 text-white border border-sky-400/50 shadow-sm shadow-blue-500/20'
-                        : 'text-slate-300 hover:text-sky-300 hover:bg-slate-800/60'
+                        ? 'text-sky-400 font-extrabold drop-shadow-[0_0_8px_rgba(56,189,248,0.3)]'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
-                    {link.name}
+                    <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
+                    <span>{link.name}</span>
                   </Link>
                 );
               })}
@@ -153,14 +153,14 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                     isActive
-                      ? 'bg-blue-600/40 text-white border border-sky-400/50'
-                      : 'text-slate-300 hover:bg-slate-800/60'
+                      ? 'text-sky-400 font-extrabold'
+                      : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  <Icon className="w-5 h-5 text-sky-400" />
-                  {link.name}
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
+                  <span>{link.name}</span>
                 </Link>
               );
             })}
@@ -192,7 +192,7 @@ export default function Navbar() {
               <span className={`text-[8px] sm:text-[9px] tracking-widest uppercase font-extrabold block mt-0.5 ${
                 clubMode === 'community' ? 'text-amber-400' : 'text-sky-400'
               }`}>
-                {clubMode === 'community' ? 'SOCCER COMMUNITY' : 'OFFICIAL CLUB'}
+                {clubMode === 'community' ? 'SOCCER COMMUNITY' : 'SOCCER CLUB'}
               </span>
             </div>
           </Link>
@@ -206,20 +206,20 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs lg:text-sm font-bold transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs lg:text-sm font-bold transition-colors duration-200 ${
                     isActive
                       ? clubMode === 'community'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                        : 'bg-blue-600/40 text-white border border-sky-400/50 shadow-sm shadow-blue-500/20'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                        ? 'text-amber-400 font-extrabold drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]'
+                        : 'text-sky-400 font-extrabold drop-shadow-[0_0_8px_rgba(56,189,248,0.3)]'
+                      : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${
+                  <Icon className={`w-4 h-4 transition-colors ${
                     isActive
                       ? clubMode === 'community' ? 'text-amber-400' : 'text-sky-400'
                       : 'text-slate-400'
                   }`} />
-                  {link.name}
+                  <span>{link.name}</span>
                 </Link>
               );
             })}
@@ -299,18 +299,20 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${
                     isActive
                       ? clubMode === 'community'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                        : 'bg-blue-600/40 text-white border border-sky-400/50'
-                      : 'text-slate-300 hover:bg-slate-800/60'
+                        ? 'text-amber-400 font-extrabold'
+                        : 'text-sky-400 font-extrabold'
+                      : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${
-                    clubMode === 'community' ? 'text-amber-400' : 'text-sky-400'
+                  <Icon className={`w-4 h-4 transition-colors ${
+                    isActive
+                      ? clubMode === 'community' ? 'text-amber-400' : 'text-sky-400'
+                      : 'text-slate-400'
                   }`} />
-                  {link.name}
+                  <span>{link.name}</span>
                 </Link>
               );
             })}

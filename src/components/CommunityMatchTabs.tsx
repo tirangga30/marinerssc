@@ -187,14 +187,9 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
 
                           {/* Name & Position */}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-sky-300 transition-colors truncate">
-                                {displayName}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[8px] sm:text-[9px] font-black uppercase text-amber-300 border border-amber-400/30">
-                                {tier}
-                              </span>
-                            </div>
+                            <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-sky-300 transition-colors truncate block">
+                              {displayName}
+                            </span>
                             <span className="text-[9px] sm:text-[10px] font-bold uppercase text-sky-400/90 tracking-wider">
                               {position}
                             </span>
@@ -286,14 +281,9 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
 
                           {/* Name & Position */}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-amber-300 transition-colors truncate">
-                                {displayName}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[8px] sm:text-[9px] font-black uppercase text-amber-300 border border-amber-400/30">
-                                {tier}
-                              </span>
-                            </div>
+                            <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-amber-300 transition-colors truncate block">
+                              {displayName}
+                            </span>
                             <span className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-400/90 tracking-wider">
                               {position}
                             </span>

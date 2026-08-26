@@ -56,10 +56,10 @@ export default async function CommunityPlayersPage() {
           <span>Soccer Community Roster</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black uppercase text-white tracking-tight">
-          Squad Member Komunitas
+          Squad Aktif Member
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-          Daftar seluruh member resmi Mariners SC Soccer Community musim 2026/2027.
+          Daftar seluruh member aktif Mariners SC Soccer Community.
         </p>
       </div>
 
@@ -105,12 +105,7 @@ export default async function CommunityPlayersPage() {
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
-
-                    {/* Tier Badge Top Left */}
-                    <div className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-amber-400/40 text-amber-300 font-extrabold uppercase text-[8px] sm:text-[9px] tracking-wider shadow">
-                      {member.tier}
-                    </div>
-
+                    
                     {/* Compact Black Gradient Overlay at Bottom */}
                     <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
 

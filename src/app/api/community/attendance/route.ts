@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Sesi member tidak valid. Silakan login.' }, { status: 401 });
     }
 
-    const { matchId, funMatchId, action, reason } = await req.json();
+    const { matchId, funMatchId, action, reason, playBoth = false } = await req.json();
 
     if (!action || (!matchId && !funMatchId)) {
       return NextResponse.json({ error: 'Parameter tidak lengkap' }, { status: 400 });
@@ -77,6 +77,68 @@ export async function POST(req: Request) {
             declineReason: action === 'DECLINE' ? (reason || 'Menolak panggilan tim utama') : null,
           },
         });
+      }
+
+      // Handle Fun Match Synchronization when joining Tim Utama
+      if (action === 'JOIN') {
+        const now = new Date();
+        const upcomingFunMatch = await prisma.funMatch.findFirst({
+          where: {
+            matchDate: { gte: new Date(now.getTime() - 4 * 60 * 60 * 1000) },
+          },
+          orderBy: { matchDate: 'asc' },
+        });
+
+        if (upcomingFunMatch) {
+          const funExisting = await prisma.matchAttendance.findFirst({
+            where: {
+              funMatchId: upcomingFunMatch.id,
+              memberId: session.memberId,
+            },
+          });
+
+          if (playBoth) {
+            // Member chooses to play both (2x match)
+            if (funExisting) {
+              await prisma.matchAttendance.update({
+                where: { id: funExisting.id },
+                data: { status: 'CONFIRMED', declineReason: null },
+              });
+            } else {
+              await prisma.matchAttendance.create({
+                data: {
+                  funMatchId: upcomingFunMatch.id,
+                  memberId: session.memberId,
+                  playerType: 'MEMBER',
+                  playerName: session.fullName,
+                  status: 'CONFIRMED',
+                },
+              });
+            }
+          } else {
+            // Default: Auto-decline fun match so they focus on Main Squad
+            if (funExisting) {
+              await prisma.matchAttendance.update({
+                where: { id: funExisting.id },
+                data: {
+                  status: 'DECLINED',
+                  declineReason: 'Fokus bermain di Skuad Utama',
+                },
+              });
+            } else {
+              await prisma.matchAttendance.create({
+                data: {
+                  funMatchId: upcomingFunMatch.id,
+                  memberId: session.memberId,
+                  playerType: 'MEMBER',
+                  playerName: session.fullName,
+                  status: 'DECLINED',
+                  declineReason: 'Fokus bermain di Skuad Utama',
+                },
+              });
+            }
+          }
+        }
       }
     }
 

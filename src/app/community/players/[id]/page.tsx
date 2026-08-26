@@ -2,21 +2,40 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { ArrowLeft, BarChart2, Shield, Sparkles, Trophy, Calendar, MapPin, Award, Activity } from 'lucide-react';
+import { ArrowLeft, Shield, Sparkles } from 'lucide-react';
 import { Oswald } from 'next/font/google';
-import { formatWibDate, formatWibTime } from '@/lib/date';
 
 const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
+/* FontAwesome soccer ball icon */
+const BallIcon = ({ size = 16 }: { size?: number }) => (
+  <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" style={{ fontSize: `${size}px` }} />
+);
+
 export const dynamic = 'force-dynamic';
 
-function formatPosition(pos: string) {
+function getPositionLabel(pos: string) {
   const p = pos?.toUpperCase();
-  if (p === 'GK' || p === 'GOALKEEPER') return 'Goalkeeper';
-  if (p === 'DF' || p === 'DEFENDER') return 'Defender';
-  if (p === 'MF' || p === 'MIDFIELDER') return 'Midfielder';
-  if (p === 'FW' || p === 'FORWARD') return 'Forward';
-  return pos || 'Midfielder';
+  if (p === 'GK' || p === 'GOALKEEPER') return 'GOALKEEPER';
+  if (p === 'DF' || p === 'DEFENDER') return 'DEFENDER';
+  if (p === 'MF' || p === 'MIDFIELDER') return 'MIDFIELDER';
+  if (p === 'FW' || p === 'FORWARD') return 'FORWARD';
+  return p || 'MIDFIELDER';
+}
+
+function formatDisplayName(fullName: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return fullName;
+  if (parts.length === 2) {
+    if (fullName.length > 20) return parts[0];
+    return fullName;
+  }
+  const firstTwo = `${parts[0]} ${parts[1]}`;
+  if (firstTwo.length > 18) {
+    return parts[0];
+  }
+  return firstTwo;
 }
 
 export default async function CommunityPlayerProfilePage({
@@ -53,197 +72,327 @@ export default async function CommunityPlayerProfilePage({
   // Calculate dynamic stats
   const funMatchesPlayed = member.matchAttendances.filter((a) => a.funMatchId).length;
   const mainSquadMatchesPlayed = member.matchAttendances.filter((a) => a.matchId).length;
-  const totalGoals = member.funMatchEvents.filter((e) => e.type === 'goal').length + member.goals;
-  const totalAssists = member.funMatchEvents.filter((e) => e.type === 'assist').length + member.assists;
-  const yellowCards = member.funMatchEvents.filter((e) => e.type === 'yellow_card').length;
-  const redCards = member.funMatchEvents.filter((e) => e.type === 'red_card').length;
+  const totalAppearances = (member.funAppearances || 0) + (member.mainAppearances || 0) || (funMatchesPlayed + mainSquadMatchesPlayed);
 
-  const attendedFunMatches = member.matchAttendances
-    .filter((a) => a.funMatch)
-    .map((a) => a.funMatch!)
+  const calculatedGoals = member.funMatchEvents.filter((e) => e.type === 'goal').length;
+  const totalGoals = Math.max(member.goals || 0, calculatedGoals);
+
+  const calculatedAssists = member.funMatchEvents.filter((e) => e.type === 'assist').length;
+  const totalAssists = Math.max(member.assists || 0, calculatedAssists);
+
+  const calculatedYellowCards = member.funMatchEvents.filter((e) => e.type === 'yellow_card').length;
+  const totalYellowCards = Math.max(member.yellowCards || 0, calculatedYellowCards);
+
+  const calculatedRedCards = member.funMatchEvents.filter((e) => e.type === 'red_card').length;
+  const totalRedCards = Math.max(member.redCards || 0, calculatedRedCards);
+
+  const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
+
+  const specs = [
+    { label: 'Asal Domisili', value: member.origin || 'Indonesia' },
+    {
+      label: 'Masa Aktif',
+      value: member.isPermanent
+        ? 'Permanen (Lifetime)'
+        : member.expiresAt
+        ? (() => {
+            const diff = new Date(member.expiresAt).getTime() - Date.now();
+            const dateStr = new Date(member.expiresAt).toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            });
+            if (diff <= 0) return `Expired (s.d ${dateStr})`;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            return `${days} Hari Lagi (s.d ${dateStr})`;
+          })()
+        : 'Aktif',
+    },
+    {
+      label: 'Tanggal Gabung',
+      value: member.joinedAt
+        ? new Date(member.joinedAt).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          })
+        : new Date(member.createdAt).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }),
+    },
+    { label: 'Status Akun', value: member.status === 'ACTIVE' ? 'Aktif' : 'Non-Aktif' },
+  ];
+
+  // Recent matches attended by member
+  const attendedAttendances = member.matchAttendances
+    .filter((a) => a.funMatch && a.funMatch.status === 'finished')
     .slice(0, 10);
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
-      
-      {/* Back Button */}
-      <div>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-black uppercase text-slate-400 hover:text-sky-300 transition-colors py-1 px-3 rounded-lg bg-slate-900/60 border border-slate-800"
-        >
-          <ArrowLeft className="w-4 h-4" /> Kembali ke Soccer Community
-        </Link>
-      </div>
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
 
-      {/* Main Profile Header - 4:5 Card Hero */}
-      <div className="glass-panel p-4 sm:p-8 rounded-3xl border border-sky-400/30 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* PROFILE HEADER & STATS (IDENTIK DENGAN TIM UTAMA)   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-10 items-center">
+        {/* LEFT COLUMN: Player Photo Card (Aspect Ratio 4:5) */}
+        <div className="md:col-span-5 lg:col-span-5 rounded-2xl sm:rounded-3xl overflow-hidden border border-amber-400/20 shadow-2xl bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] flex flex-col">
+          {/* Top Photo Box (Aspect Ratio 4:5) */}
+          <div className="group relative aspect-[4/5] w-full overflow-hidden flex flex-col justify-end">
+            <img
+              src={member.photoUrl || '/playertemplate.png'}
+              alt={member.fullName}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
+            
+            {/* Compact Black Gradient Overlay at Bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />
+
+            {/* Bottom Info: Extra Large Number alongside Name & Position */}
+            <div className="relative z-10 p-5 sm:p-8 md:p-6 flex items-center gap-4 sm:gap-6 md:gap-5">
+              <span className="text-5xl sm:text-7xl md:text-7xl lg:text-8xl font-black font-mono text-amber-400 leading-none shrink-0 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                {member.jerseyNumber}
+              </span>
+              <div className="min-w-0 space-y-1 sm:space-y-1.5">
+                <h1 className="text-2xl sm:text-4xl md:text-3xl lg:text-4xl font-black text-white uppercase leading-tight drop-shadow-lg tracking-tight">
+                  {member.nickname || formatDisplayName(member.fullName)}
+                </h1>
+                <p className="text-xs sm:text-base md:text-sm text-amber-400 font-extrabold uppercase tracking-widest leading-none drop-shadow">
+                  {getPositionLabel(member.position)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* MOBILE ONLY: Physical Specs integrated in same box */}
+          <div className="block md:hidden p-4 bg-gradient-to-b from-[#060b14] via-[#15120a]/80 to-[#0a1526]">
+            <div className="grid grid-cols-2 gap-2.5">
+              {specs.map((item) => (
+                <div key={item.label} className="rounded-xl p-3 bg-slate-900/80 border border-slate-800/80 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    {item.label}
+                  </span>
+                  <span className="text-xs font-extrabold text-white">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN (DESKTOP): Biodata & Akumulasi Musim Ini */}
+        <div className="md:col-span-7 lg:col-span-7 space-y-4 md:space-y-6">
           
-          {/* Photo Column - 4:5 Aspect Ratio */}
-          <div className="md:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-[4/5] rounded-3xl overflow-hidden border-2 border-sky-400/40 shadow-2xl shadow-sky-950/80 bg-slate-950">
-              <img
-                src={member.photoUrl || '/playertemplate.png'}
-                alt={member.fullName}
-                className="w-full h-full object-cover object-top"
-              />
-              
-              {/* Gradient Overlay bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
+          {/* DESKTOP ONLY: Physical Specs / Biodata Panel */}
+          <div className="hidden md:block rounded-3xl p-6 border border-amber-400/20 shadow-2xl bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] space-y-4">
+            <div className="flex items-center gap-2 border-b border-amber-400/20 pb-3">
+              <Shield className="w-5 h-5 text-amber-400" />
+              <h2 className="text-base font-black text-white uppercase tracking-wider">Biodata Member</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {specs.map((item) => (
+                <div key={item.label} className="rounded-xl p-4 bg-slate-900/80 border border-slate-800/80 shadow-inner">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    {item.label}
+                  </span>
+                  <span className="text-base font-extrabold text-white">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
-              {/* Jersey Number Watermark Top Right */}
-              <div className="absolute top-3 right-3 px-3 py-1 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-amber-400/40 text-amber-400 font-mono font-black text-xl sm:text-2xl shadow-lg">
-                #{member.jerseyNumber}
-              </div>
-
-              {/* Tier Badge Top Left */}
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-sky-400/40 text-sky-300 font-extrabold uppercase text-[10px] tracking-widest flex items-center gap-1 shadow-lg">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>MEMBER {member.tier}</span>
-              </div>
-
-              {/* Name at bottom of photo on mobile */}
-              <div className="absolute bottom-3 inset-x-3 text-center">
-                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-600/40 text-sky-300 border border-sky-400/30">
-                  {formatPosition(member.position)}
+          {/* STATS PANEL (Single Combined Wide Box - Clean & Uniform) */}
+          <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] rounded-2xl sm:rounded-3xl border border-amber-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
+            {[
+              { label: 'GOL', value: totalGoals },
+              { label: 'ASSIST', value: totalAssists },
+              { label: 'MAIN', value: totalAppearances },
+              { label: 'KUNING', value: totalYellowCards },
+              { label: 'MERAH', value: totalRedCards },
+            ].map((s) => (
+              <div key={s.label} className="flex flex-col items-center justify-center px-1 sm:px-3 text-center">
+                <span className="text-2xl sm:text-4xl font-black font-mono text-white tracking-tight">
+                  {s.value}
+                </span>
+                <span className="text-[9px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mt-1">
+                  {s.label}
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Details Column */}
-          <div className="md:col-span-7 space-y-5">
-            
-            {/* Header info */}
-            <div className="space-y-2 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>SOCCER COMMUNITY MARINERS SC</span>
-              </div>
-
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase text-white tracking-tight">
-                {member.fullName}
-              </h1>
-
-              {member.nickname && (
-                <p className="text-sm sm:text-base font-bold text-sky-400">
-                  &ldquo;{member.nickname}&rdquo;
-                </p>
-              )}
-
-              <p className="text-xs text-slate-400 max-w-lg leading-relaxed pt-1">
-                Member resmi komunitas Mariners SC Soccer Community asal {member.origin}.
-              </p>
-            </div>
-
-            {/* Quick Meta Tags */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-xs">
-              <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-semibold">
-                Nomor: <strong className="text-amber-400 font-mono">#{member.jerseyNumber}</strong>
-              </span>
-              <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-semibold">
-                Posisi: <strong className="text-sky-300">{formatPosition(member.position)}</strong>
-              </span>
-              <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-semibold">
-                Paket: <strong className="text-amber-300">{member.tier}</strong>
-              </span>
-              <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-semibold">
-                Status: <strong className="text-emerald-400">AKTIF</strong>
-              </span>
-            </div>
-
-            {/* 4 Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-center space-y-0.5">
-                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Main</span>
-                <p className="text-2xl sm:text-3xl font-black font-mono text-white">{funMatchesPlayed + member.funAppearances}</p>
-                <span className="text-[9px] text-slate-500 font-semibold">Fun Match</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-center space-y-0.5">
-                <span className="text-[10px] font-extrabold uppercase text-sky-400 tracking-wider">Gol</span>
-                <p className="text-2xl sm:text-3xl font-black font-mono text-sky-300">{totalGoals}</p>
-                <span className="text-[9px] text-slate-500 font-semibold">Total Gol</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-center space-y-0.5">
-                <span className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Assist</span>
-                <p className="text-2xl sm:text-3xl font-black font-mono text-amber-300">{totalAssists}</p>
-                <span className="text-[9px] text-slate-500 font-semibold">Umpan Gol</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-center space-y-0.5">
-                <span className="text-[10px] font-extrabold uppercase text-rose-400 tracking-wider">Kartu</span>
-                <p className="text-2xl sm:text-3xl font-black font-mono text-white">
-                  <span className="text-amber-400">{yellowCards}</span> / <span className="text-rose-500">{redCards}</span>
-                </p>
-                <span className="text-[9px] text-slate-500 font-semibold">Kuning / Merah</span>
-              </div>
-            </div>
-
+            ))}
           </div>
 
         </div>
+
       </div>
 
-      {/* Match History Section */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-sky-400" />
-            <h2 className="text-base font-black uppercase text-white tracking-wide">
-              Riwayat Pertandingan Fun Match
-            </h2>
-          </div>
-          <span className="text-xs text-slate-400 font-bold">
-            {attendedFunMatches.length} Laga Tercatat
-          </span>
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* LAST MATCHES (IDENTIK 100% DENGAN TIM UTAMA)        */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div>
+        <div className="flex items-end justify-between mb-3">
+          <h2 className="text-l font-black text-white">Last Matches</h2>
         </div>
 
-        {attendedFunMatches.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-6 text-center">
-            Member ini belum memiliki riwayat pertandingan fun match yang selesai.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {attendedFunMatches.map((fm) => {
-              const myEventsInMatch = member.funMatchEvents.filter((e) => e.funMatchId === fm.id);
-              const goalsInMatch = myEventsInMatch.filter((e) => e.type === 'goal').length;
-              const assistsInMatch = myEventsInMatch.filter((e) => e.type === 'assist').length;
+        <div className="rounded-2xl overflow-hidden shadow-xl" style={panelBg}>
+          {attendedAttendances.length === 0 ? (
+            <div className="py-14 text-center space-y-2">
+              <Shield className="w-9 h-9 mx-auto text-slate-700" />
+              <p className="text-sm font-semibold text-slate-500">
+                Belum ada riwayat pertandingan fun match
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Table Header */}
+              <div
+                className="grid px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
+                style={{
+                  gridTemplateColumns: '64px 1fr auto',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  color: '#64748b',
+                }}
+              >
+                <span>Tanggal</span>
+                <span>Pertandingan</span>
+                <span className="text-right pr-1">Skor &amp; Hasil</span>
+              </div>
 
-              return (
-                <Link
-                  key={fm.id}
-                  href={`/community/matches/${fm.id}`}
-                  className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-sky-500/50 transition-all block group space-y-2"
-                >
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold border-b border-slate-900 pb-2">
-                    <span>{formatWibDate(fm.matchDate)}</span>
-                    <span className="text-sky-400 group-hover:underline">Lihat Detail ↗</span>
-                  </div>
+              {/* Rows */}
+              <div>
+                {attendedAttendances.map((att: any, idx: number) => {
+                  const match = att.funMatch;
+                  if (!match) return null;
 
-                  <div className="flex items-center justify-between py-1">
-                    <span className="font-extrabold text-xs text-sky-300 uppercase">{fm.teamAName}</span>
-                    <span className="px-3 py-1 rounded-xl bg-slate-900 font-mono font-black text-sm text-white border border-slate-700">
-                      {fm.teamAScore ?? 0} : {fm.teamBScore ?? 0}
-                    </span>
-                    <span className="font-extrabold text-xs text-amber-300 uppercase">{fm.teamBName}</span>
-                  </div>
+                  const isTeamA = att.assignedTeam === 'TEAM_A';
+                  const isTeamB = att.assignedTeam === 'TEAM_B';
 
-                  {(goalsInMatch > 0 || assistsInMatch > 0) && (
-                    <div className="pt-2 border-t border-slate-900 flex items-center gap-3 text-[10px] text-slate-300">
-                      {goalsInMatch > 0 && <span className="font-bold text-sky-300">⚽ {goalsInMatch} Gol</span>}
-                      {assistsInMatch > 0 && <span className="font-bold text-amber-300">👟 {assistsInMatch} Assist</span>}
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        )}
+                  let result: 'W' | 'L' | 'D' | null = null;
+                  if (match.teamAScore !== null && match.teamBScore !== null) {
+                    if (isTeamA) {
+                      result = match.teamAScore > match.teamBScore ? 'W' : match.teamAScore < match.teamBScore ? 'L' : 'D';
+                    } else if (isTeamB) {
+                      result = match.teamBScore > match.teamAScore ? 'W' : match.teamBScore < match.teamAScore ? 'L' : 'D';
+                    }
+                  }
+
+                  const resultBg = result === 'W' ? '#16a34a' : result === 'L' ? '#dc2626' : result === 'D' ? '#d97706' : '#334155';
+                  const rowBorder = idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)';
+
+                  // Filter events for this member in this match
+                  const memberEvents = (match.events || []).filter(
+                    (e: any) => e.memberId === member.id || e.playerName === member.fullName
+                  );
+
+                  const dateStr = new Date(match.matchDate)
+                    .toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })
+                    .replace('/', '.');
+
+                  return (
+                    <Link
+                      key={att.id}
+                      href={`/community/matches/${match.id}`}
+                      className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
+                      style={{
+                        gridTemplateColumns: '64px 1fr auto',
+                        borderTop: rowBorder,
+                      }}
+                    >
+                      {/* Date */}
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-400">
+                        {dateStr}
+                      </span>
+
+                      {/* Match Teams & Event Badges */}
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                            {/* Top Team (Team A) */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-3.5 h-3.5 rounded bg-blue-950 text-sky-400 font-mono font-black text-[9px] flex items-center justify-center border border-sky-400/40">
+                                A
+                              </span>
+                              <span
+                                className={`text-xs font-bold truncate flex-1 ${
+                                  isTeamA ? 'text-sky-300' : 'text-slate-400 font-semibold'
+                                }`}
+                              >
+                                {match.teamAName} {isTeamA && '(Tim Anda)'}
+                              </span>
+                            </div>
+
+                            {/* Bottom Team (Team B) */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-3.5 h-3.5 rounded bg-amber-950 text-amber-400 font-mono font-black text-[9px] flex items-center justify-center border border-amber-400/40">
+                                B
+                              </span>
+                              <span
+                                className={`text-xs font-bold truncate flex-1 ${
+                                  isTeamB ? 'text-amber-300' : 'text-slate-400 font-semibold'
+                                }`}
+                              >
+                                {match.teamBName} {isTeamB && '(Tim Anda)'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Member Match Events */}
+                          {memberEvents.length > 0 && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              {memberEvents.map((e: any) => (
+                                <span key={e.id} className="inline-flex items-center justify-center">
+                                  {e.type === 'goal' && <BallIcon size={11} />}
+                                  {e.type === 'assist' && (
+                                    <span className="text-amber-400 font-black text-[10px] leading-none shrink-0" title="Assist">
+                                      A
+                                    </span>
+                                  )}
+                                  {e.type === 'yellow_card' && (
+                                    <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" title="Kartu Kuning" />
+                                  )}
+                                  {e.type === 'red_card' && (
+                                    <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Vertically Stacked Scores directly to the left of Result Badge */}
+                      <div className="flex items-center justify-end gap-2.5 shrink-0">
+                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                          <span style={{ color: isTeamA ? '#38bdf8' : '#f1f5f9' }}>
+                            {match.teamAScore ?? '—'}
+                          </span>
+                          <span style={{ color: isTeamB ? '#f59e0b' : '#94a3b8' }}>
+                            {match.teamBScore ?? '—'}
+                          </span>
+                        </div>
+
+                        {result ? (
+                          <span
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                            style={{ background: resultBg }}
+                          >
+                            {result}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#334155' }}>—</span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
     </div>

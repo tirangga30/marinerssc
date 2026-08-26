@@ -49,6 +49,18 @@ export async function POST(req: Request) {
 
       fileName = `${pos}_${num}_${name}${ext}`;
       publicUrl = `/uploads/players/${fileName}`;
+    } else if (targetFolder === 'members') {
+      const position = formData.get('position') as string | null;
+      const number = formData.get('number') as string | null;
+      const playerName = formData.get('playerName') as string | null;
+      const customName = formData.get('customName') as string | null;
+
+      const pos = getPosShort(position);
+      const num = number ? String(number).trim() : '';
+      const name = playerName ? sanitizeFilename(playerName) : (customName ? sanitizeFilename(customName) : `Member_${Date.now()}`);
+
+      fileName = num ? `M_${pos}_${num}_${name}_${Date.now()}${ext}` : `M_${name}_${Date.now()}${ext}`;
+      publicUrl = `/uploads/members/${fileName}`;
     } else if (targetFolder === 'matches') {
       const opponentName = formData.get('opponentName') as string | null;
       const customName = formData.get('customName') as string | null;

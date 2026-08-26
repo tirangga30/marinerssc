@@ -149,17 +149,25 @@ export default async function HomePage() {
   const winRate = totalFinished > 0 ? Math.round((wins / totalFinished) * 100) : 0;
 
   // 2. Process Soccer Community Data
-  const liveFunMatch = funMatches.find((fm: any) => fm.status === 'live');
-  const upcomingFunMatch = funMatches
+  const allSortedFunMatches = [...funMatches].sort(
+    (a: any, b: any) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
+  );
+  const funMatchesWithMatchday = funMatches.map((fm: any) => ({
+    ...fm,
+    matchday: allSortedFunMatches.findIndex((m: any) => m.id === fm.id) + 1,
+  }));
+
+  const liveFunMatch = funMatchesWithMatchday.find((fm: any) => fm.status === 'live');
+  const upcomingFunMatch = funMatchesWithMatchday
     .filter((fm: any) => fm.status === 'scheduled')
     .sort((a: any, b: any) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())[0];
-  const lastFinishedFunMatch = funMatches
+  const lastFinishedFunMatch = funMatchesWithMatchday
     .filter((fm: any) => fm.status === 'finished')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())[0];
 
-  const nextFunMatch = liveFunMatch || upcomingFunMatch || lastFinishedFunMatch || funMatches[0] || null;
+  const nextFunMatch = liveFunMatch || upcomingFunMatch || lastFinishedFunMatch || funMatchesWithMatchday[0] || null;
 
-  const finishedFunMatches = funMatches
+  const finishedFunMatches = funMatchesWithMatchday
     .filter((fm: any) => fm.status === 'finished')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 

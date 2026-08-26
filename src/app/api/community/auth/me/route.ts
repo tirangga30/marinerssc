@@ -59,3 +59,31 @@ export async function GET() {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getMemberSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Tidak diizinkan. Silakan login terlebih dahulu.' }, { status: 401 });
+    }
+
+    const { photoUrl } = await req.json();
+
+    if (!photoUrl) {
+      return NextResponse.json({ error: 'Foto tidak valid.' }, { status: 400 });
+    }
+
+    const updated = await prisma.member.update({
+      where: { id: session.memberId },
+      data: { photoUrl },
+    });
+
+    return NextResponse.json({
+      success: true,
+      member: updated,
+    });
+  } catch (error) {
+    console.error('Update member photo error:', error);
+    return NextResponse.json({ error: 'Gagal memperbarui foto profil' }, { status: 500 });
+  }
+}

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 function generateRandomJerseyNumber(): number {
-  return Math.floor(Math.random() * (99 - 30 + 1)) + 30; // 30 to 99
+  return Math.floor(Math.random() * 99) + 1; // 1 to 99
 }
 
 function generateMemberCode(): string {
@@ -48,11 +48,11 @@ export async function POST(req: Request) {
       attempts++;
     }
 
-    // Determine Jersey Number (30 - 99)
+    // Determine Jersey Number (1 - 99)
     let jerseyNum = requestedJerseyNumber
       ? parseInt(requestedJerseyNumber)
       : generateRandomJerseyNumber();
-    if (isNaN(jerseyNum) || jerseyNum < 30 || jerseyNum > 99) {
+    if (isNaN(jerseyNum) || jerseyNum < 1 || jerseyNum > 99) {
       jerseyNum = generateRandomJerseyNumber();
     }
 
