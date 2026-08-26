@@ -12,6 +12,7 @@ import { formatWibDate, formatWibTime } from '@/lib/date';
 import { getMainThumbnail } from '@/lib/articles';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
 import CommunityLoginModal from '@/components/CommunityLoginModal';
+import { useClubMode } from '@/context/ClubModeContext';
 
 const normalizePos = (pos: string) => {
   const p = pos?.toUpperCase();
@@ -62,7 +63,7 @@ interface HomeClientViewProps {
 }
 
 export default function HomeClientView({ mainSquadData, communityData }: HomeClientViewProps) {
-  const [clubMode, setClubMode] = useState<'main' | 'community'>('main');
+  const { clubMode, setClubMode } = useClubMode();
   const [showRegModal, setShowRegModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 

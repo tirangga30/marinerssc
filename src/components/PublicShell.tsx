@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import PageLoader from './PageLoader';
+import { ClubModeProvider } from '@/context/ClubModeContext';
 
 /**
  * Membungkus Navbar, Footer & PageLoader dengan pengecekan path.
@@ -15,13 +16,13 @@ export default function PublicShell({ children }: { children: React.ReactNode })
   const isAdminPage = pathname.startsWith('/admin');
 
   return (
-    <>
+    <ClubModeProvider>
       <Suspense fallback={null}>
         <PageLoader />
       </Suspense>
       {!isAdminPage && <Navbar />}
       <main className="flex-1">{children}</main>
       {!isAdminPage && <Footer />}
-    </>
+    </ClubModeProvider>
   );
 }
