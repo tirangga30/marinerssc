@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Password comparison (simple direct string check for admin-generated passwords or hashed)
+    // Password comparison
     if (member.password !== password.trim()) {
       return NextResponse.json(
         { error: 'ID Member atau kata sandi tidak sesuai' },
@@ -42,23 +42,24 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check approval & payment status
     if (member.status === 'PENDING' || member.paymentStatus === 'PENDING') {
       return NextResponse.json(
-        { error: 'Akun Anda sedang dalam proses verifikasi pembayaran oleh Admin. Data akun (ID & Password) akan dikirimkan via WhatsApp setelah diverifikasi.' },
+        { error: 'Akun Anda sedang dalam proses verifikasi pembayaran oleh Admin. Silakan tunggu konfirmasi username dan password yang akan dikirim melalui WhatsApp.' },
         { status: 403 }
       );
     }
 
     if (member.paymentStatus === 'REJECTED') {
       return NextResponse.json(
-        { error: 'Pembayaran pendaftaran ditolak oleh Admin. Silakan hubungi admin untuk konfirmasi bukti transfer.' },
+        { error: 'Bukti pembayaran pendaftaran Anda ditolak. Silakan hubungi admin Mariners SC.' },
         { status: 403 }
       );
     }
 
     if (member.status === 'INACTIVE') {
       return NextResponse.json(
-        { error: 'Akun member Anda saat ini non-aktif. Silakan hubungi admin.' },
+        { error: 'Akun member Anda saat ini non-aktif. Silakan hubungi admin untuk aktivasi kembali.' },
         { status: 403 }
       );
     }

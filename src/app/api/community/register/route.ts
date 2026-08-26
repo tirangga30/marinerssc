@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { signMemberToken } from '@/lib/memberAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,9 +30,10 @@ export async function POST(req: Request) {
       requestedJerseyNumber,
     } = data;
 
-    if (!fullName || !origin || !phone || !position) {
+    // VALIDATION: Semua form pendaftaran dan bukti transfer wajib diisi lengkap
+    if (!fullName?.trim() || !origin?.trim() || !phone?.trim() || !position?.trim() || !photoUrl || !paymentProof) {
       return NextResponse.json(
-        { error: 'Nama lengkap, asal domisili, no WhatsApp, dan posisi wajib diisi' },
+        { error: 'Mohon lengkapi semua data pendaftaran (Nama, Asal Domisili, No WhatsApp, Posisi, Foto Profil, dan Bukti Transfer Pembayaran).' },
         { status: 400 }
       );
     }
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       jerseyNum = generateRandomJerseyNumber();
     }
 
-    // Default password if not provided
+    // Default password if not provided (e.g. mariners1234 from phone last 4 digits)
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const defaultPassword = password?.trim() || `mariners${cleanPhone.slice(-4) || '2026'}`;
 
@@ -71,6 +71,7 @@ export async function POST(req: Request) {
       expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days (FAN 1 match)
     }
 
+    // STATUS BARU: PENDING & PAYMENT PENDING (Admin harus verifikasi bukti bayar terlebih dahulu)
     const newMember = await prisma.member.create({
       data: {
         memberCode,
@@ -84,33 +85,30 @@ export async function POST(req: Request) {
         altPosition: altPosition ? altPosition.toUpperCase() : null,
         jerseyNumber: jerseyNum,
         tier: tier.toUpperCase(),
-        status: 'PENDING', // Menunggu konfirmasi bukti pembayaran dari admin
-        paymentProof: paymentProof || null,
-        paymentStatus: 'PENDING',
+        status: 'PENDING', // Menunggu konfirmasi admin
+        paymentProof: paymentProof,
+        paymentStatus: 'PENDING', // Bukti pembayaran menunggu review admin
         expiresAt,
       },
     });
 
+    // TIDAK LANGSUNG LOGIN: Kembalikan status pendingApproval agar calon member menunggu konfirmasi WA dari admin
     return NextResponse.json({
       success: true,
+      pendingApproval: true,
       member: {
         id: newMember.id,
         memberCode: newMember.memberCode,
         fullName: newMember.fullName,
-        tier: newMember.tier,
-        jerseyNumber: newMember.jerseyNumber,
-        position: newMember.position,
-        photoUrl: newMember.photoUrl,
         phone: newMember.phone,
+        tier: newMember.tier,
         status: newMember.status,
-        paymentStatus: newMember.paymentStatus,
       },
-      message: 'Pendaftaran berhasil! Bukti pembayaran sedang menunggu konfirmasi admin.',
     });
   } catch (error) {
     console.error('Member registration error:', error);
     return NextResponse.json(
-      { error: 'Gagal melakukan pendaftaran member' },
+      { error: 'Terjadi kesalahan saat mendaftar. Silakan coba beberapa saat lagi.' },
       { status: 500 }
     );
   }

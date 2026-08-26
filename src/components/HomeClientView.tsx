@@ -782,9 +782,12 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
       <CommunityRegistrationModal
         isOpen={showRegModal}
         onClose={() => setShowRegModal(false)}
+        onOpenLogin={() => {
+          setShowRegModal(false);
+          setShowLoginModal(true);
+        }}
         onSuccess={() => {
           setShowRegModal(false);
-          window.location.reload();
         }}
       />
       <CommunityLoginModal

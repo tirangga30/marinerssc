@@ -718,12 +718,12 @@ export default function CommunityPortal({
         isOpen={registerModalOpen}
         initialTier={selectedTier}
         onClose={() => setRegisterModalOpen(false)}
-        onSuccess={(newMember) => {
-          setMember(newMember);
-          setMessage({
-            type: 'success',
-            text: `Selamat! Pendaftaran ${newMember.fullName} berhasil. ID Member Anda: ${newMember.memberCode}`,
-          });
+        onOpenLogin={() => {
+          setRegisterModalOpen(false);
+          setLoginModalOpen(true);
+        }}
+        onSuccess={() => {
+          setRegisterModalOpen(false);
           router.refresh();
         }}
       />
