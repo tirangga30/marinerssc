@@ -7,7 +7,7 @@ import {
   Shield, Users, Trophy, Award, Flame, Calendar, MapPin,
   CheckCircle2, XCircle, AlertCircle, LogOut, ArrowRight,
   Sparkles, Check, UserCheck, Star, Activity, Clock, Crown,
-  Camera, Upload, Loader2
+  Camera, Upload, Loader2, ExternalLink
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
@@ -182,55 +182,129 @@ export default function CommunityPortal({
     <div className="space-y-8 sm:space-y-12 pb-12">
 
       {/* ─────────────────────────────────────────────────────────────
-          1. HEADER BANNER / LOGGED-IN PROFILE HERO
+          1. HEADER BANNER
          ───────────────────────────────────────────────────────────── */}
-      <section className="relative rounded-3xl overflow-hidden glass-panel border border-sky-400/30 p-4 sm:p-8 bg-gradient-to-b from-slate-900/90 via-blue-950/40 to-slate-900/90 shadow-2xl">
+      <section className="relative rounded-3xl overflow-hidden glass-panel border border-sky-400/30 p-6 sm:p-8 bg-gradient-to-b from-slate-900/90 via-blue-950/40 to-slate-900/90 shadow-2xl">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
 
           {/* Left / Info */}
           <div className="space-y-3 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>MARINERS Sc COMMUNITY</span>
+              <span>MARINERS SC COMMUNITY</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-              {member ? (
-                <>Selamat Datang, <span className="blue-gradient-text">{member.nickname || member.fullName}</span></>
-              ) : (
-                <>Komunitas Mini Soccer <span className="blue-gradient-text">Mariners SC</span></>
-              )}
+              Komunitas Mini Soccer <span className="blue-gradient-text">Mariners SC</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              {member
-                ? 'Pantau jadwal fun match mingguan, konfirmasi kehadiran Anda, dan terima kesempatan terpilih bermain bersama Skuad Utama Mariners SC!'
-                : 'Wadah resmi komunitas Mini Soccer Mariners SC. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!'}
+              Wadah resmi komunitas Mini Soccer Mariners SC. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!
             </p>
           </div>
 
-          {/* Right: Member Badge or Guest Actions */}
-          {member ? (
-            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-950/80 border border-slate-800 shrink-0">
-              <div className="relative group">
+          {/* Guest Actions */}
+          {!member && (
+            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
+              <button
+                onClick={() => setLoginModalOpen(true)}
+                className="px-6 py-3 rounded-xl border border-sky-400/40 bg-slate-900/80 hover:bg-slate-800 text-sky-300 text-xs font-extrabold uppercase tracking-wider transition-all shadow-lg shadow-sky-950 cursor-pointer"
+              >
+                Login Member
+              </button>
+              <button
+                onClick={() => openRegisterWithTier('PRO')}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 cursor-pointer"
+              >
+                Daftar Member
+              </button>
+            </div>
+          )}
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. DEDICATED MEMBER PROFILE CARD (STANDALONE & ULTRA COOL)
+         ───────────────────────────────────────────────────────────── */}
+      {member && (
+        <section className="relative rounded-3xl overflow-hidden glass-panel border border-amber-400/40 p-6 sm:p-8 bg-gradient-to-br from-[#141d30] via-[#090e1c] to-[#181308] shadow-2xl shadow-black/80 space-y-6">
+          
+          {/* Top Header / Identification Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center text-amber-400 shadow-md shadow-amber-500/10">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block">
+                  Official Member Identity
+                </span>
+                <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white">
+                  Kartu Profil Member
+                </h2>
+              </div>
+            </div>
+
+            {/* Quick Actions Toolbar */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <Link
+                href={`/community/players/${member.id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              >
+                <span>Lihat Profil Publik</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 text-red-400 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Keluar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Main Card Body */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            
+            {/* Left Column: Player Avatar / Photo Card */}
+            <div className="md:col-span-4 lg:col-span-3 flex justify-center">
+              <div className="relative group w-44 sm:w-48 aspect-[4/5] rounded-3xl overflow-hidden border-2 border-amber-400/60 shadow-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-black shrink-0">
                 <img
-                  src={member.photoUrl || '/defaultplayer.png'}
+                  src={member.photoUrl || '/playertemplate.png'}
                   alt={member.fullName}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-sky-400/60 bg-slate-900 shadow-lg"
+                  className="w-full h-full object-cover object-top"
                 />
 
-                {/* Ganti Foto Profil Overlay */}
+                {/* Top-Right Member Pill */}
+                <div className="absolute top-2.5 right-2.5 z-20">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md border border-amber-300">
+                    <Sparkles className="w-2.5 h-2.5 text-slate-950 fill-slate-950" />
+                    MEMBER
+                  </span>
+                </div>
+
+                {/* Bottom Jersey Number Tag */}
+                <div className="absolute bottom-2.5 left-2.5 z-20">
+                  <span className="px-3 py-1 rounded-xl bg-slate-950/90 text-amber-400 font-mono font-black text-lg border border-amber-400/50 shadow-lg">
+                    #{member.jerseyNumber}
+                  </span>
+                </div>
+
+                {/* Ganti Foto Profil Hover Overlay */}
                 <label
-                  className={`absolute inset-0 rounded-2xl bg-slate-950/80 border border-sky-400 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-xs ${uploadingPhoto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    }`}
+                  className={`absolute inset-0 z-30 bg-slate-950/85 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-xs ${
+                    uploadingPhoto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
                   title="Klik untuk ganti foto profil"
                 >
                   {uploadingPhoto ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
+                    <Loader2 className="w-7 h-7 animate-spin text-amber-400" />
                   ) : (
                     <>
-                      <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-sky-300 drop-shadow" />
-                      <span className="text-[8px] sm:text-[9px] font-black uppercase text-white tracking-wider mt-0.5">
+                      <Camera className="w-6 h-6 text-amber-400 drop-shadow mb-1" />
+                      <span className="text-[10px] font-black uppercase text-white tracking-wider">
                         Ubah Foto
                       </span>
                     </>
@@ -243,60 +317,94 @@ export default function CommunityPortal({
                     className="hidden"
                   />
                 </label>
-
-                <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-[10px] shadow-sm pointer-events-none">
-                  #{member.jerseyNumber}
-                </span>
               </div>
-              <div className="space-y-1.5 text-center sm:text-left min-w-[220px]">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-sm font-black text-white">{member.fullName}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${member.tier === 'ELITE'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                      : member.tier === 'PRO'
+            </div>
+
+            {/* Right Column: Member Details & Specs */}
+            <div className="md:col-span-8 lg:col-span-9 space-y-4">
+              
+              {/* Member Name, Code & Tier Badge */}
+              <div className="space-y-1 text-center md:text-left">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight">
+                    {member.fullName}
+                  </h1>
+                  <span
+                    className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                      member.tier === 'ELITE'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        : member.tier === 'PRO'
                         ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                         : 'bg-slate-700/50 text-slate-300 border border-slate-600'
-                    }`}>
-                    {member.tier}
+                    }`}
+                  >
+                    {member.tier} TIER
                   </span>
                 </div>
-                <p className="text-xs text-sky-400 font-mono font-bold">{member.memberCode}</p>
-                <p className="text-[11px] text-slate-400">
-                  Posisi: <strong className="text-white">{member.position}</strong> • {member.origin}
+                <p className="text-xs font-mono font-bold text-sky-400">
+                  KODE ANGGOTA: {member.memberCode}
                 </p>
+              </div>
 
-                {/* Live Countdown Timer Durasi Pemain & Masa Aktif */}
-                <div className="pt-1">
-                  <MemberDurationCountdown
-                    expiresAt={member.expiresAt}
-                    joinedAt={member.joinedAt || member.createdAt}
-                    isPermanent={member.isPermanent}
-                  />
+              {/* 4 Specifications Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                    Posisi Bermain
+                  </span>
+                  <span className="text-xs font-black text-amber-300">
+                    {member.position} {member.altPosition ? `• ${member.altPosition}` : ''}
+                  </span>
                 </div>
 
-                <div className="pt-1.5">
-                  <button
-                    onClick={handleLogout}
-                    className="inline-flex items-center gap-1.5 text-[10px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider"
-                  >
-                    <LogOut className="w-3 h-3" /> Keluar Akun
-                  </button>
+                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                    Asal Domisili
+                  </span>
+                  <span className="text-xs font-black text-white">
+                    📍 {member.origin || 'Indonesia'}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                    Nomor Punggung
+                  </span>
+                  <span className="text-xs font-mono font-black text-amber-400">
+                    No. {member.jerseyNumber}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 shadow-inner">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                    Status Akun
+                  </span>
+                  <span className="text-xs font-black text-emerald-400 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    {member.status === 'ACTIVE' ? 'Aktif' : member.status}
+                  </span>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
-              <button
-                onClick={() => setLoginModalOpen(true)}
-                className="px-6 py-3 rounded-xl border border-sky-400/40 bg-slate-900/80 hover:bg-slate-800 text-sky-300 text-xs font-extrabold uppercase tracking-wider transition-all shadow-lg shadow-sky-950"
-              >
-                Login Member
-              </button>
-            </div>
-          )}
 
-        </div>
-      </section>
+              {/* Countdown Masa Aktif Membership */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+                <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  Masa Berlaku Membership:
+                </span>
+                <MemberDurationCountdown
+                  expiresAt={member.expiresAt}
+                  joinedAt={member.joinedAt || member.createdAt}
+                  isPermanent={member.isPermanent}
+                />
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
 
       {/* Global Alert Message */}
       {message && (
@@ -319,7 +427,7 @@ export default function CommunityPortal({
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
               <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-400">
-                Akumulasi Statistik Individu
+                Statistik Individu
               </span>
               <span className="text-[10px] text-slate-400 font-semibold">
                 Fun Match Komunitas
