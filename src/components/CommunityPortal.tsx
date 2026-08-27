@@ -180,13 +180,13 @@ export default function CommunityPortal({
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-12">
-      
+
       {/* ─────────────────────────────────────────────────────────────
           1. HEADER BANNER / LOGGED-IN PROFILE HERO
          ───────────────────────────────────────────────────────────── */}
       <section className="relative rounded-3xl overflow-hidden glass-panel border border-sky-400/30 p-4 sm:p-8 bg-gradient-to-b from-slate-900/90 via-blue-950/40 to-slate-900/90 shadow-2xl">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-          
+
           {/* Left / Info */}
           <div className="space-y-3 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
@@ -221,9 +221,8 @@ export default function CommunityPortal({
 
                 {/* Ganti Foto Profil Overlay */}
                 <label
-                  className={`absolute inset-0 rounded-2xl bg-slate-950/80 border border-sky-400 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-xs ${
-                    uploadingPhoto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  }`}
+                  className={`absolute inset-0 rounded-2xl bg-slate-950/80 border border-sky-400 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-xs ${uploadingPhoto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
                   title="Klik untuk ganti foto profil"
                 >
                   {uploadingPhoto ? (
@@ -252,13 +251,12 @@ export default function CommunityPortal({
               <div className="space-y-1.5 text-center sm:text-left min-w-[220px]">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="text-sm font-black text-white">{member.fullName}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                    member.tier === 'ELITE'
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${member.tier === 'ELITE'
                       ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                       : member.tier === 'PRO'
-                      ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
-                      : 'bg-slate-700/50 text-slate-300 border border-slate-600'
-                  }`}>
+                        ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
+                        : 'bg-slate-700/50 text-slate-300 border border-slate-600'
+                    }`}>
                     {member.tier}
                   </span>
                 </div>
@@ -302,11 +300,10 @@ export default function CommunityPortal({
 
       {/* Global Alert Message */}
       {message && (
-        <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border ${
-          message.type === 'success'
+        <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border ${message.type === 'success'
             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
             : 'bg-red-500/10 border-red-500/30 text-red-400'
-        }`}>
+          }`}>
           {message.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
           <span>{message.text}</span>
         </div>
@@ -317,7 +314,7 @@ export default function CommunityPortal({
          ───────────────────────────────────────────────────────────── */}
       {member && (
         <div className="space-y-8">
-          
+
           {/* PERSONAL STATS OVERVIEW (IDENTIK DENGAN AKUMULASI STATISTIK TIM UTAMA) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
@@ -325,19 +322,14 @@ export default function CommunityPortal({
                 Akumulasi Statistik Individu
               </span>
               <span className="text-[10px] text-slate-400 font-semibold">
-                Fun Match &amp; Tim Utama
+                Fun Match Komunitas
               </span>
             </div>
             <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] rounded-2xl sm:rounded-3xl border border-amber-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
               {[
                 { label: 'GOL', value: member.totalGoals ?? member.goals ?? 0 },
                 { label: 'ASSIST', value: member.totalAssists ?? member.assists ?? 0 },
-                {
-                  label: 'MAIN',
-                  value:
-                    member.totalAppearances ??
-                    ((member.funAppearances || 0) + (member.mainAppearances || 0)),
-                },
+                { label: 'MAIN', value: member.totalAppearances ?? member.funAppearances ?? 0 },
                 { label: 'KUNING', value: member.totalYellowCards ?? member.yellowCards ?? 0 },
                 { label: 'MERAH', value: member.totalRedCards ?? member.redCards ?? 0 },
               ].map((s) => (
@@ -439,7 +431,7 @@ export default function CommunityPortal({
           {/* UPCOMING FUN MATCH & RSVP SECTION */}
           {upcomingFunMatch ? (
             <div className="glass-panel p-4 sm:p-8 rounded-3xl border border-sky-400/40 shadow-2xl space-y-6">
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
@@ -551,13 +543,12 @@ export default function CommunityPortal({
                         {upcomingFunMatch.teamBScore}
                       </span>
                     </div>
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${
-                      upcomingFunMatch.status === 'finished'
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${upcomingFunMatch.status === 'finished'
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         : upcomingFunMatch.status === 'live'
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
-                        : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                    }`}>
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                      }`}>
                       {upcomingFunMatch.status === 'finished' ? 'Full Time' : upcomingFunMatch.status === 'live' ? 'Live' : 'Skor'}
                     </span>
                   </div>
@@ -618,9 +609,8 @@ export default function CommunityPortal({
                                 {p.member?.position || 'MF'}
                               </span>
                               {p.assignedTeam && (
-                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
-                                  p.assignedTeam === 'TEAM_A' ? 'bg-blue-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'
-                                }`}>
+                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${p.assignedTeam === 'TEAM_A' ? 'bg-blue-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'
+                                  }`}>
                                   {p.assignedTeam === 'TEAM_A' ? 'Tim A' : 'Tim B'}
                                 </span>
                               )}
@@ -679,7 +669,7 @@ export default function CommunityPortal({
          ───────────────────────────────────────────────────────────── */}
       {!member && (
         <div className="space-y-8">
-          
+
 
 
           {/* UPCOMING FUN MATCH PREVIEW FOR VISITORS */}
@@ -745,13 +735,12 @@ export default function CommunityPortal({
                         {upcomingFunMatch.teamBScore}
                       </span>
                     </div>
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${
-                      upcomingFunMatch.status === 'finished'
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${upcomingFunMatch.status === 'finished'
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         : upcomingFunMatch.status === 'live'
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
-                        : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                    }`}>
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                      }`}>
                       {upcomingFunMatch.status === 'finished' ? 'Full Time' : upcomingFunMatch.status === 'live' ? 'Live' : 'Skor'}
                     </span>
                   </div>
@@ -812,9 +801,8 @@ export default function CommunityPortal({
                                 {p.member?.position || 'MF'}
                               </span>
                               {p.assignedTeam && (
-                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
-                                  p.assignedTeam === 'TEAM_A' ? 'bg-blue-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'
-                                }`}>
+                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${p.assignedTeam === 'TEAM_A' ? 'bg-blue-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'
+                                  }`}>
                                   {p.assignedTeam === 'TEAM_A' ? 'Tim A' : 'Tim B'}
                                 </span>
                               )}
@@ -827,7 +815,7 @@ export default function CommunityPortal({
               </div>
             </div>
           )}
-          
+
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-sky-400">
               PILIHAN PAKET KEANGGOTAAN
@@ -842,7 +830,7 @@ export default function CommunityPortal({
 
           {/* 3 PRICING CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            
+
             {/* 1. FAN TIER */}
             <div className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
               <div className="space-y-4">

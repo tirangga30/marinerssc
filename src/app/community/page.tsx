@@ -42,7 +42,7 @@ export default async function CommunityPage() {
     });
 
     if (rawMember) {
-      // 1. Calculate from Fun Match Events
+      // Calculate strictly from Fun Matches
       const funGoals = (rawMember.funMatchEvents || []).filter(
         (e: any) => e.type === 'goal' || e.type === 'penalty'
       ).length;
@@ -59,50 +59,11 @@ export default async function CommunityPage() {
         (a: any) => a.funMatchId && a.status === 'CONFIRMED'
       ).length;
 
-      // 2. Calculate from Tim Utama (if member called up / linked)
-      const mainGoals = rawMember.player
-        ? (rawMember.player.events || []).filter(
-            (e: any) => e.type === 'goal' || e.type === 'penalty'
-          ).length
-        : 0;
-      const mainAssists = rawMember.player
-        ? (rawMember.player.events || []).filter((e: any) => e.type === 'assist').length +
-          (rawMember.player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length
-        : 0;
-      const mainYellowCards = rawMember.player
-        ? (rawMember.player.events || []).filter((e: any) => e.type === 'yellow_card').length
-        : 0;
-      const mainRedCards = rawMember.player
-        ? (rawMember.player.events || []).filter(
-            (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
-          ).length
-        : 0;
-      const mainAppearances = rawMember.player
-        ? (rawMember.player.lineups || []).filter((l: any) => {
-            if (l.isStarter) return true;
-            const matchEvents = l.match?.events || [];
-            return matchEvents.some(
-              (e: any) => e.type === 'sub' && e.playerId === rawMember.player?.id
-            );
-          }).length
-        : (rawMember.matchAttendances || []).filter(
-            (a: any) => a.matchId && a.status === 'CONFIRMED'
-          ).length;
-
-      const totalGoals = Math.max(rawMember.goals || 0, funGoals + mainGoals);
-      const totalAssists = Math.max(rawMember.assists || 0, funAssists + mainAssists);
-      const totalAppearances = Math.max(
-        (rawMember.funAppearances || 0) + (rawMember.mainAppearances || 0),
-        funAppearances + mainAppearances
-      );
-      const totalYellowCards = Math.max(
-        rawMember.yellowCards || 0,
-        funYellowCards + mainYellowCards
-      );
-      const totalRedCards = Math.max(
-        rawMember.redCards || 0,
-        funRedCards + mainRedCards
-      );
+      const totalGoals = Math.max(rawMember.goals || 0, funGoals);
+      const totalAssists = Math.max(rawMember.assists || 0, funAssists);
+      const totalAppearances = Math.max(rawMember.funAppearances || 0, funAppearances);
+      const totalYellowCards = Math.max(rawMember.yellowCards || 0, funYellowCards);
+      const totalRedCards = Math.max(rawMember.redCards || 0, funRedCards);
 
       memberData = {
         ...rawMember,
@@ -111,8 +72,8 @@ export default async function CommunityPage() {
         totalAppearances,
         totalYellowCards,
         totalRedCards,
-        funAppearances,
-        mainAppearances,
+        funAppearances: totalAppearances,
+        mainAppearances: rawMember.mainAppearances || 0,
       };
     }
 

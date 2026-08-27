@@ -84,43 +84,18 @@ export default async function CommunityPlayerProfilePage({
     notFound();
   }
 
-  // Calculate dynamic stats
+  // Calculate dynamic stats (Fun Match only)
   const funMatchesPlayed = member.matchAttendances.filter((a) => a.funMatchId).length;
-  const mainSquadMatchesPlayed = member.matchAttendances.filter((a) => a.matchId).length;
   const funGoals = member.funMatchEvents.filter((e) => e.type === 'goal' || e.type === 'penalty').length;
   const funAssists = member.funMatchEvents.filter((e) => e.type === 'assist').length;
   const funYellowCards = member.funMatchEvents.filter((e) => e.type === 'yellow_card').length;
   const funRedCards = member.funMatchEvents.filter((e) => e.type === 'red_card' || e.type === 'second_yellow').length;
 
-  const mainGoals = member.player
-    ? (member.player.events || []).filter((e: any) => e.type === 'goal' || e.type === 'penalty').length
-    : 0;
-  const mainAssists = member.player
-    ? (member.player.events || []).filter((e: any) => e.type === 'assist').length +
-      (member.player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length
-    : 0;
-  const mainYellowCards = member.player
-    ? (member.player.events || []).filter((e: any) => e.type === 'yellow_card').length
-    : 0;
-  const mainRedCards = member.player
-    ? (member.player.events || []).filter((e: any) => e.type === 'red_card' || e.type === 'second_yellow').length
-    : 0;
-  const mainAppearances = member.player
-    ? (member.player.lineups || []).filter((l: any) => {
-        if (l.isStarter) return true;
-        const matchEvents = l.match?.events || [];
-        return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === member.player?.id);
-      }).length
-    : mainSquadMatchesPlayed;
-
-  const totalGoals = Math.max(member.goals || 0, funGoals + mainGoals);
-  const totalAssists = Math.max(member.assists || 0, funAssists + mainAssists);
-  const totalAppearances = Math.max(
-    (member.funAppearances || 0) + (member.mainAppearances || 0),
-    funMatchesPlayed + mainAppearances
-  );
-  const totalYellowCards = Math.max(member.yellowCards || 0, funYellowCards + mainYellowCards);
-  const totalRedCards = Math.max(member.redCards || 0, funRedCards + mainRedCards);
+  const totalGoals = Math.max(member.goals || 0, funGoals);
+  const totalAssists = Math.max(member.assists || 0, funAssists);
+  const totalAppearances = Math.max(member.funAppearances || 0, funMatchesPlayed);
+  const totalYellowCards = Math.max(member.yellowCards || 0, funYellowCards);
+  const totalRedCards = Math.max(member.redCards || 0, funRedCards);
 
   const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
 

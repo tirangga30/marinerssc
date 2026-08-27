@@ -44,7 +44,7 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    // 1. Calculate from Fun Match Events
+    // Calculate strictly from Fun Matches
     const funGoals = (member.funMatchEvents || []).filter(
       (e: any) => e.type === 'goal' || e.type === 'penalty'
     ).length;
@@ -61,50 +61,11 @@ export async function GET() {
       (a: any) => a.funMatchId && a.status === 'CONFIRMED'
     ).length;
 
-    // 2. Calculate from Tim Utama (if called up / linked)
-    const mainGoals = member.player
-      ? (member.player.events || []).filter(
-          (e: any) => e.type === 'goal' || e.type === 'penalty'
-        ).length
-      : 0;
-    const mainAssists = member.player
-      ? (member.player.events || []).filter((e: any) => e.type === 'assist').length +
-        (member.player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length
-      : 0;
-    const mainYellowCards = member.player
-      ? (member.player.events || []).filter((e: any) => e.type === 'yellow_card').length
-      : 0;
-    const mainRedCards = member.player
-      ? (member.player.events || []).filter(
-          (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
-        ).length
-      : 0;
-    const mainAppearances = member.player
-      ? (member.player.lineups || []).filter((l: any) => {
-          if (l.isStarter) return true;
-          const matchEvents = l.match?.events || [];
-          return matchEvents.some(
-            (e: any) => e.type === 'sub' && e.playerId === member.player?.id
-          );
-        }).length
-      : (member.matchAttendances || []).filter(
-          (a: any) => a.matchId && a.status === 'CONFIRMED'
-        ).length;
-
-    const totalGoals = Math.max(member.goals || 0, funGoals + mainGoals);
-    const totalAssists = Math.max(member.assists || 0, funAssists + mainAssists);
-    const totalAppearances = Math.max(
-      (member.funAppearances || 0) + (member.mainAppearances || 0),
-      funAppearances + mainAppearances
-    );
-    const totalYellowCards = Math.max(
-      member.yellowCards || 0,
-      funYellowCards + mainYellowCards
-    );
-    const totalRedCards = Math.max(
-      member.redCards || 0,
-      funRedCards + mainRedCards
-    );
+    const totalGoals = Math.max(member.goals || 0, funGoals);
+    const totalAssists = Math.max(member.assists || 0, funAssists);
+    const totalAppearances = Math.max(member.funAppearances || 0, funAppearances);
+    const totalYellowCards = Math.max(member.yellowCards || 0, funYellowCards);
+    const totalRedCards = Math.max(member.redCards || 0, funRedCards);
 
     return NextResponse.json({
       authenticated: true,
@@ -124,7 +85,7 @@ export async function GET() {
         joinedAt: member.joinedAt,
         expiresAt: member.expiresAt,
         funAppearances,
-        mainAppearances,
+        mainAppearances: member.mainAppearances || 0,
         totalGoals,
         totalAssists,
         totalAppearances,
