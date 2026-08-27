@@ -55,9 +55,22 @@ export default async function CommunityPage() {
       const funRedCards = (rawMember.funMatchEvents || []).filter(
         (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
       ).length;
-      const funAppearances = (rawMember.matchAttendances || []).filter(
-        (a: any) => a.funMatchId && a.status === 'CONFIRMED'
-      ).length;
+      const nowMs = Date.now();
+      const funAppearances = (rawMember.matchAttendances || []).filter((a: any) => {
+        if (!a.funMatchId || a.status !== 'CONFIRMED') return false;
+        const fm = a.funMatch;
+        if (!fm) return false;
+        if (fm.status === 'scheduled') {
+          const matchStartMs = new Date(fm.matchDate).getTime();
+          if (isNaN(matchStartMs) || nowMs < matchStartMs) return false;
+        }
+        const isPlayed =
+          fm.status === 'finished' ||
+          fm.status === 'live' ||
+          (fm.teamAScore !== null && fm.teamBScore !== null) ||
+          nowMs >= new Date(fm.matchDate).getTime();
+        return isPlayed && (a.assignedTeam === 'TEAM_A' || a.assignedTeam === 'TEAM_B');
+      }).length;
 
       const totalGoals = Math.max(rawMember.goals || 0, funGoals);
       const totalAssists = Math.max(rawMember.assists || 0, funAssists);

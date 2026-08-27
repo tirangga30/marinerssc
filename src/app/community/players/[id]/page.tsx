@@ -84,8 +84,45 @@ export default async function CommunityPlayerProfilePage({
     notFound();
   }
 
-  // Calculate dynamic stats (Fun Match only)
-  const funMatchesPlayed = member.matchAttendances.filter((a) => a.funMatchId).length;
+  // Filter only matches that have ACTUALLY BEEN PLAYED / FINISHED
+  const nowMs = Date.now();
+  const playedAttendances = member.matchAttendances.filter((att) => {
+    if (att.status !== 'CONFIRMED') return false;
+    if (att.funMatch) {
+      const fm = att.funMatch;
+      if (fm.status === 'scheduled') {
+        const matchStartMs = new Date(fm.matchDate).getTime();
+        if (isNaN(matchStartMs) || nowMs < matchStartMs) {
+          return false; // Belum bermain (future scheduled match)
+        }
+      }
+      const isPlayed =
+        fm.status === 'finished' ||
+        fm.status === 'live' ||
+        (fm.teamAScore !== null && fm.teamBScore !== null) ||
+        nowMs >= new Date(fm.matchDate).getTime();
+      return isPlayed && (att.assignedTeam === 'TEAM_A' || att.assignedTeam === 'TEAM_B');
+    }
+    if (att.footballMatch) {
+      const m = att.footballMatch;
+      if (m.status === 'scheduled') {
+        const matchStartMs = new Date(m.matchDate).getTime();
+        if (isNaN(matchStartMs) || nowMs < matchStartMs) {
+          return false;
+        }
+      }
+      return (
+        m.status === 'finished' ||
+        m.status === 'live' ||
+        (m.homeScore !== null && m.awayScore !== null) ||
+        nowMs >= new Date(m.matchDate).getTime()
+      );
+    }
+    return false;
+  });
+
+  // Calculate dynamic stats (Fun Match only - Hanya yang sudah bermain)
+  const funMatchesPlayed = playedAttendances.filter((a) => a.funMatchId).length;
   const funGoals = member.funMatchEvents.filter((e) => e.type === 'goal' || e.type === 'penalty').length;
   const funAssists = member.funMatchEvents.filter((e) => e.type === 'assist').length;
   const funYellowCards = member.funMatchEvents.filter((e) => e.type === 'yellow_card').length;
@@ -136,10 +173,8 @@ export default async function CommunityPlayerProfilePage({
     { label: 'Status Akun', value: member.status === 'ACTIVE' ? 'Aktif' : 'Non-Aktif' },
   ];
 
-  // Recent matches attended by member (Fun match & Tim Utama matches)
-  const attendedAttendances = member.matchAttendances
-    .filter((a) => a.funMatch || a.footballMatch)
-    .slice(0, 10);
+  // Riwayat pertandingan yang SUDAH DIMAINKAN
+  const attendedAttendances = playedAttendances.slice(0, 10);
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
