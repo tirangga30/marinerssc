@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,6 +103,26 @@ export async function POST(
         }
       }
 
+      // If goal, auto-sync FunMatch scores
+      if (type === 'goal') {
+        const goalCountA = await prisma.funMatchEvent.count({ where: { funMatchId, team: 'TEAM_A', type: 'goal' } });
+        const goalCountB = await prisma.funMatchEvent.count({ where: { funMatchId, team: 'TEAM_B', type: 'goal' } });
+        await prisma.funMatch.update({
+          where: { id: funMatchId },
+          data: {
+            teamAScore: goalCountA,
+            teamBScore: goalCountB,
+          },
+        });
+      }
+
+      try {
+        revalidatePath('/community');
+        revalidatePath('/community/matches');
+        revalidatePath(`/community/matches/${funMatchId}`);
+        revalidatePath('/');
+      } catch (e) {}
+
       return NextResponse.json({ success: true, event: newEvent });
     }
 
@@ -121,6 +142,27 @@ export async function POST(
         }
       }
       await prisma.funMatchEvent.delete({ where: { id: eventId } });
+
+      // If goal deleted, re-sync score
+      if (event && event.type === 'goal') {
+        const goalCountA = await prisma.funMatchEvent.count({ where: { funMatchId, team: 'TEAM_A', type: 'goal' } });
+        const goalCountB = await prisma.funMatchEvent.count({ where: { funMatchId, team: 'TEAM_B', type: 'goal' } });
+        await prisma.funMatch.update({
+          where: { id: funMatchId },
+          data: {
+            teamAScore: goalCountA,
+            teamBScore: goalCountB,
+          },
+        });
+      }
+
+      try {
+        revalidatePath('/community');
+        revalidatePath('/community/matches');
+        revalidatePath(`/community/matches/${funMatchId}`);
+        revalidatePath('/');
+      } catch (e) {}
+
       return NextResponse.json({ success: true });
     }
 

@@ -59,11 +59,13 @@ function FunMatchCard({ match }: { match: any }) {
 
         {/* Score / VS */}
         <div className="space-y-0.5 sm:space-y-2">
-          {isFinished ? (
+          {match.teamAScore !== null && match.teamBScore !== null ? (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium uppercase">
+                {isFinished ? 'FULL TIME' : isLive ? 'LIVE' : 'SKOR'}
+              </p>
               <div className="text-xl sm:text-5xl font-black font-mono text-amber-400 tracking-widest">
-                {match.teamAScore ?? 0} : {match.teamBScore ?? 0}
+                {match.teamAScore} : {match.teamBScore}
               </div>
             </>
           ) : (

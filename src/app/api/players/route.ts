@@ -10,12 +10,89 @@ export async function GET(req: Request) {
     const matchId = searchParams.get('matchId');
     const guestsOnly = searchParams.get('guestsOnly') === 'true';
 
-    let whereClause: any = { isGuest: false };
+    let whereClause: any = { isGuest: false, member: null };
 
     if (guestsOnly) {
       whereClause = { isGuest: true };
     } else if (matchId) {
       whereClause = {}; // Ambil semua pemain agar dapat memisahkan skuad utama, tamu match ini, dan rekomendasi tamu match lain
+
+      // Auto-sync confirmed members for this match into Player table so they can be dragged in lineup
+      try {
+        const confirmedMemberAttendances = await prisma.matchAttendance.findMany({
+          where: {
+            matchId,
+            status: 'CONFIRMED',
+            memberId: { not: null },
+          },
+          include: { member: true },
+        });
+
+        for (const att of confirmedMemberAttendances) {
+          if (att.member) {
+            let p = att.member.playerId
+              ? await prisma.player.findUnique({ where: { id: att.member.playerId } })
+              : null;
+
+            if (!p) {
+              p = await prisma.player.findFirst({
+                where: { name: att.member.fullName },
+              });
+            }
+
+            if (!p) {
+              let baseSlug = att.member.fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+              let slug = baseSlug;
+              if (await prisma.player.findUnique({ where: { slug } })) {
+                slug = `${baseSlug}-${att.member.jerseyNumber}`;
+              }
+
+              let num = att.member.jerseyNumber;
+              if (await prisma.player.findUnique({ where: { number: num } })) {
+                let altNum = 30;
+                while (await prisma.player.findUnique({ where: { number: altNum } })) {
+                  altNum++;
+                }
+                num = altNum;
+              }
+
+              p = await prisma.player.create({
+                data: {
+                  name: att.member.fullName,
+                  slug,
+                  number: num,
+                  position: (() => {
+                    const pos = (att.member.position || '').toUpperCase();
+                    if (pos === 'GK' || pos === 'GOALKEEPER') return 'GOALKEEPER';
+                    if (pos === 'DF' || pos === 'DEFENDER') return 'DEFENDER';
+                    if (pos === 'MF' || pos === 'MIDFIELDER') return 'MIDFIELDER';
+                    return 'FORWARD';
+                  })(),
+                  photoUrl: att.member.photoUrl || '/defaultplayer.png',
+                  isGuest: false,
+                  bio: `Member Komunitas Mariners SC (${att.member.tier})`,
+                },
+              });
+            }
+
+            if (att.member.playerId !== p.id) {
+              await prisma.member.update({
+                where: { id: att.member.id },
+                data: { playerId: p.id },
+              });
+            }
+
+            if (att.playerId !== p.id) {
+              await prisma.matchAttendance.update({
+                where: { id: att.id },
+                data: { playerId: p.id },
+              });
+            }
+          }
+        }
+      } catch (syncErr) {
+        console.error('Error syncing confirmed members to player table:', syncErr);
+      }
     }
 
     const players = await prisma.player.findMany({

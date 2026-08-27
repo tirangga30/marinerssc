@@ -52,11 +52,11 @@ export default async function CommunityPage() {
     });
   }
 
-  // Fetch upcoming Fun Match
+  // Fetch upcoming or active Fun Match
   const now = new Date();
-  const upcomingFunMatch = await prisma.funMatch.findFirst({
+  let upcomingFunMatch = await prisma.funMatch.findFirst({
     where: {
-      matchDate: { gte: new Date(now.getTime() - 3 * 60 * 60 * 1000) },
+      matchDate: { gte: new Date(now.getTime() - 8 * 60 * 60 * 1000) },
     },
     include: {
       attendances: {
@@ -65,6 +65,18 @@ export default async function CommunityPage() {
     },
     orderBy: { matchDate: 'asc' },
   });
+
+  // If no upcoming fun match found, fallback to the latest fun match
+  if (!upcomingFunMatch) {
+    upcomingFunMatch = await prisma.funMatch.findFirst({
+      include: {
+        attendances: {
+          include: { member: true },
+        },
+      },
+      orderBy: { matchDate: 'desc' },
+    });
+  }
 
   // Confirmed attendees for upcoming fun match
   const confirmedAttendees = upcomingFunMatch ? upcomingFunMatch.attendances : [];
@@ -79,12 +91,22 @@ export default async function CommunityPage() {
     where: { status: 'ACTIVE' },
   });
 
+  // Upcoming main squad match (general schedule)
+  const upcomingMainSquadMatch = await prisma.footballMatch.findFirst({
+    where: {
+      matchDate: { gte: new Date(now.getTime() - 4 * 60 * 60 * 1000) },
+      status: { not: 'finished' },
+    },
+    orderBy: { matchDate: 'asc' },
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
       <CommunityPortal
         initialMember={memberData}
         upcomingFunMatch={upcomingFunMatch}
         upcomingMainSquadInvitation={upcomingMainSquadInvitation}
+        upcomingMainSquadMatch={upcomingMainSquadMatch}
         declinedInvitations={declinedInvitations}
         allConfirmedFunMatchPlayers={confirmedAttendees}
         recentFunMatches={recentFunMatches}

@@ -50,6 +50,70 @@ export async function POST(req: Request) {
       }
     } else if (matchId) {
       // Respond to Tim Utama invitation
+      let linkedPlayerId: string | null = null;
+      if (action === 'JOIN') {
+        const mem = await prisma.member.findUnique({
+          where: { id: session.memberId },
+          include: { player: true },
+        });
+
+        if (mem) {
+          let p = mem.playerId
+            ? await prisma.player.findUnique({ where: { id: mem.playerId } })
+            : null;
+
+          if (!p) {
+            p = await prisma.player.findFirst({
+              where: { name: mem.fullName },
+            });
+          }
+
+          if (!p) {
+            let baseSlug = mem.fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            let slug = baseSlug;
+            if (await prisma.player.findUnique({ where: { slug } })) {
+              slug = `${baseSlug}-${mem.jerseyNumber}`;
+            }
+
+            let num = mem.jerseyNumber;
+            if (await prisma.player.findUnique({ where: { number: num } })) {
+              let altNum = 30;
+              while (await prisma.player.findUnique({ where: { number: altNum } })) {
+                altNum++;
+              }
+              num = altNum;
+            }
+
+            p = await prisma.player.create({
+              data: {
+                name: mem.fullName,
+                slug,
+                number: num,
+                position: (() => {
+                  const pos = (mem.position || '').toUpperCase();
+                  if (pos === 'GK' || pos === 'GOALKEEPER') return 'GOALKEEPER';
+                  if (pos === 'DF' || pos === 'DEFENDER') return 'DEFENDER';
+                  if (pos === 'MF' || pos === 'MIDFIELDER') return 'MIDFIELDER';
+                  return 'FORWARD';
+                })(),
+                photoUrl: mem.photoUrl || '/defaultplayer.png',
+                isGuest: false,
+                bio: `Member Komunitas Mariners SC (${mem.tier})`,
+              },
+            });
+          }
+
+          linkedPlayerId = p.id;
+
+          if (mem.playerId !== p.id) {
+            await prisma.member.update({
+              where: { id: mem.id },
+              data: { playerId: p.id },
+            });
+          }
+        }
+      }
+
       const existing = await prisma.matchAttendance.findFirst({
         where: {
           matchId,
@@ -62,6 +126,7 @@ export async function POST(req: Request) {
           where: { id: existing.id },
           data: {
             status: statusValue,
+            playerId: linkedPlayerId || existing.playerId,
             declineReason: action === 'DECLINE' ? (reason || 'Menolak panggilan tim utama') : null,
           },
         });
@@ -71,6 +136,7 @@ export async function POST(req: Request) {
           data: {
             matchId,
             memberId: session.memberId,
+            playerId: linkedPlayerId,
             playerType: 'MEMBER',
             playerName: session.fullName,
             status: statusValue,

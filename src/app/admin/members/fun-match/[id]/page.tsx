@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Save, Plus, Trash2, Users, Activity,
   CheckCircle2, Clock, MapPin, Shield, Trophy, Loader2,
-  AlertCircle, ChevronRight, UserCheck, Play, Sparkles
+  AlertCircle, ChevronRight, UserCheck, Play, Sparkles,
+  Edit, X
 } from 'lucide-react';
-import { formatWibDate, formatWibTime } from '@/lib/date';
+import { formatWibDate, formatWibTime, formatDateForInput } from '@/lib/date';
 
 interface AttendanceItem {
   id: string;
@@ -62,6 +64,7 @@ export default function AdminFunMatchOptionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const router = useRouter();
   const { id } = use(params);
   const [funMatch, setFunMatch] = useState<FunMatch | null>(null);
   const [allActiveMembers, setAllActiveMembers] = useState<any[]>([]);
@@ -74,6 +77,17 @@ export default function AdminFunMatchOptionPage({
   const [status, setStatus] = useState<string>('scheduled');
   const [duration, setDuration] = useState<number>(60);
   const [summary, setSummary] = useState<string>('');
+
+  // Edit Match Info Modal State
+  const [editInfoModalOpen, setEditInfoModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editMatchDate, setEditMatchDate] = useState('');
+  const [editVenue, setEditVenue] = useState('');
+  const [editTeamAName, setEditTeamAName] = useState('');
+  const [editTeamBName, setEditTeamBName] = useState('');
+  const [editDuration, setEditDuration] = useState(60);
+  const [editStatus, setEditStatus] = useState('scheduled');
+  const [savingInfo, setSavingInfo] = useState(false);
 
   // Add Member to Match Manual
   const [selectedMemberToAdd, setSelectedMemberToAdd] = useState<string>('');
@@ -121,6 +135,68 @@ export default function AdminFunMatchOptionPage({
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Open Edit Info Modal
+  const openEditInfoModal = () => {
+    if (!funMatch) return;
+    setEditTitle(funMatch.title);
+    setEditMatchDate(formatDateForInput(funMatch.matchDate));
+    setEditVenue(funMatch.venue);
+    setEditTeamAName(funMatch.teamAName);
+    setEditTeamBName(funMatch.teamBName);
+    setEditDuration(funMatch.duration || 60);
+    setEditStatus(funMatch.status || 'scheduled');
+    setEditInfoModalOpen(true);
+  };
+
+  // Save Edit Info
+  const handleSaveMatchInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTitle.trim() || !editMatchDate) return;
+    setSavingInfo(true);
+    try {
+      const res = await fetch(`/api/admin/fun-matches/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          matchDate: editMatchDate,
+          venue: editVenue,
+          teamAName: editTeamAName,
+          teamBName: editTeamBName,
+          duration: editDuration,
+          status: editStatus,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengubah info pertandingan');
+      setAlertMsg({ type: 'success', text: 'Informasi pertandingan berhasil diperbarui!' });
+      setEditInfoModalOpen(false);
+      loadData();
+    } catch (err: any) {
+      setAlertMsg({ type: 'error', text: err.message || 'Terjadi kesalahan' });
+    } finally {
+      setSavingInfo(false);
+    }
+  };
+
+  // Delete Match
+  const handleDeleteFunMatch = async () => {
+    if (!funMatch) return;
+    if (!confirm(`Apakah Anda yakin ingin menghapus pertandingan "${funMatch.title}"? Data lineup dan event statistik pertandingan ini akan dihapus permanen.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/fun-matches/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menghapus pertandingan');
+      router.push('/admin/members');
+    } catch (err: any) {
+      setAlertMsg({ type: 'error', text: err.message || 'Gagal menghapus' });
     }
   };
 
@@ -314,7 +390,7 @@ export default function AdminFunMatchOptionPage({
           BOX 1: MATCHDAY INFO & INPUT SKOR (TIM A vs TIM B)
          ───────────────────────────────────────────────────────────── */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-sky-400">
               BOX 1: MATCH OPTION & SKOR
@@ -322,15 +398,37 @@ export default function AdminFunMatchOptionPage({
             <h1 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight mt-0.5">
               {funMatch.title}
             </h1>
-            <p className="text-xs text-slate-400">
-              {formatWibDate(funMatch.matchDate)} • {formatWibTime(funMatch.matchDate)} • 📍 {funMatch.venue}
+            <p className="text-xs text-slate-400 mt-0.5">
+              {formatWibDate(funMatch.matchDate)} • {formatWibTime(funMatch.matchDate)} • 📍 {funMatch.venue} • Durasi {funMatch.duration || 60} Menit
             </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-black uppercase self-start sm:self-auto ${
-            status === 'finished' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
-          }`}>
-            Status: {status}
-          </span>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
+              status === 'finished'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : status === 'live'
+                ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+            }`}>
+              Status: {status}
+            </span>
+            <button
+              type="button"
+              onClick={openEditInfoModal}
+              className="px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Edit className="w-3.5 h-3.5" />
+              <span>Edit Info Laga</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteFunMatch}
+              className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Hapus Laga</span>
+            </button>
+          </div>
         </div>
 
         {/* Score Form */}
@@ -804,6 +902,124 @@ export default function AdminFunMatchOptionPage({
         </div>
 
       </div>
+
+      {/* ─── MODAL: EDIT INFO PERTANDINGAN FUN MATCH ─── */}
+      {editInfoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/40 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-black uppercase text-white">
+                Edit Informasi Fun Match
+              </h3>
+              <button
+                onClick={() => setEditInfoModalOpen(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMatchInfo} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-400 font-bold mb-1">Judul Laga *</label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 font-bold mb-1">Tanggal &amp; Waktu (WIB) *</label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={editMatchDate}
+                  onChange={(e) => setEditMatchDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 font-bold mb-1">Lokasi / Venue *</label>
+                <input
+                  type="text"
+                  required
+                  value={editVenue}
+                  onChange={(e) => setEditVenue(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Nama Tim A</label>
+                  <input
+                    type="text"
+                    value={editTeamAName}
+                    onChange={(e) => setEditTeamAName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sky-300 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Nama Tim B</label>
+                  <input
+                    type="text"
+                    value={editTeamBName}
+                    onChange={(e) => setEditTeamBName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Durasi Pertandingan (Menit)</label>
+                  <input
+                    type="number"
+                    min="30"
+                    max="120"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(parseInt(e.target.value) || 60)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Status Pertandingan</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                  >
+                    <option value="scheduled">Terjadwal (Scheduled)</option>
+                    <option value="live">Sedang Berlangsung (Live)</option>
+                    <option value="finished">Selesai (Finished)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditInfoModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingInfo}
+                  className="px-6 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black uppercase shadow disabled:opacity-50 cursor-pointer"
+                >
+                  {savingInfo ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

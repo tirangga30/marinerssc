@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,6 +70,15 @@ export async function PUT(
         matchDate: data.matchDate ? new Date(data.matchDate) : existing.matchDate,
       },
     });
+
+    try {
+      revalidatePath('/community');
+      revalidatePath('/community/matches');
+      revalidatePath(`/community/matches/${id}`);
+      revalidatePath('/');
+    } catch (e) {
+      console.error('Revalidation error:', e);
+    }
 
     return NextResponse.json({ success: true, funMatch: updated });
   } catch (error) {

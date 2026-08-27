@@ -125,9 +125,9 @@ export default async function CommunityPlayerProfilePage({
     { label: 'Status Akun', value: member.status === 'ACTIVE' ? 'Aktif' : 'Non-Aktif' },
   ];
 
-  // Recent matches attended by member
+  // Recent matches attended by member (Fun match & Tim Utama matches)
   const attendedAttendances = member.matchAttendances
-    .filter((a) => a.funMatch && a.funMatch.status === 'finished')
+    .filter((a) => a.funMatch || a.footballMatch)
     .slice(0, 10);
 
   return (
@@ -149,6 +149,14 @@ export default async function CommunityPlayerProfilePage({
               alt={member.fullName}
               className="absolute inset-0 w-full h-full object-cover object-top"
             />
+
+            {/* Top-Right Tag: "MEMBER" (tanpa jenis member) */}
+            <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-lg shadow-black/60 border border-amber-300">
+                <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
+                MEMBER
+              </span>
+            </div>
             
             {/* Compact Black Gradient Overlay at Bottom */}
             <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />
@@ -242,7 +250,7 @@ export default async function CommunityPlayerProfilePage({
             <div className="py-14 text-center space-y-2">
               <Shield className="w-9 h-9 mx-auto text-slate-700" />
               <p className="text-sm font-semibold text-slate-500">
-                Belum ada riwayat pertandingan fun match
+                Belum ada riwayat pertandingan
               </p>
             </div>
           ) : (
@@ -265,18 +273,30 @@ export default async function CommunityPlayerProfilePage({
               {/* Rows */}
               <div>
                 {attendedAttendances.map((att: any, idx: number) => {
-                  const match = att.funMatch;
-                  if (!match) return null;
+                  const funMatch = att.funMatch;
+                  const footballMatch = att.footballMatch;
+                  if (!funMatch && !footballMatch) return null;
 
-                  const isTeamA = att.assignedTeam === 'TEAM_A';
-                  const isTeamB = att.assignedTeam === 'TEAM_B';
+                  const isFunMatch = Boolean(funMatch);
+                  const match = funMatch || footballMatch;
+
+                  const isTeamA = isFunMatch && att.assignedTeam === 'TEAM_A';
+                  const isTeamB = isFunMatch && att.assignedTeam === 'TEAM_B';
 
                   let result: 'W' | 'L' | 'D' | null = null;
-                  if (match.teamAScore !== null && match.teamBScore !== null) {
-                    if (isTeamA) {
-                      result = match.teamAScore > match.teamBScore ? 'W' : match.teamAScore < match.teamBScore ? 'L' : 'D';
-                    } else if (isTeamB) {
-                      result = match.teamBScore > match.teamAScore ? 'W' : match.teamBScore < match.teamAScore ? 'L' : 'D';
+                  if (isFunMatch) {
+                    if (funMatch.teamAScore !== null && funMatch.teamBScore !== null) {
+                      if (isTeamA) {
+                        result = funMatch.teamAScore > funMatch.teamBScore ? 'W' : funMatch.teamAScore < funMatch.teamBScore ? 'L' : 'D';
+                      } else if (isTeamB) {
+                        result = funMatch.teamBScore > funMatch.teamAScore ? 'W' : funMatch.teamBScore < funMatch.teamAScore ? 'L' : 'D';
+                      }
+                    }
+                  } else if (footballMatch) {
+                    if (footballMatch.homeScore !== null && footballMatch.awayScore !== null) {
+                      const our = footballMatch.isHome ? footballMatch.homeScore : footballMatch.awayScore;
+                      const their = footballMatch.isHome ? footballMatch.awayScore : footballMatch.homeScore;
+                      result = our > their ? 'W' : our < their ? 'L' : 'D';
                     }
                   }
 
@@ -284,18 +304,22 @@ export default async function CommunityPlayerProfilePage({
                   const rowBorder = idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)';
 
                   // Filter events for this member in this match
-                  const memberEvents = (match.events || []).filter(
-                    (e: any) => e.memberId === member.id || e.playerName === member.fullName
-                  );
+                  const memberEvents = isFunMatch
+                    ? (funMatch.events || []).filter(
+                        (e: any) => e.memberId === member.id || e.playerName === member.fullName
+                      )
+                    : [];
 
                   const dateStr = new Date(match.matchDate)
                     .toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })
                     .replace('/', '.');
 
+                  const href = isFunMatch ? `/community/matches/${funMatch.id}` : `/matches/${footballMatch.id}`;
+
                   return (
                     <Link
                       key={att.id}
-                      href={`/community/matches/${match.id}`}
+                      href={href}
                       className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
                       style={{
                         gridTemplateColumns: '64px 1fr auto',
@@ -311,33 +335,56 @@ export default async function CommunityPlayerProfilePage({
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                            {/* Top Team (Team A) */}
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="w-3.5 h-3.5 rounded bg-blue-950 text-sky-400 font-mono font-black text-[9px] flex items-center justify-center border border-sky-400/40">
-                                A
-                              </span>
-                              <span
-                                className={`text-xs font-bold truncate flex-1 ${
-                                  isTeamA ? 'text-sky-300' : 'text-slate-400 font-semibold'
-                                }`}
-                              >
-                                {match.teamAName} {isTeamA && '(Tim Anda)'}
-                              </span>
-                            </div>
+                            {isFunMatch ? (
+                              <>
+                                {/* Top Team (Team A) */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="w-3.5 h-3.5 rounded bg-blue-950 text-sky-400 font-mono font-black text-[9px] flex items-center justify-center border border-sky-400/40">
+                                    A
+                                  </span>
+                                  <span
+                                    className={`text-xs font-bold truncate flex-1 ${
+                                      isTeamA ? 'text-sky-300' : 'text-slate-400 font-semibold'
+                                    }`}
+                                  >
+                                    {funMatch.teamAName} {isTeamA && '(Tim Anda)'}
+                                  </span>
+                                </div>
 
-                            {/* Bottom Team (Team B) */}
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="w-3.5 h-3.5 rounded bg-amber-950 text-amber-400 font-mono font-black text-[9px] flex items-center justify-center border border-amber-400/40">
-                                B
-                              </span>
-                              <span
-                                className={`text-xs font-bold truncate flex-1 ${
-                                  isTeamB ? 'text-amber-300' : 'text-slate-400 font-semibold'
-                                }`}
-                              >
-                                {match.teamBName} {isTeamB && '(Tim Anda)'}
-                              </span>
-                            </div>
+                                {/* Bottom Team (Team B) */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="w-3.5 h-3.5 rounded bg-amber-950 text-amber-400 font-mono font-black text-[9px] flex items-center justify-center border border-amber-400/40">
+                                    B
+                                  </span>
+                                  <span
+                                    className={`text-xs font-bold truncate flex-1 ${
+                                      isTeamB ? 'text-amber-300' : 'text-slate-400 font-semibold'
+                                    }`}
+                                  >
+                                    {funMatch.teamBName} {isTeamB && '(Tim Anda)'}
+                                  </span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="w-3.5 h-3.5 rounded bg-amber-950 text-amber-400 font-mono font-black text-[9px] flex items-center justify-center border border-amber-400/40">
+                                    ★
+                                  </span>
+                                  <span className="text-xs font-bold truncate flex-1 text-sky-300">
+                                    Mariners SC (Tim Utama)
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="w-3.5 h-3.5 rounded bg-slate-900 text-slate-400 font-mono font-black text-[9px] flex items-center justify-center border border-slate-700">
+                                    vs
+                                  </span>
+                                  <span className="text-xs font-bold truncate flex-1 text-slate-300">
+                                    {footballMatch.opponentName}
+                                  </span>
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           {/* Member Match Events */}
@@ -364,15 +411,28 @@ export default async function CommunityPlayerProfilePage({
                         </div>
                       </div>
 
-                      {/* Vertically Stacked Scores directly to the left of Result Badge */}
+                      {/* Scores & Result */}
                       <div className="flex items-center justify-end gap-2.5 shrink-0">
                         <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                          <span style={{ color: isTeamA ? '#38bdf8' : '#f1f5f9' }}>
-                            {match.teamAScore ?? '—'}
-                          </span>
-                          <span style={{ color: isTeamB ? '#f59e0b' : '#94a3b8' }}>
-                            {match.teamBScore ?? '—'}
-                          </span>
+                          {isFunMatch ? (
+                            <>
+                              <span style={{ color: isTeamA ? '#38bdf8' : '#f1f5f9' }}>
+                                {funMatch.teamAScore ?? '—'}
+                              </span>
+                              <span style={{ color: isTeamB ? '#f59e0b' : '#94a3b8' }}>
+                                {funMatch.teamBScore ?? '—'}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ color: '#38bdf8' }}>
+                                {footballMatch.homeScore ?? '—'}
+                              </span>
+                              <span style={{ color: '#f1f5f9' }}>
+                                {footballMatch.awayScore ?? '—'}
+                              </span>
+                            </>
+                          )}
                         </div>
 
                         {result ? (

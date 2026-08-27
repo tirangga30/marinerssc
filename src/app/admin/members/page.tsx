@@ -10,7 +10,7 @@ import {
   MessageCircle, FileText, ExternalLink, Image as ImageIcon,
   Sparkles, X
 } from 'lucide-react';
-import { formatWibDate, formatWibTime } from '@/lib/date';
+import { formatWibDate, formatWibTime, formatDateForInput } from '@/lib/date';
 
 interface Member {
   id: string;
@@ -90,12 +90,14 @@ export default function AdminMembersPage() {
 
   // Fun Match Modal State
   const [funMatchModalOpen, setFunMatchModalOpen] = useState(false);
+  const [editingFunMatch, setEditingFunMatch] = useState<FunMatch | null>(null);
   const [matchTitle, setMatchTitle] = useState('Fun Match Weekly');
   const [matchDate, setMatchDate] = useState('');
   const [matchVenue, setMatchVenue] = useState('Stadion Gelora Samudra, Jakarta');
   const [teamAName, setTeamAName] = useState('TIM A (NAVY)');
   const [teamBName, setTeamBName] = useState('TIM B (GOLD)');
   const [matchDuration, setMatchDuration] = useState(60);
+  const [matchStatus, setMatchStatus] = useState<'scheduled' | 'live' | 'finished'>('scheduled');
   const [savingFunMatch, setSavingFunMatch] = useState(false);
 
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -393,7 +395,51 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
     }
   };
 
-  // Save Fun Match
+  // Open Create Fun Match Modal
+  const openCreateFunMatchModal = () => {
+    setEditingFunMatch(null);
+    setMatchTitle('Fun Match Weekly');
+    setMatchDate(formatDateForInput(new Date()));
+    setMatchVenue('Stadion Gelora Samudra, Jakarta');
+    setTeamAName('TIM A (NAVY)');
+    setTeamBName('TIM B (GOLD)');
+    setMatchDuration(60);
+    setMatchStatus('scheduled');
+    setFunMatchModalOpen(true);
+  };
+
+  // Open Edit Fun Match Modal
+  const openEditFunMatchModal = (fm: FunMatch) => {
+    setEditingFunMatch(fm);
+    setMatchTitle(fm.title);
+    setMatchDate(formatDateForInput(fm.matchDate));
+    setMatchVenue(fm.venue);
+    setTeamAName(fm.teamAName);
+    setTeamBName(fm.teamBName);
+    setMatchDuration(fm.duration || 60);
+    setMatchStatus((fm.status as any) || 'scheduled');
+    setFunMatchModalOpen(true);
+  };
+
+  // Delete Fun Match
+  const handleDeleteFunMatch = async (id: string, title: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus jadwal fun match "${title}"? Data kehadiran dan statistik pada laga ini juga akan terhapus.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/fun-matches/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menghapus fun match');
+      setAlertMsg({ type: 'success', text: `Jadwal fun match "${title}" berhasil dihapus!` });
+      fetchData();
+    } catch (err: any) {
+      setAlertMsg({ type: 'error', text: err.message || 'Gagal menghapus' });
+    }
+  };
+
+  // Save / Update Fun Match (Informasi Laga Only)
   const handleSaveFunMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!matchTitle.trim() || !matchDate) {
@@ -403,8 +449,13 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
 
     setSavingFunMatch(true);
     try {
-      const res = await fetch('/api/admin/fun-matches', {
-        method: 'POST',
+      const url = editingFunMatch
+        ? `/api/admin/fun-matches/${editingFunMatch.id}`
+        : '/api/admin/fun-matches';
+      const method = editingFunMatch ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: matchTitle,
@@ -413,15 +464,21 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
           teamAName,
           teamBName,
           duration: matchDuration,
+          status: matchStatus,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal membuat fun match');
+      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan fun match');
 
-      setAlertMsg({ type: 'success', text: 'Pertandingan fun match berhasil dijadwalkan!' });
+      setAlertMsg({
+        type: 'success',
+        text: editingFunMatch
+          ? 'Perubahan data fun match berhasil disimpan!'
+          : 'Pertandingan fun match berhasil dijadwalkan!',
+      });
       setFunMatchModalOpen(false);
-      setMatchDate('');
+      setEditingFunMatch(null);
       fetchData();
     } catch (err: any) {
       setAlertMsg({ type: 'error', text: err.message || 'Terjadi kesalahan' });
@@ -864,13 +921,31 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
          ═════════════════════════════════════════════════════════════ */}
       {activeTab === 'FUN_MATCHES' && (
         <div className="space-y-4 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+            <div>
+              <h2 className="text-sm sm:text-base font-black uppercase text-white">
+                Daftar Pertandingan Fun Match Komunitas ({funMatches.length})
+              </h2>
+              <p className="text-xs text-slate-400">
+                Kelola jadwal, edit informasi laga, atur pembagian tim A/B, serta input skor & pencetak gol.
+              </p>
+            </div>
+            <button
+              onClick={openCreateFunMatchModal}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-slate-950" />
+              <span>+ Buat Jadwal Baru</span>
+            </button>
+          </div>
+
           {funMatches.length === 0 ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
               <Calendar className="w-10 h-10 text-slate-500 mx-auto" />
               <h3 className="text-sm font-bold text-white uppercase">Belum ada pertandingan fun match</h3>
               <button
-                onClick={() => setFunMatchModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs"
+                onClick={openCreateFunMatchModal}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer"
               >
                 Buat Jadwal Fun Match Baru
               </button>
@@ -880,9 +955,9 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
               {funMatches.map((fm) => (
                 <div
                   key={fm.id}
-                  className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-sky-500/40 transition-all space-y-4"
+                  className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-sky-500/40 transition-all space-y-4 shadow-lg"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-start justify-between border-b border-slate-800 pb-3 gap-2">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block">
                         FUN MATCH KOMUNITAS
@@ -891,11 +966,31 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                         {fm.title}
                       </h3>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                      fm.status === 'finished' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-sky-500/20 text-sky-300'
-                    }`}>
-                      {fm.status}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                        fm.status === 'finished'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : fm.status === 'live'
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+                      }`}>
+                        {fm.status}
+                      </span>
+                      <button
+                        onClick={() => openEditFunMatchModal(fm)}
+                        title="Edit Data Pertandingan"
+                        className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/30 text-sky-300 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFunMatch(fm.id, fm.title)}
+                        title="Hapus Pertandingan"
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-center py-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
@@ -922,16 +1017,24 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                   </div>
 
                   <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
-                    <Link
-                      href={`/community/matches/${fm.id}`}
-                      target="_blank"
-                      className="text-xs font-bold text-slate-400 hover:text-white"
-                    >
-                      Lihat Publik ↗
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/community/matches/${fm.id}`}
+                        target="_blank"
+                        className="text-xs font-bold text-slate-400 hover:text-white"
+                      >
+                        Lihat Publik ↗
+                      </Link>
+                      <button
+                        onClick={() => openEditFunMatchModal(fm)}
+                        className="text-xs font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit className="w-3 h-3" /> Edit Data
+                      </button>
+                    </div>
                     <Link
                       href={`/admin/members/fun-match/${fm.id}`}
-                      className="px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs flex items-center gap-1.5 shadow"
+                      className="px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs flex items-center gap-1.5 shadow cursor-pointer"
                     >
                       <span>Match Option (Lineup & Skor)</span>
                       <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
@@ -1249,9 +1352,15 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
           <div className="relative w-full max-w-lg bg-slate-900 border border-amber-400/40 rounded-3xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-black uppercase text-white">
-                Buat Jadwal Fun Match Komunitas
+                {editingFunMatch ? 'Edit Data Fun Match Komunitas' : 'Buat Jadwal Fun Match Komunitas'}
               </h3>
-              <button onClick={() => setFunMatchModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button
+                onClick={() => {
+                  setFunMatchModalOpen(false);
+                  setEditingFunMatch(null);
+                }}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1269,7 +1378,7 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
               </div>
 
               <div>
-                <label className="block text-slate-400 font-bold mb-1">Tanggal & Waktu (WIB) *</label>
+                <label className="block text-slate-400 font-bold mb-1">Tanggal &amp; Waktu (WIB) *</label>
                 <input
                   type="datetime-local"
                   required
@@ -1311,32 +1420,49 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 font-bold mb-1">Durasi Pertandingan (Menit)</label>
-                <input
-                  type="number"
-                  min="30"
-                  max="120"
-                  value={matchDuration}
-                  onChange={(e) => setMatchDuration(parseInt(e.target.value) || 60)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Durasi Pertandingan (Menit)</label>
+                  <input
+                    type="number"
+                    min="30"
+                    max="120"
+                    value={matchDuration}
+                    onChange={(e) => setMatchDuration(parseInt(e.target.value) || 60)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">Status Pertandingan</label>
+                  <select
+                    value={matchStatus}
+                    onChange={(e) => setMatchStatus(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                  >
+                    <option value="scheduled">Terjadwal (Scheduled)</option>
+                    <option value="live">Sedang Berlangsung (Live)</option>
+                    <option value="finished">Selesai (Finished)</option>
+                  </select>
+                </div>
               </div>
 
               <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setFunMatchModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold"
+                  onClick={() => {
+                    setFunMatchModalOpen(false);
+                    setEditingFunMatch(null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={savingFunMatch}
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase shadow disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase shadow disabled:opacity-50 cursor-pointer"
                 >
-                  {savingFunMatch ? 'Menyimpan...' : 'Jadwalkan Fun Match'}
+                  {savingFunMatch ? 'Menyimpan...' : editingFunMatch ? 'Simpan Perubahan' : 'Jadwalkan Fun Match'}
                 </button>
               </div>
             </form>

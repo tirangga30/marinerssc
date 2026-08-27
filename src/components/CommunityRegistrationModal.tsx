@@ -207,15 +207,22 @@ export default function CommunityRegistrationModal({
         tier,
         jerseyNumber,
         memberCode: data.member?.memberCode,
+        dataMember: data.member,
       });
 
       setStep(4);
-      if (onSuccess) onSuccess(data.member);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat mendaftar');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFinish = () => {
+    if (onSuccess && submittedData) {
+      onSuccess(submittedData.dataMember || submittedData);
+    }
+    onClose();
   };
 
   return (
@@ -236,8 +243,11 @@ export default function CommunityRegistrationModal({
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            onClick={() => {
+              if (step === 4) handleFinish();
+              else onClose();
+            }}
+            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -751,64 +761,99 @@ export default function CommunityRegistrationModal({
           )}
 
           {/* ═════════════════════════════════════════════════════════
-              STEP 4: SUCCESS SUBMITTED / UCAPAN TERIMA KASIH & PENGADUAN
+              STEP 4: SUCCESS SUBMITTED / PERINGATAN MENUNGGU VERIFIKASI
              ═════════════════════════════════════════════════════════ */}
           {step === 4 && submittedData && (
-            <div className="p-4 sm:p-8 text-center space-y-6 animate-fadeIn">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 mx-auto shadow-xl shadow-emerald-500/20 animate-bounce">
-                <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10" />
+            <div className="p-3 sm:p-6 text-center space-y-5 animate-fadeIn">
+              
+              {/* Top Animated Badge */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-amber-400 mx-auto shadow-2xl shadow-amber-500/30">
+                <Clock className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
               </div>
 
-              <div className="space-y-2 max-w-md mx-auto">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black uppercase tracking-widest">
-                  Pendaftaran Berhasil Terkirim
+              <div className="space-y-1.5 max-w-lg mx-auto">
+                <span className="px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                  STATUS: MENUNGGU VERIFIKASI ADMIN (1x24 JAM)
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight">
-                  Terima Kasih Telah Mendaftar!
+                  Pendaftaran &amp; Pembayaran Berhasil Terkirim!
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Halo <strong className="text-sky-300">{submittedData.fullName}</strong>, data pendaftaran dan bukti transfer Anda telah kami terima dengan baik.
+                  Terima kasih <strong className="text-sky-300">{submittedData.fullName}</strong>. Data diri dan bukti transfer Anda telah masuk ke sistem antrean admin.
                 </p>
               </div>
 
-              {/* Status Note 1x24 Jam */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 text-left space-y-3 max-w-lg mx-auto text-xs">
-                <div className="flex items-start gap-2.5 text-amber-300 font-bold">
-                  <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
-                  <span>
-                    Mohon ditunggu, verifikasi data dan pengiriman ID Member / Kata Sandi akan dikonfirmasi via WhatsApp dalam waktu <strong>1x24 Jam</strong>.
-                  </span>
+              {/* Box Peringatan & Alur Menunggu */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/90 border-2 border-amber-400/40 text-left space-y-3.5 max-w-xl mx-auto shadow-xl">
+                <div className="flex items-center gap-2 text-amber-300 font-black text-xs uppercase tracking-wider border-b border-slate-800 pb-2.5">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Alur Aktivasi Akun Member (Maksimal 1x24 Jam):</span>
                 </div>
-                <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-300 space-y-1">
-                  <p>📱 WhatsApp Tujuan: <strong className="text-white">{submittedData.phone}</strong></p>
-                  <p>👑 Paket Membership: <strong className="text-amber-300">{submittedData.tier}</strong></p>
-                  <p>🔢 Nomor Punggung: <strong className="text-sky-300">#{submittedData.jerseyNumber}</strong></p>
+
+                <div className="space-y-2.5 text-xs text-slate-200">
+                  <div className="flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-slate-800 text-sky-400 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 border border-slate-700">
+                      1
+                    </span>
+                    <div>
+                      <strong className="text-white block">Pengecekan Pembayaran oleh Admin</strong>
+                      <span className="text-[11px] text-slate-400">Tim admin Mariners SC sedang memvalidasi mutasi bukti transfer pembayaran Anda.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-slate-800 text-sky-400 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 border border-slate-700">
+                      2
+                    </span>
+                    <div>
+                      <strong className="text-white block">Pengiriman ID Member &amp; Kata Sandi</strong>
+                      <span className="text-[11px] text-slate-400">
+                        Setelah disetujui, akun aktif beserta kredensial login akan otomatis dikirimkan via WhatsApp ke: <strong className="text-emerald-400">{submittedData.phone}</strong>.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-slate-800 text-sky-400 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 border border-slate-700">
+                      3
+                    </span>
+                    <div>
+                      <strong className="text-white block">Login &amp; Ikuti Pertandingan</strong>
+                      <span className="text-[11px] text-slate-400">Anda dapat langsung login di web dan mengonfirmasi kehadiran (RSVP) di jadwal Fun Match mingguan.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                  <span>👑 Paket: <strong className="text-amber-300">{submittedData.tier}</strong></span>
+                  <span>🔢 Nomor Punggung: <strong className="text-sky-300">#{submittedData.jerseyNumber}</strong></span>
                 </div>
               </div>
 
-              {/* Kotak Pengaduan Kendala */}
-              <div className="p-4 rounded-2xl bg-blue-950/30 border border-sky-400/30 text-left space-y-2.5 max-w-lg mx-auto">
-                <div className="flex items-center gap-2 text-sky-300 font-bold text-xs">
-                  <HelpCircle className="w-4 h-4 text-sky-400" />
-                  <span>Pusat Bantuan &amp; Pengaduan Kendala:</span>
+              {/* Quick WhatsApp Action (Konfirmasi Cepat) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-950 to-emerald-950/40 border border-emerald-500/40 text-left space-y-2.5 max-w-xl mx-auto shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Ingin Konfirmasi Lebih Cepat?</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">085223337028</span>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Jika mengalami kendala atau konfirmasi belum diterima setelah 1x24 jam, hubungi admin resmi di:
+                <p className="text-[11px] text-slate-300">
+                  Kirim notifikasi bukti pembayaran langsung ke WhatsApp Admin agar akun Anda dapat segera diproses:
                 </p>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="font-mono font-black text-amber-400 text-sm sm:text-base">
-                    📞 085223337028
-                  </span>
-                  <a
-                    href="https://wa.me/6285223337028?text=Halo%20Admin%20Mariners%20SC,%20saya%20sudah%20mendaftar%20member%20dan%20ingin%20konfirmasi."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase transition-colors shadow-md"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Chat WhatsApp Admin</span>
-                  </a>
-                </div>
+                <a
+                  href={`https://wa.me/6285223337028?text=${encodeURIComponent(
+                    `Halo Admin Mariners SC, saya telah mendaftar member baru dan mengunggah bukti pembayaran.\n\nDetail Pendaftar:\n• Nama: ${submittedData.fullName}\n• No WA: ${submittedData.phone}\n• Paket: ${submittedData.tier}\n• No Punggung: #${submittedData.jerseyNumber}\n\nMohon bantu verifikasi dan aktivasi akun saya. Terima kasih!`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 text-center"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Konfirmasi ke WhatsApp Admin Sekarang ↗</span>
+                </a>
               </div>
 
               {/* Close & Action Buttons */}
@@ -817,20 +862,20 @@ export default function CommunityRegistrationModal({
                   <button
                     type="button"
                     onClick={() => {
-                      onClose();
+                      handleFinish();
                       onOpenLogin();
                     }}
-                    className="px-6 py-2.5 rounded-xl font-bold uppercase text-white glass-panel border border-slate-700 hover:border-sky-400 hover:text-sky-300 text-xs transition-all"
+                    className="px-6 py-2.5 rounded-xl font-bold uppercase text-white glass-panel border border-slate-700 hover:border-sky-400 hover:text-sky-300 text-xs transition-all cursor-pointer"
                   >
                     Buka Halaman Login
                   </button>
                 )}
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20"
+                  onClick={handleFinish}
+                  className="px-8 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20 cursor-pointer"
                 >
-                  Selesai &amp; Tutup
+                  Selesai &amp; Kembali ke Beranda
                 </button>
               </div>
             </div>

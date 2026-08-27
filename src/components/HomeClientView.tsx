@@ -66,6 +66,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
   const { clubMode, setClubMode } = useClubMode();
   const [showRegModal, setShowRegModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const {
     nextMatch,
@@ -96,6 +97,18 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
   return (
     <div className="space-y-8 sm:space-y-16 pb-12">
       
+      {/* Global Alert Notification */}
+      {message && (
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-between gap-3 shadow-xl">
+            <span>{message.text}</span>
+            <button onClick={() => setMessage(null)} className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ═════════════════════════════════════════════════════════════
           HERO SECTION DENGAN SLIDE TOGGLE SWITCHER
          ═════════════════════════════════════════════════════════════ */}
@@ -555,9 +568,11 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
 
                   {/* Score / VS */}
                   <div className="space-y-0.5 sm:space-y-2">
-                    {nextFunMatch.status === 'finished' ? (
+                    {nextFunMatch.status === 'finished' || (nextFunMatch.teamAScore !== null && nextFunMatch.teamBScore !== null) ? (
                       <>
-                        <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+                        <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium uppercase">
+                          {nextFunMatch.status === 'finished' ? 'FULL TIME' : nextFunMatch.status === 'live' ? 'LIVE' : 'SKOR'}
+                        </p>
                         <div className="text-xl sm:text-5xl font-black font-mono text-amber-400 tracking-widest">
                           {nextFunMatch.teamAScore ?? 0} : {nextFunMatch.teamBScore ?? 0}
                         </div>
@@ -798,6 +813,10 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
         }}
         onSuccess={() => {
           setShowRegModal(false);
+          setMessage({
+            type: 'success',
+            text: 'Pendaftaran berhasil terkirim! Bukti pembayaran Anda sedang diverifikasi oleh admin (maksimal 1x24 jam). Akun & kata sandi akan dikonfirmasi via WhatsApp.',
+          });
         }}
       />
       <CommunityLoginModal

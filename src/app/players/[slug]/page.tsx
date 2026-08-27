@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { ArrowLeft, BarChart2, Shield } from 'lucide-react';
+import { ArrowLeft, BarChart2, Shield, Sparkles } from 'lucide-react';
 import { Oswald } from 'next/font/google';
 
 const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -65,6 +65,7 @@ export default async function PlayerDetailPage({
   const player = await prisma.player.findUnique({
     where: { slug },
     include: {
+      member: true,
       lineups: {
         include: { match: { include: { events: true } } },
         orderBy: { match: { matchDate: 'desc' } },
@@ -79,6 +80,16 @@ export default async function PlayerDetailPage({
   });
 
   if (!player || player.isGuest) notFound();
+
+  // Check if player is a Member or matches a member record
+  const member = player.member || await prisma.member.findFirst({
+    where: {
+      OR: [
+        { playerId: player.id },
+        { fullName: player.name },
+      ],
+    },
+  });
 
   const nowMs = new Date().getTime();
 
@@ -127,19 +138,35 @@ export default async function PlayerDetailPage({
   const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
   const specBg = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' };
 
-  const specs = [
-    {
-      label: 'Tanggal Lahir',
-      value: player.birthDate
-        ? new Date(player.birthDate).toLocaleDateString('id-ID', {
-          day: '2-digit', month: 'short', year: 'numeric',
-        })
-        : '—',
-    },
-    { label: 'Kewarganegaraan', value: player.nationality || 'Indonesia' },
-    { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
-    { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
-  ];
+  // Biodata specs on Tim Utama page (Tanggal Lahir, Kewarganegaraan, Tinggi Badan, Berat Badan)
+  const specs = member
+    ? [
+        { label: 'Tanggal Lahir', value: '—' },
+        { label: 'Kewarganegaraan', value: '—' },
+        { label: 'Tinggi Badan', value: '—' },
+        { label: 'Berat Badan', value: '—' },
+      ]
+    : [
+        {
+          label: 'Tanggal Lahir',
+          value: player.birthDate
+            ? new Date(player.birthDate).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : '—',
+        },
+        {
+          label: 'Kewarganegaraan',
+          value:
+            player.nationality && player.nationality !== 'Indonesia' && player.nationality !== '-'
+              ? player.nationality
+              : '—',
+        },
+        { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
+        { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
+      ];
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
@@ -160,6 +187,16 @@ export default async function PlayerDetailPage({
               alt={player.name}
               className="absolute inset-0 w-full h-full object-cover object-top"
             />
+
+            {/* Top-Right Tag: "MEMBER" (tanpa jenis member) jika merupakan member */}
+            {member && (
+              <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-lg shadow-black/60 border border-amber-300">
+                  <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
+                  MEMBER
+                </span>
+              </div>
+            )}
             
             {/* Compact Black Gradient Overlay at Bottom */}
             <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />

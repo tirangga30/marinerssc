@@ -61,7 +61,7 @@ export default async function HomePage() {
         take: 3,
       }),
       prisma.player.findMany({
-        where: { isFeatured: true, isGuest: false },
+        where: { isFeatured: true, isGuest: false, member: null },
         orderBy: { number: 'asc' },
         take: 6,
       }),
@@ -89,7 +89,7 @@ export default async function HomePage() {
 
     if (featuredPlayers.length === 0) {
       featuredPlayers = await prisma.player.findMany({
-        where: { isGuest: false },
+        where: { isGuest: false, member: null },
         take: 6,
         orderBy: { appearances: 'desc' },
       });

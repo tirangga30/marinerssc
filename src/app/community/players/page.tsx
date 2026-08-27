@@ -105,6 +105,14 @@ export default async function CommunityPlayersPage() {
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
+
+                    {/* Top-Right Tag: "MEMBER" */}
+                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider shadow-md shadow-black/60 border border-amber-300">
+                        <Sparkles className="w-2.5 h-2.5 text-slate-950 fill-slate-950" />
+                        MEMBER
+                      </span>
+                    </div>
                     
                     {/* Compact Black Gradient Overlay at Bottom */}
                     <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />

@@ -18,6 +18,7 @@ interface CommunityPortalProps {
   initialMember: any | null;
   upcomingFunMatch: any | null;
   upcomingMainSquadInvitation: any | null;
+  upcomingMainSquadMatch?: any | null;
   declinedInvitations: any[];
   allConfirmedFunMatchPlayers: any[];
   recentFunMatches: any[];
@@ -28,6 +29,7 @@ export default function CommunityPortal({
   initialMember,
   upcomingFunMatch,
   upcomingMainSquadInvitation,
+  upcomingMainSquadMatch,
   declinedInvitations = [],
   allConfirmedFunMatchPlayers = [],
   recentFunMatches = [],
@@ -522,7 +524,7 @@ export default function CommunityPortal({
                 </div>
               </div>
 
-              {/* Match Card Preview (TIM A vs TIM B) */}
+              {/* Match Card Preview (TIM A vs TIM B) with Live / Finished Score */}
               <div className="p-4 sm:p-6 rounded-2xl bg-slate-950/90 border border-slate-800 grid grid-cols-3 items-center text-center gap-2">
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="w-12 h-12 rounded-xl bg-blue-950/80 border border-sky-400/40 flex items-center justify-center text-sky-300 font-black text-sm">
@@ -530,10 +532,35 @@ export default function CommunityPortal({
                   </div>
                   <span className="text-xs font-black uppercase text-white">{upcomingFunMatch.teamAName}</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-xl sm:text-2xl font-black text-sky-400 tracking-wider">VS</span>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold">Fun Match Internal</span>
-                </div>
+
+                {upcomingFunMatch.teamAScore !== null && upcomingFunMatch.teamBScore !== null ? (
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-sky-400">
+                        {upcomingFunMatch.teamAScore}
+                      </span>
+                      <span className="text-sm font-bold text-slate-500">:</span>
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400">
+                        {upcomingFunMatch.teamBScore}
+                      </span>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${
+                      upcomingFunMatch.status === 'finished'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : upcomingFunMatch.status === 'live'
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                        : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                    }`}>
+                      {upcomingFunMatch.status === 'finished' ? 'Full Time' : upcomingFunMatch.status === 'live' ? 'Live' : 'Skor'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl sm:text-2xl font-black text-sky-400 tracking-wider">VS</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Fun Match Internal</span>
+                  </div>
+                )}
+
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="w-12 h-12 rounded-xl bg-amber-950/80 border border-amber-400/40 flex items-center justify-center text-amber-300 font-black text-sm">
                     B
@@ -645,6 +672,154 @@ export default function CommunityPortal({
          ───────────────────────────────────────────────────────────── */}
       {!member && (
         <div className="space-y-8">
+          
+
+
+          {/* UPCOMING FUN MATCH PREVIEW FOR VISITORS */}
+          {upcomingFunMatch && (
+            <div className="glass-panel p-4 sm:p-8 rounded-3xl border border-sky-400/40 shadow-2xl space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                      Fun Match Mendatang
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {formatWibDate(upcomingFunMatch.matchDate, {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })} • {formatWibTime(upcomingFunMatch.matchDate)}
+                    </span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white mt-1">
+                    {upcomingFunMatch.title}
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    📍 {upcomingFunMatch.venue} • Durasi {upcomingFunMatch.duration || 60} Menit
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openRegisterWithTier('PRO')}
+                    className="px-5 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20 flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    Daftar Member untuk Ikut
+                  </button>
+                  <button
+                    onClick={() => setLoginModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold transition-all"
+                  >
+                    Login
+                  </button>
+                </div>
+              </div>
+
+              {/* Match Card Preview (TIM A vs TIM B) */}
+              <div className="p-4 sm:p-6 rounded-2xl bg-slate-950/90 border border-slate-800 grid grid-cols-3 items-center text-center gap-2">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 rounded-xl bg-blue-950/80 border border-sky-400/40 flex items-center justify-center text-sky-300 font-black text-sm">
+                    A
+                  </div>
+                  <span className="text-xs font-black uppercase text-white">{upcomingFunMatch.teamAName}</span>
+                </div>
+
+                {upcomingFunMatch.teamAScore !== null && upcomingFunMatch.teamBScore !== null ? (
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-sky-400">
+                        {upcomingFunMatch.teamAScore}
+                      </span>
+                      <span className="text-sm font-bold text-slate-500">:</span>
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400">
+                        {upcomingFunMatch.teamBScore}
+                      </span>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1 ${
+                      upcomingFunMatch.status === 'finished'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : upcomingFunMatch.status === 'live'
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                        : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                    }`}>
+                      {upcomingFunMatch.status === 'finished' ? 'Full Time' : upcomingFunMatch.status === 'live' ? 'Live' : 'Skor'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl sm:text-2xl font-black text-sky-400 tracking-wider">VS</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Fun Match Internal</span>
+                  </div>
+                )}
+
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 rounded-xl bg-amber-950/80 border border-amber-400/40 flex items-center justify-center text-amber-300 font-black text-sm">
+                    B
+                  </div>
+                  <span className="text-xs font-black uppercase text-white">{upcomingFunMatch.teamBName}</span>
+                </div>
+              </div>
+
+              {/* DAFTAR PEMAIN YANG IKUT */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
+                    <Users className="w-4 h-4 text-sky-400" />
+                    Daftar Pemain Ikut ({allConfirmedFunMatchPlayers.filter(p => p.status === 'CONFIRMED').length} Pemain)
+                  </h3>
+                  <span className="text-[11px] text-slate-400">Konfirmasi langsung oleh member</span>
+                </div>
+
+                {allConfirmedFunMatchPlayers.filter(p => p.status === 'CONFIRMED').length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-slate-950/60 border border-slate-800 text-center text-slate-400 text-xs">
+                    Belum ada member yang mengonfirmasi kehadiran.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                    {allConfirmedFunMatchPlayers
+                      .filter((p) => p.status === 'CONFIRMED')
+                      .map((p, idx) => (
+                        <div
+                          key={p.id || idx}
+                          className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90"
+                        >
+                          <img
+                            src={p.member?.photoUrl || '/defaultplayer.png'}
+                            alt={p.playerName}
+                            className="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-700 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-xs font-bold text-white truncate block">
+                                {p.member?.nickname || p.playerName}
+                              </span>
+                              <span className="text-[10px] font-black text-amber-400 shrink-0">
+                                #{p.member?.jerseyNumber || 30}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md bg-slate-800 text-sky-300">
+                                {p.member?.position || 'MF'}
+                              </span>
+                              {p.assignedTeam && (
+                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
+                                  p.assignedTeam === 'TEAM_A' ? 'bg-blue-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'
+                                }`}>
+                                  {p.assignedTeam === 'TEAM_A' ? 'Tim A' : 'Tim B'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-sky-400">
@@ -817,8 +992,12 @@ export default function CommunityPortal({
           setRegisterModalOpen(false);
           setLoginModalOpen(true);
         }}
-        onSuccess={() => {
+        onSuccess={(submittedMember) => {
           setRegisterModalOpen(false);
+          setMessage({
+            type: 'success',
+            text: `Pendaftaran berhasil terkirim! Bukti pembayaran Anda sedang diverifikasi oleh admin (maksimal 1x24 jam). Akun & kata sandi akan dikonfirmasi via WhatsApp.`,
+          });
           router.refresh();
         }}
       />

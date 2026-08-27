@@ -1186,29 +1186,47 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                           const isInviting = invitingMemberId === m.id;
 
                           // Find if already converted to player
-                          const matchedPlayer = players.find((p) => p.name === m.fullName || (m.playerId && p.id === m.playerId));
+                          const matchedPlayer = players.find(
+                            (p) =>
+                              (m.playerId && p.id === m.playerId) ||
+                              (att?.playerId && p.id === att.playerId) ||
+                              p.name.toLowerCase() === m.fullName.toLowerCase() ||
+                              (m.nickname && p.name.toLowerCase() === m.nickname.toLowerCase())
+                          );
                           const isPitched = matchedPlayer ? pitchedIds.has(matchedPlayer.id) : false;
                           const isBenched = matchedPlayer ? benchSet.has(matchedPlayer.id) : false;
+                          const isDraggable = attStatus === 'CONFIRMED' && Boolean(matchedPlayer) && !isPitched && !isBenched;
 
                           return (
                             <div
                               key={m.id}
-                              draggable={attStatus === 'CONFIRMED' && matchedPlayer && !isPitched && !isBenched}
+                              draggable={isDraggable}
                               onDragStart={(e) => {
                                 if (matchedPlayer) handleDragStart(matchedPlayer.id, false, e);
                               }}
                               onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                              className={`p-2 rounded-xl border transition-all text-xs ${
-                                attStatus === 'DECLINED'
+                              className={`p-2 rounded-xl border transition-all text-xs select-none ${
+                                isDraggable ? 'cursor-grab active:cursor-grabbing hover:border-emerald-400' : ''
+                              } ${
+                                dragPlayerId === matchedPlayer?.id
+                                  ? 'opacity-40 scale-95'
+                                  : attStatus === 'DECLINED'
                                   ? 'bg-red-950/40 border-red-500/60 text-red-200'
                                   : attStatus === 'CONFIRMED'
-                                  ? 'bg-emerald-950/30 border-emerald-500/40 text-white'
+                                  ? isPitched
+                                    ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300 opacity-60'
+                                    : isBenched
+                                    ? 'bg-sky-950/30 border-sky-500/40 text-sky-200'
+                                    : 'bg-emerald-950/40 border-emerald-500/50 text-white shadow-sm'
                                   : attStatus === 'INVITED'
                                   ? 'bg-amber-950/30 border-amber-500/40 text-white'
                                   : 'bg-slate-900/80 border-slate-800 text-slate-300'
                               }`}
                             >
                               <div className="flex items-center gap-2">
+                                {isDraggable && (
+                                  <GripVertical className="w-3 h-3 text-emerald-400/80 shrink-0" />
+                                )}
                                 <img
                                   src={m.photoUrl || '/defaultplayer.png'}
                                   alt={m.fullName}
@@ -1228,6 +1246,16 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                       {m.position}
                                     </span>
                                     <span className="text-[8px] text-slate-400">{m.tier}</span>
+                                    {isPitched && (
+                                      <span className="text-[7.5px] font-bold text-emerald-400 ml-auto">
+                                        • Di Lapangan
+                                      </span>
+                                    )}
+                                    {isBenched && (
+                                      <span className="text-[7.5px] font-bold text-sky-400 ml-auto">
+                                        • Cadangan
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1262,18 +1290,34 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 )}
 
                                 {attStatus === 'CONFIRMED' && (
-                                  <div className="w-full flex items-center justify-between">
-                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black uppercase text-[8px] border border-emerald-500/30">
-                                      ✓ Terkonfirmasi Ikut
+                                  <div className="w-full flex items-center justify-between gap-1">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black uppercase text-[8px] border border-emerald-500/30 flex items-center gap-1">
+                                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" /> Terkonfirmasi
                                     </span>
                                     {matchedPlayer && !isPitched && !isBenched && (
-                                      <button
-                                        type="button"
-                                        onClick={() => setBenchPlayerIds((prev) => [...prev, matchedPlayer.id])}
-                                        className="text-sky-400 hover:underline text-[8px] font-bold"
-                                      >
-                                        + Cadangan
-                                      </button>
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setStarters((prev) => [
+                                              ...prev.filter((p) => p.playerId !== matchedPlayer.id),
+                                              { playerId: matchedPlayer.id, x: 50, y: 50, positionName: 'Midfielder', pitchPosition: 'CM' },
+                                            ]);
+                                          }}
+                                          className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 text-[8px] font-bold"
+                                          title="Masukkan langsung ke Lapangan"
+                                        >
+                                          + Starter
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setBenchPlayerIds((prev) => [...prev, matchedPlayer.id])}
+                                          className="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500/40 text-[8px] font-bold"
+                                          title="Masukkan ke Cadangan"
+                                        >
+                                          + Bench
+                                        </button>
+                                      </div>
                                     )}
                                   </div>
                                 )}

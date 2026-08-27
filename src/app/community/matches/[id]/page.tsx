@@ -85,10 +85,16 @@ export default async function FunMatchDetailPage({
 
           {/* Score Box */}
           <div className="-mt-2 space-y-1">
-            {isFinished ? (
+            {isFinished || (funMatch.teamAScore !== null && funMatch.teamBScore !== null) ? (
               <div>
-                <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase border border-emerald-500/30">
-                  Full Time
+                <span className={`inline-block mb-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase border ${
+                  isFinished
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    : isLive
+                    ? 'bg-red-600/30 text-red-400 border-red-500/50 animate-pulse'
+                    : 'bg-sky-500/20 text-sky-400 border-sky-500/30'
+                }`}>
+                  {isFinished ? 'Full Time' : isLive ? 'Sedang Berlangsung' : 'Skor Pertandingan'}
                 </span>
                 <div className="text-3xl sm:text-6xl font-black font-mono text-amber-400 tracking-widest">
                   {funMatch.teamAScore ?? 0} : {funMatch.teamBScore ?? 0}

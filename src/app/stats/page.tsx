@@ -16,6 +16,7 @@ const formatPosition = (pos: string) => {
 
 export default async function StatsPage() {
   const rawPlayers = await prisma.player.findMany({
+    where: { isGuest: false, member: null },
     include: {
       events: true,
       assistedEvents: true,
