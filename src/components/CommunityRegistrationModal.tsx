@@ -679,7 +679,7 @@ export default function CommunityRegistrationModal({
               <div className="p-5 rounded-2xl bg-slate-950 border border-amber-400/30 text-center space-y-3">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[10px] font-black uppercase">
                   <QrCode className="w-3.5 h-3.5" />
-                  <span>Scan QRIS Resmi Mariners SC</span>
+                  <span>Scan QRIS</span>
                 </div>
 
                 <div className="max-w-[240px] sm:max-w-[260px] mx-auto rounded-2xl overflow-hidden border-2 border-white/20 bg-white p-2.5 shadow-2xl">

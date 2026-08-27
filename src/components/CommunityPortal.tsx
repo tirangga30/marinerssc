@@ -318,31 +318,38 @@ export default function CommunityPortal({
       {member && (
         <div className="space-y-8">
           
-          {/* PERSONAL STATS OVERVIEW */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fun Matches</span>
-              <span className="text-xl sm:text-2xl font-black text-white mt-1 block">{member.funAppearances || 0}</span>
+          {/* PERSONAL STATS OVERVIEW (IDENTIK DENGAN AKUMULASI STATISTIK TIM UTAMA) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-400">
+                Akumulasi Statistik Individu
+              </span>
+              <span className="text-[10px] text-slate-400 font-semibold">
+                Fun Match &amp; Tim Utama
+              </span>
             </div>
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tim Utama</span>
-              <span className="text-xl sm:text-2xl font-black text-sky-400 mt-1 block">{member.mainAppearances || 0}</span>
-            </div>
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Gol</span>
-              <span className="text-xl sm:text-2xl font-black text-amber-400 mt-1 block">{member.goals || 0}</span>
-            </div>
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assist</span>
-              <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block">{member.assists || 0}</span>
-            </div>
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Kartu Kuning</span>
-              <span className="text-xl sm:text-2xl font-black text-yellow-400 mt-1 block">{member.yellowCards || 0}</span>
-            </div>
-            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Kartu Merah</span>
-              <span className="text-xl sm:text-2xl font-black text-red-400 mt-1 block">{member.redCards || 0}</span>
+            <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] rounded-2xl sm:rounded-3xl border border-amber-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
+              {[
+                { label: 'GOL', value: member.totalGoals ?? member.goals ?? 0 },
+                { label: 'ASSIST', value: member.totalAssists ?? member.assists ?? 0 },
+                {
+                  label: 'MAIN',
+                  value:
+                    member.totalAppearances ??
+                    ((member.funAppearances || 0) + (member.mainAppearances || 0)),
+                },
+                { label: 'KUNING', value: member.totalYellowCards ?? member.yellowCards ?? 0 },
+                { label: 'MERAH', value: member.totalRedCards ?? member.redCards ?? 0 },
+              ].map((s) => (
+                <div key={s.label} className="flex flex-col items-center justify-center px-1 sm:px-3 text-center">
+                  <span className="text-2xl sm:text-4xl font-black font-mono text-white tracking-tight">
+                    {s.value}
+                  </span>
+                  <span className="text-[9px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mt-1">
+                    {s.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

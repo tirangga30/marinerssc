@@ -13,9 +13,108 @@ export default async function CommunityPage() {
   let declinedInvitations: any[] = [];
 
   if (session) {
-    memberData = await prisma.member.findUnique({
+    const rawMember = await prisma.member.findUnique({
       where: { id: session.memberId },
+      include: {
+        funMatchEvents: true,
+        matchAttendances: {
+          include: {
+            funMatch: true,
+            footballMatch: true,
+          },
+        },
+        player: {
+          include: {
+            events: true,
+            assistedEvents: true,
+            lineups: {
+              include: {
+                match: {
+                  include: {
+                    events: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+
+    if (rawMember) {
+      // 1. Calculate from Fun Match Events
+      const funGoals = (rawMember.funMatchEvents || []).filter(
+        (e: any) => e.type === 'goal' || e.type === 'penalty'
+      ).length;
+      const funAssists = (rawMember.funMatchEvents || []).filter(
+        (e: any) => e.type === 'assist'
+      ).length;
+      const funYellowCards = (rawMember.funMatchEvents || []).filter(
+        (e: any) => e.type === 'yellow_card'
+      ).length;
+      const funRedCards = (rawMember.funMatchEvents || []).filter(
+        (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
+      ).length;
+      const funAppearances = (rawMember.matchAttendances || []).filter(
+        (a: any) => a.funMatchId && a.status === 'CONFIRMED'
+      ).length;
+
+      // 2. Calculate from Tim Utama (if member called up / linked)
+      const mainGoals = rawMember.player
+        ? (rawMember.player.events || []).filter(
+            (e: any) => e.type === 'goal' || e.type === 'penalty'
+          ).length
+        : 0;
+      const mainAssists = rawMember.player
+        ? (rawMember.player.events || []).filter((e: any) => e.type === 'assist').length +
+          (rawMember.player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length
+        : 0;
+      const mainYellowCards = rawMember.player
+        ? (rawMember.player.events || []).filter((e: any) => e.type === 'yellow_card').length
+        : 0;
+      const mainRedCards = rawMember.player
+        ? (rawMember.player.events || []).filter(
+            (e: any) => e.type === 'red_card' || e.type === 'second_yellow'
+          ).length
+        : 0;
+      const mainAppearances = rawMember.player
+        ? (rawMember.player.lineups || []).filter((l: any) => {
+            if (l.isStarter) return true;
+            const matchEvents = l.match?.events || [];
+            return matchEvents.some(
+              (e: any) => e.type === 'sub' && e.playerId === rawMember.player?.id
+            );
+          }).length
+        : (rawMember.matchAttendances || []).filter(
+            (a: any) => a.matchId && a.status === 'CONFIRMED'
+          ).length;
+
+      const totalGoals = Math.max(rawMember.goals || 0, funGoals + mainGoals);
+      const totalAssists = Math.max(rawMember.assists || 0, funAssists + mainAssists);
+      const totalAppearances = Math.max(
+        (rawMember.funAppearances || 0) + (rawMember.mainAppearances || 0),
+        funAppearances + mainAppearances
+      );
+      const totalYellowCards = Math.max(
+        rawMember.yellowCards || 0,
+        funYellowCards + mainYellowCards
+      );
+      const totalRedCards = Math.max(
+        rawMember.redCards || 0,
+        funRedCards + mainRedCards
+      );
+
+      memberData = {
+        ...rawMember,
+        totalGoals,
+        totalAssists,
+        totalAppearances,
+        totalYellowCards,
+        totalRedCards,
+        funAppearances,
+        mainAppearances,
+      };
+    }
 
     // Check if there is an upcoming main squad match where this member is invited
     const now = new Date();
