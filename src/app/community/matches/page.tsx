@@ -7,9 +7,35 @@ import { Calendar, Sparkles, MapPin, Clock, ArrowRight, Shield } from 'lucide-re
 
 export const dynamic = 'force-dynamic';
 
+function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
+  if (!fm) return 'scheduled';
+  if (fm.status === 'finished') return 'finished';
+  if (fm.teamAScore !== null && fm.teamBScore !== null && fm.teamAScore !== undefined && fm.teamBScore !== undefined) {
+    return 'finished';
+  }
+
+  const now = new Date();
+  const start = new Date(fm.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  const durationMinutes = fm.duration || 60;
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+
+  if (fm.status === 'live' || (now >= start && now < end)) {
+    return 'live';
+  }
+
+  if (now >= end) {
+    return 'finished';
+  }
+
+  return 'scheduled';
+}
+
 function FunMatchCard({ match }: { match: any }) {
-  const isLive = match.status === 'live';
-  const isFinished = match.status === 'finished';
+  const compStatus = match.computedStatus || getDynamicFunMatchStatus(match);
+  const isLive = compStatus === 'live';
+  const isFinished = compStatus === 'finished';
 
   return (
     <Link
@@ -129,17 +155,18 @@ export default async function CommunityMatchesPage({
 
   const matchesWithDay = allMatches.map((m, idx) => ({
     ...m,
+    computedStatus: getDynamicFunMatchStatus(m),
     matchday: idx + 1,
   }));
 
   // Upcoming / Live: terdekat dulu (ASC)
   const upcomingMatches = matchesWithDay
-    .filter((m) => m.status === 'scheduled' || m.status === 'live')
+    .filter((m) => m.computedStatus === 'scheduled' || m.computedStatus === 'live')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
   // Finished: terbaru dulu (DESC)
   const finishedMatches = matchesWithDay
-    .filter((m) => m.status === 'finished')
+    .filter((m) => m.computedStatus === 'finished')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const filteredMatches =

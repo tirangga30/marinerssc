@@ -5,6 +5,31 @@ import CommunityPortal from '@/components/CommunityPortal';
 
 export const dynamic = 'force-dynamic';
 
+function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
+  if (!fm) return 'scheduled';
+  if (fm.status === 'finished') return 'finished';
+  if (fm.teamAScore !== null && fm.teamBScore !== null && fm.teamAScore !== undefined && fm.teamBScore !== undefined) {
+    return 'finished';
+  }
+
+  const now = new Date();
+  const start = new Date(fm.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  const durationMinutes = fm.duration || 60;
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+
+  if (fm.status === 'live' || (now >= start && now < end)) {
+    return 'live';
+  }
+
+  if (now >= end) {
+    return 'finished';
+  }
+
+  return 'scheduled';
+}
+
 export default async function CommunityPage() {
   const session = await getMemberSession();
 
@@ -125,46 +150,45 @@ export default async function CommunityPage() {
     });
   }
 
-  // Fetch upcoming or active Fun Match
-  const now = new Date();
-  let upcomingFunMatch = await prisma.funMatch.findFirst({
-    where: {
-      matchDate: { gte: new Date(now.getTime() - 8 * 60 * 60 * 1000) },
-    },
+  // Fetch and categorize Fun Matches dynamically
+  const allFunMatches = await prisma.funMatch.findMany({
     include: {
       attendances: {
         include: { member: true },
       },
+      events: true,
     },
     orderBy: { matchDate: 'asc' },
   });
 
-  // If no upcoming fun match found, fallback to the latest fun match
-  if (!upcomingFunMatch) {
-    upcomingFunMatch = await prisma.funMatch.findFirst({
-      include: {
-        attendances: {
-          include: { member: true },
-        },
-      },
-      orderBy: { matchDate: 'desc' },
-    });
-  }
+  const funMatchesWithStatus = allFunMatches.map((fm) => ({
+    ...fm,
+    computedStatus: getDynamicFunMatchStatus(fm),
+  }));
+
+  // Upcoming Fun Match: earliest scheduled or live match
+  const upcomingFunMatch =
+    funMatchesWithStatus
+      .filter((fm) => fm.computedStatus === 'scheduled' || fm.computedStatus === 'live')
+      .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())[0] ||
+    funMatchesWithStatus[funMatchesWithStatus.length - 1] ||
+    null;
 
   // Confirmed attendees for upcoming fun match
   const confirmedAttendees = upcomingFunMatch ? upcomingFunMatch.attendances : [];
 
-  // Recent fun matches
-  const recentFunMatches = await prisma.funMatch.findMany({
-    take: 6,
-    orderBy: { matchDate: 'desc' },
-  });
+  // Recent / Finished Fun Matches: latest finished matches
+  const recentFunMatches = funMatchesWithStatus
+    .filter((fm) => fm.computedStatus === 'finished')
+    .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+    .slice(0, 6);
 
   const totalMembersCount = await prisma.member.count({
     where: { status: 'ACTIVE' },
   });
 
   // Upcoming main squad match (general schedule)
+  const now = new Date();
   const upcomingMainSquadMatch = await prisma.footballMatch.findFirst({
     where: {
       matchDate: { gte: new Date(now.getTime() - 4 * 60 * 60 * 1000) },

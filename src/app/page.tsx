@@ -33,6 +33,31 @@ function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'sco
   return 'scheduled';
 }
 
+function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
+  if (!fm) return 'scheduled';
+  if (fm.status === 'finished') return 'finished';
+  if (fm.teamAScore !== null && fm.teamBScore !== null && fm.teamAScore !== undefined && fm.teamBScore !== undefined) {
+    return 'finished';
+  }
+
+  const now = new Date();
+  const start = new Date(fm.matchDate);
+  if (isNaN(start.getTime())) return 'scheduled';
+
+  const durationMinutes = fm.duration || 60;
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+
+  if (fm.status === 'live' || (now >= start && now < end)) {
+    return 'live';
+  }
+
+  if (now >= end) {
+    return 'finished';
+  }
+
+  return 'scheduled';
+}
+
 export default async function HomePage() {
   let matches: any[] = [];
   let articles: any[] = [];
@@ -154,21 +179,22 @@ export default async function HomePage() {
   );
   const funMatchesWithMatchday = funMatches.map((fm: any) => ({
     ...fm,
+    computedStatus: getDynamicFunMatchStatus(fm),
     matchday: allSortedFunMatches.findIndex((m: any) => m.id === fm.id) + 1,
   }));
 
-  const liveFunMatch = funMatchesWithMatchday.find((fm: any) => fm.status === 'live');
+  const liveFunMatch = funMatchesWithMatchday.find((fm: any) => fm.computedStatus === 'live');
   const upcomingFunMatch = funMatchesWithMatchday
-    .filter((fm: any) => fm.status === 'scheduled')
+    .filter((fm: any) => fm.computedStatus === 'scheduled')
     .sort((a: any, b: any) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())[0];
   const lastFinishedFunMatch = funMatchesWithMatchday
-    .filter((fm: any) => fm.status === 'finished')
+    .filter((fm: any) => fm.computedStatus === 'finished')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())[0];
 
   const nextFunMatch = liveFunMatch || upcomingFunMatch || lastFinishedFunMatch || funMatchesWithMatchday[0] || null;
 
   const finishedFunMatches = funMatchesWithMatchday
-    .filter((fm: any) => fm.status === 'finished')
+    .filter((fm: any) => fm.computedStatus === 'finished')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
   const recentFunMatches = finishedFunMatches.slice(0, 3);

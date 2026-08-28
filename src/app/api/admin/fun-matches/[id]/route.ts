@@ -55,6 +55,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Fun match tidak ditemukan' }, { status: 404 });
     }
 
+    let finalStatus = data.status !== undefined ? data.status : existing.status;
+    const finalScoreA = data.teamAScore !== undefined ? (data.teamAScore === null || data.teamAScore === '' ? null : parseInt(data.teamAScore)) : existing.teamAScore;
+    const finalScoreB = data.teamBScore !== undefined ? (data.teamBScore === null || data.teamBScore === '' ? null : parseInt(data.teamBScore)) : existing.teamBScore;
+
+    if (finalScoreA !== null && finalScoreB !== null && finalStatus === 'scheduled') {
+      finalStatus = 'finished';
+    }
+
     const updated = await prisma.funMatch.update({
       where: { id },
       data: {
@@ -62,9 +70,9 @@ export async function PUT(
         venue: data.venue !== undefined ? data.venue : existing.venue,
         teamAName: data.teamAName !== undefined ? data.teamAName : existing.teamAName,
         teamBName: data.teamBName !== undefined ? data.teamBName : existing.teamBName,
-        teamAScore: data.teamAScore !== undefined ? (data.teamAScore === null || data.teamAScore === '' ? null : parseInt(data.teamAScore)) : existing.teamAScore,
-        teamBScore: data.teamBScore !== undefined ? (data.teamBScore === null || data.teamBScore === '' ? null : parseInt(data.teamBScore)) : existing.teamBScore,
-        status: data.status !== undefined ? data.status : existing.status,
+        teamAScore: finalScoreA,
+        teamBScore: finalScoreB,
+        status: finalStatus,
         duration: data.duration !== undefined ? parseInt(data.duration) : existing.duration,
         summary: data.summary !== undefined ? data.summary : existing.summary,
         matchDate: data.matchDate ? new Date(data.matchDate) : existing.matchDate,
