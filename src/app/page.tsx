@@ -82,6 +82,7 @@ export default async function HomePage() {
         orderBy: { matchDate: 'asc' },
       }),
       prisma.article.findMany({
+        where: { isHidden: false },
         orderBy: { publishedAt: 'desc' },
         take: 3,
       }),

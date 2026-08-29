@@ -16,6 +16,7 @@ export default async function ArticlesPage({
   const query = params.search || '';
 
   const articles = await prisma.article.findMany({
+    where: { isHidden: false },
     orderBy: { publishedAt: 'desc' },
   });
 

@@ -59,6 +59,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       thumbnail: thumbnailValue,
       images: JSON.stringify(validPhotos),
       content: data.content,
+      isHidden: data.isHidden !== undefined ? Boolean(data.isHidden) : (existingArticle.isHidden || false),
       publishedAt: data.publishedAt ? parseWibDate(data.publishedAt) : new Date(),
     };
 
@@ -74,6 +75,37 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   } catch (error: any) {
     console.error('Error updating article:', error);
     return NextResponse.json({ error: error?.message || 'Gagal memperbarui artikel' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const data = await req.json();
+
+    const existingArticle = await prisma.article.findUnique({ where: { id } });
+    if (!existingArticle) {
+      return NextResponse.json({ error: 'Artikel tidak ditemukan' }, { status: 404 });
+    }
+
+    const newHidden = data.isHidden !== undefined ? Boolean(data.isHidden) : !existingArticle.isHidden;
+
+    const updated = await prisma.article.update({
+      where: { id },
+      data: {
+        isHidden: newHidden,
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error('Error toggling article hidden:', error);
+    return NextResponse.json({ error: error?.message || 'Gagal mengubah status sembunyikan artikel' }, { status: 500 });
   }
 }
 

@@ -15,6 +15,8 @@ import {
   Loader2,
   Crop,
   RefreshCw,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import ImageCropperModal from '@/components/ImageCropperModal';
 import { WIB_TIMEZONE } from '@/lib/date';
@@ -28,6 +30,7 @@ interface Article {
   images?: string | null;
   content: string;
   publishedAt: string;
+  isHidden?: boolean;
 }
 
 export default function AdminArticlesPage() {
@@ -261,6 +264,41 @@ export default function AdminArticlesPage() {
     }
   };
 
+  // ── Toggle Hide / Unhide Article ──
+  const [togglingHideId, setTogglingHideId] = useState<string | null>(null);
+
+  const handleToggleHide = async (art: Article) => {
+    const targetHide = !art.isHidden;
+    const confirmMsg = targetHide
+      ? `Sembunyikan artikel "${art.title}" dari publik?\nArtikel tidak akan tampil di halaman berita publik dan beranda.`
+      : `Tampilkan kembali artikel "${art.title}" ke publik?`;
+
+    if (!confirm(confirmMsg)) return;
+
+    setTogglingHideId(art.id);
+    try {
+      const res = await fetch(`/api/articles/${art.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isHidden: targetHide }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Gagal mengubah status artikel');
+        return;
+      }
+
+      setArticles((prev) =>
+        prev.map((a) => (a.id === art.id ? { ...a, isHidden: targetHide } : a))
+      );
+    } catch {
+      alert('Terjadi kesalahan jaringan');
+    } finally {
+      setTogglingHideId(null);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
       
@@ -299,7 +337,9 @@ export default function AdminArticlesPage() {
               return (
                 <div
                   key={art.id}
-                  className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-md"
+                  className={`p-3 rounded-2xl bg-slate-900/80 border flex items-center gap-3 shadow-md transition-all ${
+                    art.isHidden ? 'border-amber-500/30 opacity-75' : 'border-slate-800'
+                  }`}
                 >
                   {/* Thumbnail 4:5 */}
                   <div className="relative w-12 aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
@@ -308,10 +348,15 @@ export default function AdminArticlesPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
                         {art.category}
                       </span>
+                      {art.isHidden && (
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                          <EyeOff className="w-2.5 h-2.5" /> Tersembunyi
+                        </span>
+                      )}
                       <span className="text-[10px] text-slate-400">
                         {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: WIB_TIMEZONE })}
                       </span>
@@ -322,6 +367,24 @@ export default function AdminArticlesPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleToggleHide(art)}
+                      disabled={togglingHideId === art.id}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                        art.isHidden
+                          ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                      }`}
+                      title={art.isHidden ? 'Tampilkan Artikel (Unhide)' : 'Sembunyikan Artikel (Hide)'}
+                    >
+                      {togglingHideId === art.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      ) : art.isHidden ? (
+                        <EyeOff className="w-3.5 h-3.5 text-amber-300" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
                     <button
                       onClick={() => openEditModal(art)}
                       className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer"
@@ -351,7 +414,7 @@ export default function AdminArticlesPage() {
                 <th className="p-3">Tanggal Terbit</th>
                 <th className="p-3">Judul Artikel</th>
                 <th className="p-3">Foto (Maks 5)</th>
-                <th className="p-3">Kategori</th>
+                <th className="p-3">Kategori &amp; Status</th>
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
@@ -361,7 +424,12 @@ export default function AdminArticlesPage() {
                 const mainThumb = getMainThumbnail(art.thumbnail);
 
                 return (
-                  <tr key={art.id} className="hover:bg-slate-800/40">
+                  <tr
+                    key={art.id}
+                    className={`transition-colors ${
+                      art.isHidden ? 'bg-slate-950/40 hover:bg-slate-900/50 opacity-75' : 'hover:bg-slate-800/40'
+                    }`}
+                  >
                     <td className="p-3 font-bold text-slate-300">
                       {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: WIB_TIMEZONE })}
                     </td>
@@ -380,11 +448,36 @@ export default function AdminArticlesPage() {
                       </div>
                     </td>
                     <td className="p-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
-                        {art.category}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
+                          {art.category}
+                        </span>
+                        {art.isHidden && (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                            <EyeOff className="w-3 h-3" /> Tersembunyi
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => handleToggleHide(art)}
+                        disabled={togglingHideId === art.id}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          art.isHidden
+                            ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                        }`}
+                        title={art.isHidden ? 'Tampilkan Artikel (Unhide)' : 'Sembunyikan Artikel (Hide)'}
+                      >
+                        {togglingHideId === art.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                        ) : art.isHidden ? (
+                          <EyeOff className="w-4 h-4 text-amber-300" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
                       <button
                         onClick={() => openEditModal(art)}
                         className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer"

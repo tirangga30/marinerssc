@@ -20,7 +20,7 @@ export default async function ArticleDetailPage({
     where: { slug },
   });
 
-  if (!article) {
+  if (!article || article.isHidden) {
     notFound();
   }
 
