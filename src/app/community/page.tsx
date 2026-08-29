@@ -150,16 +150,29 @@ export default async function CommunityPage() {
     });
   }
 
-  // Fetch and categorize Fun Matches dynamically
-  const allFunMatches = await prisma.funMatch.findMany({
-    include: {
-      attendances: {
-        include: { member: true },
+  // Fetch and categorize Fun Matches & Community Data in parallel for maximum speed
+  const now = new Date();
+  const [allFunMatches, totalMembersCount, upcomingMainSquadMatch] = await Promise.all([
+    prisma.funMatch.findMany({
+      include: {
+        attendances: {
+          include: { member: true },
+        },
+        events: true,
       },
-      events: true,
-    },
-    orderBy: { matchDate: 'asc' },
-  });
+      orderBy: { matchDate: 'asc' },
+    }),
+    prisma.member.count({
+      where: { status: 'ACTIVE' },
+    }),
+    prisma.footballMatch.findFirst({
+      where: {
+        matchDate: { gte: new Date(now.getTime() - 4 * 60 * 60 * 1000) },
+        status: { not: 'finished' },
+      },
+      orderBy: { matchDate: 'asc' },
+    }),
+  ]);
 
   const funMatchesWithStatus = allFunMatches.map((fm) => ({
     ...fm,
@@ -182,20 +195,6 @@ export default async function CommunityPage() {
     .filter((fm) => fm.computedStatus === 'finished')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
     .slice(0, 6);
-
-  const totalMembersCount = await prisma.member.count({
-    where: { status: 'ACTIVE' },
-  });
-
-  // Upcoming main squad match (general schedule)
-  const now = new Date();
-  const upcomingMainSquadMatch = await prisma.footballMatch.findFirst({
-    where: {
-      matchDate: { gte: new Date(now.getTime() - 4 * 60 * 60 * 1000) },
-      status: { not: 'finished' },
-    },
-    orderBy: { matchDate: 'asc' },
-  });
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
