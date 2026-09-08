@@ -27,7 +27,7 @@ export function renamePlayerPhotoFile(
   }
 
   try {
-    const ext = path.extname(currentPhotoUrl) || '.jpg';
+    const ext = path.extname(currentPhotoUrl) || '.webp';
     const pos = getPosShort(newPosition);
     const num = String(newNumber).trim();
     const cleanName = sanitizeFilename(newPlayerName);
@@ -64,7 +64,7 @@ export function renameMatchLogoFile(
   }
 
   try {
-    const ext = path.extname(currentLogoUrl) || '.png';
+    const ext = path.extname(currentLogoUrl) || '.webp';
     const cleanOpponent = sanitizeFilename(newOpponentName);
     const newFileName = `${cleanOpponent}${ext}`;
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 import { sanitizeFilename, getPosShort } from '@/lib/fileNaming';
 
 export async function POST(req: Request) {
@@ -21,17 +22,29 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Determine extension & MIME
-    let ext = path.extname(file.name);
-    if (!ext) {
-      if (file.type === 'image/png') ext = '.png';
-      else if (file.type === 'image/webp') ext = '.webp';
-      else if (file.type === 'image/svg+xml') ext = '.svg';
-      else ext = '.jpg';
+    // Convert raster images to modern WebP format
+    let finalBuffer = buffer;
+    let finalExt = '.webp';
+    let mimeType = 'image/webp';
+
+    const isSvg = file.type === 'image/svg+xml' || file.name?.toLowerCase().endsWith('.svg');
+    if (isSvg) {
+      finalExt = '.svg';
+      mimeType = 'image/svg+xml';
+    } else {
+      try {
+        finalBuffer = await sharp(buffer)
+          .webp({ quality: 85, effort: 4 })
+          .toBuffer();
+      } catch (convErr) {
+        console.warn('Sharp webp conversion fallback:', convErr);
+        const originalExt = path.extname(file.name) || '.jpg';
+        finalExt = originalExt.toLowerCase();
+        mimeType = file.type || 'image/jpeg';
+      }
     }
 
-    const mimeType = file.type || (ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : ext === '.svg' ? 'image/svg+xml' : 'image/jpeg');
-    const base64DataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+    const base64DataUrl = `data:${mimeType};base64,${finalBuffer.toString('base64')}`;
 
     let targetDir = path.join(process.cwd(), 'public', 'uploads', targetFolder);
     let fileName = '';
@@ -47,7 +60,7 @@ export async function POST(req: Request) {
       const num = number ? String(number).trim() : '0';
       const name = playerName ? sanitizeFilename(playerName) : (customName ? sanitizeFilename(customName) : `Player_${Date.now()}`);
 
-      fileName = `${pos}_${num}_${name}${ext}`;
+      fileName = `${pos}_${num}_${name}${finalExt}`;
       publicUrl = `/uploads/players/${fileName}`;
     } else if (targetFolder === 'members') {
       const position = formData.get('position') as string | null;
@@ -59,14 +72,14 @@ export async function POST(req: Request) {
       const num = number ? String(number).trim() : '';
       const name = playerName ? sanitizeFilename(playerName) : (customName ? sanitizeFilename(customName) : `Member_${Date.now()}`);
 
-      fileName = num ? `M_${pos}_${num}_${name}_${Date.now()}${ext}` : `M_${name}_${Date.now()}${ext}`;
+      fileName = num ? `M_${pos}_${num}_${name}_${Date.now()}${finalExt}` : `M_${name}_${Date.now()}${finalExt}`;
       publicUrl = `/uploads/members/${fileName}`;
     } else if (targetFolder === 'matches') {
       const opponentName = formData.get('opponentName') as string | null;
       const customName = formData.get('customName') as string | null;
 
       const opp = opponentName ? sanitizeFilename(opponentName) : (customName ? sanitizeFilename(customName) : `Opponent_${Date.now()}`);
-      fileName = `${opp}${ext}`;
+      fileName = `${opp}${finalExt}`;
       publicUrl = `/uploads/matches/${fileName}`;
     } else if (targetFolder === 'articles') {
       const articleSlug = formData.get('articleSlug') as string | null;
@@ -85,11 +98,12 @@ export async function POST(req: Request) {
       // Articles have their own subfolder per article title/slug
       targetDir = path.join(process.cwd(), 'public', 'uploads', 'articles', slug);
       const slotNum = slotIndex !== null && slotIndex !== undefined && slotIndex !== '' ? parseInt(slotIndex) + 1 : 1;
-      fileName = `foto_${slotNum}_${Date.now()}${ext}`;
+      fileName = `foto_${slotNum}_${Date.now()}${finalExt}`;
       publicUrl = `/uploads/articles/${slug}/${fileName}`;
     } else {
-      const cleanFileName = sanitizeFilename(file.name.replace(/[^a-zA-Z0-9.-]/g, '_'));
-      fileName = `${Date.now()}-${cleanFileName}`;
+      const baseNameWithoutExt = path.parse(file.name).name;
+      const cleanFileName = sanitizeFilename(baseNameWithoutExt.replace(/[^a-zA-Z0-9.-]/g, '_'));
+      fileName = `${Date.now()}-${cleanFileName}${finalExt}`;
       publicUrl = `/uploads/general/${fileName}`;
     }
 
@@ -104,7 +118,7 @@ export async function POST(req: Request) {
         fs.mkdirSync(targetDir, { recursive: true });
       }
       const filePath = path.join(targetDir, fileName);
-      await fs.promises.writeFile(filePath, buffer);
+      await fs.promises.writeFile(filePath, finalBuffer);
       return NextResponse.json({ url: publicUrl, success: true });
     } catch (fsErr) {
       console.warn('Local fs write failed, falling back to base64:', fsErr);

@@ -88,6 +88,18 @@ export async function cleanupUnusedUploads(): Promise<{
         } catch {}
       }
     });
+
+    const members = await prisma.member.findMany({ select: { photoUrl: true, paymentProof: true } });
+    members.forEach((m) => {
+      if (m.photoUrl) referenced.add(m.photoUrl.trim());
+      if (m.paymentProof) referenced.add(m.paymentProof.trim());
+    });
+
+    const funMatches = await prisma.funMatch.findMany({ select: { teamALogo: true, teamBLogo: true } });
+    funMatches.forEach((f) => {
+      if (f.teamALogo) referenced.add(f.teamALogo.trim());
+      if (f.teamBLogo) referenced.add(f.teamBLogo.trim());
+    });
   } catch (error) {
     console.error('Error fetching referenced images from DB:', error);
   }
