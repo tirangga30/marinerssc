@@ -683,7 +683,7 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                                     {getFullPositionName(m.position)}
                                   </span>
                                   {m.nickname && <span>• &ldquo;{m.nickname}&rdquo;</span>}
-                                  {m.playerId && (
+                                  {m.isPermanent && (
                                     <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase text-[8px]">
                                       Skuad Utama
                                     </span>

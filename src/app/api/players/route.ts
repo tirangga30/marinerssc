@@ -10,7 +10,13 @@ export async function GET(req: Request) {
     const matchId = searchParams.get('matchId');
     const guestsOnly = searchParams.get('guestsOnly') === 'true';
 
-    let whereClause: any = { isGuest: false, member: null };
+    let whereClause: any = {
+      isGuest: false,
+      OR: [
+        { member: null },
+        { member: { isPermanent: true } },
+      ],
+    };
 
     if (guestsOnly) {
       whereClause = { isGuest: true };
