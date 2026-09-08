@@ -111,7 +111,13 @@ export default async function PlayerDetailPage({
     return !isNaN(matchStartMs) && nowMs >= matchStartMs;
   });
 
-  const recentMatches = activeMatches.slice(0, 10);
+  // If player is a MEMBER (member yang ikut tim utama), only show matches where they were in the lineup!
+  // If player is PEMAIN INTI (bukan member), show all team matches (with "Tidak masuk skuad" if not in lineup).
+  const displayedMatches = member
+    ? activeMatches.filter((m: any) => (m.lineups || []).some((l: any) => l.playerId === player.id))
+    : activeMatches;
+
+  const recentMatches = displayedMatches.slice(0, 10);
 
   // Dynamic accurate season statistics calculations across all logged events
   const calculatedGoals = (player.events || []).filter(
