@@ -62,22 +62,31 @@ export default async function PlayerDetailPage({
 }) {
   const { slug } = await params;
 
-  const player = await prisma.player.findUnique({
-    where: { slug },
-    include: {
-      member: true,
-      lineups: {
-        include: { match: { include: { events: true } } },
-        orderBy: { match: { matchDate: 'desc' } },
+  const [player, allMatches] = await Promise.all([
+    prisma.player.findUnique({
+      where: { slug },
+      include: {
+        member: true,
+        lineups: {
+          include: { match: { include: { events: true } } },
+          orderBy: { match: { matchDate: 'desc' } },
+        },
+        events: {
+          include: { match: true },
+        },
+        assistedEvents: {
+          include: { match: true },
+        },
       },
-      events: {
-        include: { match: true },
+    }),
+    prisma.footballMatch.findMany({
+      include: {
+        events: true,
+        lineups: true,
       },
-      assistedEvents: {
-        include: { match: true },
-      },
-    },
-  });
+      orderBy: { matchDate: 'desc' },
+    }),
+  ]);
 
   if (!player || player.isGuest) notFound();
 
@@ -93,10 +102,8 @@ export default async function PlayerDetailPage({
 
   const nowMs = new Date().getTime();
 
-  // Any match that has started or finished or has events logged for this player
-  const activeLineups = (player.lineups || []).filter((l: any) => {
-    if (!l.match) return false;
-    const m = l.match;
+  // All matches played by the club that have started or finished
+  const activeMatches = (allMatches || []).filter((m: any) => {
     if (m.status === 'finished') return true;
     const hasFT = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
     if (hasFT) return true;
@@ -104,7 +111,7 @@ export default async function PlayerDetailPage({
     return !isNaN(matchStartMs) && nowMs >= matchStartMs;
   });
 
-  const recentMatches = activeLineups.slice(0, 10);
+  const recentMatches = activeMatches.slice(0, 10);
 
   // Dynamic accurate season statistics calculations across all logged events
   const calculatedGoals = (player.events || []).filter(
@@ -117,9 +124,10 @@ export default async function PlayerDetailPage({
     (player.assistedEvents || []).filter((e: any) => e.type !== 'sub').length;
   const totalAssists = Math.max(player.assists || 0, calculatedAssists);
 
-  const calculatedAppearances = activeLineups.filter((l: any) => {
+  const calculatedAppearances = activeMatches.filter((m: any) => {
+    const l = (m.lineups || []).find((line: any) => line.playerId === player.id);
+    if (!l) return false;
     if (l.isStarter) return true;
-    const m = l.match;
     const matchEvents = m?.events || [];
     return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === player.id);
   }).length;
@@ -310,9 +318,11 @@ export default async function PlayerDetailPage({
 
               {/* ── Rows ── */}
               <div>
-                {recentMatches.map((lineup: any, idx: number) => {
-                  const match = lineup.match;
+                {recentMatches.map((match: any, idx: number) => {
                   const result = getResult(match);
+
+                  const lineup = (match.lineups || []).find((l: any) => l.playerId === player.id);
+                  const isNotInSquad = !lineup;
 
                   const evts = (player.events || []).filter((e: any) => e.matchId === match.id);
                   const assistEvts = (player.assistedEvents || []).filter((e: any) => e.matchId === match.id && e.type !== 'sub');
@@ -359,7 +369,7 @@ export default async function PlayerDetailPage({
                       </div>
                     );
 
-                  const isStarter = lineup.isStarter;
+                  const isStarter = lineup ? lineup.isStarter : false;
                   const matchEvents = match.events || [];
 
                   const chronEvts = matchEvents
@@ -386,7 +396,7 @@ export default async function PlayerDetailPage({
                     .sort((a: any, b: any) => a.minute - b.minute);
 
                   const isSubbedIn = matchEvents.some((e: any) => e.type === 'sub' && (e.playerId === player.id || e.player?.id === player.id));
-                  const isOnBenchOnly = !isStarter && !isSubbedIn;
+                  const isOnBenchOnly = !isNotInSquad && !isStarter && !isSubbedIn;
 
                   const hasEvents = chronEvts.length > 0;
 
@@ -396,8 +406,12 @@ export default async function PlayerDetailPage({
                         <TopTeam />
                         <BottomTeam />
                       </div>
-                      {/* On the bench badge OR event icons */}
-                      {isOnBenchOnly ? (
+                      {/* Tidak masuk skuad / On the bench badge OR event icons */}
+                      {isNotInSquad ? (
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                          Tidak masuk skuad
+                        </span>
+                      ) : isOnBenchOnly ? (
                         <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
                           On the bench
                         </span>
@@ -450,7 +464,7 @@ export default async function PlayerDetailPage({
 
                   return (
                     <Link
-                      key={lineup.id}
+                      key={match.id}
                       href={`/matches/${match.id}`}
                       className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
                       style={{
