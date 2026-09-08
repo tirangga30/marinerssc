@@ -156,7 +156,7 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
               <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
                 <div className="w-full h-full rounded-full overflow-hidden">
                   <img
-                    src={lineup.player.photoUrl || '/playertemplate.png'}
+                    src={lineup.player.photoUrl || '/playertemplate.webp'}
                     alt={lineup.player.name}
                     className="w-full h-full object-cover object-top scale-[1.35] origin-top rounded-full"
                   />

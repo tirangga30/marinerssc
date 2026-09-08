@@ -183,7 +183,7 @@ export default async function PlayerDetailPage({
           <div className="group relative aspect-[4/5] w-full overflow-hidden flex flex-col justify-end">
             {/* Full Photo */}
             <img
-              src={player.photoUrl || '/playertemplate.png'}
+              src={player.photoUrl || '/playertemplate.webp'}
               alt={player.name}
               className="absolute inset-0 w-full h-full object-cover object-top"
             />
@@ -334,7 +334,7 @@ export default async function PlayerDetailPage({
                   const TopTeam = match.isHome
                     ? () => (
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <img src="/marinerssc.png" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
+                        <img src="/marinerssc.webp" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>Mariners SC</span>
                       </div>
                     )
@@ -354,7 +354,7 @@ export default async function PlayerDetailPage({
                     )
                     : () => (
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <img src="/marinerssc.png" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
+                        <img src="/marinerssc.webp" alt="Mariners SC" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>Mariners SC</span>
                       </div>
                     );

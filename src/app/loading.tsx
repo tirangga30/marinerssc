@@ -22,7 +22,7 @@ export default function Loading() {
         {/* Pulsing club logo */}
         <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
           <img
-            src="/marinerssc.png"
+            src="/marinerssc.webp"
             alt="Mariners SC"
             className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.5)] animate-pulse"
           />

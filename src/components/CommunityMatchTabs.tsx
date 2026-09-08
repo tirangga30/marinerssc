@@ -163,7 +163,7 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                     const jerseyNum = p.member?.jerseyNumber || 30;
                     const position = p.member?.position || 'MF';
                     const tier = p.member?.tier || 'FAN';
-                    const photo = p.member?.photoUrl || '/playertemplate.png';
+                    const photo = p.member?.photoUrl || '/playertemplate.webp';
                     const evts = getMemberEvents(p.memberId, p.playerName);
 
                     return (
@@ -257,7 +257,7 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                     const jerseyNum = p.member?.jerseyNumber || 30;
                     const position = p.member?.position || 'MF';
                     const tier = p.member?.tier || 'FAN';
-                    const photo = p.member?.photoUrl || '/playertemplate.png';
+                    const photo = p.member?.photoUrl || '/playertemplate.webp';
                     const evts = getMemberEvents(p.memberId, p.playerName);
 
                     return (

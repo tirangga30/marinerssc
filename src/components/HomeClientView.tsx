@@ -115,7 +115,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
       <section className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url('/LOGIN.jpeg')` }}
+          style={{ backgroundImage: `url('/LOGIN.webp')` }}
         />
         {/* Subtle bottom gradient */}
         <div className="absolute bottom-0 inset-x-0 h-32 sm:h-56 bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />
@@ -214,7 +214,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                       </div>
                       <div className="order-1 sm:order-2 flex items-center justify-center">
                         <img
-                          src={nextMatch.isHome ? '/marinerssc.png' : (nextMatch.opponentLogo || '/defaultteam.png')}
+                          src={nextMatch.isHome ? '/marinerssc.webp' : (nextMatch.opponentLogo || '/defaultteam.webp')}
                           alt={nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
@@ -264,7 +264,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                     <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                       <div className="flex items-center justify-center">
                         <img
-                          src={!nextMatch.isHome ? '/marinerssc.png' : (nextMatch.opponentLogo || '/defaultteam.png')}
+                          src={!nextMatch.isHome ? '/marinerssc.webp' : (nextMatch.opponentLogo || '/defaultteam.webp')}
                           alt={!nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
@@ -342,7 +342,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                           </div>
                           <div className="order-1 sm:order-2 flex items-center justify-center">
                             <img
-                              src={m.isHome ? '/marinerssc.png' : (m.opponentLogo || '/defaultteam.png')}
+                              src={m.isHome ? '/marinerssc.webp' : (m.opponentLogo || '/defaultteam.webp')}
                               alt={m.isHome ? 'Mariners SC' : m.opponentName}
                               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                             />
@@ -360,7 +360,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                           <div className="flex items-center justify-center">
                             <img
-                              src={!m.isHome ? '/marinerssc.png' : (m.opponentLogo || '/defaultteam.png')}
+                              src={!m.isHome ? '/marinerssc.webp' : (m.opponentLogo || '/defaultteam.webp')}
                               alt={!m.isHome ? 'Mariners SC' : m.opponentName}
                               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                             />
@@ -434,7 +434,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-sky-400/20 hover:border-sky-400/60 shadow-xl card-glow-hover flex flex-col justify-end"
                 >
                   <img
-                    src={player.photoUrl || '/playertemplate.png'}
+                    src={player.photoUrl || '/playertemplate.webp'}
                     alt={player.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -734,7 +734,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   >
                     {/* Member Photo */}
                     <img
-                      src={member.photoUrl || '/playertemplate.png'}
+                      src={member.photoUrl || '/playertemplate.webp'}
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />

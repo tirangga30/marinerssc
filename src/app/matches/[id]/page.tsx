@@ -97,7 +97,7 @@ export default async function MatchDetailPage({
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center">
               <img
-                src={match.isHome ? '/marinerssc.png' : (match.opponentLogo || '/defaultteam.png')}
+                src={match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
                 alt={match.isHome ? 'Mariners SC' : match.opponentName}
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-xl"
               />
@@ -143,7 +143,7 @@ export default async function MatchDetailPage({
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center">
               <img
-                src={!match.isHome ? '/marinerssc.png' : (match.opponentLogo || '/defaultteam.png')}
+                src={!match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
                 alt={!match.isHome ? 'Mariners SC' : match.opponentName}
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-xl"
               />

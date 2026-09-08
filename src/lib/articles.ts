@@ -23,9 +23,9 @@ export function getArticlePhotos(article: { thumbnail?: string | null; images?: 
 }
 
 export function getMainThumbnail(thumbnail: string | null | undefined): string {
-  if (!thumbnail) return '/LOGIN.jpeg';
+  if (!thumbnail) return '/LOGIN.webp';
   if (thumbnail.includes('|||')) {
-    return thumbnail.split('|||')[0] || '/LOGIN.jpeg';
+    return thumbnail.split('|||')[0] || '/LOGIN.webp';
   }
   return thumbnail;
 }

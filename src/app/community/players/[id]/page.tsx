@@ -191,7 +191,7 @@ export default async function CommunityPlayerProfilePage({
           {/* Top Photo Box (Aspect Ratio 4:5) */}
           <div className="group relative aspect-[4/5] w-full overflow-hidden flex flex-col justify-end">
             <img
-              src={member.photoUrl || '/playertemplate.png'}
+              src={member.photoUrl || '/playertemplate.webp'}
               alt={member.fullName}
               className="absolute inset-0 w-full h-full object-cover object-top"
             />

@@ -177,8 +177,8 @@ model FunMatch {
   venue       String        @default("Stadion Gelora Samudra, Jakarta")
   teamAName   String        @default("TIM A (NAVY)")
   teamBName   String        @default("TIM B (GOLD)")
-  teamALogo   String?       @default("/marinerssc.png")
-  teamBLogo   String?       @default("/defaultteam.png")
+  teamALogo   String?       @default("/marinerssc.webp")
+  teamBLogo   String?       @default("/defaultteam.webp")
   teamAScore  Int?
   teamBScore  Int?
   status      String        @default("scheduled") // scheduled, live, finished

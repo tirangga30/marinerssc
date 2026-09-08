@@ -57,7 +57,7 @@ export default function AdminPlayersPage() {
     return p || 'FORWARD';
   };
 
-  // Form State - Default Photo Template is /playertemplate.png
+  // Form State - Default Photo Template is /playertemplate.webp
   const [formData, setFormData] = useState({
     name: '',
     number: '',
@@ -66,7 +66,7 @@ export default function AdminPlayersPage() {
     birthDate: '',
     heightCm: '',
     weightKg: '',
-    photoUrl: '/playertemplate.png',
+    photoUrl: '/playertemplate.webp',
     bio: '',
     isCaptain: false,
     status: 'Active',
@@ -161,7 +161,7 @@ export default function AdminPlayersPage() {
       birthDate: '',
       heightCm: '',
       weightKg: '',
-      photoUrl: '/playertemplate.png',
+      photoUrl: '/playertemplate.webp',
       bio: '',
       isCaptain: false,
       status: 'Active',
@@ -187,7 +187,7 @@ export default function AdminPlayersPage() {
         birthDate: formatDateForInput(guest.birthDate),
         heightCm: guest.heightCm?.toString() || '',
         weightKg: guest.weightKg?.toString() || '',
-        photoUrl: guest.photoUrl || '/playertemplate.png',
+        photoUrl: guest.photoUrl || '/playertemplate.webp',
         bio: guest.bio || '',
         isCaptain: guest.isCaptain || false,
         status: guest.status || 'Active',
@@ -213,7 +213,7 @@ export default function AdminPlayersPage() {
       birthDate: formatDateForInput(player.birthDate),
       heightCm: player.heightCm?.toString() || '',
       weightKg: player.weightKg?.toString() || '',
-      photoUrl: player.photoUrl || '/playertemplate.png',
+      photoUrl: player.photoUrl || '/playertemplate.webp',
       bio: player.bio,
       isCaptain: player.isCaptain,
       status: player.status,
@@ -244,7 +244,7 @@ export default function AdminPlayersPage() {
   };
 
   const handleOpenCropperForExisting = async () => {
-    if (!formData.photoUrl || formData.photoUrl === '/playertemplate.png') return;
+    if (!formData.photoUrl || formData.photoUrl === '/playertemplate.webp') return;
 
     if (formData.photoUrl.startsWith('data:')) {
       setCropperImageSrc(formData.photoUrl);
@@ -380,7 +380,7 @@ export default function AdminPlayersPage() {
                       {/* 4:5 Photo Avatar */}
                       <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
                         <img
-                          src={player.photoUrl || '/playertemplate.png'}
+                          src={player.photoUrl || '/playertemplate.webp'}
                           alt={player.name}
                           className="w-full h-full object-cover"
                         />
@@ -466,7 +466,7 @@ export default function AdminPlayersPage() {
                         <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
                         <td className="p-3 flex items-center gap-3">
                           <img
-                            src={player.photoUrl || '/playertemplate.png'}
+                            src={player.photoUrl || '/playertemplate.webp'}
                             alt={player.name}
                             className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
                           />
@@ -599,7 +599,7 @@ export default function AdminPlayersPage() {
                   <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="relative w-20 aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border-2 border-sky-400/40 shrink-0 shadow-lg">
                       <img
-                        src={formData.photoUrl || '/playertemplate.png'}
+                        src={formData.photoUrl || '/playertemplate.webp'}
                         alt="Preview"
                         className="w-full h-full object-cover"
                       />
@@ -617,7 +617,7 @@ export default function AdminPlayersPage() {
                           {uploading ? 'Mengunggah...' : 'Pilih & Crop Foto'}
                         </button>
 
-                        {formData.photoUrl && formData.photoUrl !== '/playertemplate.png' && (
+                        {formData.photoUrl && formData.photoUrl !== '/playertemplate.webp' && (
                           <button
                             type="button"
                             onClick={handleOpenCropperForExisting}
@@ -631,7 +631,7 @@ export default function AdminPlayersPage() {
                         
                         <button
                           type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))}
+                          onClick={() => setFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.webp' }))}
                           className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs cursor-pointer"
                         >
                           Reset Template

@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
           <div className="px-8 pt-8 pb-6 text-center border-b border-white/10">
             <div className="flex justify-center mb-4">
               <img
-                src="/marinerssc.png"
+                src="/marinerssc.webp"
                 alt="Mariners SC"
                 className="h-16 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
               />

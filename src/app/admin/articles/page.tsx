@@ -84,12 +84,12 @@ export default function AdminArticlesPage() {
     if (art.thumbnail) {
       return art.thumbnail.split('|||').filter(Boolean);
     }
-    return ['/LOGIN.jpeg'];
+    return ['/LOGIN.webp'];
   };
 
   const getMainThumbnail = (thumbnail: string): string => {
-    if (!thumbnail) return '/LOGIN.jpeg';
-    return thumbnail.split('|||')[0] || '/LOGIN.jpeg';
+    if (!thumbnail) return '/LOGIN.webp';
+    return thumbnail.split('|||')[0] || '/LOGIN.webp';
   };
 
   const formatDateForInput = (dateStr: string) => {
@@ -239,7 +239,7 @@ export default function AdminArticlesPage() {
       const payload = {
         title: formData.title,
         category: formData.category,
-        thumbnail: validPhotos[0] || '/LOGIN.jpeg',
+        thumbnail: validPhotos[0] || '/LOGIN.webp',
         images: validPhotos,
         content: formData.content,
         publishedAt: formData.publishedAt,

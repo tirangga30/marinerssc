@@ -101,7 +101,7 @@ export default async function CommunityPlayersPage() {
                   >
                     {/* Full Photo */}
                     <img
-                      src={member.photoUrl || '/playertemplate.png'}
+                      src={member.photoUrl || '/playertemplate.webp'}
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />

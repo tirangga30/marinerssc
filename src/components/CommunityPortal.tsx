@@ -272,7 +272,7 @@ export default function CommunityPortal({
             <div className="md:col-span-4 lg:col-span-3 flex justify-center">
               <div className="relative group w-44 sm:w-48 aspect-[4/5] rounded-3xl overflow-hidden border-2 border-amber-400/60 shadow-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-black shrink-0">
                 <img
-                  src={member.photoUrl || '/playertemplate.png'}
+                  src={member.photoUrl || '/playertemplate.webp'}
                   alt={member.fullName}
                   className="w-full h-full object-cover object-top"
                 />

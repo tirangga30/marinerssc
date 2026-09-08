@@ -39,7 +39,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.weightKg !== undefined) updateData.weightKg = data.weightKg ? parseInt(data.weightKg) : null;
     if (data.photoUrl !== undefined) {
       const rawPhotoUrl = (data.photoUrl || '').trim();
-      const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.png' || rawPhotoUrl.includes('unsplash.com');
+      const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.webp' || rawPhotoUrl.includes('unsplash.com');
 
       if (!isDefaultTemplate) {
         const existingPhotoPlayer = await prisma.player.findFirst({

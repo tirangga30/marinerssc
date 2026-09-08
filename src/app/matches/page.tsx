@@ -88,7 +88,7 @@ function MatchCard({ match }: { match: any }) {
           </div>
           <div className="order-1 sm:order-2 flex items-center justify-center">
             <img
-              src={match.isHome ? '/marinerssc.png' : (match.opponentLogo || '/defaultteam.png')}
+              src={match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
               alt={match.isHome ? 'Mariners SC' : match.opponentName}
               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
             />
@@ -140,7 +140,7 @@ function MatchCard({ match }: { match: any }) {
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
           <div className="flex items-center justify-center">
             <img
-              src={!match.isHome ? '/marinerssc.png' : (match.opponentLogo || '/defaultteam.png')}
+              src={!match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
               alt={!match.isHome ? 'Mariners SC' : match.opponentName}
               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
             />

@@ -71,7 +71,7 @@ export default function Navbar() {
             {/* Logo Admin */}
             <Link href="/admin/dashboard" className="flex items-center gap-2 sm:gap-3 group">
               <img
-                src="/marinerssc.png"
+                src="/marinerssc.webp"
                 alt="Mariners SC Logo"
                 className="h-8 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
               />
@@ -181,7 +181,7 @@ export default function Navbar() {
           {/* Logo & Dynamic Brand Title */}
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
             <img
-              src="/marinerssc.png"
+              src="/marinerssc.webp"
               alt="Mariners SC Logo"
               className="h-8 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
             />

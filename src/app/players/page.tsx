@@ -96,7 +96,7 @@ export default async function PlayersPage() {
                 >
                   {/* Full Photo */}
                   <img
-                    src={player.photoUrl || '/playertemplate.png'}
+                    src={player.photoUrl || '/playertemplate.webp'}
                     alt={player.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

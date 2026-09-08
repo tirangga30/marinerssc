@@ -150,7 +150,7 @@ export async function POST(req: Request) {
 
     // Check for duplicate photo file (ignore default placeholders / template photos)
     const rawPhotoUrl = (data.photoUrl || '').trim();
-    const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.png' || rawPhotoUrl.includes('unsplash.com');
+    const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.webp' || rawPhotoUrl.includes('unsplash.com');
 
     if (!isDefaultTemplate) {
       const existingPhotoPlayer = await prisma.player.findFirst({

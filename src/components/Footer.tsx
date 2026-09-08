@@ -19,7 +19,7 @@ export default function Footer() {
             <div className="space-y-4 md:col-span-1">
               <div className="flex items-center gap-3">
                 <img
-                  src="/marinerssc.png"
+                  src="/marinerssc.webp"
                   alt="Mariners SC Logo"
                   className="h-10 w-auto object-contain drop-shadow-md"
                 />
@@ -34,9 +34,9 @@ export default function Footer() {
               {/* Developer Partners - Desktop Only */}
               <div className="pt-5 mt-2 hidden md:block">
                 <div className="flex items-center gap-3">
-                  <img src="/marinerssc.png" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
+                  <img src="/marinerssc.webp" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
                   <span className="text-slate-600">|</span>
-                  <img src="/NYCOMP.png" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
+                  <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                 </div>
                 <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-sky-400 mt-2">
                   Official Developer Partners
@@ -78,9 +78,9 @@ export default function Footer() {
                 </div>
                 <div className="pt-5 mt-2 md:hidden">
                   <div className="flex items-center gap-3">
-                    <img src="/marinerssc.png" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
+                    <img src="/marinerssc.webp" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
                     <span className="text-slate-600">|</span>
-                    <img src="/NYCOMP.png" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
+                    <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                   </div>
                   <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-sky-400 mt-2">
                     Official Developer Partners

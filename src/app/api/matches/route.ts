@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const match = await prisma.footballMatch.create({
       data: {
         opponentName: data.opponentName,
-        opponentLogo: data.opponentLogo || '/defaultteam.png',
+        opponentLogo: data.opponentLogo || '/defaultteam.webp',
         matchDate: parseWibDate(data.matchDate),
         competition: data.competition || 'Matchday 1',
         venue: data.venue || '',

@@ -95,7 +95,7 @@ export default async function CommunityStatsPage() {
                   {rank + 1}
                 </span>
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
-                  <img src={member.photoUrl || '/playertemplate.png'} alt={member.name} className="w-full h-full object-cover" />
+                  <img src={member.photoUrl || '/playertemplate.webp'} alt={member.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
@@ -139,7 +139,7 @@ export default async function CommunityStatsPage() {
                     {rank + 1}
                   </span>
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
-                    <img src={member.photoUrl || '/playertemplate.png'} alt={member.name} className="w-full h-full object-cover" />
+                    <img src={member.photoUrl || '/playertemplate.webp'} alt={member.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
@@ -176,7 +176,7 @@ export default async function CommunityStatsPage() {
                     {rank + 1}
                   </span>
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
-                    <img src={member.photoUrl || '/playertemplate.png'} alt={member.name} className="w-full h-full object-cover" />
+                    <img src={member.photoUrl || '/playertemplate.webp'} alt={member.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
@@ -213,7 +213,7 @@ export default async function CommunityStatsPage() {
                     {rank + 1}
                   </span>
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-sky-500/40 shrink-0">
-                    <img src={member.photoUrl || '/playertemplate.png'} alt={member.name} className="w-full h-full object-cover" />
+                    <img src={member.photoUrl || '/playertemplate.webp'} alt={member.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-100 flex items-center gap-1.5">

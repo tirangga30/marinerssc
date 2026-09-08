@@ -665,7 +665,7 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                           <td className="p-3 sm:p-4">
                             <div className="flex items-center gap-3">
                               <img
-                                src={m.photoUrl || '/playertemplate.png'}
+                                src={m.photoUrl || '/playertemplate.webp'}
                                 alt={m.fullName}
                                 className="w-10 h-10 rounded-full object-cover bg-slate-950 border border-slate-700 shrink-0"
                               />

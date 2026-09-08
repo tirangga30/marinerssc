@@ -255,7 +255,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
   const openAddGuestModal = () => {
     setEditingGuestPlayer(null);
-    setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.png' });
+    setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.webp' });
     setShowGuestModal(true);
   };
 
@@ -265,7 +265,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       name: player.name,
       number: player.number.toString(),
       position: player.position,
-      photoUrl: player.photoUrl || '/playertemplate.png',
+      photoUrl: player.photoUrl || '/playertemplate.webp',
     });
     setShowGuestModal(true);
   };
@@ -277,7 +277,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     name: '',
     number: '',
     position: 'FORWARD',
-    photoUrl: '/playertemplate.png',
+    photoUrl: '/playertemplate.webp',
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,7 +369,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         }
         setShowGuestModal(false);
         setEditingGuestPlayer(null);
-        setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.png' });
+        setGuestFormData({ name: '', number: '', position: 'FORWARD', photoUrl: '/playertemplate.webp' });
       } else {
         const err = await res.json();
         alert(err.error || 'Gagal menyimpan pemain loan');
@@ -891,7 +891,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 {matchData?.isHome ? 'Mariners SC' : matchData?.opponentName}
               </span>
               <img
-                src={matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')}
+                src={matchData?.isHome ? '/marinerssc.webp' : (matchData?.opponentLogo || '/defaultteam.webp')}
                 alt="Home"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2 shrink-0"
               />
@@ -930,7 +930,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {/* Away Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-start gap-1.5 sm:gap-4 text-center sm:text-left min-w-0">
               <img
-                src={!matchData?.isHome ? '/marinerssc.png' : (matchData?.opponentLogo || '/defaultteam.png')}
+                src={!matchData?.isHome ? '/marinerssc.webp' : (matchData?.opponentLogo || '/defaultteam.webp')}
                 alt="Away"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 shrink-0"
               />
@@ -1060,7 +1060,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         <div
                           className="w-10 h-10 rounded-full border-2 border-sky-400 bg-slate-900 shadow-lg shadow-sky-600/40 hover:scale-110 flex items-center justify-center transition-all overflow-hidden"
                         >
-                          <img src={player.photoUrl || '/playertemplate.png'} alt={player.name} className="w-full h-full object-cover object-top scale-[1.35] origin-top" />
+                          <img src={player.photoUrl || '/playertemplate.webp'} alt={player.name} className="w-full h-full object-cover object-top scale-[1.35] origin-top" />
                         </div>
                         {/* Name chip with squad number on the left */}
                         <div className="mt-0.5 z-10 px-1 py-px rounded text-[7px] font-black leading-none whitespace-nowrap max-w-[64px] truncate bg-slate-950/90 text-sky-300 border border-sky-500/30 flex items-center gap-0.5">
@@ -1157,7 +1157,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             <GripVertical className="w-3 h-3 text-slate-600 shrink-0" />
                             {/* Foto Pemain */}
                             <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
-                              <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                              <img src={p.photoUrl || '/playertemplate.webp'} alt={p.name} className="w-full h-full object-cover object-top" />
                             </div>
                             <span className="font-mono font-black text-[11px] text-sky-400 shrink-0 min-w-[18px] text-center">
                               {p.number}
@@ -1370,7 +1370,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               <GripVertical className={`w-3 h-3 shrink-0 ${isThisMatch ? 'text-emerald-500/60' : 'text-amber-500/60'}`} />
                               {/* Foto Pemain */}
                               <div className={`w-7 h-7 rounded-full overflow-hidden border shrink-0 bg-slate-900 ${isThisMatch ? 'border-emerald-400/40' : 'border-amber-400/40'}`}>
-                                <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                                <img src={p.photoUrl || '/playertemplate.webp'} alt={p.name} className="w-full h-full object-cover object-top" />
                               </div>
                               <span className={`font-mono font-black text-[11px] shrink-0 min-w-[18px] text-center ${isThisMatch ? 'text-emerald-300' : 'text-amber-300'}`}>
                                 {p.number}
@@ -1477,7 +1477,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-800/90 border border-sky-500/30 text-sky-300 cursor-grab active:cursor-grabbing select-none shadow-sm hover:border-sky-400/50 transition-all"
                       >
                         <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
-                          <img src={p.photoUrl || '/playertemplate.png'} alt={p.name} className="w-full h-full object-cover object-top" />
+                          <img src={p.photoUrl || '/playertemplate.webp'} alt={p.name} className="w-full h-full object-cover object-top" />
                         </div>
                         <span className="font-mono font-black text-xs text-sky-400 shrink-0 min-w-[16px] text-center">{p.number}</span>
                         <div className="flex flex-col min-w-0 pr-1">
@@ -1708,7 +1708,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/50 border border-slate-800">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
-                    <img src={guestFormData.photoUrl || '/playertemplate.png'} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={guestFormData.photoUrl || '/playertemplate.webp'} alt="Preview" className="w-full h-full object-cover" />
                   </div>
 
                   <div className="flex-1 space-y-2 w-full">
@@ -1719,7 +1719,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="hidden" />
                       </label>
 
-                      <button type="button" onClick={() => setGuestFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.png' }))} className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
+                      <button type="button" onClick={() => setGuestFormData((prev) => ({ ...prev, photoUrl: '/playertemplate.webp' }))} className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
                         Reset
                       </button>
                     </div>

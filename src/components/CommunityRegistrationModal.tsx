@@ -684,12 +684,12 @@ export default function CommunityRegistrationModal({
 
                 <div className="max-w-[240px] sm:max-w-[260px] mx-auto rounded-2xl overflow-hidden border-2 border-white/20 bg-white p-2.5 shadow-2xl">
                   <img
-                    src="/qris.jpeg"
+                    src="/qris.webp"
                     alt="QRIS Pembayaran Mariners SC"
                     className="w-full h-auto object-contain rounded-xl"
                     onError={(e) => {
                       // Fallback text if qris.jpeg is not yet placed
-                      (e.currentTarget as any).src = '/marinerssc.png';
+                      (e.currentTarget as any).src = '/marinerssc.webp';
                     }}
                   />
                 </div>

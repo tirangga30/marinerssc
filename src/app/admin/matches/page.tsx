@@ -70,7 +70,7 @@ export default function AdminMatchesPage() {
 
   const [formData, setFormData] = useState({
     opponentName: '',
-    opponentLogo: '/defaultteam.png',
+    opponentLogo: '/defaultteam.webp',
     matchDate: getDefaultMatchDate(),
     competition: 'Matchday 1',
     venue: '',
@@ -98,7 +98,7 @@ export default function AdminMatchesPage() {
     setEditingMatch(null);
     setFormData({
       opponentName: '',
-      opponentLogo: '/defaultteam.png',
+      opponentLogo: '/defaultteam.webp',
       matchDate: getDefaultMatchDate(),
       competition: 'Matchday 1',
       venue: '',
@@ -404,7 +404,7 @@ export default function AdminMatchesPage() {
                   {/* NO BOX around preview logo */}
                   <div className="w-16 h-16 flex items-center justify-center shrink-0">
                     <img
-                      src={formData.opponentLogo || '/defaultteam.png'}
+                      src={formData.opponentLogo || '/defaultteam.webp'}
                       alt="Logo Lawan"
                       className="w-14 h-14 object-contain drop-shadow-xl"
                     />
