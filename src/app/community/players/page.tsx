@@ -38,7 +38,10 @@ export default async function CommunityPlayersPage() {
   let members: any[] = [];
   try {
     members = await prisma.member.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        isPermanent: false,
+      },
       orderBy: { jerseyNumber: 'asc' },
     });
   } catch (error) {

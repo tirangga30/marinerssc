@@ -871,7 +871,7 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
                               </button>
 
                               {/* 3. Tarik ke Skuad Utama */}
-                              {!m.playerId && (
+                              {!m.isPermanent && (
                                 <button
                                   onClick={() => openPromoteModal(m)}
                                   className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-colors"

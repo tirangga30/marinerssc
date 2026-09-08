@@ -49,7 +49,10 @@ export default async function PlayersPage() {
     players = await prisma.player.findMany({
       where: {
         isGuest: false,
-        member: null,
+        OR: [
+          { member: null },
+          { member: { isPermanent: true } },
+        ],
       },
       orderBy: { number: 'asc' },
     });
