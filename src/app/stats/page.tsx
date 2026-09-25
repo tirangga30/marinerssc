@@ -88,7 +88,7 @@ export default async function StatsPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Papan Keunggulan Individu</span>
         <h1 className="text-3xl sm:text-4xl font-black uppercase text-slate-100 blue-gradient-text">
-          Statistik Pemain Musim 2026/2027
+          Statistik Pemain Musim 2026
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Daftar performa terbaik, pencetak gol terbanyak, penyaji assist ulung, serta pilar penampilan teratur.

@@ -125,7 +125,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           {/* Badge Top */}
           <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse drop-shadow-md">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
-            <span>Musim 2026/2027</span>
+            <span>Musim 2026</span>
           </div>
 
           <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-white font-semibold leading-normal sm:leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
@@ -383,7 +383,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
             <div className="glass-panel p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-sky-400/20 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526]">
               <div className="text-center max-w-xl mx-auto mb-3 sm:mb-6 space-y-0.5">
-                <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2026/2027</h2>
+                <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2026</h2>
                 <p className="text-[9px] sm:text-xs text-slate-300">Performa resmi klub Mariners SC di musim ini</p>
               </div>
 
