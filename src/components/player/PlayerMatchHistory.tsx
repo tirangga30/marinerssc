@@ -45,15 +45,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base sm:text-lg font-black text-white">Last Matches</h2>
-          {matches.length > 0 && (
-            <span className="text-xs font-bold text-slate-400 font-mono">
-              ({displayedMatches.length} dari {matches.length})
-            </span>
-          )}
-        </div>
+      <div className="flex items-end justify-between mb-3">
+        <h2 className="text-l font-black text-white">Last Matches</h2>
       </div>
 
       <div className="rounded-2xl overflow-hidden shadow-xl" style={panelBg}>
@@ -333,37 +326,44 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
               })}
             </div>
 
-            {/* ── Navigation / Load More Button ── */}
-            {hasMore ? (
-              <div className="p-3 sm:p-4 text-center border-t border-white/[0.06] bg-slate-950/40">
-                <button
-                  type="button"
-                  onClick={() => setVisibleCount((prev) => prev + 10)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-400/30 hover:border-sky-400/60 text-sky-400 font-bold text-xs uppercase tracking-wider transition-all duration-150 shadow-md cursor-pointer group"
-                >
-                  <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
-                  <span>Buka 10 Riwayat Lagi</span>
-                  <span className="text-[10px] text-sky-300 font-semibold font-mono bg-sky-950/90 px-2 py-0.5 rounded-full border border-sky-400/30">
-                    Tersisa {remainingCount}
-                  </span>
-                </button>
-              </div>
-            ) : (
-              matches.length > 10 && (
-                <div className="py-3 px-4 flex items-center justify-between border-t border-white/[0.04] bg-slate-950/20 text-xs text-slate-400">
-                  <span className="text-[11px] sm:text-xs">
-                    Menampilkan seluruh <strong className="text-white font-mono">{matches.length}</strong> riwayat pertandingan
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setVisibleCount(10)}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-sky-400 transition-colors cursor-pointer"
-                  >
-                    <ChevronUp className="w-3.5 h-3.5" />
-                    Tutup ke 10 awal
-                  </button>
+            {/* ── Navigation Bar ── */}
+            {matches.length > 10 && (
+              <div className="py-3 px-4 flex items-center justify-between border-t border-white/[0.04] bg-slate-950/20 text-xs text-slate-400">
+                <span className="text-[11px] sm:text-xs">
+                  {hasMore ? (
+                    <>
+                      Menampilkan <strong className="text-white font-mono">{displayedMatches.length}</strong> dari{' '}
+                      <strong className="text-white font-mono">{matches.length}</strong> riwayat pertandingan
+                    </>
+                  ) : (
+                    <>
+                      Menampilkan seluruh <strong className="text-white font-mono">{matches.length}</strong> riwayat pertandingan
+                    </>
+                  )}
+                </span>
+                <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                  {visibleCount > 10 && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount(10)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-sky-400 transition-colors cursor-pointer"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      Tutup ke 10 awal
+                    </button>
+                  )}
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 10)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-sky-400 transition-colors cursor-pointer"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      Buka 10 riwayat lagi
+                    </button>
+                  )}
                 </div>
-              )
+              </div>
             )}
           </>
         )}
