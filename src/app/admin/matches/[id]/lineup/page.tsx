@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Save, Plus, Edit, Trash2, CheckCircle2, Activity,
   Clock, Zap, Shield, Star, AlertCircle, GripVertical, X,
-  UserCheck, Upload, Loader2, Play, Users, UserPlus
+  UserCheck, Upload, Loader2, Play, Users, UserPlus, UserX
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
@@ -257,6 +257,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
   const [invitingMemberId, setInvitingMemberId] = useState<string | null>(null);
 
   const [editingGuestPlayer, setEditingGuestPlayer] = useState<Player | null>(null);
+  const [showNonSquadModal, setShowNonSquadModal] = useState(false);
+  const [nonSquadReasons, setNonSquadReasons] = useState<Record<string, string>>({});
 
   const openAddGuestModal = () => {
     setEditingGuestPlayer(null);
@@ -430,7 +432,16 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
         setPlayers(playersData);
         setMatchData(matchInfo);
-        if (attData?.attendances) setMatchAttendances(attData.attendances);
+        if (attData?.attendances) {
+          setMatchAttendances(attData.attendances);
+          const rMap: Record<string, string> = {};
+          attData.attendances.forEach((att: any) => {
+            if (att.playerId && att.declineReason) {
+              rMap[att.playerId] = att.declineReason;
+            }
+          });
+          setNonSquadReasons(rMap);
+        }
         if (memData?.members) setCommunityMembers(memData.members);
 
         setMatchDetails({
@@ -734,7 +745,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           homeScore: matchDetails.homeScore,
           awayScore: matchDetails.awayScore,
           duration: matchDetails.duration,
-          isLiveEnabled: matchDetails.isLiveEnabled
+          isLiveEnabled: matchDetails.isLiveEnabled,
+          nonSquadReasons,
         }),
       });
       if (res.ok) {
@@ -819,6 +831,23 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               }`}>
               {starterCount}/11 Starter
             </div>
+
+            {/* Tombol Navigasi Status Pemain Luar Skuad (Disamping Kiri Tombol Simpan) */}
+            <button
+              type="button"
+              onClick={() => setShowNonSquadModal(true)}
+              className="px-3 sm:px-4 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 transition-all shadow-md cursor-pointer hover:border-amber-400/50"
+              title="Atur status pemain yang tidak masuk skuad (misal: Cedera, Akumulasi Kartu, Izin, dll)"
+            >
+              <UserX className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Status Luar Skuad</span>
+              <span className="sm:hidden">Luar Skuad</span>
+              {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 && (
+                <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] flex items-center justify-center font-mono">
+                  {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length}
+                </span>
+              )}
+            </button>
 
             <button
               onClick={handleSaveAll}
@@ -1766,6 +1795,209 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 {addingGuest ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {addingGuest ? 'Menyimpan...' : 'Simpan Pemain Loan'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MODAL STATUS PEMAIN LUAR SKUAD ═══ */}
+      {showNonSquadModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-950 border border-amber-400/30 rounded-3xl w-full max-w-2xl shadow-2xl shadow-amber-900/20 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center shrink-0">
+                  <UserX className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-black uppercase text-white truncate">
+                    Status Pemain Luar Skuad
+                  </h2>
+                  <p className="text-[11px] text-slate-400 truncate">
+                    Atur status untuk pemain yang tidak masuk skuad pertandingan ini
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNonSquadModal(false)}
+                className="p-2 bg-slate-800/80 rounded-full text-slate-400 hover:text-white hover:bg-red-500 transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5">
+              <div className="p-3 rounded-xl bg-amber-400/5 border border-amber-400/20 text-xs text-amber-200/90 leading-relaxed flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  Status bawaan adalah <strong>&ldquo;Tidak masuk skuad&rdquo;</strong>. Anda dapat memilih opsi cepat seperti <strong>Cedera</strong>, <strong>Akumulasi Kartu</strong>, <strong>Izin</strong>, atau mengetikkan keterangan khusus.
+                </span>
+              </div>
+
+              {mainSquadAvailable.length === 0 ? (
+                <div className="text-center py-10 space-y-2">
+                  <UserCheck className="w-8 h-8 mx-auto text-slate-600" />
+                  <p className="text-xs font-semibold text-slate-400">
+                    Semua pemain skuad utama telah dimasukkan ke dalam Starter atau Cadangan match ini.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {mainSquadAvailable.map((p) => {
+                    const currentReason = nonSquadReasons[p.id] || '';
+                    const displayStatus = currentReason.trim() || 'Tidak masuk skuad';
+
+                    return (
+                      <div
+                        key={p.id}
+                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-slate-700/80 transition-all space-y-2.5 shadow-sm"
+                      >
+                        {/* Player Header Info */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700 bg-slate-950 shrink-0">
+                              <img
+                                src={p.photoUrl || '/playertemplate.webp'}
+                                alt={p.name}
+                                className="w-full h-full object-cover object-top"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-black text-sky-400 text-xs sm:text-sm">
+                                  #{p.number}
+                                </span>
+                                <span className="font-extrabold text-white text-xs sm:text-sm truncate">
+                                  {p.name}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-semibold block">
+                                {formatPosition(p.position)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Live Preview Badge */}
+                          <div className="shrink-0 text-right">
+                            <span className="block text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">
+                              Tampilan di Profil
+                            </span>
+                            <span
+                              className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded border ${
+                                displayStatus === 'Cedera'
+                                  ? 'text-rose-300 bg-rose-950/60 border-rose-600/50'
+                                  : displayStatus === 'Akumulasi Kartu'
+                                  ? 'text-amber-300 bg-amber-950/60 border-amber-600/50'
+                                  : displayStatus === 'Izin'
+                                  ? 'text-sky-300 bg-sky-950/60 border-sky-600/50'
+                                  : displayStatus === 'Sakit'
+                                  ? 'text-purple-300 bg-purple-950/60 border-purple-600/50'
+                                  : displayStatus === 'Diistirahatkan'
+                                  ? 'text-emerald-300 bg-emerald-950/60 border-emerald-600/50'
+                                  : 'text-slate-400 bg-slate-800/80 border-slate-700/80'
+                              }`}
+                            >
+                              {displayStatus}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Quick Preset Buttons */}
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                          {[
+                            'Tidak masuk skuad',
+                            'Cedera',
+                            'Akumulasi Kartu',
+                            'Izin',
+                            'Sakit',
+                            'Diistirahatkan',
+                          ].map((preset) => {
+                            const isSelected =
+                              preset === 'Tidak masuk skuad'
+                                ? !currentReason || currentReason === 'Tidak masuk skuad'
+                                : currentReason === preset;
+
+                            return (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => {
+                                  setNonSquadReasons((prev) => ({
+                                    ...prev,
+                                    [p.id]: preset === 'Tidak masuk skuad' ? '' : preset,
+                                  }));
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                  isSelected
+                                    ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm scale-102'
+                                    : 'bg-slate-800/80 text-slate-300 border-slate-700/80 hover:bg-slate-700 hover:text-white'
+                                }`}
+                              >
+                                {preset}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Free text custom input */}
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Atau ketik keterangan bebas jika lainnya..."
+                            value={currentReason}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNonSquadReasons((prev) => ({
+                                ...prev,
+                                [p.id]: val,
+                              }));
+                            }}
+                            className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-400 font-semibold">
+                {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 ? (
+                  <span className="text-amber-300">
+                    {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length} pemain memiliki status khusus
+                  </span>
+                ) : (
+                  'Semua pemain berstatus default "Tidak masuk skuad"'
+                )}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNonSquadModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowNonSquadModal(false);
+                    await handleSaveAll();
+                  }}
+                  disabled={saving}
+                  className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-sky-600/30 transition-all cursor-pointer disabled:opacity-70"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Simpan Status</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

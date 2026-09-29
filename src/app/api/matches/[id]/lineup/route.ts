@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id: matchId } = await params;
-    const { lineups, events, formation, status, homeScore, awayScore, duration, isLiveEnabled } = await req.json();
+    const { lineups, events, formation, status, homeScore, awayScore, duration, isLiveEnabled, nonSquadReasons } = await req.json();
 
     const updateData: any = {};
     if (formation !== undefined) updateData.formation = formation;
@@ -79,6 +79,70 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       });
     }
 
+    // Handle non-squad player reasons in MatchAttendance
+    const activePlayerIds = new Set(Array.isArray(lineups) ? lineups.map((l: any) => l.playerId) : []);
+
+    if (nonSquadReasons && typeof nonSquadReasons === 'object') {
+      for (const [pId, reasonVal] of Object.entries(nonSquadReasons)) {
+        if (activePlayerIds.has(pId)) continue;
+
+        const reason = typeof reasonVal === 'string' ? reasonVal.trim() : '';
+        const existing = await prisma.matchAttendance.findFirst({
+          where: { matchId, playerId: pId },
+        });
+
+        if (reason && reason !== 'Tidak masuk skuad') {
+          if (existing) {
+            await prisma.matchAttendance.update({
+              where: { id: existing.id },
+              data: {
+                status: 'DECLINED',
+                declineReason: reason,
+              },
+            });
+          } else {
+            const pRec = await prisma.player.findUnique({ where: { id: pId } });
+            await prisma.matchAttendance.create({
+              data: {
+                matchId,
+                playerId: pId,
+                playerName: pRec?.name || 'Player',
+                playerType: 'SQUAD',
+                status: 'DECLINED',
+                declineReason: reason,
+              },
+            });
+          }
+        } else {
+          // If reset to "Tidak masuk skuad" or empty
+          if (existing) {
+            await prisma.matchAttendance.update({
+              where: { id: existing.id },
+              data: {
+                status: 'DECLINED',
+                declineReason: reason === 'Tidak masuk skuad' ? 'Tidak masuk skuad' : null,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    // For active squad players in the lineup, clear any decline reasons
+    if (activePlayerIds.size > 0) {
+      await prisma.matchAttendance.updateMany({
+        where: {
+          matchId,
+          playerId: { in: Array.from(activePlayerIds) },
+          status: 'DECLINED',
+        },
+        data: {
+          status: 'CONFIRMED',
+          declineReason: null,
+        },
+      });
+    }
+
     await recalculateAllPlayerStats();
 
     const updatedMatch = await prisma.footballMatch.findUnique({
@@ -86,6 +150,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       include: {
         lineups: { include: { player: true } },
         events: { include: { player: true, assistPlayer: true } },
+        attendances: true,
       },
     });
 

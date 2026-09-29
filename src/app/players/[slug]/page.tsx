@@ -84,6 +84,7 @@ export default async function PlayerDetailPage({
       include: {
         events: true,
         lineups: true,
+        attendances: true,
       },
       orderBy: { matchDate: 'desc' },
     }),

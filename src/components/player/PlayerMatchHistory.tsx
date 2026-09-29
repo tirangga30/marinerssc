@@ -82,6 +82,9 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                 const lineup = (match.lineups || []).find((l: any) => l.playerId === player.id);
                 const isNotInSquad = !lineup;
 
+                const attendance = (match.attendances || []).find((a: any) => a.playerId === player.id);
+                const nonSquadStatus = attendance?.declineReason?.trim() || 'Tidak masuk skuad';
+
                 const evts = (player.events || []).filter((e: any) => e.matchId === match.id);
                 const assistEvts = (player.assistedEvents || []).filter(
                   (e: any) => e.matchId === match.id && e.type !== 'sub'
@@ -223,8 +226,22 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                         </div>
                         {/* Tidak masuk skuad / On the bench badge OR event icons */}
                         {isNotInSquad ? (
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
-                            Tidak masuk skuad
+                          <span
+                            className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded border shrink-0 ${
+                              nonSquadStatus === 'Cedera'
+                                ? 'text-rose-300 bg-rose-950/60 border-rose-600/50'
+                                : nonSquadStatus === 'Akumulasi Kartu'
+                                ? 'text-amber-300 bg-amber-950/60 border-amber-600/50'
+                                : nonSquadStatus === 'Izin'
+                                ? 'text-sky-300 bg-sky-950/60 border-sky-600/50'
+                                : nonSquadStatus === 'Sakit'
+                                ? 'text-purple-300 bg-purple-950/60 border-purple-600/50'
+                                : nonSquadStatus === 'Diistirahatkan'
+                                ? 'text-emerald-300 bg-emerald-950/60 border-emerald-600/50'
+                                : 'text-slate-400 bg-slate-800/80 border-slate-700/80'
+                            }`}
+                          >
+                            {nonSquadStatus}
                           </span>
                         ) : isOnBenchOnly ? (
                           <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">

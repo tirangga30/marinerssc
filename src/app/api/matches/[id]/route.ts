@@ -18,6 +18,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           include: { player: true, assistPlayer: true },
           orderBy: { minute: 'asc' },
         },
+        attendances: true,
       },
     });
 
