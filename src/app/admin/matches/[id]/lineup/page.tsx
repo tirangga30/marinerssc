@@ -1885,21 +1885,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             <span className="block text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">
                               Tampilan di Profil
                             </span>
-                            <span
-                              className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded border ${
-                                displayStatus === 'Cedera'
-                                  ? 'text-rose-300 bg-rose-950/60 border-rose-600/50'
-                                  : displayStatus === 'Akumulasi Kartu'
-                                  ? 'text-amber-300 bg-amber-950/60 border-amber-600/50'
-                                  : displayStatus === 'Izin'
-                                  ? 'text-sky-300 bg-sky-950/60 border-sky-600/50'
-                                  : displayStatus === 'Sakit'
-                                  ? 'text-purple-300 bg-purple-950/60 border-purple-600/50'
-                                  : displayStatus === 'Diistirahatkan'
-                                  ? 'text-emerald-300 bg-emerald-950/60 border-emerald-600/50'
-                                  : 'text-slate-400 bg-slate-800/80 border-slate-700/80'
-                              }`}
-                            >
+                            <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded border text-slate-400 bg-slate-800/80 border-slate-700/80">
                               {displayStatus}
                             </span>
                           </div>
