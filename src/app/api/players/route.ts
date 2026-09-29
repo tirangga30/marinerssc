@@ -103,6 +103,15 @@ export async function GET(req: Request) {
 
     const players = await prisma.player.findMany({
       where: whereClause,
+      include: {
+        member: {
+          select: {
+            id: true,
+            isPermanent: true,
+            tier: true,
+          },
+        },
+      },
       orderBy: { number: 'asc' },
     });
 

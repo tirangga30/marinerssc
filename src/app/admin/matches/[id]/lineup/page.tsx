@@ -18,6 +18,11 @@ interface Player {
   photoUrl: string;
   isGuest: boolean;
   guestMatchId?: string | null;
+  member?: {
+    id: string;
+    isPermanent: boolean;
+    tier?: string;
+  } | null;
 }
 
 interface MatchLineupInput {
@@ -773,7 +778,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     });
   };
 
-  const mainSquadAvailable = sortRosterList(availablePlayers.filter((p) => !p.isGuest));
+  const mainSquadAvailable = sortRosterList(
+    availablePlayers.filter((p) => !p.isGuest && (!p.member || p.member.isPermanent))
+  );
   const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
 
   const activeMatchPlayerIds = new Set([...pitchedIds, ...benchSet]);

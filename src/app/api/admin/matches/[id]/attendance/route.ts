@@ -21,7 +21,13 @@ export async function GET(
     });
 
     const allSquadPlayers = await prisma.player.findMany({
-      where: { isGuest: false },
+      where: {
+        isGuest: false,
+        OR: [
+          { member: null },
+          { member: { isPermanent: true } },
+        ],
+      },
       orderBy: { number: 'asc' },
     });
 
