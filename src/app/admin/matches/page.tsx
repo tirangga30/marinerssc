@@ -17,6 +17,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
+import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
 
 interface FootballMatch {
   id: string;
@@ -139,7 +140,17 @@ export default function AdminMatchesPage() {
         resSeasons.json(),
         resComps.json(),
       ]);
-      if (Array.isArray(seasonsData)) setSeasons(seasonsData);
+      if (Array.isArray(seasonsData)) {
+        setSeasons(seasonsData);
+        // Sync with global active season
+        const activeGlobalSeason = getClientAdminSeason();
+        if (activeGlobalSeason && seasonsData.some((s) => s.name === activeGlobalSeason)) {
+          setSelectedSeasonFilter(activeGlobalSeason);
+        } else if (seasonsData.length > 0) {
+          const current = seasonsData.find((s) => s.isCurrent) || seasonsData[0];
+          setSelectedSeasonFilter(current.name);
+        }
+      }
       if (Array.isArray(compsData)) setCompetitions(compsData);
     } catch (err) {
       console.error('Failed to load seasons or competitions:', err);
@@ -149,6 +160,14 @@ export default function AdminMatchesPage() {
   useEffect(() => {
     fetchMatches();
     fetchMeta();
+
+    const handleSeasonChange = (e: any) => {
+      if (e.detail?.season) {
+        setSelectedSeasonFilter(e.detail.season);
+      }
+    };
+    window.addEventListener('admin_season_changed', handleSeasonChange);
+    return () => window.removeEventListener('admin_season_changed', handleSeasonChange);
   }, []);
 
   const getNextMatchdayNumber = (seasonName: string) => {
@@ -171,7 +190,10 @@ export default function AdminMatchesPage() {
 
   const openAddModal = () => {
     setEditingMatch(null);
-    const activeSeason = seasons.find((s) => s.isCurrent) || seasons[0];
+    const activeSeason =
+      (selectedSeasonFilter !== 'all' ? seasons.find((s) => s.name === selectedSeasonFilter) : null) ||
+      seasons.find((s) => s.isCurrent) ||
+      seasons[0];
     const defaultSeasonName = activeSeason?.name || '2026';
     const defaultSeasonId = activeSeason?.id || '';
 
@@ -327,7 +349,13 @@ export default function AdminMatchesPage() {
             <Filter className="w-3.5 h-3.5 text-sky-400" />
             <select
               value={selectedSeasonFilter}
-              onChange={(e) => setSelectedSeasonFilter(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedSeasonFilter(val);
+                if (val !== 'all') {
+                  setClientAdminSeason(val);
+                }
+              }}
               className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
             >
               <option value="all" className="bg-slate-900 text-white">Semua Musim</option>

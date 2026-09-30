@@ -1,44 +1,83 @@
 import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles, Trophy } from 'lucide-react';
+import DashboardSeasonSelector from '@/components/admin/DashboardSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ season?: string }>;
+}) {
   const session = await getAdminSession();
   if (!session) {
     redirect('/admin/login');
   }
 
-  let playerCount = 19;
-  let matchCount = 6;
+  const cookieStore = await cookies();
+  const cookieSeason = cookieStore.get('admin_season')?.value;
+  const params = await searchParams;
+  const requestedSeason = params.season || cookieSeason;
+
+  // Fetch all seasons with their counts
+  const seasons = await prisma.season.findMany({
+    orderBy: { year: 'desc' },
+    include: {
+      _count: {
+        select: {
+          players: true,
+          matches: true,
+          competitions: true,
+        },
+      },
+    },
+  });
+
+  const activeSeason =
+    seasons.find((s) => s.name === requestedSeason || s.id === requestedSeason) ||
+    seasons.find((s) => s.isCurrent) ||
+    seasons[0];
+
+  const activeSeasonName = activeSeason?.name || '2026';
+
+  let seasonPlayerCount = 0;
+  let seasonMatchCount = 0;
+  let totalAllPlayers = 0;
   let memberCount = 0;
   let funMatchCount = 0;
-  let articleCount = 4;
+  let articleCount = 0;
   let winRate = 75;
 
   try {
-    playerCount = await prisma.player.count({ where: { isGuest: false } });
-    matchCount = await prisma.footballMatch.count();
-    articleCount = await prisma.article.count();
+    totalAllPlayers = await prisma.player.count({ where: { isGuest: false } });
     memberCount = await prisma.member.count({ where: { status: 'ACTIVE' } });
     funMatchCount = await prisma.funMatch.count();
+    articleCount = await prisma.article.count();
 
-    const finishedMatches = await prisma.footballMatch.findMany({
-      where: { status: 'finished' },
-    });
+    if (activeSeason) {
+      seasonPlayerCount = activeSeason._count.players;
+      seasonMatchCount = await prisma.footballMatch.count({
+        where: { seasonName: activeSeason.name },
+      });
 
-    const wins = finishedMatches.filter(
-      (m: any) =>
-        m.homeScore !== null &&
-        m.awayScore !== null &&
-        ((m.isHome && m.homeScore > m.awayScore) || (!m.isHome && m.awayScore > m.homeScore))
-    ).length;
+      const finishedMatches = await prisma.footballMatch.findMany({
+        where: { seasonName: activeSeason.name, status: 'finished' },
+      });
 
-    winRate = finishedMatches.length > 0 ? Math.round((wins / finishedMatches.length) * 100) : 75;
+      const wins = finishedMatches.filter(
+        (m: any) =>
+          m.homeScore !== null &&
+          m.awayScore !== null &&
+          ((m.isHome && m.homeScore > m.awayScore) || (!m.isHome && m.awayScore > m.homeScore))
+      ).length;
+
+      winRate = finishedMatches.length > 0 ? Math.round((wins / finishedMatches.length) * 100) : 0;
+    }
   } catch (e) {
     console.error('Error fetching admin dashboard stats:', e);
   }
@@ -56,7 +95,9 @@ export default async function AdminDashboardPage() {
           <h1 className="text-xl sm:text-3xl font-black uppercase text-white blue-gradient-text tracking-tight">
             Selamat Datang, {session.email.split('@')[0]}
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-300">Mariners SC · Akses Kontrol Resmi</p>
+          <p className="text-[11px] sm:text-xs text-slate-300">
+            Mariners SC · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
+          </p>
         </div>
 
         <form action="/api/auth/logout" method="POST" className="w-full sm:w-auto">
@@ -69,51 +110,62 @@ export default async function AdminDashboardPage() {
         </form>
       </div>
 
-      {/* Stats Overview Grid */}
+      {/* ── PROMINENT SEASON SELECTOR ON DASHBOARD ── */}
+      <DashboardSeasonSelector seasons={seasons} selectedSeason={activeSeasonName} />
+
+      {/* Stats Overview Grid for the Selected Season */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-4">
-        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
+        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/30 space-y-1 bg-sky-950/10">
           <div className="flex items-center justify-between text-sky-400">
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">Skuad</span>
+            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">
+              Musim {activeSeasonName}
+            </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-black font-mono text-white">{playerCount}</p>
-          <p className="text-[10px] text-slate-400 font-semibold truncate">Skuad Utama</p>
+          <p className="text-2xl sm:text-3xl font-black font-mono text-white">{seasonPlayerCount}</p>
+          <p className="text-[10px] text-slate-400 font-semibold truncate">
+            Skuad Terdaftar ({totalAllPlayers} di klub)
+          </p>
+        </div>
+
+        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/30 space-y-1 bg-sky-950/10">
+          <div className="flex items-center justify-between text-sky-400">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">
+              Musim {activeSeasonName}
+            </span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black font-mono text-white">{seasonMatchCount}</p>
+          <p className="text-[10px] text-slate-400 font-semibold truncate">Laga Utama Musim Ini</p>
+        </div>
+
+        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/30 space-y-1 bg-sky-950/10">
+          <div className="flex items-center justify-between text-sky-400">
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">
+              Musim {activeSeasonName}
+            </span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black font-mono blue-gradient-text">{winRate}%</p>
+          <p className="text-[10px] text-slate-400 font-semibold truncate">Rasio Menang</p>
         </div>
 
         <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-amber-400">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-amber-600/20 text-amber-300 rounded">Member</span>
+            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-amber-600/20 text-amber-300 rounded">Komunitas</span>
           </div>
           <p className="text-2xl sm:text-3xl font-black font-mono text-amber-300">{memberCount}</p>
-          <p className="text-[10px] text-slate-400 font-semibold truncate">Member Komunitas</p>
+          <p className="text-[10px] text-slate-400 font-semibold truncate">Member Aktif ({funMatchCount} Fun Match)</p>
         </div>
 
-        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-sky-400">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">Laga</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-black font-mono text-white">{matchCount + funMatchCount}</p>
-          <p className="text-[10px] text-slate-400 font-semibold truncate">Total Pertandingan</p>
-        </div>
-
-        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
+        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between text-sky-400">
             <Newspaper className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">Berita</span>
           </div>
           <p className="text-2xl sm:text-3xl font-black font-mono text-white">{articleCount}</p>
           <p className="text-[10px] text-slate-400 font-semibold truncate">Artikel Berita</p>
-        </div>
-
-        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1 col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between text-sky-400">
-            <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-blue-600/20 text-sky-300 rounded">Performa</span>
-          </div>
-          <p className="text-2xl sm:text-3xl font-black font-mono blue-gradient-text">{winRate}%</p>
-          <p className="text-[10px] text-slate-400 font-semibold truncate">Rasio Menang</p>
         </div>
       </div>
 

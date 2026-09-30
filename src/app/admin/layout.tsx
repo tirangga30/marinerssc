@@ -1,4 +1,5 @@
 import React from 'react';
+import AdminTopNav from '@/components/admin/AdminTopNav';
 
 /**
  * Admin Layout
@@ -39,8 +40,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       />
 
       {/* ── Page content ── */}
-      <div className="relative" style={{ zIndex: 10 }}>
-        {children}
+      <div className="relative flex flex-col min-h-screen" style={{ zIndex: 10 }}>
+        <AdminTopNav />
+        <main className="flex-1">
+          {children}
+        </main>
       </div>
     </div>
   );

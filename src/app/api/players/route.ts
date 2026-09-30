@@ -226,6 +226,23 @@ export async function POST(req: Request) {
       },
     });
 
+    // Auto-connect to specified season if provided
+    if (data.seasonName || data.seasonId) {
+      try {
+        const s = data.seasonId
+          ? await prisma.season.findUnique({ where: { id: data.seasonId } })
+          : await prisma.season.findUnique({ where: { name: data.seasonName } });
+        if (s) {
+          await prisma.season.update({
+            where: { id: s.id },
+            data: { players: { connect: { id: player.id } } },
+          });
+        }
+      } catch (seasonErr) {
+        console.error('Failed to link player to season:', seasonErr);
+      }
+    }
+
     await cleanupUnusedUploads();
 
     revalidatePath('/');

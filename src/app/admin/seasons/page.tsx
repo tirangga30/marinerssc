@@ -20,6 +20,7 @@ import {
   X,
   Search,
 } from 'lucide-react';
+import { getClientAdminSeason } from '@/lib/adminSeason';
 
 interface Season {
   id: string;
@@ -113,6 +114,10 @@ export default function AdminSeasonsPage() {
       const data = await res.json();
       if (Array.isArray(data)) {
         setSeasons(data);
+        const activeGlobal = getClientAdminSeason();
+        if (activeGlobal && data.some((s) => s.name === activeGlobal)) {
+          setCompFilterSeason(activeGlobal);
+        }
       }
     } catch {
       showNotification('error', 'Gagal memuat data musim');
@@ -140,6 +145,14 @@ export default function AdminSeasonsPage() {
   useEffect(() => {
     fetchSeasons();
     fetchCompetitions();
+
+    const handleSeasonChange = (e: any) => {
+      if (e.detail?.season) {
+        setCompFilterSeason(e.detail.season);
+      }
+    };
+    window.addEventListener('admin_season_changed', handleSeasonChange);
+    return () => window.removeEventListener('admin_season_changed', handleSeasonChange);
   }, []);
 
   // Open Create/Edit Season Modal

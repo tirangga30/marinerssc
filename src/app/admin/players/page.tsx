@@ -2,8 +2,32 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star, Crop, Trophy } from 'lucide-react';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  ArrowLeft,
+  X,
+  Save,
+  Upload,
+  Loader2,
+  Star,
+  Crop,
+  Trophy,
+  Users,
+  UserPlus,
+  UserMinus,
+  Check,
+  Search,
+} from 'lucide-react';
 import ImageCropperModal from '@/components/ImageCropperModal';
+import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
+
+interface SeasonRef {
+  id: string;
+  name: string;
+  year: number;
+}
 
 interface Player {
   id: string;
@@ -25,15 +49,33 @@ interface Player {
   appearances: number;
   yellowCards: number;
   redCards: number;
+  seasons?: SeasonRef[];
+}
+
+interface Season {
+  id: string;
+  name: string;
+  year: number;
+  isCurrent: boolean;
 }
 
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [guestPlayers, setGuestPlayers] = useState<Player[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<string>('2026');
+  const [activeTab, setActiveTab] = useState<'season_squad' | 'all_players' | 'guests'>('season_squad');
+
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Pull Player Modal State
+  const [showPullModal, setShowPullModal] = useState(false);
+  const [pullSearch, setPullSearch] = useState('');
+  const [pulling, setPulling] = useState(false);
+  const [selectedPlayerIdsForPull, setSelectedPlayerIdsForPull] = useState<string[]>([]);
 
   // Player Photo Cropper Modal State
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -100,11 +142,15 @@ export default function AdminPlayersPage() {
     try {
       const res = await fetch('/api/players');
       const data = await res.json();
-      setPlayers(sortPlayersByPos(data));
+      if (Array.isArray(data)) {
+        setPlayers(sortPlayersByPos(data));
+      }
 
       const guestRes = await fetch('/api/players?guestsOnly=true');
       const guestData = await guestRes.json();
-      setGuestPlayers(sortPlayersByPos(guestData));
+      if (Array.isArray(guestData)) {
+        setGuestPlayers(sortPlayersByPos(guestData));
+      }
     } catch {
       console.error('Gagal mengambil pemain');
     } finally {
@@ -112,9 +158,182 @@ export default function AdminPlayersPage() {
     }
   };
 
+  const fetchSeasons = async () => {
+    try {
+      const res = await fetch('/api/admin/seasons');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSeasons(data);
+        const activeGlobal = getClientAdminSeason();
+        if (activeGlobal && data.some((s) => s.name === activeGlobal)) {
+          setSelectedSeason(activeGlobal);
+        } else if (data.length > 0) {
+          const current = data.find((s) => s.isCurrent) || data[0];
+          setSelectedSeason(current.name);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load seasons:', err);
+    }
+  };
+
   useEffect(() => {
     fetchPlayers();
+    fetchSeasons();
+
+    const handleSeasonChange = (e: any) => {
+      if (e.detail?.season) {
+        setSelectedSeason(e.detail.season);
+      }
+    };
+    window.addEventListener('admin_season_changed', handleSeasonChange);
+    return () => window.removeEventListener('admin_season_changed', handleSeasonChange);
   }, []);
+
+  const currentSeasonObj = seasons.find((s) => s.name === selectedSeason) || seasons[0];
+
+  const seasonSquadPlayers = players.filter((p) =>
+    p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
+  );
+
+  const availableToPullPlayers = players.filter(
+    (p) => !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
+  );
+
+  const displayedList =
+    activeTab === 'season_squad'
+      ? seasonSquadPlayers
+      : activeTab === 'all_players'
+      ? players
+      : guestPlayers;
+
+  // Single Player Pull to Season
+  const handlePullPlayer = async (playerId: string) => {
+    if (!currentSeasonObj) return;
+    setPulling(true);
+    try {
+      const currentEnrolled = seasonSquadPlayers.map((p) => p.id);
+      if (currentEnrolled.includes(playerId)) return;
+      const updated = [...currentEnrolled, playerId];
+
+      const res = await fetch(`/api/admin/seasons/${currentSeasonObj.id}/players`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerIds: updated }),
+      });
+
+      if (res.ok) {
+        setPlayers((prev) =>
+          prev.map((p) => {
+            if (p.id === playerId) {
+              const prevSeasons = p.seasons || [];
+              return {
+                ...p,
+                seasons: [
+                  ...prevSeasons,
+                  { id: currentSeasonObj.id, name: currentSeasonObj.name, year: currentSeasonObj.year },
+                ],
+              };
+            }
+            return p;
+          })
+        );
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Gagal menarik pemain ke musim ini');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat menarik pemain');
+    } finally {
+      setPulling(false);
+    }
+  };
+
+  // Release player from season
+  const handleReleasePlayer = async (player: Player) => {
+    if (!currentSeasonObj) return;
+    if (
+      !confirm(
+        `Lepas ${player.name} dari skuad Musim ${selectedSeason}?\n\nCatatan: Profil dan statistik pemain tetap tersimpan di database klub.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const updated = seasonSquadPlayers.filter((p) => p.id !== player.id).map((p) => p.id);
+      const res = await fetch(`/api/admin/seasons/${currentSeasonObj.id}/players`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerIds: updated }),
+      });
+
+      if (res.ok) {
+        setPlayers((prev) =>
+          prev.map((p) => {
+            if (p.id === player.id) {
+              return {
+                ...p,
+                seasons: (p.seasons || []).filter(
+                  (s) => s.name !== selectedSeason && s.id !== currentSeasonObj.id
+                ),
+              };
+            }
+            return p;
+          })
+        );
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Gagal melepas pemain dari musim');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat melepas pemain');
+    }
+  };
+
+  // Batch pull from modal
+  const handleBatchPull = async () => {
+    if (!currentSeasonObj || selectedPlayerIdsForPull.length === 0) return;
+    setPulling(true);
+    try {
+      const currentEnrolled = seasonSquadPlayers.map((p) => p.id);
+      const newEnrolled = Array.from(new Set([...currentEnrolled, ...selectedPlayerIdsForPull]));
+
+      const res = await fetch(`/api/admin/seasons/${currentSeasonObj.id}/players`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerIds: newEnrolled }),
+      });
+
+      if (res.ok) {
+        setPlayers((prev) =>
+          prev.map((p) => {
+            if (selectedPlayerIdsForPull.includes(p.id)) {
+              const prevSeasons = p.seasons || [];
+              if (!prevSeasons.some((s) => s.name === selectedSeason)) {
+                return {
+                  ...p,
+                  seasons: [
+                    ...prevSeasons,
+                    { id: currentSeasonObj.id, name: currentSeasonObj.name, year: currentSeasonObj.year },
+                  ],
+                };
+              }
+            }
+            return p;
+          })
+        );
+        setShowPullModal(false);
+        setSelectedPlayerIdsForPull([]);
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Gagal menarik pemain terpilih');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat menarik pemain terpilih');
+    } finally {
+      setPulling(false);
+    }
+  };
 
   // Toggle Star (Pemain Bintang / Favorit Beranda)
   const toggleStar = async (player: Player) => {
@@ -317,7 +536,10 @@ export default function AdminPlayersPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          seasonName: selectedSeason,
+        }),
       });
 
       if (res.ok) {
@@ -332,242 +554,593 @@ export default function AdminPlayersPage() {
     }
   };
 
+  const featuredCount = players.filter((p) => p.isFeatured).length;
+  const isLimitReached = featuredCount >= 6;
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
-      
       {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
             href="/admin/dashboard"
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span>
+            <span className="sm:hidden">Dashboard</span>
           </Link>
           <span className="text-slate-600">/</span>
           <Link
             href="/admin/seasons"
             className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <Trophy className="w-3.5 h-3.5" /> Kelola Skuad Per Musim
+            <Trophy className="w-3.5 h-3.5" /> Master Musim &amp; Kompetisi
           </Link>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pemain
-        </button>
+        <div className="flex items-center gap-2">
+          {activeTab === 'season_squad' && (
+            <button
+              onClick={() => {
+                setPullSearch('');
+                setSelectedPlayerIdsForPull([]);
+                setShowPullModal(true);
+              }}
+              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" /> Tarik Pemain
+            </button>
+          )}
+
+          <button
+            onClick={openAddModal}
+            className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pemain Baru
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
-          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
-            Daftar Pemain Skuad ({players.length})
-          </h1>
-          <span className="text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
-            ★ Beranda: {players.filter(p => p.isFeatured).length}/6
-          </span>
+        {/* Navigation Tabs & Season Filter Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-3 sm:pb-4">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setActiveTab('season_squad')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'season_squad'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
+                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              Skuad Musim {selectedSeason} ({seasonSquadPlayers.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('all_players')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'all_players'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
+                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-sky-400" />
+              Semua Pemain Klub ({players.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('guests')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'guests'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
+                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              Pemain Loan ({guestPlayers.length})
+            </button>
+          </div>
+
+          {/* Season Switcher & Beranda Count */}
+          <div className="flex items-center gap-2 justify-between lg:justify-end">
+            <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5">
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Musim:</span>
+              <select
+                value={selectedSeason}
+                onChange={(e) => {
+                  setSelectedSeason(e.target.value);
+                  setClientAdminSeason(e.target.value);
+                }}
+                className="bg-transparent text-xs font-black text-sky-300 focus:outline-none cursor-pointer"
+              >
+                {seasons.map((s) => (
+                  <option key={s.id} value={s.name} className="bg-slate-900 text-white font-bold">
+                    Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
+                  </option>
+                ))}
+                {seasons.length === 0 && <option value="2026">2026</option>}
+              </select>
+            </div>
+
+            <span className="text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
+              ★ Beranda: {featuredCount}/6
+            </span>
+          </div>
         </div>
 
-        {(() => {
-          const featuredCount = players.filter((p) => p.isFeatured).length;
-          const isLimitReached = featuredCount >= 6;
+        {/* ── MOBILE PLAYER CARDS ── */}
+        <div className="block md:hidden space-y-2.5">
+          {displayedList.length === 0 ? (
+            <div className="text-center py-8 space-y-2">
+              <p className="text-xs text-slate-400">
+                {activeTab === 'season_squad'
+                  ? `Belum ada pemain di skuad Musim ${selectedSeason}.`
+                  : 'Belum ada pemain terdaftar.'}
+              </p>
+              {activeTab === 'season_squad' && (
+                <button
+                  onClick={() => {
+                    setPullSearch('');
+                    setSelectedPlayerIdsForPull([]);
+                    setShowPullModal(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-bold uppercase cursor-pointer"
+                >
+                  <UserPlus className="w-3.5 h-3.5 inline mr-1" /> Tarik Pemain Sekarang
+                </button>
+              )}
+            </div>
+          ) : (
+            displayedList.map((player) => {
+              const isEnrolledInActiveSeason = player.seasons?.some(
+                (s) => s.name === selectedSeason || s.id === currentSeasonObj?.id
+              );
 
-          return (
-            <>
-              {/* ── MOBILE PLAYER CARDS (Block on mobile, hidden on tablet/desktop) ── */}
-              <div className="block md:hidden space-y-2.5">
-                {players.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-6 text-center">Belum ada pemain terdaftar.</p>
-                ) : (
-                  players.map((player) => (
-                    <div
-                      key={player.id}
-                      className="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center gap-2.5 shadow-sm"
+              return (
+                <div
+                  key={player.id}
+                  className="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center gap-2.5 shadow-sm"
+                >
+                  {/* 4:5 Photo Avatar */}
+                  <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
+                    <img
+                      src={player.photoUrl || '/playertemplate.webp'}
+                      alt={player.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono font-black text-sky-400 text-xs">#{player.number}</span>
+                      <span className="font-bold text-white text-xs truncate max-w-[120px]">{player.name}</span>
+                      {player.isCaptain && (
+                        <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] font-black uppercase">
+                          👑
+                        </span>
+                      )}
+                      {player.isGuest && (
+                        <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase">
+                          Loan
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap">
+                      <span className="font-bold text-sky-300">{normalizePos(player.position)}</span>
+                      <span>•</span>
+                      <span>
+                        {player.goals}G {player.assists}A
+                      </span>
+                      <span>•</span>
+                      <span>{player.appearances} Laga</span>
+                    </div>
+
+                    {/* Season badges in all_players tab */}
+                    {activeTab === 'all_players' && (
+                      <div className="flex items-center gap-1 pt-0.5 flex-wrap">
+                        {player.seasons && player.seasons.length > 0 ? (
+                          player.seasons.map((s) => (
+                            <span
+                              key={s.id}
+                              className={`text-[8px] font-bold px-1.5 py-0.2 rounded ${
+                                s.name === selectedSeason
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                  : 'bg-blue-600/20 text-sky-300'
+                              }`}
+                            >
+                              {s.name}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[8px] text-slate-500">Belum masuk musim</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Pull/Release Button */}
+                    {activeTab === 'season_squad' ? (
+                      <button
+                        onClick={() => handleReleasePlayer(player)}
+                        title={`Lepas dari Skuad Musim ${selectedSeason}`}
+                        className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer"
+                      >
+                        <UserMinus className="w-3.5 h-3.5" />
+                      </button>
+                    ) : activeTab === 'all_players' ? (
+                      isEnrolledInActiveSeason ? (
+                        <button
+                          onClick={() => handleReleasePlayer(player)}
+                          title={`Lepas dari Musim ${selectedSeason}`}
+                          className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-red-500/20 hover:text-red-300 cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handlePullPlayer(player.id)}
+                          disabled={pulling}
+                          title={`Tarik ke Musim ${selectedSeason}`}
+                          className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                        </button>
+                      )
+                    ) : null}
+
+                    <button
+                      onClick={() => toggleStar(player)}
+                      disabled={isLimitReached && !player.isFeatured}
+                      title={player.isFeatured ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
+                      className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                        player.isFeatured
+                          ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
+                          : 'bg-slate-800 border-slate-700 text-slate-500'
+                      }`}
                     >
-                      {/* 4:5 Photo Avatar */}
-                      <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
+                      <Star className={`w-3.5 h-3.5 ${player.isFeatured ? 'fill-amber-400' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => openEditModal(player)}
+                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
+                      title="Edit Pemain"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(player.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                      title="Hapus Pemain"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ── DESKTOP PLAYERS TABLE ── */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-200">
+            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+              <tr>
+                <th className="p-3">No</th>
+                <th className="p-3">Pemain</th>
+                <th className="p-3">Posisi</th>
+                <th className="p-3">Musim</th>
+                <th className="p-3">Gol / Assist</th>
+                <th className="p-3">Laga</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-center">Beranda ({featuredCount}/6)</th>
+                <th className="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-medium">
+              {displayedList.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-slate-500">
+                    {activeTab === 'season_squad'
+                      ? `Belum ada pemain di skuad Musim ${selectedSeason}. Klik "Tarik Pemain" untuk memasukkan pemain.`
+                      : 'Belum ada data pemain.'}
+                  </td>
+                </tr>
+              ) : (
+                displayedList.map((player) => {
+                  const isEnrolledInActiveSeason = player.seasons?.some(
+                    (s) => s.name === selectedSeason || s.id === currentSeasonObj?.id
+                  );
+
+                  return (
+                    <tr key={player.id} className="hover:bg-slate-800/40">
+                      <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
+                      <td className="p-3 flex items-center gap-3">
                         <img
                           src={player.photoUrl || '/playertemplate.webp'}
                           alt={player.name}
-                          className="w-full h-full object-cover"
+                          className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
                         />
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-mono font-black text-sky-400 text-xs">#{player.number}</span>
-                          <span className="font-bold text-white text-xs truncate max-w-[120px]">{player.name}</span>
+                        <div>
+                          <span className="font-bold text-white">{player.name}</span>
                           {player.isCaptain && (
-                            <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] font-black uppercase">
-                              👑
-                            </span>
-                          )}
-                          {player.isGuest && (
-                            <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase">
-                              Loan
+                            <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                              👑 Kapten
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                          <span className="font-bold text-sky-300">{normalizePos(player.position)}</span>
-                          <span>•</span>
-                          <span>{player.goals}G {player.assists}A</span>
-                          <span>•</span>
-                          <span>{player.appearances} Laga</span>
+                      </td>
+                      <td className="p-3 font-bold text-sky-300">
+                        {normalizePos(player.position)}
+                        {player.isGuest && (
+                          <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">
+                            Loan
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1 flex-wrap max-w-xs">
+                          {player.seasons && player.seasons.length > 0 ? (
+                            player.seasons.map((s) => (
+                              <span
+                                key={s.id}
+                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                  s.name === selectedSeason
+                                    ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
+                                    : 'bg-slate-800 text-slate-400'
+                                }`}
+                              >
+                                {s.name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[10px] text-slate-500">-</span>
+                          )}
                         </div>
-                      </div>
+                      </td>
+                      <td className="p-3">
+                        {player.goals} Gol / {player.assists} Assist
+                      </td>
+                      <td className="p-3">{player.appearances}</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            player.status === 'Active'
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-red-500/20 text-red-300'
+                          }`}
+                        >
+                          {player.status}
+                        </span>
+                      </td>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 shrink-0">
+                      {/* TOMBOL BINTANG BERANDA */}
+                      <td className="p-3 text-center">
                         <button
                           onClick={() => toggleStar(player)}
                           disabled={isLimitReached && !player.isFeatured}
-                          title={player.isFeatured ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
-                          className={`p-1.5 rounded-lg border transition-all ${
+                          title={
                             player.isFeatured
-                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
-                              : 'bg-slate-800 border-slate-700 text-slate-500'
+                              ? 'Hapus dari Pemain Beranda'
+                              : isLimitReached
+                              ? 'Maksimal 6 Pemain Beranda Tercapai'
+                              : 'Tampilkan di Pemain Beranda'
+                          }
+                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                            player.isFeatured
+                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                              : isLimitReached
+                              ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
+                              : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
                           }`}
                         >
-                          <Star className={`w-3.5 h-3.5 ${player.isFeatured ? 'fill-amber-400' : ''}`} />
+                          <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
                         </button>
+                      </td>
+
+                      <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
+                        {/* TARIK / LEPAS PEMAIN BUTTON */}
+                        {activeTab === 'season_squad' ? (
+                          <button
+                            onClick={() => handleReleasePlayer(player)}
+                            className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
+                            title={`Lepas dari Skuad Musim ${selectedSeason}`}
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </button>
+                        ) : activeTab === 'all_players' ? (
+                          isEnrolledInActiveSeason ? (
+                            <button
+                              onClick={() => handleReleasePlayer(player)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-red-500/20 hover:text-red-300 text-[10px] font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              title="Terdaftar di musim ini. Klik untuk melepas."
+                            >
+                              <Check className="w-3 h-3" /> Musim {selectedSeason}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handlePullPlayer(player.id)}
+                              disabled={pulling}
+                              className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 text-[10px] font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              title={`Tarik ke Musim ${selectedSeason}`}
+                            >
+                              <UserPlus className="w-3 h-3" /> Tarik ke {selectedSeason}
+                            </button>
+                          )
+                        ) : null}
+
+                        {player.isGuest && (
+                          <button
+                            onClick={async () => {
+                              if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
+                                await fetch('/api/players/' + player.id, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ isGuest: false }),
+                                });
+                                fetchPlayers();
+                              }
+                            }}
+                            title="Promosikan ke Skuad Utama"
+                            className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
+                          >
+                            <Star className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => openEditModal(player)}
-                          className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
                           title="Edit Pemain"
                         >
-                          <Edit className="w-3.5 h-3.5" />
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(player.id)}
-                          className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
                           title="Hapus Pemain"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* ── DESKTOP PLAYERS TABLE (Hidden on mobile) ── */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-200">
-                  <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
-                    <tr>
-                      <th className="p-3">No</th>
-                      <th className="p-3">Pemain</th>
-                      <th className="p-3">Posisi</th>
-                      <th className="p-3">Gol / Assist</th>
-                      <th className="p-3">Laga</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3 text-center">Beranda ({featuredCount}/6)</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-medium">
-                    {players.map((player) => (
-                      <tr key={player.id} className="hover:bg-slate-800/40">
-                        <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
-                        <td className="p-3 flex items-center gap-3">
-                          <img
-                            src={player.photoUrl || '/playertemplate.webp'}
-                            alt={player.name}
-                            className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
-                          />
-                          <div>
-                            <span className="font-bold text-white">{player.name}</span>
-                            {player.isCaptain && (
-                              <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
-                                👑 Kapten
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3 font-bold text-sky-300">
-                          {normalizePos(player.position)}
-                          {player.isGuest && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">Loan</span>}
-                        </td>
-                        <td className="p-3">{player.goals} Gol / {player.assists} Assist</td>
-                        <td className="p-3">{player.appearances}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${player.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                            {player.status}
-                          </span>
-                        </td>
-
-                        {/* TOMBOL BINTANG (FAVORIT BERANDA - MAX 6) */}
-                        <td className="p-3 text-center">
-                          <button
-                            onClick={() => toggleStar(player)}
-                            disabled={isLimitReached && !player.isFeatured}
-                            title={
-                              player.isFeatured
-                                ? 'Hapus dari Pemain Beranda'
-                                : isLimitReached
-                                ? 'Maksimal 6 Pemain Beranda Tercapai'
-                                : 'Tampilkan di Pemain Beranda'
-                            }
-                            className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                              player.isFeatured
-                                ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
-                                : isLimitReached
-                                ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
-                                : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
-                            }`}
-                          >
-                            <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
-                          </button>
-                        </td>
-
-                        <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                          {player.isGuest && (
-                            <button
-                              onClick={async () => {
-                                if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
-                                  await fetch('/api/players/' + player.id, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ isGuest: false })
-                                  });
-                                  fetchPlayers();
-                                }
-                              }}
-                              title="Promosikan ke Skuad Utama"
-                              className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
-                            >
-                              <Star className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => openEditModal(player)}
-                            className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
-                            title="Edit Pemain"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(player.id)}
-                            className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
-                            title="Hapus Pemain"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          );
-        })()}
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* ── MODAL TARIK PEMAIN KE SKUAD MUSIM ── */}
+      {showPullModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-xl glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/40 space-y-4 shadow-2xl bg-slate-950 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-amber-400" />
+                  Tarik Pemain ke Skuad Musim {selectedSeason}
+                </h2>
+                <p className="text-[11px] text-slate-300">
+                  Pilih pemain dari database klub untuk dimasukkan ke skuad Musim {selectedSeason}.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPullModal(false)}
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={pullSearch}
+                onChange={(e) => setPullSearch(e.target.value)}
+                placeholder="Cari pemain berdasarkan nama atau nomor..."
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-sky-400 outline-none"
+              />
+            </div>
+
+            {/* Available Players List */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[200px] max-h-[360px]">
+              {availableToPullPlayers
+                .filter(
+                  (p) =>
+                    p.name.toLowerCase().includes(pullSearch.toLowerCase()) ||
+                    p.number.toString().includes(pullSearch) ||
+                    p.position.toLowerCase().includes(pullSearch.toLowerCase())
+                )
+                .map((p) => {
+                  const isChecked = selectedPlayerIdsForPull.includes(p.id);
+                  return (
+                    <div
+                      key={p.id}
+                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${
+                        isChecked
+                          ? 'bg-sky-500/15 border-sky-400 text-white'
+                          : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                      }`}
+                    >
+                      <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPlayerIdsForPull((prev) => [...prev, p.id]);
+                            } else {
+                              setSelectedPlayerIdsForPull((prev) => prev.filter((id) => id !== p.id));
+                            }
+                          }}
+                          className="w-4 h-4 rounded text-blue-600 cursor-pointer"
+                        />
+                        <img
+                          src={p.photoUrl || '/playertemplate.webp'}
+                          alt={p.name}
+                          className="w-8 h-8 rounded-lg object-cover border border-slate-700 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <span className="font-mono font-bold text-sky-400 text-xs mr-1.5">#{p.number}</span>
+                          <span className="font-bold text-white text-xs">{p.name}</span>
+                          <span className="ml-2 text-[10px] text-slate-400 uppercase">
+                            ({normalizePos(p.position)})
+                          </span>
+                        </div>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => handlePullPlayer(p.id)}
+                        disabled={pulling}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 font-bold text-[10px] uppercase transition-all cursor-pointer shrink-0"
+                      >
+                        + Tarik
+                      </button>
+                    </div>
+                  );
+                })}
+              {availableToPullPlayers.length === 0 && (
+                <p className="text-center text-xs text-slate-500 py-8">
+                  Semua pemain klub sudah terdaftar di skuad Musim {selectedSeason}.
+                </p>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between border-t border-slate-800 pt-3">
+              <span className="text-xs text-slate-400">
+                Terpilih: <b className="text-white">{selectedPlayerIdsForPull.length}</b> pemain
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPullModal(false)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold uppercase hover:bg-slate-700 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedPlayerIdsForPull.length === 0 || pulling}
+                  onClick={handleBatchPull}
+                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-black uppercase transition-all shadow cursor-pointer flex items-center gap-1.5"
+                >
+                  {pulling && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Tarik ke Skuad Musim {selectedSeason}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Add / Edit Player */}
       {showModal && (
