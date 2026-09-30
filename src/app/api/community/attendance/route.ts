@@ -76,9 +76,9 @@ export async function POST(req: Request) {
             }
 
             let num = mem.jerseyNumber;
-            if (await prisma.player.findUnique({ where: { number: num } })) {
+            if (await prisma.player.findFirst({ where: { number: num } })) {
               let altNum = 30;
-              while (await prisma.player.findUnique({ where: { number: altNum } })) {
+              while (await prisma.player.findFirst({ where: { number: altNum } })) {
                 altNum++;
               }
               num = altNum;

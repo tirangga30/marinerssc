@@ -15,7 +15,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const data = await req.json();
 
-    const existingPlayer = await prisma.player.findUnique({ where: { id } });
+    const existingPlayer = await prisma.player.findUnique({
+      where: { id },
+      include: { seasons: true },
+    });
     if (!existingPlayer) {
       return NextResponse.json({ error: 'Pemain tidak ditemukan' }, { status: 404 });
     }
@@ -23,9 +26,76 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const updateData: any = {};
     if (data.name !== undefined) {
       updateData.name = data.name;
-      updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let slug = baseSlug;
+      const existingSlug = await prisma.player.findFirst({
+        where: { slug, NOT: { id } },
+      });
+      if (existingSlug) {
+        slug = `${baseSlug}-${parseInt(data.number) || existingPlayer.number}`;
+      }
+      const existingSlug2 = await prisma.player.findFirst({
+        where: { slug, NOT: { id } },
+      });
+      if (existingSlug2) {
+        slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+      }
+      updateData.slug = slug;
     }
-    if (data.number !== undefined) updateData.number = parseInt(data.number);
+
+    if (data.number !== undefined) {
+      const newNum = parseInt(data.number);
+      updateData.number = newNum;
+
+      if (!existingPlayer.isGuest && newNum !== existingPlayer.number) {
+        const targetSeasonName = data.seasonName;
+        let targetSeasonId = data.seasonId;
+        if (!targetSeasonId && targetSeasonName) {
+          const s = await prisma.season.findUnique({ where: { name: targetSeasonName } });
+          if (s) targetSeasonId = s.id;
+        }
+
+        const seasonIdsToCheck = targetSeasonId
+          ? [targetSeasonId]
+          : existingPlayer.seasons.map((s) => s.id);
+
+        if (seasonIdsToCheck.length > 0) {
+          const conflict = await prisma.player.findFirst({
+            where: {
+              number: newNum,
+              isGuest: false,
+              NOT: { id },
+              seasons: {
+                some: { id: { in: seasonIdsToCheck } },
+              },
+            },
+            include: { seasons: true },
+          });
+
+          if (conflict) {
+            const matchedSeason = conflict.seasons.find((s) => seasonIdsToCheck.includes(s.id));
+            return NextResponse.json(
+              { error: `Nomor punggung ${newNum} sudah digunakan oleh ${conflict.name}${matchedSeason ? ` di musim ${matchedSeason.name}` : ''}.` },
+              { status: 400 }
+            );
+          }
+        } else {
+          const conflict = await prisma.player.findFirst({
+            where: {
+              number: newNum,
+              isGuest: false,
+              NOT: { id },
+            },
+          });
+          if (conflict) {
+            return NextResponse.json(
+              { error: `Nomor punggung ${newNum} sudah digunakan oleh ${conflict.name}.` },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    }
     if (data.position !== undefined) {
       const p = (data.position || '').trim().toUpperCase();
       if (p === 'GK' || p === 'GOALKEEPER') updateData.position = 'GOALKEEPER';

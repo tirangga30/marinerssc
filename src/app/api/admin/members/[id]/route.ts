@@ -76,11 +76,11 @@ export async function PATCH(
     if (isNaN(finalNumber)) finalNumber = member.jerseyNumber;
 
     // Check if number is already taken in Player table
-    let existingPlayerWithNum = await prisma.player.findUnique({ where: { number: finalNumber } });
+    let existingPlayerWithNum = await prisma.player.findFirst({ where: { number: finalNumber } });
     if (existingPlayerWithNum && (!member.playerId || existingPlayerWithNum.id !== member.playerId)) {
       // Find alternative free number
       let altNum = 30;
-      while (await prisma.player.findUnique({ where: { number: altNum } })) {
+      while (await prisma.player.findFirst({ where: { number: altNum } })) {
         altNum++;
       }
       finalNumber = altNum;

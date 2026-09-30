@@ -21,7 +21,7 @@ model Player {
   id             String       @id @default(uuid())
   name           String
   slug           String       @unique
-  number         Int          @unique
+  number         Int
   position       String       // GK, DF, MF, FW
   birthDate      DateTime?
   nationality    String       @default("Indonesia")

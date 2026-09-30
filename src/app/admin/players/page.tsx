@@ -1249,7 +1249,14 @@ export default function AdminPlayersPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Nomor Punggung</label>
+                  <label className="font-bold text-slate-200 uppercase block mb-1">
+                    Nomor Punggung{' '}
+                    {selectedSeason && (
+                      <span className="text-xs text-sky-400 font-semibold normal-case">
+                        (Musim {selectedSeason})
+                      </span>
+                    )}
+                  </label>
                   <input
                     type="number"
                     required
@@ -1257,6 +1264,9 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Nomor punggung dipisah per musim. Nomor yang sama dapat digunakan di musim berbeda.
+                  </p>
                 </div>
                 <div>
                   <label className="font-bold text-slate-200 uppercase block mb-1">Posisi Utama</label>

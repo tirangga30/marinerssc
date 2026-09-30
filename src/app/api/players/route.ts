@@ -54,9 +54,9 @@ export async function GET(req: Request) {
               }
 
               let num = att.member.jerseyNumber;
-              if (await prisma.player.findUnique({ where: { number: num } })) {
+              if (await prisma.player.findFirst({ where: { number: num } })) {
                 let altNum = 30;
-                while (await prisma.player.findUnique({ where: { number: altNum } })) {
+                while (await prisma.player.findFirst({ where: { number: altNum } })) {
                   altNum++;
                 }
                 num = altNum;
@@ -161,21 +161,74 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    let slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    if (data.isGuest) {
-      slug = `${slug}-guest-${Date.now()}`;
-    }
-
     const requestedNumber = parseInt(data.number);
-    const existingPlayer = await prisma.player.findUnique({ where: { number: requestedNumber } });
     let finalNumber = requestedNumber;
 
-    if (existingPlayer) {
-      if (data.isGuest) {
+    let baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let slug = baseSlug;
+    if (data.isGuest) {
+      slug = `${baseSlug}-guest-${Date.now()}`;
+    } else {
+      const existingSlug = await prisma.player.findUnique({ where: { slug } });
+      if (existingSlug) {
+        slug = `${baseSlug}-${requestedNumber || Date.now().toString().slice(-4)}`;
+      }
+      const existingSlug2 = await prisma.player.findUnique({ where: { slug } });
+      if (existingSlug2) {
+        slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+      }
+    }
+
+    // Resolve target season for number separation
+    const targetSeasonId = data.seasonId;
+    const targetSeasonName = data.seasonName;
+    let targetSeason = null;
+    if (targetSeasonId) {
+      targetSeason = await prisma.season.findUnique({ where: { id: targetSeasonId } });
+    } else if (targetSeasonName) {
+      targetSeason = await prisma.season.findUnique({ where: { name: targetSeasonName } });
+    } else {
+      targetSeason = await prisma.season.findFirst({ where: { isCurrent: true } })
+        || await prisma.season.findFirst({ orderBy: { year: 'desc' } });
+    }
+
+    if (data.isGuest) {
+      const existingInGuest = await prisma.player.findFirst({
+        where: { number: requestedNumber, isGuest: true, guestMatchId: data.guestMatchId || null },
+      });
+      if (existingInGuest) {
         const maxPlayer = await prisma.player.findFirst({ orderBy: { number: 'desc' } });
         finalNumber = (maxPlayer?.number || 99) + 1;
+      }
+    } else {
+      // Validate number conflict strictly within target season
+      if (targetSeason) {
+        const existingInSeason = await prisma.player.findFirst({
+          where: {
+            number: requestedNumber,
+            isGuest: false,
+            seasons: {
+              some: { id: targetSeason.id },
+            },
+          },
+        });
+        if (existingInSeason) {
+          return NextResponse.json(
+            { error: `Nomor punggung ${requestedNumber} sudah digunakan oleh ${existingInSeason.name} di musim ${targetSeason.name}.` },
+            { status: 400 }
+          );
+        }
       } else {
-        return NextResponse.json({ error: `Nomor punggung ${requestedNumber} sudah digunakan oleh pemain lain.` }, { status: 400 });
+        // Fallback if no seasons configured
+        const existingPlayer = await prisma.player.findFirst({
+          where: { number: requestedNumber, isGuest: false },
+        });
+        if (existingPlayer) {
+          return NextResponse.json(
+            { error: `Nomor punggung ${requestedNumber} sudah digunakan oleh ${existingPlayer.name}.` },
+            { status: 400 }
+          );
+        }
       }
     }
 
@@ -226,18 +279,13 @@ export async function POST(req: Request) {
       },
     });
 
-    // Auto-connect to specified season if provided
-    if (data.seasonName || data.seasonId) {
+    // Auto-connect to resolved target season
+    if (targetSeason) {
       try {
-        const s = data.seasonId
-          ? await prisma.season.findUnique({ where: { id: data.seasonId } })
-          : await prisma.season.findUnique({ where: { name: data.seasonName } });
-        if (s) {
-          await prisma.season.update({
-            where: { id: s.id },
-            data: { players: { connect: { id: player.id } } },
-          });
-        }
+        await prisma.season.update({
+          where: { id: targetSeason.id },
+          data: { players: { connect: { id: player.id } } },
+        });
       } catch (seasonErr) {
         console.error('Failed to link player to season:', seasonErr);
       }

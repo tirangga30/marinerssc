@@ -69,6 +69,25 @@ export async function POST(
       return NextResponse.json({ error: 'Data playerIds tidak valid' }, { status: 400 });
     }
 
+    // Validate that no two enrolled players share the same jersey number in this season
+    const playersToEnroll = await prisma.player.findMany({
+      where: { id: { in: playerIds }, isGuest: false },
+      select: { id: true, name: true, number: true },
+    });
+
+    const seenNumbers = new Map<number, string>();
+    for (const p of playersToEnroll) {
+      if (seenNumbers.has(p.number)) {
+        return NextResponse.json(
+          {
+            error: `Konflik nomor punggung di musim ini: Nomor #${p.number} digunakan oleh lebih dari 1 pemain (${seenNumbers.get(p.number)} & ${p.name}). Sesuaikan nomor punggung salah satu pemain terlebih dahulu.`,
+          },
+          { status: 400 }
+        );
+      }
+      seenNumbers.set(p.number, p.name);
+    }
+
     const updated = await prisma.season.update({
       where: { id },
       data: {

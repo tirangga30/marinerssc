@@ -129,7 +129,7 @@ export async function POST(
       let num = number ? parseInt(number) : 0;
       if (num === 0) {
         let testNum = 90;
-        while (await prisma.player.findUnique({ where: { number: testNum } })) {
+        while (await prisma.player.findFirst({ where: { number: testNum } })) {
           testNum++;
         }
         num = testNum;
