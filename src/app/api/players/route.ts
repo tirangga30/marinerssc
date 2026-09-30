@@ -101,6 +101,14 @@ export async function GET(req: Request) {
       }
     }
 
+    const season = searchParams.get('season');
+    const seasonId = searchParams.get('seasonId');
+    if (seasonId) {
+      whereClause.seasons = { some: { id: seasonId } };
+    } else if (season && season !== 'all') {
+      whereClause.seasons = { some: { name: season } };
+    }
+
     const players = await prisma.player.findMany({
       where: whereClause,
       include: {
@@ -109,6 +117,14 @@ export async function GET(req: Request) {
             id: true,
             isPermanent: true,
             tier: true,
+          },
+        },
+        seasons: {
+          select: {
+            id: true,
+            name: true,
+            year: true,
+            isCurrent: true,
           },
         },
       },

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star, Crop } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, X, Save, Upload, Loader2, Star, Crop, Trophy } from 'lucide-react';
 import ImageCropperModal from '@/components/ImageCropperModal';
 
 interface Player {
@@ -336,16 +336,26 @@ export default function AdminPlayersPage() {
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
       
       {/* Top Bar */}
-      <div className="flex items-center justify-between gap-2">
-        <Link
-          href="/admin/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
-        </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
+          </Link>
+          <span className="text-slate-600">/</span>
+          <Link
+            href="/admin/seasons"
+            className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            <Trophy className="w-3.5 h-3.5" /> Kelola Skuad Per Musim
+          </Link>
+        </div>
+
         <button
           onClick={openAddModal}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
+          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pemain
         </button>

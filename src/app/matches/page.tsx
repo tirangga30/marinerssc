@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
+import { Trophy, Calendar } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,8 @@ function MatchCard({ match }: { match: any }) {
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
   const resultBg   = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
 
+  const displayStage = match.stage || (match.competition === 'FRIENDLY' ? `Matchday ${match.matchday}` : '');
+
   return (
     <Link
       href={`/matches/${match.id}`}
@@ -70,15 +73,16 @@ function MatchCard({ match }: { match: any }) {
           <span className="text-[9px] sm:text-xs font-medium text-slate-400">
             {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
-          <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-            Matchday {match.matchday}
-          </span>
+          {displayStage && (
+            <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+              {displayStage}
+            </span>
+          )}
         </span>
       </div>
 
       {/* Main Scoreboard Content */}
       <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
-
         {/* Home Team */}
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
           <div className="order-2 sm:order-1 text-center sm:text-right">
@@ -151,26 +155,70 @@ function MatchCard({ match }: { match: any }) {
             </h4>
           </div>
         </div>
-
       </div>
     </Link>
+  );
+}
+
+function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
+  if (matches.length === 0) {
+    return <p className="text-center text-slate-500 text-xs py-8">Tidak ada pertandingan.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {matches.map((m, idx) => {
+        const prevMatch = idx > 0 ? matches[idx - 1] : null;
+        const currentComp = (m.competition || 'FRIENDLY').toUpperCase();
+        const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
+        const isNewComp = idx === 0 || currentComp !== prevComp;
+
+        return (
+          <React.Fragment key={m.id}>
+            {isNewComp && (
+              <div className="flex items-center gap-2 pt-4 pb-2 border-b border-sky-400/20 mt-4 first:mt-0">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                  {m.competition || 'FRIENDLY'}
+                </h3>
+                {m.seasonName && (
+                  <span className="text-[10px] font-mono text-slate-400 font-bold ml-1">
+                    Musim {m.seasonName}
+                  </span>
+                )}
+              </div>
+            )}
+            <MatchCard match={m} />
+          </React.Fragment>
+        );
+      })}
+    </div>
   );
 }
 
 export default async function MatchesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; season?: string }>;
 }) {
   const params = await searchParams;
   const filter = params.filter || 'all';
+  const selectedSeason = params.season || 'all';
 
-  const allMatches = await prisma.footballMatch.findMany({
-    orderBy: { matchDate: 'asc' },
-  });
+  const [seasons, allMatchesRaw] = await Promise.all([
+    prisma.season.findMany({
+      orderBy: { year: 'desc' },
+      select: { id: true, name: true, year: true, isCurrent: true },
+    }),
+    prisma.footballMatch.findMany({
+      where: selectedSeason !== 'all' ? { seasonName: selectedSeason } : {},
+      orderBy: { matchDate: 'asc' },
+    }),
+  ]);
 
   // Hitung Matchday & Computed Dynamic Status
-  const matchesWithMatchday = allMatches.map((m, index) => ({
+  const matchesWithMatchday = allMatchesRaw.map((m, index) => ({
     ...m,
     matchday: index + 1,
     computedStatus: getDynamicMatchStatus(m),
@@ -181,7 +229,7 @@ export default async function MatchesPage({
     .filter((m) => m.computedStatus === 'scheduled' || m.computedStatus === 'live')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
-  // Finished / History: terbaru dulu (DESC) — termasuk match dengan status score_pending
+  // Finished / History: terbaru dulu (DESC)
   const finishedMatches = matchesWithMatchday
     .filter((m) => m.computedStatus === 'finished' || m.computedStatus === 'score_pending')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
@@ -192,31 +240,61 @@ export default async function MatchesPage({
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-
       {/* Header Banner */}
       <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-sky-400/20 text-center space-y-2 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Jadwal &amp; Hasil Pertandingan</span>
+        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">
+          Jadwal &amp; Hasil Pertandingan
+        </span>
         <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
-          Season 2026/2027
+          {selectedSeason !== 'all' ? `Musim ${selectedSeason}` : 'Semua Musim'}
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Pantau seluruh hasil laga dan jadwal mendatang klub sepak bola Mariners SC.
         </p>
+
+        {/* Season Filter Selector */}
+        {seasons.length > 0 && (
+          <div className="pt-3 flex items-center justify-center gap-2 flex-wrap">
+            <Link
+              href={`/matches?filter=${filter}&season=all`}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                selectedSeason === 'all'
+                  ? 'bg-sky-500 text-slate-950 font-black shadow-md'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              Semua Musim
+            </Link>
+            {seasons.map((s) => (
+              <Link
+                key={s.id}
+                href={`/matches?filter=${filter}&season=${s.name}`}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  selectedSeason === s.name
+                    ? 'bg-sky-500 text-slate-950 font-black shadow-md'
+                    : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+                }`}
+              >
+                Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filter Tabs */}
       <div className="flex justify-center gap-1.5 sm:gap-2">
         <Link
-          href="/matches?filter=all"
+          href={`/matches?filter=all&season=${selectedSeason}`}
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'all' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}
         >
-          Semua ({allMatches.length})
+          Semua ({allMatchesRaw.length})
         </Link>
         <Link
-          href="/matches?filter=upcoming"
+          href={`/matches?filter=upcoming&season=${selectedSeason}`}
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'upcoming' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}
@@ -224,7 +302,7 @@ export default async function MatchesPage({
           Mendatang ({upcomingMatches.length})
         </Link>
         <Link
-          href="/matches?filter=finished"
+          href={`/matches?filter=finished&season=${selectedSeason}`}
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'finished' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}
@@ -236,18 +314,17 @@ export default async function MatchesPage({
       {/* Matches List */}
       {filter === 'all' ? (
         <div className="space-y-10">
-
           {/* ── Laga Mendatang ── */}
           {upcomingMatches.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1 h-5 rounded-full bg-sky-400 inline-block" />
-                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">Laga Mendatang</h2>
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">
+                  Laga Mendatang
+                </h2>
                 <span className="text-[10px] font-bold text-slate-500">({upcomingMatches.length})</span>
               </div>
-              <div className="space-y-2">
-                {upcomingMatches.map((m) => <MatchCard key={m.id} match={m} />)}
-              </div>
+              <MatchListGroupedByCompetition matches={upcomingMatches} />
             </div>
           )}
 
@@ -256,26 +333,20 @@ export default async function MatchesPage({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1 h-5 rounded-full bg-emerald-400 inline-block" />
-                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">Riwayat Pertandingan</h2>
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">
+                  Riwayat Pertandingan
+                </h2>
                 <span className="text-[10px] font-bold text-slate-500">({finishedMatches.length})</span>
               </div>
-              <div className="space-y-2">
-                {finishedMatches.map((m) => <MatchCard key={m.id} match={m} />)}
-              </div>
+              <MatchListGroupedByCompetition matches={finishedMatches} />
             </div>
           )}
-
         </div>
       ) : (
-        <div className="space-y-2">
-          {filteredMatches.length === 0 ? (
-            <p className="text-center text-slate-500 text-sm py-12">Tidak ada pertandingan.</p>
-          ) : (
-            filteredMatches.map((m) => <MatchCard key={m.id} match={m} />)
-          )}
+        <div>
+          <MatchListGroupedByCompetition matches={filteredMatches} />
         </div>
       )}
-
     </div>
   );
 }

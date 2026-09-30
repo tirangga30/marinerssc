@@ -19,19 +19,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           orderBy: { minute: 'asc' },
         },
         attendances: true,
+        competitionRef: true,
+        season: true,
       },
     });
 
     if (!match) {
       return NextResponse.json({ error: 'Pertandingan tidak ditemukan' }, { status: 404 });
     }
-
-    const allMatches = await prisma.footballMatch.findMany({
-      orderBy: { matchDate: 'asc' },
-      select: { id: true },
-    });
-    const matchdayIndex = allMatches.findIndex(m => m.id === id) + 1;
-    match.competition = `Matchday ${matchdayIndex}`;
 
     return NextResponse.json(match);
   } catch (error: any) {
@@ -65,13 +60,31 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
 
+    let seasonId = data.seasonId !== undefined ? data.seasonId : existingMatch.seasonId;
+    let seasonName = data.seasonName !== undefined ? data.seasonName : existingMatch.seasonName;
+    if (data.seasonId && !data.seasonName) {
+      const s = await prisma.season.findUnique({ where: { id: data.seasonId } });
+      if (s) seasonName = s.name;
+    }
+
+    let competitionId = data.competitionId !== undefined ? data.competitionId : existingMatch.competitionId;
+    let competitionName = data.competition !== undefined ? data.competition : existingMatch.competition;
+    if (data.competitionId && !data.competition) {
+      const c = await prisma.competition.findUnique({ where: { id: data.competitionId } });
+      if (c) competitionName = c.name;
+    }
+
     const match = await prisma.footballMatch.update({
       where: { id },
       data: {
         opponentName: finalOpponentName,
         opponentLogo: finalLogo,
         matchDate: parseWibDate(data.matchDate),
-        competition: data.competition || 'Matchday 1',
+        competition: competitionName,
+        competitionId: competitionId,
+        stage: data.stage !== undefined ? data.stage : existingMatch.stage,
+        seasonName: seasonName,
+        seasonId: seasonId,
         venue: data.venue,
         isHome: Boolean(data.isHome),
         status: data.status,

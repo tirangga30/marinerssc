@@ -68,6 +68,8 @@ export default async function HomePage() {
   let communityMembers: any[] = [];
   let allFunMatchEvents: any[] = [];
 
+  let seasons: any[] = [];
+
   try {
     const [
       rawMatches,
@@ -76,6 +78,7 @@ export default async function HomePage() {
       rawFunMatches,
       activeMembers,
       events,
+      rawSeasons,
     ] = await Promise.all([
       prisma.footballMatch.findMany({
         include: { events: true },
@@ -87,9 +90,9 @@ export default async function HomePage() {
         take: 3,
       }),
       prisma.player.findMany({
-        where: { isFeatured: true, isGuest: false, member: null },
-        orderBy: { number: 'asc' },
-        take: 6,
+        where: { isGuest: false, member: null },
+        include: { seasons: { select: { id: true, name: true } } },
+        orderBy: [{ number: 'asc' }, { appearances: 'desc' }],
       }),
       prisma.funMatch.findMany({
         include: { events: true },
@@ -103,6 +106,10 @@ export default async function HomePage() {
         where: { type: 'goal' },
         include: { member: true },
       }),
+      prisma.season.findMany({
+        orderBy: [{ year: 'desc' }, { name: 'desc' }],
+        select: { id: true, name: true, year: true, isCurrent: true },
+      }),
     ]);
 
     matches = rawMatches.map((m: any, idx: number) => ({
@@ -112,14 +119,7 @@ export default async function HomePage() {
 
     articles = fetchedArticles;
     featuredPlayers = starredPlayers;
-
-    if (featuredPlayers.length === 0) {
-      featuredPlayers = await prisma.player.findMany({
-        where: { isGuest: false, member: null },
-        take: 6,
-        orderBy: { appearances: 'desc' },
-      });
-    }
+    seasons = rawSeasons;
 
     funMatches = rawFunMatches;
     communityMembers = activeMembers;
@@ -237,6 +237,9 @@ export default async function HomePage() {
     concededGoals,
     featuredPlayers,
     articles,
+    seasons,
+    allMatches: matchesWithStatus,
+    allPlayers: featuredPlayers,
   };
 
   const communityData = {

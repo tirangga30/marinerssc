@@ -2,7 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Plus, Edit, Trash2, ArrowLeft, X, Save, Settings2, Upload, Loader2 } from 'lucide-react';
+import {
+  Calendar,
+  Plus,
+  Edit,
+  Trash2,
+  ArrowLeft,
+  X,
+  Save,
+  Settings2,
+  Upload,
+  Loader2,
+  Trophy,
+  Filter,
+} from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 
 interface FootballMatch {
@@ -11,6 +24,10 @@ interface FootballMatch {
   opponentLogo: string;
   matchDate: string;
   competition: string;
+  competitionId?: string | null;
+  stage?: string | null;
+  seasonName?: string;
+  seasonId?: string | null;
   venue: string;
   isHome: boolean;
   status: string;
@@ -18,6 +35,21 @@ interface FootballMatch {
   awayScore: number | null;
   formation: string;
   summary: string | null;
+}
+
+interface Season {
+  id: string;
+  name: string;
+  year: number;
+  isCurrent: boolean;
+}
+
+interface Competition {
+  id: string;
+  name: string;
+  season: string;
+  seasonId?: string | null;
+  type: string;
 }
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
@@ -51,6 +83,9 @@ function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'sco
 
 export default function AdminMatchesPage() {
   const [matches, setMatches] = useState<FootballMatch[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMatch, setEditingMatch] = useState<FootballMatch | null>(null);
@@ -72,7 +107,11 @@ export default function AdminMatchesPage() {
     opponentName: '',
     opponentLogo: '/defaultteam.webp',
     matchDate: getDefaultMatchDate(),
-    competition: 'Matchday 1',
+    seasonName: '2026',
+    seasonId: '',
+    competition: 'FRIENDLY',
+    competitionId: '',
+    stage: 'Matchday 1',
     venue: '',
     isHome: true,
     summary: '',
@@ -90,17 +129,54 @@ export default function AdminMatchesPage() {
     }
   };
 
+  const fetchMeta = async () => {
+    try {
+      const [resSeasons, resComps] = await Promise.all([
+        fetch('/api/admin/seasons'),
+        fetch('/api/admin/competitions'),
+      ]);
+      const [seasonsData, compsData] = await Promise.all([
+        resSeasons.json(),
+        resComps.json(),
+      ]);
+      if (Array.isArray(seasonsData)) setSeasons(seasonsData);
+      if (Array.isArray(compsData)) setCompetitions(compsData);
+    } catch (err) {
+      console.error('Failed to load seasons or competitions:', err);
+    }
+  };
+
   useEffect(() => {
     fetchMatches();
+    fetchMeta();
   }, []);
 
   const openAddModal = () => {
     setEditingMatch(null);
+    const activeSeason = seasons.find((s) => s.isCurrent) || seasons[0];
+    const defaultSeasonName = activeSeason?.name || '2026';
+    const defaultSeasonId = activeSeason?.id || '';
+
+    // Find friendly competition for this season or default
+    const defaultComp = competitions.find(
+      (c) => (c.season === defaultSeasonName || c.seasonId === defaultSeasonId) && c.name === 'FRIENDLY'
+    ) || competitions[0];
+
+    // Compute next matchday
+    const seasonMatches = matches.filter(
+      (m) => m.seasonName === defaultSeasonName && (m.competition === 'FRIENDLY' || !m.competition)
+    );
+    const nextMatchday = `Matchday ${seasonMatches.length + 1}`;
+
     setFormData({
       opponentName: '',
       opponentLogo: '/defaultteam.webp',
       matchDate: getDefaultMatchDate(),
-      competition: 'Matchday 1',
+      seasonName: defaultSeasonName,
+      seasonId: defaultSeasonId,
+      competition: defaultComp ? defaultComp.name : 'FRIENDLY',
+      competitionId: defaultComp ? defaultComp.id : '',
+      stage: nextMatchday,
       venue: '',
       isHome: true,
       summary: '',
@@ -114,7 +190,11 @@ export default function AdminMatchesPage() {
       opponentName: m.opponentName,
       opponentLogo: m.opponentLogo,
       matchDate: formatDateForInput(m.matchDate),
-      competition: m.competition,
+      seasonName: m.seasonName || '2026',
+      seasonId: m.seasonId || '',
+      competition: m.competition || 'FRIENDLY',
+      competitionId: m.competitionId || '',
+      stage: m.stage || 'Matchday 1',
       venue: m.venue || '',
       isHome: m.isHome,
       summary: m.summary || '',
@@ -193,38 +273,83 @@ export default function AdminMatchesPage() {
     }
   };
 
+  // Filter matches by selected season
+  const filteredMatches = matches.filter((m) => {
+    if (selectedSeasonFilter === 'all') return true;
+    return m.seasonName === selectedSeasonFilter || m.seasonId === selectedSeasonFilter;
+  });
+
+  // Competitions available for selected form season
+  const formCompetitions = competitions.filter(
+    (c) => !c.season || c.season === formData.seasonName || c.seasonId === formData.seasonId
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
-      
       {/* Top Bar */}
-      <div className="flex items-center justify-between gap-2">
-        <Link
-          href="/admin/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
-        </Link>
-        <button
-          onClick={openAddModal}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pertandingan
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span>
+            <span className="sm:hidden">Dashboard</span>
+          </Link>
+          <span className="text-slate-600">/</span>
+          <Link
+            href="/admin/seasons"
+            className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            <Trophy className="w-3.5 h-3.5" /> Master Musim &amp; Kompetisi
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Season Filter Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-sky-400" />
+            <select
+              value={selectedSeasonFilter}
+              onChange={(e) => setSelectedSeasonFilter(e.target.value)}
+              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+            >
+              <option value="all" className="bg-slate-900 text-white">Semua Musim</option>
+              {seasons.map((s) => (
+                <option key={s.id} value={s.name} className="bg-slate-900 text-white">
+                  Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={openAddModal}
+            className="px-3 sm:px-4 py-2 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pertandingan
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
           <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
-            Manajemen Pertandingan ({matches.length})
+            Manajemen Pertandingan ({filteredMatches.length} Laga)
           </h1>
+          {selectedSeasonFilter !== 'all' && (
+            <span className="px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-[10px] font-bold uppercase font-mono">
+              Musim {selectedSeasonFilter}
+            </span>
+          )}
         </div>
 
-        {/* ── MOBILE MATCH CARDS (Block on mobile, hidden on tablet/desktop) ── */}
+        {/* ── MOBILE MATCH CARDS ── */}
         <div className="block md:hidden space-y-3">
-          {matches.length === 0 ? (
+          {filteredMatches.length === 0 ? (
             <p className="text-xs text-slate-500 py-6 text-center">Belum ada pertandingan terdaftar.</p>
           ) : (
-            matches.map((m) => {
+            filteredMatches.map((m) => {
               const dynamicStatus = getDynamicMatchStatus(m);
               return (
                 <div
@@ -233,18 +358,23 @@ export default function AdminMatchesPage() {
                 >
                   {/* Top Meta Row */}
                   <div className="flex items-center justify-between text-[11px] border-b border-slate-800/80 pb-2">
-                    <span className="font-bold text-slate-300">
-                      {new Date(m.matchDate).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        timeZone: WIB_TIMEZONE,
-                      })}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-slate-300">
+                        {new Date(m.matchDate).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZone: WIB_TIMEZONE,
+                        })}
+                      </span>
+                      <span className="px-2 py-0.2 rounded-full bg-blue-950 text-sky-300 border border-sky-400/30 font-bold uppercase text-[9px]">
+                        {m.competition || 'FRIENDLY'} {m.stage ? `• ${m.stage}` : ''}
+                      </span>
+                    </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold uppercase text-[9px]">
                         {m.isHome ? 'Home' : 'Away'}
                       </span>
@@ -306,13 +436,14 @@ export default function AdminMatchesPage() {
           )}
         </div>
 
-        {/* ── DESKTOP MATCHES TABLE (Hidden on mobile) ── */}
+        {/* ── DESKTOP MATCHES TABLE ── */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3">Tanggal Laga</th>
-                <th className="p-3">Lawan & Logo</th>
+                <th className="p-3">Musim / Kompetisi</th>
+                <th className="p-3">Lawan &amp; Logo</th>
                 <th className="p-3 text-center">Status / Skor</th>
                 <th className="p-3">Stadion / Lapangan</th>
                 <th className="p-3">Tuan Rumah</th>
@@ -320,18 +451,42 @@ export default function AdminMatchesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
-              {matches.map((m) => {
+              {filteredMatches.map((m) => {
                 const dynamicStatus = getDynamicMatchStatus(m);
                 return (
                   <tr key={m.id} className="hover:bg-slate-800/40">
-                    <td className="p-3 font-bold text-white">
-                      {new Date(m.matchDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: WIB_TIMEZONE })}
+                    <td className="p-3 font-bold text-white whitespace-nowrap">
+                      {new Date(m.matchDate).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: WIB_TIMEZONE,
+                      })}
+                    </td>
+                    <td className="p-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-[10px] text-slate-400">
+                            {m.seasonName || '2026'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-blue-950/80 text-sky-300 border border-sky-400/30 text-[10px] font-black uppercase">
+                            {m.competition || 'FRIENDLY'}
+                          </span>
+                        </div>
+                        {m.stage && (
+                          <span className="text-[10px] font-semibold text-slate-400 block">
+                            {m.stage}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3 flex items-center gap-3">
                       <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />
                       <span className="font-bold text-white uppercase">{m.opponentName}</span>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3 text-center whitespace-nowrap">
                       {dynamicStatus === 'live' ? (
                         <span className="px-2.5 py-1 rounded bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] font-black uppercase tracking-wider animate-pulse inline-flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
@@ -352,7 +507,7 @@ export default function AdminMatchesPage() {
                     </td>
                     <td className="p-3 text-slate-300">{m.venue || '—'}</td>
                     <td className="p-3">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
-                    <td className="p-3 text-right space-x-2">
+                    <td className="p-3 text-right space-x-2 whitespace-nowrap">
                       <Link
                         href={`/admin/matches/${m.id}/lineup`}
                         className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
@@ -390,18 +545,19 @@ export default function AdminMatchesPage() {
               <h3 className="text-base sm:text-lg font-black uppercase text-sky-400">
                 {editingMatch ? 'Edit Pertandingan' : 'Tambah Pertandingan Baru'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer">
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+              >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-
               {/* DIRECT OPPONENT LOGO UPLOAD SECTION */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
                 <label className="font-bold text-sky-300 uppercase block">Logo Tim Lawan (Direct Upload)</label>
                 <div className="flex items-center gap-4">
-                  {/* NO BOX around preview logo */}
                   <div className="w-16 h-16 flex items-center justify-center shrink-0">
                     <img
                       src={formData.opponentLogo || '/defaultteam.webp'}
@@ -429,6 +585,7 @@ export default function AdminMatchesPage() {
                 </div>
               </div>
 
+              {/* Opponent & Match Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="font-bold text-slate-200 uppercase block mb-1">Nama Tim Lawan</label>
@@ -450,6 +607,107 @@ export default function AdminMatchesPage() {
                     onChange={(e) => setFormData({ ...formData, matchDate: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
+                </div>
+              </div>
+
+              {/* MASTER MUSIM & MASTER KOMPETISI SELECTORS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <div>
+                  <label className="font-bold text-sky-300 uppercase block mb-1">
+                    Musim (Season)
+                  </label>
+                  <select
+                    value={formData.seasonName}
+                    onChange={(e) => {
+                      const sel = seasons.find((s) => s.name === e.target.value);
+                      setFormData({
+                        ...formData,
+                        seasonName: e.target.value,
+                        seasonId: sel?.id || '',
+                      });
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold focus:border-sky-400 outline-none"
+                  >
+                    {seasons.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-amber-300 uppercase block">
+                      Kompetisi
+                    </label>
+                    <Link
+                      href="/admin/seasons"
+                      target="_blank"
+                      className="text-[10px] text-sky-400 hover:underline"
+                    >
+                      + Atur Kompetisi
+                    </Link>
+                  </div>
+                  <select
+                    value={formData.competition}
+                    onChange={(e) => {
+                      const sel = competitions.find((c) => c.name === e.target.value);
+                      const isFriendly = e.target.value === 'FRIENDLY';
+                      setFormData({
+                        ...formData,
+                        competition: e.target.value,
+                        competitionId: sel?.id || '',
+                        stage: isFriendly ? (formData.stage?.startsWith('Matchday') ? formData.stage : 'Matchday 1') : (formData.stage?.startsWith('Matchday') ? 'Group Stage' : formData.stage),
+                      });
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none"
+                  >
+                    {formCompetitions.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name} ({c.type})
+                      </option>
+                    ))}
+                    {formCompetitions.length === 0 && (
+                      <option value="FRIENDLY">FRIENDLY (Friendly)</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              {/* STAGE / BABAK / MATCHDAY INPUT WITH SUGGESTIONS */}
+              <div>
+                <label className="font-bold text-slate-200 uppercase block mb-1">
+                  Stage / Babak / Matchday
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.stage}
+                  onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
+                  placeholder="Contoh: Matchday 2, Group Stage, PlayOff, Final"
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none font-semibold"
+                />
+                {/* Fast chips */}
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <span className="text-[10px] text-slate-400">Pilihan cepat:</span>
+                  {(formData.competition === 'FRIENDLY'
+                    ? ['Matchday 1', 'Matchday 2', 'Matchday 3', 'Matchday 4', 'Matchday 5']
+                    : ['Group Stage', 'PlayOff', 'Babak 16 Besar', 'Perempat Final', 'Semifinal', 'Final']
+                  ).map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, stage: chip })}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+                        formData.stage === chip
+                          ? 'bg-sky-500 text-slate-950'
+                          : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -507,7 +765,6 @@ export default function AdminMatchesPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

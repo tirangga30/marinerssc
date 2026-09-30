@@ -48,6 +48,20 @@ model Player {
   assistedEvents MatchEvent[]       @relation("AssistPlayerEvents")
   attendances    MatchAttendance[]
   member         Member?
+  seasons        Season[]
+}
+
+model Season {
+  id           String         @id @default(uuid())
+  name         String         @unique // e.g. "2026", "2027"
+  year         Int            @default(2026)
+  isCurrent    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  competitions Competition[]
+  matches      FootballMatch[]
+  players      Player[]
 }
 
 model FootballMatch {
@@ -55,7 +69,13 @@ model FootballMatch {
   opponentName  String
   opponentLogo  String
   matchDate     DateTime
-  competition   String        @default("BRI Liga 1")
+  competition   String        @default("FRIENDLY")
+  competitionId String?
+  competitionRef Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  stage         String?       @default("Matchday 1")
+  seasonName    String        @default("2026")
+  seasonId      String?
+  season        Season?       @relation(fields: [seasonId], references: [id], onDelete: SetNull)
   venue         String        @default("Stadion Gelora Samudra, Jakarta")
   isHome        Boolean       @default(true)
   isLiveEnabled Boolean       @default(false)
@@ -119,14 +139,18 @@ model Article {
 }
 
 model Competition {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  season    String   @default("2026/2027")
-  type      String   @default("Liga")
-  isPrimary Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  season      String         @default("2026")
+  seasonId    String?
+  seasonRef   Season?        @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  type        String         @default("Turnamen") // Friendly, Turnamen, Liga
+  isPrimary   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  matches     FootballMatch[]
 }
 
 // ──────────────────────────────────────────

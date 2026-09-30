@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar, ArrowRight, Flame, Sparkles, Shield, Users,
-  Trophy, Award, Activity, MapPin, CheckCircle2, UserCheck, Star
+  Trophy, Award, Activity, MapPin, CheckCircle2, UserCheck, Star, ChevronDown
 } from 'lucide-react';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
@@ -49,6 +49,9 @@ interface HomeClientViewProps {
     concededGoals: number;
     featuredPlayers: any[];
     articles: any[];
+    seasons?: any[];
+    allMatches?: any[];
+    allPlayers?: any[];
   };
   communityData: {
     nextFunMatch: any;
@@ -68,20 +71,61 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const {
-    nextMatch,
-    featuredStatus,
-    finishedMatches,
-    winRate,
-    totalFinished,
-    wins,
-    draws,
-    losses,
-    totalGoals,
-    concededGoals,
-    featuredPlayers,
-    articles,
-  } = mainSquadData;
+  const seasons = mainSquadData.seasons || [{ id: '2026', name: '2026', year: 2026, isCurrent: true }];
+  const allMatches = mainSquadData.allMatches || [];
+  const allPlayers = mainSquadData.allPlayers || mainSquadData.featuredPlayers || [];
+
+  const initialSeason = seasons.find((s: any) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const [selectedSeason, setSelectedSeason] = useState(initialSeason);
+  const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
+
+  // Dynamic calculations for selectedSeason
+  const seasonMatches = allMatches.filter((m: any) => (m.seasonName || '2026') === selectedSeason);
+
+  const liveMatch = seasonMatches.find((m: any) => m.computedStatus === 'live');
+  const upcomingMatch = seasonMatches
+    .filter((m: any) => m.computedStatus === 'scheduled')
+    .sort((a: any, b: any) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())[0];
+  const lastFinishedMatch = seasonMatches
+    .filter((m: any) => m.computedStatus === 'finished' || m.computedStatus === 'score_pending')
+    .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())[0];
+
+  const currentNextMatch = liveMatch || upcomingMatch || lastFinishedMatch || seasonMatches[0] || mainSquadData.nextMatch;
+  const currentFeaturedStatus = currentNextMatch ? (currentNextMatch.computedStatus || 'scheduled') : 'scheduled';
+
+  const currentFinishedMatches = seasonMatches
+    .filter((m: any) => m.computedStatus === 'finished')
+    .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
+
+  let currentWins = 0;
+  let currentDraws = 0;
+  let currentLosses = 0;
+  let currentTotalGoals = 0;
+  let currentConcededGoals = 0;
+
+  currentFinishedMatches.forEach((m: any) => {
+    const marinersScore = m.isHome ? m.homeScore : m.awayScore;
+    const opponentScore = m.isHome ? m.awayScore : m.homeScore;
+    if (marinersScore !== null && opponentScore !== null) {
+      currentTotalGoals += marinersScore;
+      currentConcededGoals += opponentScore;
+      if (marinersScore > opponentScore) currentWins++;
+      else if (marinersScore === opponentScore) currentDraws++;
+      else currentLosses++;
+    }
+  });
+
+  const currentTotalFinished = currentFinishedMatches.length;
+  const currentWinRate = currentTotalFinished > 0 ? Math.round((currentWins / currentTotalFinished) * 100) : 0;
+
+  // Filter squad players for selectedSeason
+  const seasonPlayers = allPlayers.filter((p: any) =>
+    Array.isArray(p.seasons) && p.seasons.length > 0
+      ? p.seasons.some((s: any) => s.name === selectedSeason || s.id === selectedSeason)
+      : true
+  );
+  const currentFeaturedPlayers = seasonPlayers.length > 0 ? seasonPlayers.slice(0, 6) : allPlayers.slice(0, 6);
+  const articles = mainSquadData.articles;
 
   const {
     nextFunMatch,
@@ -122,11 +166,61 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
 
         <div className="relative z-10 max-w-5xl mx-auto px-2 text-center space-y-2 sm:space-y-5 pb-3 sm:pb-6">
           
-          {/* Badge Top */}
-          <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse drop-shadow-md">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
-            <span>Musim 2026</span>
-          </div>
+          {/* Badge Top: Interactive Season Selector when clubMode === 'main' */}
+          {clubMode === 'main' && seasons && seasons.length > 0 ? (
+            <div className="relative inline-block z-30">
+              <button
+                type="button"
+                onClick={() => setShowSeasonDropdown((prev) => !prev)}
+                className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-black uppercase tracking-widest hover:border-sky-400/80 transition-all cursor-pointer shadow-lg active:scale-95"
+              >
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
+                <span>Musim {selectedSeason}</span>
+                <ChevronDown
+                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-300 transition-transform duration-200 ${
+                    showSeasonDropdown ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {showSeasonDropdown && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 rounded-2xl glass-panel border border-sky-400/40 shadow-2xl p-1.5 z-50 bg-[#09111e]/95 backdrop-blur-xl animate-fade-in text-left">
+                  <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    Pilih Musim Tim Utama
+                  </div>
+                  <div className="space-y-1 mt-1 max-h-48 overflow-y-auto">
+                    {seasons.map((s: any) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSeason(s.name);
+                          setShowSeasonDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-between transition-colors ${
+                          selectedSeason === s.name
+                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <span>Musim {s.name}</span>
+                        {s.isCurrent && (
+                          <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-black">
+                            Aktif
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full glass-panel-blue text-sky-300 text-[9px] sm:text-xs font-extrabold uppercase tracking-widest animate-pulse drop-shadow-md">
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-400" />
+              <span>Soccer Community</span>
+            </div>
+          )}
 
           <p className="max-w-2xl mx-auto text-[11px] sm:text-lg text-white font-semibold leading-normal sm:leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             Selamat datang di website resmi <strong className="text-sky-300">Mariners SC</strong>.
@@ -171,16 +265,16 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           {/* MATCH SCORECARD FEATURED */}
           <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 -mt-6 sm:-mt-20 relative z-20">
             <Link
-              href={nextMatch ? `/matches/${nextMatch.id}` : '/matches'}
+              href={currentNextMatch ? `/matches/${currentNextMatch.id}` : '/matches'}
               className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/30 hover:border-sky-400/60 shadow-2xl shadow-slate-950 hover:shadow-sky-500/10 transition-all duration-300 cursor-pointer"
             >
               
               <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
-                {featuredStatus === 'live' ? (
+                {currentFeaturedStatus === 'live' ? (
                   <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
                   </span>
-                ) : featuredStatus === 'scheduled' ? (
+                ) : currentFeaturedStatus === 'scheduled' ? (
                   <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
                     Laga Mendatang
                   </h3>
@@ -190,18 +284,18 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   </h3>
                 )}
                 <span className="flex items-center gap-1.5 sm:gap-2">
-                  {nextMatch && (
+                  {currentNextMatch && (
                     <span className="text-[9px] sm:text-xs font-medium text-slate-400">
-                      {formatWibDate(nextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                      {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
                   <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                    Matchday {nextMatch?.matchday || 1}
+                    {currentNextMatch?.stage || (currentNextMatch?.competition === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
                   </span>
                 </span>
               </div>
 
-              {nextMatch ? (
+              {currentNextMatch ? (
                 <>
                   <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
                     
@@ -209,13 +303,13 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                     <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                       <div className="order-2 sm:order-1 text-center sm:text-right">
                         <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
-                          {nextMatch.isHome ? 'MARINERS SC' : nextMatch.opponentName}
+                          {currentNextMatch.isHome ? 'MARINERS SC' : currentNextMatch.opponentName}
                         </h4>
                       </div>
                       <div className="order-1 sm:order-2 flex items-center justify-center">
                         <img
-                          src={nextMatch.isHome ? '/marinerssc.webp' : (nextMatch.opponentLogo || '/defaultteam.webp')}
-                          alt={nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
+                          src={currentNextMatch.isHome ? '/marinerssc.webp' : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
+                          alt={currentNextMatch.isHome ? 'Mariners SC' : currentNextMatch.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
@@ -223,66 +317,66 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
 
                     {/* Score / VS Badge */}
                     <div className="space-y-0.5 sm:space-y-2">
-                      {featuredStatus === 'live' ? (
+                      {currentFeaturedStatus === 'live' ? (
                         <LiveScoreDisplay
-                          targetDate={nextMatch.matchDate}
-                          duration={nextMatch.duration}
-                          homeScore={nextMatch.homeScore ?? 0}
-                          awayScore={nextMatch.awayScore ?? 0}
-                          isLiveEnabled={nextMatch.isLiveEnabled !== false}
-                          events={nextMatch.events}
-                          status={featuredStatus}
+                          targetDate={currentNextMatch.matchDate}
+                          duration={currentNextMatch.duration}
+                          homeScore={currentNextMatch.homeScore ?? 0}
+                          awayScore={currentNextMatch.awayScore ?? 0}
+                          isLiveEnabled={currentNextMatch.isLiveEnabled !== false}
+                          events={currentNextMatch.events}
+                          status={currentFeaturedStatus}
                         />
-                      ) : featuredStatus === 'score_pending' ? (
+                      ) : currentFeaturedStatus === 'score_pending' ? (
                         <>
                           <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
                           <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
                             VS
                           </div>
                         </>
-                      ) : featuredStatus === 'finished' ? (
+                      ) : currentFeaturedStatus === 'finished' ? (
                         <>
                           <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
                           <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
-                            {nextMatch.homeScore ?? 0} : {nextMatch.awayScore ?? 0}
+                            {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
                           </div>
                         </>
                       ) : (
                         <>
                           <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
-                            {formatWibTime(nextMatch.matchDate)}
+                            {formatWibTime(currentNextMatch.matchDate)}
                           </p>
                           <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
                             VS
                           </div>
                         </>
                       )}
-                      <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{nextMatch.venue}</p>
+                      <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">{currentNextMatch.venue}</p>
                     </div>
 
                     {/* Away Team */}
                     <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                       <div className="flex items-center justify-center">
                         <img
-                          src={!nextMatch.isHome ? '/marinerssc.webp' : (nextMatch.opponentLogo || '/defaultteam.webp')}
-                          alt={!nextMatch.isHome ? 'Mariners SC' : nextMatch.opponentName}
+                          src={!currentNextMatch.isHome ? '/marinerssc.webp' : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
+                          alt={!currentNextMatch.isHome ? 'Mariners SC' : currentNextMatch.opponentName}
                           className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                       <div className="text-center sm:text-left">
                         <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
-                          {!nextMatch.isHome ? 'MARINERS SC' : nextMatch.opponentName}
+                          {!currentNextMatch.isHome ? 'MARINERS SC' : currentNextMatch.opponentName}
                         </h4>
                       </div>
                     </div>
 
                   </div>
 
-                  <MatchTimer targetDate={nextMatch.matchDate} status={featuredStatus} duration={nextMatch.duration} isLiveEnabled={nextMatch.isLiveEnabled !== false} />
+                  <MatchTimer targetDate={currentNextMatch.matchDate} status={currentFeaturedStatus} duration={currentNextMatch.duration} isLiveEnabled={currentNextMatch.isLiveEnabled !== false} />
                 </>
               ) : (
-                <div className="text-center py-3 text-xs text-slate-400">
-                  Menghubungkan data pertandingan Mariners SC...
+                <div className="text-center py-6 text-xs text-slate-400">
+                  Belum ada jadwal pertandingan di Musim {selectedSeason}.
                 </div>
               )}
 
@@ -290,8 +384,8 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           </section>
 
           {/* 3 PERTANDINGAN TERAKHIR */}
-          {finishedMatches.length > 0 && (() => {
-            const last3 = [...finishedMatches]
+          {currentFinishedMatches.length > 0 && (() => {
+            const last3 = [...currentFinishedMatches]
               .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
               .slice(0, 3);
             return (
@@ -326,7 +420,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                                 {formatWibDate(m.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                               <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                                Matchday {m.matchday}
+                                {m.stage || (m.competition === 'FRIENDLY' ? `Matchday ${m.matchday}` : m.competition)}
                               </span>
                             </span>
                           </div>
@@ -383,19 +477,19 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
             <div className="glass-panel p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-sky-400/20 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526]">
               <div className="text-center max-w-xl mx-auto mb-3 sm:mb-6 space-y-0.5">
-                <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim 2026</h2>
+                <h2 className="text-base sm:text-2xl font-black uppercase text-white">Statistik Musim {selectedSeason}</h2>
                 <p className="text-[9px] sm:text-xs text-slate-300">Performa resmi klub Mariners SC di musim ini</p>
               </div>
 
               <div className="grid grid-cols-7 divide-x divide-slate-800/80 bg-gradient-to-b from-[#09111e] via-[#060b14] to-[#0a1526] rounded-2xl sm:rounded-3xl border border-sky-400/20 shadow-2xl overflow-hidden py-3 sm:py-5">
                 {[
-                  { label: 'WIN RATE', value: `${winRate}%` },
-                  { label: 'MAIN', value: totalFinished },
-                  { label: 'MENANG', value: wins },
-                  { label: 'SERI', value: draws },
-                  { label: 'KALAH', value: losses },
-                  { label: 'GOL', value: totalGoals },
-                  { label: 'KEMASUKAN', value: concededGoals },
+                  { label: 'WIN RATE', value: `${currentWinRate}%` },
+                  { label: 'MAIN', value: currentTotalFinished },
+                  { label: 'MENANG', value: currentWins },
+                  { label: 'SERI', value: currentDraws },
+                  { label: 'KALAH', value: currentLosses },
+                  { label: 'GOL', value: currentTotalGoals },
+                  { label: 'KEMASUKAN', value: currentConcededGoals },
                 ].map((s) => (
                   <div key={s.label} className="flex flex-col items-center justify-center px-1 sm:px-3 text-center">
                     <span className="text-sm sm:text-3xl md:text-4xl font-black font-mono text-white tracking-tight">
@@ -415,7 +509,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
             <div className="flex items-end justify-between border-b border-slate-800 pb-2">
               <div>
                 <h2 className="text-base sm:text-3xl font-black uppercase text-white">
-                  Mariners SC Players
+                  Mariners SC Players ({selectedSeason})
                 </h2>
               </div>
               <Link
@@ -427,7 +521,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
-              {featuredPlayers.map((player: any) => (
+              {currentFeaturedPlayers.map((player: any) => (
                 <Link
                   key={player.id}
                   href={`/players/${player.slug}`}

@@ -202,38 +202,71 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                   .toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })
                   .replace('/', '.');
 
-                return (
-                  <Link
-                    key={match.id}
-                    href={`/matches/${match.id}`}
-                    className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
-                    style={{
-                      gridTemplateColumns: '64px 1fr auto',
-                      borderTop: rowBorder,
-                    }}
-                  >
-                    {/* Date */}
-                    <span className="text-[11px] sm:text-xs font-bold text-slate-400">
-                      {dateStr}
-                    </span>
+                const matchComp = (match.competition || 'FRIENDLY').toUpperCase();
+                const isFriendly = matchComp === 'FRIENDLY';
+                const prevMatch = idx > 0 ? displayedMatches[idx - 1] : null;
+                const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
+                const isNewCompGroup = idx === 0 || matchComp !== prevComp;
 
-                    {/* Match Teams & Event Badges */}
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <TopTeam />
-                          <BottomTeam />
+                return (
+                  <React.Fragment key={match.id}>
+                    {isNewCompGroup && (
+                      <div
+                        className="px-4 py-2 flex items-center justify-between text-[11px] font-black uppercase tracking-wider"
+                        style={{
+                          background: 'rgba(56, 189, 248, 0.08)',
+                          borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                          borderBottom: '1px solid rgba(56, 189, 248, 0.15)',
+                          color: '#38bdf8',
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <i className="fa-solid fa-trophy text-amber-400 text-xs" />
+                          <span>{match.competition || 'FRIENDLY'}</span>
                         </div>
-                        {/* Tidak masuk skuad / On the bench badge OR event icons */}
-                        {isNotInSquad ? (
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
-                            {nonSquadStatus}
+                        {match.seasonName && (
+                          <span className="text-[10px] font-mono text-slate-400 font-bold">
+                            Musim {match.seasonName}
                           </span>
-                        ) : isOnBenchOnly ? (
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
-                            On the bench
-                          </span>
-                        ) : (
+                        )}
+                      </div>
+                    )}
+
+                    <Link
+                      href={`/matches/${match.id}`}
+                      className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
+                      style={{
+                        gridTemplateColumns: '64px 1fr auto',
+                        borderTop: isNewCompGroup ? 'none' : rowBorder,
+                      }}
+                    >
+                      {/* Date */}
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-400">
+                        {dateStr}
+                      </span>
+
+                      {/* Match Teams & Event Badges */}
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                            <TopTeam />
+                            <BottomTeam />
+                            {!isFriendly && match.stage && (
+                              <span className="text-[9px] font-bold text-amber-400/90 truncate mt-0.5">
+                                {match.stage}
+                              </span>
+                            )}
+                          </div>
+                          {/* Tidak masuk skuad / On the bench badge OR event icons */}
+                          {isNotInSquad ? (
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                              {nonSquadStatus}
+                            </span>
+                          ) : isOnBenchOnly ? (
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                              On the bench
+                            </span>
+                          ) : (
                           hasEvents && (
                             <div className="flex items-center gap-1 shrink-0">
                               {chronEvts.map((e: any) => (
@@ -325,8 +358,9 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                       )}
                     </div>
                   </Link>
-                );
-              })}
+                </React.Fragment>
+              );
+            })}
             </div>
 
             {/* ── Navigation Bar ── */}

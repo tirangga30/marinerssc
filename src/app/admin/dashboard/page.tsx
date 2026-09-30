@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
-import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles } from 'lucide-react';
+import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles, Trophy } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,9 +118,28 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Action Shortcut Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         
-        {/* Module 1: Players */}
+        {/* Module 1: Master Musim & Kompetisi */}
+        <Link
+          href="/admin/seasons"
+          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/40 card-glow-hover space-y-3 bg-sky-950/20"
+        >
+          <div className="w-10 h-10 rounded-xl blue-gradient-bg text-white flex items-center justify-center shadow-lg border border-white/20">
+            <Trophy className="w-5 h-5 text-amber-300" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-white group-hover:text-sky-300 transition-colors uppercase">
+              Master Musim &amp; Kompetisi
+            </h3>
+            <p className="text-[11px] text-slate-300 mt-1">Kelola kalender musim, penetapan skuad tiap musim, dan master kompetisi (Liga, Turnamen, Friendly).</p>
+          </div>
+          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-sky-400 flex items-center gap-1">
+            Buka Musim &amp; Kompetisi <ArrowRight className="w-3.5 h-3.5" />
+          </div>
+        </Link>
+
+        {/* Module 2: Players */}
         <Link
           href="/admin/players"
           className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 card-glow-hover space-y-3"
@@ -136,25 +155,6 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-sky-400 flex items-center gap-1">
             Buka Skuad <ArrowRight className="w-3.5 h-3.5" />
-          </div>
-        </Link>
-
-        {/* Module 2: Members & Community */}
-        <Link
-          href="/admin/members"
-          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-500/30 card-glow-hover space-y-3 bg-amber-950/10"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shadow-lg border border-white/20">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors uppercase">
-              Kelola Member & Fun Match
-            </h3>
-            <p className="text-[11px] text-slate-300 mt-1">Data member, ID login, tarik ke skuad utama, dan jadwal fun match.</p>
-          </div>
-          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400 flex items-center gap-1">
-            Buka Member <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </Link>
 
@@ -177,7 +177,26 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
 
-        {/* Module 4: Articles */}
+        {/* Module 4: Members & Community */}
+        <Link
+          href="/admin/members"
+          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-500/30 card-glow-hover space-y-3 bg-amber-950/10"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shadow-lg border border-white/20">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors uppercase">
+              Kelola Member &amp; Fun Match
+            </h3>
+            <p className="text-[11px] text-slate-300 mt-1">Data member, ID login, tarik ke skuad utama, dan jadwal fun match.</p>
+          </div>
+          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400 flex items-center gap-1">
+            Buka Member <ArrowRight className="w-3.5 h-3.5" />
+          </div>
+        </Link>
+
+        {/* Module 5: Articles */}
         <Link
           href="/admin/articles"
           className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 card-glow-hover space-y-3"
@@ -187,7 +206,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div>
             <h3 className="text-base font-black text-white group-hover:text-sky-300 transition-colors uppercase">
-              Kelola Berita & Artikel
+              Kelola Berita &amp; Artikel
             </h3>
             <p className="text-[11px] text-slate-300 mt-1">Tulis dan terbitkan berita terbaru seputar klub dan laporan laga.</p>
           </div>
