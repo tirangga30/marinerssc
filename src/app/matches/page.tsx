@@ -180,13 +180,13 @@ function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
                 <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
                 <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
                   <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  {m.competition || 'FRIENDLY'}
+                  <span>{m.competition || 'FRIENDLY'}</span>
+                  {m.seasonName && (
+                    <span className="text-slate-400 font-mono text-[11px] font-bold">
+                      {m.seasonName.replace(/[^0-9]/g, '') || m.seasonName}
+                    </span>
+                  )}
                 </h3>
-                {m.seasonName && (
-                  <span className="text-[10px] font-mono text-slate-400 font-bold ml-1">
-                    Musim {m.seasonName}
-                  </span>
-                )}
               </div>
             )}
             <MatchCard match={m} />

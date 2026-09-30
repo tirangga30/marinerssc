@@ -151,6 +151,24 @@ export default function AdminMatchesPage() {
     fetchMeta();
   }, []);
 
+  const getNextMatchdayNumber = (seasonName: string) => {
+    const seasonMatches = matches.filter(
+      (m) =>
+        (m.seasonName || '2026') === seasonName &&
+        ((m.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ||
+          m.stage?.toLowerCase().includes('matchday'))
+    );
+    let max = 0;
+    for (const m of seasonMatches) {
+      const match = m.stage?.match(/matchday\s*(\d+)/i);
+      if (match && match[1]) {
+        const val = parseInt(match[1], 10);
+        if (val > max) max = val;
+      }
+    }
+    return max > 0 ? max + 1 : seasonMatches.length + 1;
+  };
+
   const openAddModal = () => {
     setEditingMatch(null);
     const activeSeason = seasons.find((s) => s.isCurrent) || seasons[0];
@@ -162,11 +180,9 @@ export default function AdminMatchesPage() {
       (c) => (c.season === defaultSeasonName || c.seasonId === defaultSeasonId) && c.name === 'FRIENDLY'
     ) || competitions[0];
 
-    // Compute next matchday
-    const seasonMatches = matches.filter(
-      (m) => m.seasonName === defaultSeasonName && (m.competition === 'FRIENDLY' || !m.competition)
-    );
-    const nextMatchday = `Matchday ${seasonMatches.length + 1}`;
+    // Compute next matchday automatically
+    const nextMatchdayNum = getNextMatchdayNumber(defaultSeasonName);
+    const nextMatchday = `Matchday ${nextMatchdayNum}`;
 
     setFormData({
       opponentName: '',
@@ -619,11 +635,16 @@ export default function AdminMatchesPage() {
                   <select
                     value={formData.seasonName}
                     onChange={(e) => {
-                      const sel = seasons.find((s) => s.name === e.target.value);
+                      const newSeason = e.target.value;
+                      const sel = seasons.find((s) => s.name === newSeason);
+                      const isMatchdayStage = !formData.stage || formData.stage.toLowerCase().startsWith('matchday');
                       setFormData({
                         ...formData,
-                        seasonName: e.target.value,
+                        seasonName: newSeason,
                         seasonId: sel?.id || '',
+                        stage: isMatchdayStage
+                          ? `Matchday ${getNextMatchdayNumber(newSeason)}`
+                          : formData.stage,
                       });
                     }}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold focus:border-sky-400 outline-none"
@@ -652,13 +673,16 @@ export default function AdminMatchesPage() {
                   <select
                     value={formData.competition}
                     onChange={(e) => {
-                      const sel = competitions.find((c) => c.name === e.target.value);
-                      const isFriendly = e.target.value === 'FRIENDLY';
+                      const newComp = e.target.value;
+                      const sel = competitions.find((c) => c.name === newComp);
+                      const isFriendly = newComp === 'FRIENDLY';
                       setFormData({
                         ...formData,
-                        competition: e.target.value,
+                        competition: newComp,
                         competitionId: sel?.id || '',
-                        stage: isFriendly ? (formData.stage?.startsWith('Matchday') ? formData.stage : 'Matchday 1') : (formData.stage?.startsWith('Matchday') ? 'Group Stage' : formData.stage),
+                        stage: isFriendly
+                          ? `Matchday ${getNextMatchdayNumber(formData.seasonName)}`
+                          : (formData.stage?.toLowerCase().startsWith('matchday') ? 'Group Stage' : formData.stage),
                       });
                     }}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none"
@@ -685,23 +709,34 @@ export default function AdminMatchesPage() {
                   required
                   value={formData.stage}
                   onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-                  placeholder="Contoh: Matchday 2, Group Stage, PlayOff, Final"
+                  placeholder="Contoh: Matchday 20, Group Stage, PlayOff, Final"
                   className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none font-semibold"
                 />
                 {/* Fast chips */}
                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                   <span className="text-[10px] text-slate-400">Pilihan cepat:</span>
-                  {(formData.competition === 'FRIENDLY'
-                    ? ['Matchday 1', 'Matchday 2', 'Matchday 3', 'Matchday 4', 'Matchday 5']
-                    : ['Group Stage', 'PlayOff', 'Babak 16 Besar', 'Perempat Final', 'Semifinal', 'Final']
-                  ).map((chip) => (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const num = getNextMatchdayNumber(formData.seasonName);
+                      setFormData({ ...formData, stage: `Matchday ${num}` });
+                    }}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
+                      formData.stage?.toLowerCase().startsWith('matchday')
+                        ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20'
+                        : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                    }`}
+                  >
+                    Matchday
+                  </button>
+                  {['Group Stage', 'PlayOff', 'Babak 16 Besar', 'Perempat Final', 'Semifinal', 'Final'].map((chip) => (
                     <button
                       key={chip}
                       type="button"
                       onClick={() => setFormData({ ...formData, stage: chip })}
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
                         formData.stage === chip
-                          ? 'bg-sky-500 text-slate-950'
+                          ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20'
                           : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >

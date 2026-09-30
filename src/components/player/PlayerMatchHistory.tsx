@@ -206,7 +206,21 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                 const isFriendly = matchComp === 'FRIENDLY';
                 const prevMatch = idx > 0 ? displayedMatches[idx - 1] : null;
                 const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
-                const isNewCompGroup = idx === 0 || matchComp !== prevComp;
+                const prevStage = prevMatch ? (prevMatch.stage || '').trim().toUpperCase() : '';
+                const currentStage = (match.stage || '').trim().toUpperCase();
+                const prevSeason = prevMatch ? (prevMatch.seasonName || '') : '';
+                const currentSeason = match.seasonName || '';
+
+                const isNewCompGroup =
+                  idx === 0 ||
+                  matchComp !== prevComp ||
+                  currentSeason !== prevSeason ||
+                  (!isFriendly && currentStage !== prevStage);
+
+                // Extract only year from seasonName (e.g. "2026")
+                const seasonYear = match.seasonName
+                  ? (match.seasonName.match(/\d{4}/)?.[0] || match.seasonName)
+                  : (match.matchDate ? new Date(match.matchDate).getFullYear().toString() : '');
 
                 return (
                   <React.Fragment key={match.id}>
@@ -220,15 +234,20 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           color: '#38bdf8',
                         }}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                           <i className="fa-solid fa-trophy text-amber-400 text-xs" />
                           <span>{match.competition || 'FRIENDLY'}</span>
+                          {seasonYear && (
+                            <span className="text-slate-400 font-mono text-[10px] font-bold">
+                              {seasonYear}
+                            </span>
+                          )}
                         </div>
-                        {match.seasonName && (
-                          <span className="text-[10px] font-mono text-slate-400 font-bold">
-                            Musim {match.seasonName}
+                        {!isFriendly && match.stage ? (
+                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-400">
+                            {match.stage}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     )}
 
@@ -251,11 +270,6 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                             <TopTeam />
                             <BottomTeam />
-                            {!isFriendly && match.stage && (
-                              <span className="text-[9px] font-bold text-amber-400/90 truncate mt-0.5">
-                                {match.stage}
-                              </span>
-                            )}
                           </div>
                           {/* Tidak masuk skuad / On the bench badge OR event icons */}
                           {isNotInSquad ? (
