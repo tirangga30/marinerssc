@@ -40,6 +40,7 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Kelola Pemain', href: '/admin/players', icon: Users },
     { name: 'Kelola Laga', href: '/admin/matches', icon: Calendar },
+    { name: 'Musim & Kompetisi', href: '/admin/seasons', icon: Trophy },
     { name: 'Kelola Berita', href: '/admin/articles', icon: Newspaper },
     { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
   ];
@@ -106,29 +107,6 @@ export default function Navbar() {
                 );
               })}
             </nav>
-
-            {/* Right Action Buttons */}
-            {pathname === '/admin/dashboard' && (
-              <div className="hidden md:flex items-center gap-3">
-                <Link
-                  href="/"
-                  target="_blank"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-bold uppercase transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Lihat Web Publik
-                </Link>
-                <form action="/api/auth/logout" method="POST">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-xs font-bold uppercase transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Keluar
-                  </button>
-                </form>
-              </div>
-            )}
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">

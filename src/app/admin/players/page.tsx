@@ -64,7 +64,7 @@ export default function AdminPlayersPage() {
   const [guestPlayers, setGuestPlayers] = useState<Player[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<string>('2026');
-  const [activeTab, setActiveTab] = useState<'season_squad' | 'all_players' | 'guests'>('season_squad');
+  const [activeTab, setActiveTab] = useState<'season_squad' | 'guests'>('season_squad');
 
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -203,8 +203,6 @@ export default function AdminPlayersPage() {
   const displayedList =
     activeTab === 'season_squad'
       ? seasonSquadPlayers
-      : activeTab === 'all_players'
-      ? players
       : guestPlayers;
 
   // Single Player Pull to Season
@@ -602,8 +600,8 @@ export default function AdminPlayersPage() {
       </div>
 
       <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
-        {/* Navigation Tabs & Season Filter Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-3 sm:pb-4">
+        {/* Navigation Tabs Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 sm:pb-4">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setActiveTab('season_squad')}
@@ -618,18 +616,6 @@ export default function AdminPlayersPage() {
             </button>
 
             <button
-              onClick={() => setActiveTab('all_players')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'all_players'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
-                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 text-sky-400" />
-              Semua Pemain Klub ({players.length})
-            </button>
-
-            <button
               onClick={() => setActiveTab('guests')}
               className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'guests'
@@ -641,28 +627,8 @@ export default function AdminPlayersPage() {
             </button>
           </div>
 
-          {/* Season Switcher & Beranda Count */}
-          <div className="flex items-center gap-2 justify-between lg:justify-end">
-            <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5">
-              <Trophy className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Musim:</span>
-              <select
-                value={selectedSeason}
-                onChange={(e) => {
-                  setSelectedSeason(e.target.value);
-                  setClientAdminSeason(e.target.value);
-                }}
-                className="bg-transparent text-xs font-black text-sky-300 focus:outline-none cursor-pointer"
-              >
-                {seasons.map((s) => (
-                  <option key={s.id} value={s.name} className="bg-slate-900 text-white font-bold">
-                    Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
-                  </option>
-                ))}
-                {seasons.length === 0 && <option value="2026">2026</option>}
-              </select>
-            </div>
-
+          {/* Beranda Count */}
+          <div className="flex items-center gap-2 justify-between sm:justify-end">
             <span className="text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
               ★ Beranda: {featuredCount}/6
             </span>
@@ -737,33 +703,12 @@ export default function AdminPlayersPage() {
                       <span>{player.appearances} Laga</span>
                     </div>
 
-                    {/* Season badges in all_players tab */}
-                    {activeTab === 'all_players' && (
-                      <div className="flex items-center gap-1 pt-0.5 flex-wrap">
-                        {player.seasons && player.seasons.length > 0 ? (
-                          player.seasons.map((s) => (
-                            <span
-                              key={s.id}
-                              className={`text-[8px] font-bold px-1.5 py-0.2 rounded ${
-                                s.name === selectedSeason
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                  : 'bg-blue-600/20 text-sky-300'
-                              }`}
-                            >
-                              {s.name}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[8px] text-slate-500">Belum masuk musim</span>
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 shrink-0">
                     {/* Pull/Release Button */}
-                    {activeTab === 'season_squad' ? (
+                    {activeTab === 'season_squad' && (
                       <button
                         onClick={() => handleReleasePlayer(player)}
                         title={`Lepas dari Skuad Musim ${selectedSeason}`}
@@ -771,26 +716,7 @@ export default function AdminPlayersPage() {
                       >
                         <UserMinus className="w-3.5 h-3.5" />
                       </button>
-                    ) : activeTab === 'all_players' ? (
-                      isEnrolledInActiveSeason ? (
-                        <button
-                          onClick={() => handleReleasePlayer(player)}
-                          title={`Lepas dari Musim ${selectedSeason}`}
-                          className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-red-500/20 hover:text-red-300 cursor-pointer"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handlePullPlayer(player.id)}
-                          disabled={pulling}
-                          title={`Tarik ke Musim ${selectedSeason}`}
-                          className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer"
-                        >
-                          <UserPlus className="w-3.5 h-3.5" />
-                        </button>
-                      )
-                    ) : null}
+                    )}
 
                     <button
                       onClick={() => toggleStar(player)}
@@ -833,7 +759,6 @@ export default function AdminPlayersPage() {
                 <th className="p-3">No</th>
                 <th className="p-3">Pemain</th>
                 <th className="p-3">Posisi</th>
-                <th className="p-3">Musim</th>
                 <th className="p-3">Gol / Assist</th>
                 <th className="p-3">Laga</th>
                 <th className="p-3">Status</th>
@@ -844,7 +769,7 @@ export default function AdminPlayersPage() {
             <tbody className="divide-y divide-slate-800/60 font-medium">
               {displayedList.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-slate-500">
+                  <td colSpan={8} className="p-8 text-center text-slate-500">
                     {activeTab === 'season_squad'
                       ? `Belum ada pemain di skuad Musim ${selectedSeason}. Klik "Tarik Pemain" untuk memasukkan pemain.`
                       : 'Belum ada data pemain.'}
@@ -852,10 +777,6 @@ export default function AdminPlayersPage() {
                 </tr>
               ) : (
                 displayedList.map((player) => {
-                  const isEnrolledInActiveSeason = player.seasons?.some(
-                    (s) => s.name === selectedSeason || s.id === currentSeasonObj?.id
-                  );
-
                   return (
                     <tr key={player.id} className="hover:bg-slate-800/40">
                       <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
@@ -881,26 +802,6 @@ export default function AdminPlayersPage() {
                             Loan
                           </span>
                         )}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1 flex-wrap max-w-xs">
-                          {player.seasons && player.seasons.length > 0 ? (
-                            player.seasons.map((s) => (
-                              <span
-                                key={s.id}
-                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                                  s.name === selectedSeason
-                                    ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
-                                    : 'bg-slate-800 text-slate-400'
-                                }`}
-                              >
-                                {s.name}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-[10px] text-slate-500">-</span>
-                          )}
-                        </div>
                       </td>
                       <td className="p-3">
                         {player.goals} Gol / {player.assists} Assist
@@ -943,8 +844,8 @@ export default function AdminPlayersPage() {
                       </td>
 
                       <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                        {/* TARIK / LEPAS PEMAIN BUTTON */}
-                        {activeTab === 'season_squad' ? (
+                        {/* LEPAS PEMAIN DARI MUSIM INI */}
+                        {activeTab === 'season_squad' && (
                           <button
                             onClick={() => handleReleasePlayer(player)}
                             className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
@@ -952,26 +853,7 @@ export default function AdminPlayersPage() {
                           >
                             <UserMinus className="w-4 h-4" />
                           </button>
-                        ) : activeTab === 'all_players' ? (
-                          isEnrolledInActiveSeason ? (
-                            <button
-                              onClick={() => handleReleasePlayer(player)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-red-500/20 hover:text-red-300 text-[10px] font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
-                              title="Terdaftar di musim ini. Klik untuk melepas."
-                            >
-                              <Check className="w-3 h-3" /> Musim {selectedSeason}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handlePullPlayer(player.id)}
-                              disabled={pulling}
-                              className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 text-[10px] font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
-                              title={`Tarik ke Musim ${selectedSeason}`}
-                            >
-                              <UserPlus className="w-3 h-3" /> Tarik ke {selectedSeason}
-                            </button>
-                          )
-                        ) : null}
+                        )}
 
                         {player.isGuest && (
                           <button
@@ -1087,12 +969,17 @@ export default function AdminPlayersPage() {
                           alt={p.name}
                           className="w-8 h-8 rounded-lg object-cover border border-slate-700 shrink-0"
                         />
-                        <div className="min-w-0">
-                          <span className="font-mono font-bold text-sky-400 text-xs mr-1.5">#{p.number}</span>
+                        <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono font-bold text-sky-400 text-xs">#{p.number}</span>
                           <span className="font-bold text-white text-xs">{p.name}</span>
-                          <span className="ml-2 text-[10px] text-slate-400 uppercase">
+                          <span className="text-[10px] text-slate-400 uppercase">
                             ({normalizePos(p.position)})
                           </span>
+                          {p.seasons && p.seasons.length > 0 && (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/15 text-sky-300 font-bold border border-sky-400/20">
+                              Musim {p.seasons.map((s) => s.name).join(', ')}
+                            </span>
+                          )}
                         </div>
                       </label>
 
@@ -1156,6 +1043,28 @@ export default function AdminPlayersPage() {
             </div>
 
             <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
+              {!editingPlayer && availableToPullPlayers.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-amber-300">Pemain pernah terdaftar di musim sebelumnya?</p>
+                    <p className="text-[11px] text-amber-200/70">
+                      Tarik data pemain dari musim lain secara otomatis tanpa perlu input manual ulang.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowModal(false);
+                      setPullSearch('');
+                      setSelectedPlayerIdsForPull([]);
+                      setShowPullModal(true);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase transition-colors shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" /> Tarik Pemain ({availableToPullPlayers.length})
+                  </button>
+                </div>
+              )}
               {!editingPlayer && guestPlayers.length > 0 && (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
                   <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>
