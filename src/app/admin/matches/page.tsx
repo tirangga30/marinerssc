@@ -336,13 +336,6 @@ export default function AdminMatchesPage() {
             <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span>
             <span className="sm:hidden">Dashboard</span>
           </Link>
-          <span className="text-slate-600">/</span>
-          <Link
-            href="/admin/competitions"
-            className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
-          >
-            <Trophy className="w-3.5 h-3.5" /> Kelola Kompetisi
-          </Link>
         </div>
 
         <div className="flex items-center gap-2">
