@@ -172,8 +172,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                     const evtsList: Array<{ id: string; type: string; minute: number }> = [];
 
                     if (e.type === 'sub') {
-                      if (isAssist)
-                        evtsList.push({ id: e.id || `subout-${evtIdx}`, type: 'sub_out', minute: e.minute });
+                      // Sub out icon removed per request
                     } else if (e.type === 'goal' || e.type === 'own_goal' || e.type === 'penalty') {
                       if (isPlayer)
                         evtsList.push({ id: e.id || `evt-${evtIdx}`, type: e.type, minute: e.minute });
@@ -326,13 +325,13 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                             <TopTeam />
                             <BottomTeam />
                           </div>
-                          {/* Tidak masuk skuad / On the bench badge OR Menit Bermain & Event icons */}
+                          {/* Tidak masuk skuad / On the bench text OR Menit Bermain & Event icons */}
                           {isNotInSquad ? (
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">
                               {nonSquadStatus}
                             </span>
                           ) : isOnBenchOnly ? (
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">
                               On the bench
                             </span>
                           ) : (
@@ -341,12 +340,6 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                 <div className="flex items-center gap-1 shrink-0">
                                   {chronEvts.map((e: any) => (
                                     <span key={e.id} className="inline-flex items-center justify-center">
-                                      {e.type === 'sub_out' && (
-                                        <i
-                                          className="fa-solid fa-right-left text-red-500 text-[9px] shrink-0"
-                                          title="Digantikan"
-                                        />
-                                      )}
                                       {e.type === 'goal' && <BallIcon size={11} />}
                                       {e.type === 'own_goal' && (
                                         <i

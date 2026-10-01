@@ -153,34 +153,25 @@ export default async function PlayerDetailPage({
   const specBg = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' };
 
   // Biodata specs on Tim Utama page (Tanggal Lahir, Kewarganegaraan, Tinggi Badan, Berat Badan)
-  const specs = member
-    ? [
-        { label: 'Tanggal Lahir', value: '—' },
-        { label: 'Kewarganegaraan', value: '—' },
-        { label: 'Tinggi Badan', value: '—' },
-        { label: 'Berat Badan', value: '—' },
-      ]
-    : [
-        {
-          label: 'Tanggal Lahir',
-          value: player.birthDate
-            ? new Date(player.birthDate).toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              })
-            : '—',
-        },
-        {
-          label: 'Kewarganegaraan',
-          value:
-            player.nationality && player.nationality !== 'Indonesia' && player.nationality !== '-'
-              ? player.nationality
-              : '—',
-        },
-        { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
-        { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
-      ];
+  const birthDateValue = player.birthDate
+    ? new Date(player.birthDate).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—';
+
+  const nationalityValue =
+    player.nationality && player.nationality.trim() !== '' && player.nationality !== '-'
+      ? player.nationality
+      : 'Indonesia';
+
+  const specs = [
+    { label: 'Tanggal Lahir', value: birthDateValue },
+    { label: 'Kewarganegaraan', value: nationalityValue },
+    { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
+    { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
+  ];
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
