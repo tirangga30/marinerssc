@@ -635,77 +635,46 @@ export default function AdminMatchesPage() {
                 </div>
               </div>
 
-              {/* MASTER MUSIM & MASTER KOMPETISI SELECTORS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div>
-                  <label className="font-bold text-sky-300 uppercase block mb-1">
-                    Musim (Season)
+              {/* KOMPETISI SELECTOR */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-amber-300 uppercase block">
+                    Kompetisi
                   </label>
-                  <select
-                    value={formData.seasonName}
-                    onChange={(e) => {
-                      const newSeason = e.target.value;
-                      const sel = seasons.find((s) => s.name === newSeason);
-                      const isMatchdayStage = !formData.stage || formData.stage.toLowerCase().startsWith('matchday');
-                      setFormData({
-                        ...formData,
-                        seasonName: newSeason,
-                        seasonId: sel?.id || '',
-                        stage: isMatchdayStage
-                          ? `Matchday ${getNextMatchdayNumber(newSeason)}`
-                          : formData.stage,
-                      });
-                    }}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold focus:border-sky-400 outline-none"
+                  <Link
+                    href="/admin/competitions"
+                    target="_blank"
+                    className="text-[10px] text-sky-400 hover:underline"
                   >
-                    {seasons.map((s) => (
-                      <option key={s.id} value={s.name}>
-                        Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
-                      </option>
-                    ))}
-                  </select>
+                    + Atur Kompetisi
+                  </Link>
                 </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-bold text-amber-300 uppercase block">
-                      Kompetisi
-                    </label>
-                    <Link
-                      href="/admin/competitions"
-                      target="_blank"
-                      className="text-[10px] text-sky-400 hover:underline"
-                    >
-                      + Atur Kompetisi
-                    </Link>
-                  </div>
-                  <select
-                    value={formData.competition}
-                    onChange={(e) => {
-                      const newComp = e.target.value;
-                      const sel = competitions.find((c) => c.name === newComp);
-                      const isFriendly = newComp === 'FRIENDLY';
-                      setFormData({
-                        ...formData,
-                        competition: newComp,
-                        competitionId: sel?.id || '',
-                        stage: isFriendly
-                          ? `Matchday ${getNextMatchdayNumber(formData.seasonName)}`
-                          : (formData.stage?.toLowerCase().startsWith('matchday') ? 'Group Stage' : formData.stage),
-                      });
-                    }}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none"
-                  >
-                    {formCompetitions.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name} ({c.type})
-                      </option>
-                    ))}
-                    {formCompetitions.length === 0 && (
-                      <option value="FRIENDLY">FRIENDLY (Friendly)</option>
-                    )}
-                  </select>
-                </div>
+                <select
+                  value={formData.competition}
+                  onChange={(e) => {
+                    const newComp = e.target.value;
+                    const sel = competitions.find((c) => c.name === newComp);
+                    const isFriendly = newComp === 'FRIENDLY';
+                    setFormData({
+                      ...formData,
+                      competition: newComp,
+                      competitionId: sel?.id || '',
+                      stage: isFriendly
+                        ? `Matchday ${getNextMatchdayNumber(formData.seasonName)}`
+                        : (formData.stage?.toLowerCase().startsWith('matchday') ? 'Group Stage' : formData.stage),
+                    });
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none"
+                >
+                  {formCompetitions.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name} ({c.type})
+                    </option>
+                  ))}
+                  {formCompetitions.length === 0 && (
+                    <option value="FRIENDLY">FRIENDLY (Friendly)</option>
+                  )}
+                </select>
               </div>
 
               {/* STAGE / BABAK / MATCHDAY INPUT WITH SUGGESTIONS */}
@@ -779,15 +748,6 @@ export default function AdminMatchesPage() {
                 </label>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1">Ringkasan Singkat Pertandingan</label>
-                <textarea
-                  rows={3}
-                  value={formData.summary}
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
-                />
-              </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
                 <button
