@@ -1,10 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { Shield, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
+import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
-
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {
@@ -43,7 +44,23 @@ function formatBoxDisplayName(fullName: string): string {
   return parts[0];
 }
 
-export default async function PlayersPage() {
+export default async function PlayersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ season?: string }>;
+}) {
+  const params = await searchParams;
+  const cookieStore = await cookies();
+  const cookieSeason = cookieStore.get('public_season')?.value;
+
+  const seasons = await prisma.season.findMany({
+    orderBy: { year: 'desc' },
+    select: { id: true, name: true, year: true, isCurrent: true },
+  });
+
+  const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
+
   let players: any[] = [];
   try {
     players = await prisma.player.findMany({
@@ -53,6 +70,11 @@ export default async function PlayersPage() {
           { member: null },
           { member: { isPermanent: true } },
         ],
+        seasons: {
+          some: {
+            name: selectedSeason,
+          },
+        },
       },
       orderBy: { number: 'asc' },
     });
@@ -68,12 +90,31 @@ export default async function PlayersPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Tim Utama Mariners SC</span>
         <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
-          Skuad Musim 2026
+          Skuad Musim {selectedSeason}
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Mengenal pilar pertahanan, pengatur ritme serangan, dan mesin gol kebanggaan Mariners SC.
         </p>
+
+        {/* Season Selector Tabs */}
+        {seasons.length > 0 && (
+          <PublicSeasonSelector
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            baseUrl="/players"
+            showAllOption={false}
+          />
+        )}
       </div>
+
+      {players.length === 0 && (
+        <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
+          <Users className="w-10 h-10 text-slate-600 mx-auto" />
+          <p className="text-sm font-bold text-slate-400">
+            Belum ada pemain yang terdaftar di skuad Musim {selectedSeason}.
+          </p>
+        </div>
+      )}
 
       {/* Grouped by Position */}
       {positionOrder.map((pos) => {

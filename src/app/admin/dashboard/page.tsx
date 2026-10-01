@@ -172,9 +172,9 @@ export default async function AdminDashboardPage({
       {/* Action Shortcut Modules */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         
-        {/* Module 1: Master Musim & Kompetisi */}
+        {/* Module 1: Kelola Kompetisi */}
         <Link
-          href="/admin/seasons"
+          href="/admin/competitions"
           className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/40 card-glow-hover space-y-3 bg-sky-950/20"
         >
           <div className="w-10 h-10 rounded-xl blue-gradient-bg text-white flex items-center justify-center shadow-lg border border-white/20">
@@ -182,12 +182,12 @@ export default async function AdminDashboardPage({
           </div>
           <div>
             <h3 className="text-base font-black text-white group-hover:text-sky-300 transition-colors uppercase">
-              Master Musim &amp; Kompetisi
+              Kelola Kompetisi
             </h3>
-            <p className="text-[11px] text-slate-300 mt-1">Kelola kalender musim, penetapan skuad tiap musim, dan master kompetisi (Liga, Turnamen, Friendly).</p>
+            <p className="text-[11px] text-slate-300 mt-1">Kelola daftar turnamen, liga, dan friendly match klub untuk setiap musim.</p>
           </div>
           <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-sky-400 flex items-center gap-1">
-            Buka Musim &amp; Kompetisi <ArrowRight className="w-3.5 h-3.5" />
+            Buka Kompetisi <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </Link>
 

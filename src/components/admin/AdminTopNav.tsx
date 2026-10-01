@@ -78,7 +78,7 @@ export default function AdminTopNav() {
     { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Laga', href: '/admin/matches', icon: Calendar },
     { label: 'Skuad', href: '/admin/players', icon: Users },
-    { label: 'Musim & Kompetisi', href: '/admin/seasons', icon: Trophy },
+    { label: 'Kompetisi', href: '/admin/competitions', icon: Trophy },
     { label: 'Member', href: '/admin/members', icon: Sparkles },
     { label: 'Berita', href: '/admin/articles', icon: Newspaper },
   ];

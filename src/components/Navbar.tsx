@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -9,22 +9,36 @@ import {
   Award, UserCheck, Flame
 } from 'lucide-react';
 import { useClubMode } from '@/context/ClubModeContext';
+import { getClientPublicSeason } from '@/lib/publicSeason';
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { clubMode, setClubMode } = useClubMode();
+  const [publicSeason, setPublicSeason] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPublicSeason(getClientPublicSeason());
+    const handleSeasonChange = (e: any) => {
+      if (e.detail?.season) {
+        setPublicSeason(e.detail.season);
+      }
+    };
+    window.addEventListener('public_season_changed', handleSeasonChange);
+    return () => window.removeEventListener('public_season_changed', handleSeasonChange);
+  }, []);
 
   const isAdminRoute = pathname.startsWith('/admin');
 
-  // Tim Utama Nav Links
+  // Tim Utama Nav Links with season query param
+  const seasonQuery = publicSeason ? `?season=${encodeURIComponent(publicSeason)}` : '';
   const mainNavLinks = [
     { name: 'Beranda', href: '/', icon: Shield },
-    { name: 'Jadwal & Hasil', href: '/matches', icon: Calendar },
-    { name: 'Pemain', href: '/players', icon: Users },
+    { name: 'Jadwal & Hasil', href: `/matches${seasonQuery}`, icon: Calendar },
+    { name: 'Pemain', href: `/players${seasonQuery}`, icon: Users },
     { name: 'Berita', href: '/articles', icon: Newspaper },
-    { name: 'Statistik', href: '/stats', icon: BarChart3 },
+    { name: 'Statistik', href: `/stats${seasonQuery}`, icon: BarChart3 },
   ];
 
   // Soccer Community Nav Links
@@ -40,7 +54,7 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Kelola Pemain', href: '/admin/players', icon: Users },
     { name: 'Kelola Laga', href: '/admin/matches', icon: Calendar },
-    { name: 'Musim & Kompetisi', href: '/admin/seasons', icon: Trophy },
+    { name: 'Kelola Kompetisi', href: '/admin/competitions', icon: Trophy },
     { name: 'Kelola Berita', href: '/admin/articles', icon: Newspaper },
     { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
   ];
@@ -179,7 +193,7 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {activeNavLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href.split('?')[0];
               return (
                 <Link
                   key={link.name}
@@ -271,7 +285,7 @@ export default function Navbar() {
           <div className="space-y-1">
             {activeNavLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href.split('?')[0];
               return (
                 <Link
                   key={link.name}

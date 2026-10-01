@@ -617,10 +617,10 @@ export default function AdminPlayersPage() {
           </Link>
           <span className="text-slate-600">/</span>
           <Link
-            href="/admin/seasons"
+            href="/admin/competitions"
             className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <Trophy className="w-3.5 h-3.5" /> Master Musim &amp; Kompetisi
+            <Trophy className="w-3.5 h-3.5" /> Kelola Kompetisi
           </Link>
         </div>
 

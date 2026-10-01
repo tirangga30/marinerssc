@@ -13,6 +13,7 @@ import { getMainThumbnail } from '@/lib/articles';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
 import CommunityLoginModal from '@/components/CommunityLoginModal';
 import { useClubMode } from '@/context/ClubModeContext';
+import { getClientPublicSeason, setClientPublicSeason } from '@/lib/publicSeason';
 
 const normalizePos = (pos: string) => {
   const p = pos?.toUpperCase();
@@ -79,6 +80,20 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
   const [selectedSeason, setSelectedSeason] = useState(initialSeason);
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
+  React.useEffect(() => {
+    const saved = getClientPublicSeason();
+    if (saved && seasons.some((s: any) => s.name === saved)) {
+      setSelectedSeason(saved);
+    }
+    const handleSeasonChange = (e: any) => {
+      if (e.detail?.season) {
+        setSelectedSeason(e.detail.season);
+      }
+    };
+    window.addEventListener('public_season_changed', handleSeasonChange);
+    return () => window.removeEventListener('public_season_changed', handleSeasonChange);
+  }, [seasons]);
+
   // Dynamic calculations for selectedSeason
   const seasonMatches = allMatches.filter((m: any) => (m.seasonName || '2026') === selectedSeason);
 
@@ -90,7 +105,8 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
     .filter((m: any) => m.computedStatus === 'finished' || m.computedStatus === 'score_pending')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())[0];
 
-  const currentNextMatch = liveMatch || upcomingMatch || lastFinishedMatch || seasonMatches[0] || mainSquadData.nextMatch;
+  // Strictly use match belonging to the selected season only - never fallback to another season's match
+  const currentNextMatch = liveMatch || upcomingMatch || lastFinishedMatch || seasonMatches[0] || null;
   const currentFeaturedStatus = currentNextMatch ? (currentNextMatch.computedStatus || 'scheduled') : 'scheduled';
 
   const currentFinishedMatches = seasonMatches
@@ -207,6 +223,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                         type="button"
                         onClick={() => {
                           setSelectedSeason(s.name);
+                          setClientPublicSeason(s.name);
                           setShowSeasonDropdown(false);
                         }}
                         className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-between transition-colors ${

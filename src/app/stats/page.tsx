@@ -1,7 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { Trophy, Award, Flame, Shield, ArrowRight, Activity } from 'lucide-react';
+import { Trophy, Award, Flame, Shield, ArrowRight, Activity, Users } from 'lucide-react';
+import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +16,31 @@ const formatPosition = (pos: string) => {
   return pos;
 };
 
-export default async function StatsPage() {
+export default async function StatsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ season?: string }>;
+}) {
+  const params = await searchParams;
+  const cookieStore = await cookies();
+  const cookieSeason = cookieStore.get('public_season')?.value;
+
+  const seasons = await prisma.season.findMany({
+    orderBy: { year: 'desc' },
+    select: { id: true, name: true, year: true, isCurrent: true },
+  });
+
+  const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
+
   const rawPlayers = await prisma.player.findMany({
-    where: { isGuest: false, member: null },
+    where: {
+      isGuest: false,
+      member: null,
+      seasons: {
+        some: { name: selectedSeason },
+      },
+    },
     include: {
       events: true,
       assistedEvents: true,
@@ -88,12 +112,31 @@ export default async function StatsPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Papan Keunggulan Individu</span>
         <h1 className="text-3xl sm:text-4xl font-black uppercase text-slate-100 blue-gradient-text">
-          Statistik Pemain Musim 2026
+          Statistik Pemain Musim {selectedSeason}
         </h1>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Daftar performa terbaik, pencetak gol terbanyak, penyaji assist ulung, serta pilar penampilan teratur.
         </p>
+
+        {/* Season Selector Tabs */}
+        {seasons.length > 0 && (
+          <PublicSeasonSelector
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            baseUrl="/stats"
+            showAllOption={false}
+          />
+        )}
       </div>
+
+      {allPlayers.length === 0 && (
+        <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
+          <Users className="w-10 h-10 text-slate-600 mx-auto" />
+          <p className="text-sm font-bold text-slate-400">
+            Belum ada data statistik pemain di Musim {selectedSeason}.
+          </p>
+        </div>
+      )}
 
       {/* Performance Table (Full Width) */}
       <div className="glass-panel p-6 rounded-2xl border border-sky-400/30 space-y-4">

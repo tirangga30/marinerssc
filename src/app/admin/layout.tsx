@@ -1,49 +1,45 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 /**
  * Admin Layout
- * Wraps all /admin/* pages with a full-screen stadium background image
- * and a dark overlay, so the glass-panel content pops on top.
- * The /admin/login page has its own background logic but inherits this too —
- * the overlay is subtle enough not to clash.
+ * Uses plain dark navy blue background for all admin pages,
+ * preserving the stadium photo wallpaper exclusively for /admin/login.
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative min-h-screen">
-      {/* ── Stadium background photo ── */}
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/newposter.webp')", zIndex: 0 }}
-        aria-hidden="true"
-      />
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
 
-      {/* ── Multi-layer subtle dark overlay for readability while keeping photo visible ── */}
-      <div
-        className="fixed inset-0"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(3,7,18,0.40) 0%, rgba(3,7,18,0.50) 50%, rgba(3,7,18,0.60) 100%)',
-          zIndex: 1,
-        }}
-        aria-hidden="true"
-      />
-      {/* subtle blue-tinted vignette */}
-      <div
-        className="fixed inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse at top, rgba(30,58,138,0.12) 0%, transparent 70%)',
-          zIndex: 2,
-        }}
-        aria-hidden="true"
-      />
-
-      {/* ── Page content ── */}
-      <div className="relative flex flex-col min-h-screen" style={{ zIndex: 10 }}>
-        <main className="flex-1">
-          {children}
-        </main>
+  if (isLoginPage) {
+    return (
+      <div className="relative min-h-screen">
+        {/* Stadium background photo for login */}
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/newposter.webp')", zIndex: 0 }}
+          aria-hidden="true"
+        />
+        <div
+          className="fixed inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(3,7,18,0.40) 0%, rgba(3,7,18,0.50) 50%, rgba(3,7,18,0.60) 100%)',
+            zIndex: 1,
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative flex flex-col min-h-screen" style={{ zIndex: 10 }}>
+          <main className="flex-1">{children}</main>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen bg-[#070e1c] text-slate-100">
+      <main className="relative z-10 flex-1">{children}</main>
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
+import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
@@ -203,19 +205,22 @@ export default async function MatchesPage({
   searchParams: Promise<{ filter?: string; season?: string }>;
 }) {
   const params = await searchParams;
-  const filter = params.filter || 'all';
-  const selectedSeason = params.season || 'all';
+  const cookieStore = await cookies();
+  const cookieSeason = cookieStore.get('public_season')?.value;
 
-  const [seasons, allMatchesRaw] = await Promise.all([
-    prisma.season.findMany({
-      orderBy: { year: 'desc' },
-      select: { id: true, name: true, year: true, isCurrent: true },
-    }),
-    prisma.footballMatch.findMany({
-      where: selectedSeason !== 'all' ? { seasonName: selectedSeason } : {},
-      orderBy: { matchDate: 'asc' },
-    }),
-  ]);
+  const seasons = await prisma.season.findMany({
+    orderBy: { year: 'desc' },
+    select: { id: true, name: true, year: true, isCurrent: true },
+  });
+
+  const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const filter = params.filter || 'all';
+  const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
+
+  const allMatchesRaw = await prisma.footballMatch.findMany({
+    where: selectedSeason !== 'all' ? { seasonName: selectedSeason } : {},
+    orderBy: { matchDate: 'asc' },
+  });
 
   // Hitung Matchday & Computed Dynamic Status
   const matchesWithMatchday = allMatchesRaw.map((m, index) => ({
@@ -255,31 +260,13 @@ export default async function MatchesPage({
 
         {/* Season Filter Selector */}
         {seasons.length > 0 && (
-          <div className="pt-3 flex items-center justify-center gap-2 flex-wrap">
-            <Link
-              href={`/matches?filter=${filter}&season=all`}
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-                selectedSeason === 'all'
-                  ? 'bg-sky-500 text-slate-950 font-black shadow-md'
-                  : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              Semua Musim
-            </Link>
-            {seasons.map((s) => (
-              <Link
-                key={s.id}
-                href={`/matches?filter=${filter}&season=${s.name}`}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  selectedSeason === s.name
-                    ? 'bg-sky-500 text-slate-950 font-black shadow-md'
-                    : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
-                }`}
-              >
-                Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
-              </Link>
-            ))}
-          </div>
+          <PublicSeasonSelector
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            baseUrl="/matches"
+            extraParams={{ filter }}
+            showAllOption={true}
+          />
         )}
       </div>
 

@@ -86,7 +86,7 @@ export default function AdminMatchesPage() {
   const [matches, setMatches] = useState<FootballMatch[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState<string>('all');
+  const [selectedSeason, setSelectedSeason] = useState<string>('2026');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMatch, setEditingMatch] = useState<FootballMatch | null>(null);
@@ -145,10 +145,10 @@ export default function AdminMatchesPage() {
         // Sync with global active season
         const activeGlobalSeason = getClientAdminSeason();
         if (activeGlobalSeason && seasonsData.some((s) => s.name === activeGlobalSeason)) {
-          setSelectedSeasonFilter(activeGlobalSeason);
+          setSelectedSeason(activeGlobalSeason);
         } else if (seasonsData.length > 0) {
           const current = seasonsData.find((s) => s.isCurrent) || seasonsData[0];
-          setSelectedSeasonFilter(current.name);
+          setSelectedSeason(current.name);
         }
       }
       if (Array.isArray(compsData)) setCompetitions(compsData);
@@ -163,7 +163,7 @@ export default function AdminMatchesPage() {
 
     const handleSeasonChange = (e: any) => {
       if (e.detail?.season) {
-        setSelectedSeasonFilter(e.detail.season);
+        setSelectedSeason(e.detail.season);
       }
     };
     window.addEventListener('admin_season_changed', handleSeasonChange);
@@ -191,7 +191,7 @@ export default function AdminMatchesPage() {
   const openAddModal = () => {
     setEditingMatch(null);
     const activeSeason =
-      (selectedSeasonFilter !== 'all' ? seasons.find((s) => s.name === selectedSeasonFilter) : null) ||
+      seasons.find((s) => s.name === selectedSeason) ||
       seasons.find((s) => s.isCurrent) ||
       seasons[0];
     const defaultSeasonName = activeSeason?.name || '2026';
@@ -311,10 +311,10 @@ export default function AdminMatchesPage() {
     }
   };
 
-  // Filter matches by selected season
+  // Filter matches by active season
+  const currentSeasonObj = seasons.find((s) => s.name === selectedSeason) || seasons[0];
   const filteredMatches = matches.filter((m) => {
-    if (selectedSeasonFilter === 'all') return true;
-    return m.seasonName === selectedSeasonFilter || m.seasonId === selectedSeasonFilter;
+    return (m.seasonName || '2026') === selectedSeason || m.seasonId === currentSeasonObj?.id;
   });
 
   // Competitions available for selected form season
@@ -336,36 +336,19 @@ export default function AdminMatchesPage() {
           </Link>
           <span className="text-slate-600">/</span>
           <Link
-            href="/admin/seasons"
+            href="/admin/competitions"
             className="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <Trophy className="w-3.5 h-3.5" /> Master Musim &amp; Kompetisi
+            <Trophy className="w-3.5 h-3.5" /> Kelola Kompetisi
           </Link>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Season Filter Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5">
-            <Filter className="w-3.5 h-3.5 text-sky-400" />
-            <select
-              value={selectedSeasonFilter}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedSeasonFilter(val);
-                if (val !== 'all') {
-                  setClientAdminSeason(val);
-                }
-              }}
-              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
-            >
-              <option value="all" className="bg-slate-900 text-white">Semua Musim</option>
-              {seasons.map((s) => (
-                <option key={s.id} value={s.name} className="bg-slate-900 text-white">
-                  Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Active Season Badge (controlled from Dashboard) */}
+          <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sky-300 text-xs font-bold uppercase font-mono flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Musim {selectedSeason}
+          </span>
 
           <button
             onClick={openAddModal}
@@ -381,11 +364,9 @@ export default function AdminMatchesPage() {
           <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
             Manajemen Pertandingan ({filteredMatches.length} Laga)
           </h1>
-          {selectedSeasonFilter !== 'all' && (
-            <span className="px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-[10px] font-bold uppercase font-mono">
-              Musim {selectedSeasonFilter}
-            </span>
-          )}
+          <span className="px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-[10px] font-bold uppercase font-mono">
+            Musim {selectedSeason}
+          </span>
         </div>
 
         {/* ── MOBILE MATCH CARDS ── */}
@@ -691,7 +672,7 @@ export default function AdminMatchesPage() {
                       Kompetisi
                     </label>
                     <Link
-                      href="/admin/seasons"
+                      href="/admin/competitions"
                       target="_blank"
                       className="text-[10px] text-sky-400 hover:underline"
                     >
