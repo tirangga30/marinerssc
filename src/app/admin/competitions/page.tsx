@@ -14,7 +14,6 @@ import {
   Loader2,
   AlertCircle,
   X,
-  Filter,
 } from 'lucide-react';
 import { getClientAdminSeason } from '@/lib/adminSeason';
 
@@ -47,7 +46,7 @@ export default function AdminCompetitionsPage() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSeason, setSelectedSeason] = useState<string>('all');
+  const [selectedSeason, setSelectedSeason] = useState<string>('2026');
 
   const [showModal, setShowModal] = useState(false);
   const [editingComp, setEditingComp] = useState<Competition | null>(null);
@@ -153,6 +152,7 @@ export default function AdminCompetitionsPage() {
       const method = editingComp ? 'PUT' : 'POST';
 
       const body = {
+        id: editingComp ? editingComp.id : undefined,
         name: compForm.name.trim(),
         seasonName: compForm.seasonName,
         seasonId: compForm.seasonId || null,
@@ -203,7 +203,6 @@ export default function AdminCompetitionsPage() {
   };
 
   const filteredCompetitions = competitions.filter((c) => {
-    if (selectedSeason === 'all') return true;
     return c.season === selectedSeason || c.seasonId === selectedSeason;
   });
 
@@ -248,22 +247,11 @@ export default function AdminCompetitionsPage() {
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          {/* Season Filter Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
-            <Filter className="w-3.5 h-3.5 text-sky-400" />
-            <select
-              value={selectedSeason}
-              onChange={(e) => setSelectedSeason(e.target.value)}
-              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
-            >
-              <option value="all" className="bg-slate-900 text-white">Semua Musim</option>
-              {seasons.map((s) => (
-                <option key={s.id} value={s.name} className="bg-slate-900 text-white">
-                  Musim {s.name} {s.isCurrent ? '(Aktif)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Active Season Badge (controlled from Dashboard) */}
+          <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sky-300 text-xs font-bold uppercase font-mono flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Musim {selectedSeason}
+          </span>
 
           <button
             onClick={openAddModal}
@@ -279,7 +267,7 @@ export default function AdminCompetitionsPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-black uppercase text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-sky-400" />
-            Daftar Kompetisi {selectedSeason !== 'all' ? `Musim ${selectedSeason}` : ''} ({filteredCompetitions.length})
+            Daftar Kompetisi Musim {selectedSeason} ({filteredCompetitions.length})
           </h2>
         </div>
 
@@ -292,7 +280,7 @@ export default function AdminCompetitionsPage() {
           <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
             <Trophy className="w-10 h-10 text-slate-600 mx-auto" />
             <p className="text-sm font-bold text-slate-400">
-              Belum ada kompetisi terdaftar {selectedSeason !== 'all' ? `untuk Musim ${selectedSeason}` : ''}.
+              Belum ada kompetisi terdaftar untuk Musim {selectedSeason}.
             </p>
             <button
               onClick={openAddModal}

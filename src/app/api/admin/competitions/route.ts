@@ -107,12 +107,16 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const queryId = searchParams.get('id');
     const body = await req.json();
-    const { id, name, seasonId, seasonName, type, isPrimary } = body;
+    const id = body.id || queryId;
 
     if (!id) {
       return NextResponse.json({ error: 'ID kompetisi wajib diisi' }, { status: 400 });
     }
+
+    const { name, seasonId, seasonName, type, isPrimary } = body;
 
     const existing = await prisma.competition.findUnique({ where: { id } });
     if (!existing) {
@@ -129,10 +133,24 @@ export async function PUT(req: Request) {
 
     const cleanName = name ? name.trim().toUpperCase() : existing.name;
 
+    // Generate new unique slug if name changed
+    let slug = existing.slug;
+    if (name && cleanName !== existing.name) {
+      const baseSlug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const seasonSuffix = targetSeasonName ? `-${targetSeasonName}` : '';
+      slug = `${baseSlug}${seasonSuffix}`;
+      let count = 1;
+      while (await prisma.competition.findFirst({ where: { slug, NOT: { id } } })) {
+        count++;
+        slug = `${baseSlug}${seasonSuffix}-${count}`;
+      }
+    }
+
     const updated = await prisma.competition.update({
       where: { id },
       data: {
         name: cleanName,
+        slug,
         season: targetSeasonName,
         seasonId: targetSeasonId,
         type: type !== undefined ? type : existing.type,
@@ -143,12 +161,22 @@ export async function PUT(req: Request) {
     // If name changed, update corresponding matches' competition string
     if (name && cleanName !== existing.name) {
       await prisma.footballMatch.updateMany({
-        where: { competitionId: id },
-        data: { competition: cleanName },
+        where: {
+          OR: [
+            { competitionId: id },
+            { competition: existing.name, seasonName: existing.season }
+          ],
+        },
+        data: {
+          competition: cleanName,
+          competitionId: id,
+        },
       });
     }
 
     revalidatePath('/matches');
+    revalidatePath('/admin/competitions');
+    revalidatePath('/admin/matches');
 
     return NextResponse.json(updated);
   } catch (error: any) {
