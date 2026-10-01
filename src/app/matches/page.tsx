@@ -5,7 +5,6 @@ import { prisma } from '@/lib/db';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
-import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
@@ -257,23 +256,12 @@ export default async function MatchesPage({
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
           Pantau seluruh hasil laga dan jadwal mendatang klub sepak bola Mariners SC.
         </p>
-
-        {/* Season Filter Selector */}
-        {seasons.length > 0 && (
-          <PublicSeasonSelector
-            seasons={seasons}
-            selectedSeason={selectedSeason}
-            baseUrl="/matches"
-            extraParams={{ filter }}
-            showAllOption={true}
-          />
-        )}
       </div>
 
       {/* Filter Tabs */}
       <div className="flex justify-center gap-1.5 sm:gap-2">
         <Link
-          href={`/matches?filter=all&season=${selectedSeason}`}
+          href="/matches?filter=all"
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'all' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}
@@ -281,7 +269,7 @@ export default async function MatchesPage({
           Semua ({allMatchesRaw.length})
         </Link>
         <Link
-          href={`/matches?filter=upcoming&season=${selectedSeason}`}
+          href="/matches?filter=upcoming"
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'upcoming' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}
@@ -289,7 +277,7 @@ export default async function MatchesPage({
           Mendatang ({upcomingMatches.length})
         </Link>
         <Link
-          href={`/matches?filter=finished&season=${selectedSeason}`}
+          href="/matches?filter=finished"
           className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
             filter === 'finished' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
           }`}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import HomeClientView from '@/components/HomeClientView';
 
@@ -59,6 +60,9 @@ function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
 }
 
 export default async function HomePage() {
+  const cookieStore = await cookies();
+  const cookieSeason = cookieStore.get('public_season')?.value;
+
   let matches: any[] = [];
   let articles: any[] = [];
   let featuredPlayers: any[] = [];
@@ -240,6 +244,7 @@ export default async function HomePage() {
     seasons,
     allMatches: matchesWithStatus,
     allPlayers: featuredPlayers,
+    defaultSelectedSeason: cookieSeason,
   };
 
   const communityData = {

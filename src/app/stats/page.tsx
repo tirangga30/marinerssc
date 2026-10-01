@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { Trophy, Award, Flame, Shield, ArrowRight, Activity, Users } from 'lucide-react';
-import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,15 +117,6 @@ export default async function StatsPage({
           Daftar performa terbaik, pencetak gol terbanyak, penyaji assist ulung, serta pilar penampilan teratur.
         </p>
 
-        {/* Season Selector Tabs */}
-        {seasons.length > 0 && (
-          <PublicSeasonSelector
-            seasons={seasons}
-            selectedSeason={selectedSeason}
-            baseUrl="/stats"
-            showAllOption={false}
-          />
-        )}
       </div>
 
       {allPlayers.length === 0 && (

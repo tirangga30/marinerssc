@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
-import PublicSeasonSelector from '@/components/PublicSeasonSelector';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,15 +95,6 @@ export default async function PlayersPage({
           Mengenal pilar pertahanan, pengatur ritme serangan, dan mesin gol kebanggaan Mariners SC.
         </p>
 
-        {/* Season Selector Tabs */}
-        {seasons.length > 0 && (
-          <PublicSeasonSelector
-            seasons={seasons}
-            selectedSeason={selectedSeason}
-            baseUrl="/players"
-            showAllOption={false}
-          />
-        )}
       </div>
 
       {players.length === 0 && (

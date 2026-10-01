@@ -53,6 +53,7 @@ interface HomeClientViewProps {
     seasons?: any[];
     allMatches?: any[];
     allPlayers?: any[];
+    defaultSelectedSeason?: string;
   };
   communityData: {
     nextFunMatch: any;
@@ -76,7 +77,13 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
   const allMatches = mainSquadData.allMatches || [];
   const allPlayers = mainSquadData.allPlayers || mainSquadData.featuredPlayers || [];
 
-  const initialSeason = seasons.find((s: any) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const initialSeason =
+    (mainSquadData.defaultSelectedSeason && seasons.some((s: any) => s.name === mainSquadData.defaultSelectedSeason)
+      ? mainSquadData.defaultSelectedSeason
+      : null) ||
+    seasons.find((s: any) => s.isCurrent)?.name ||
+    seasons[0]?.name ||
+    '2026';
   const [selectedSeason, setSelectedSeason] = useState(initialSeason);
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
@@ -136,9 +143,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
 
   // Filter squad players for selectedSeason
   const seasonPlayers = allPlayers.filter((p: any) =>
-    Array.isArray(p.seasons) && p.seasons.length > 0
-      ? p.seasons.some((s: any) => s.name === selectedSeason || s.id === selectedSeason)
-      : true
+    Array.isArray(p.seasons) && p.seasons.some((s: any) => s.name === selectedSeason || s.id === selectedSeason)
   );
 
   const currentSeasonObj = seasons.find((s: any) => s.name === selectedSeason || s.id === selectedSeason);
@@ -225,6 +230,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                           setSelectedSeason(s.name);
                           setClientPublicSeason(s.name);
                           setShowSeasonDropdown(false);
+                          window.location.reload();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-between transition-colors ${
                           selectedSeason === s.name
@@ -318,9 +324,11 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                       {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
-                  <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                    {currentNextMatch?.stage || (currentNextMatch?.competition === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
-                  </span>
+                  {currentNextMatch && (
+                    <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+                      {currentNextMatch?.stage || (currentNextMatch?.competition === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
+                    </span>
+                  )}
                 </span>
               </div>
 
