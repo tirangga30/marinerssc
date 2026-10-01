@@ -108,7 +108,7 @@ export default async function HomePage() {
       }),
       prisma.season.findMany({
         orderBy: [{ year: 'desc' }, { name: 'desc' }],
-        select: { id: true, name: true, year: true, isCurrent: true },
+        select: { id: true, name: true, year: true, isCurrent: true, featuredPlayerIds: true },
       }),
     ]);
 

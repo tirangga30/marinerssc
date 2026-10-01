@@ -57,6 +57,7 @@ interface Season {
   name: string;
   year: number;
   isCurrent: boolean;
+  featuredPlayerIds?: string[];
 }
 
 export default function AdminPlayersPage() {
@@ -192,6 +193,13 @@ export default function AdminPlayersPage() {
 
   const currentSeasonObj = seasons.find((s) => s.name === selectedSeason) || seasons[0];
 
+  const isPlayerFeaturedInSeason = (player: Player) => {
+    if (currentSeasonObj && Array.isArray(currentSeasonObj.featuredPlayerIds)) {
+      return currentSeasonObj.featuredPlayerIds.includes(player.id);
+    }
+    return Boolean(player.isFeatured);
+  };
+
   const seasonSquadPlayers = players.filter((p) =>
     p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
   );
@@ -266,6 +274,17 @@ export default function AdminPlayersPage() {
       });
 
       if (res.ok) {
+        if (currentSeasonObj?.featuredPlayerIds?.includes(player.id)) {
+          const newFeatured = currentSeasonObj.featuredPlayerIds.filter((id) => id !== player.id);
+          fetch(`/api/admin/seasons/${currentSeasonObj.id}/featured`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ featuredPlayerIds: newFeatured }),
+          }).catch(console.error);
+          setSeasons((prev) =>
+            prev.map((s) => (s.id === currentSeasonObj.id ? { ...s, featuredPlayerIds: newFeatured } : s))
+          );
+        }
         setPlayers((prev) =>
           prev.map((p) => {
             if (p.id === player.id) {
@@ -336,32 +355,61 @@ export default function AdminPlayersPage() {
   // Toggle Star (Pemain Bintang / Favorit Beranda)
   const toggleStar = async (player: Player) => {
     try {
-      const newFeaturedState = !player.isFeatured;
+      const isCurrentlyFeatured = isPlayerFeaturedInSeason(player);
+      const newFeaturedState = !isCurrentlyFeatured;
 
-      // Limit maximum 6 featured players on homepage
+      // Limit maximum 6 featured players on homepage for the selected season
       if (newFeaturedState) {
-        const currentFeaturedCount = players.filter((p) => p.isFeatured).length;
-        if (currentFeaturedCount >= 6) {
-          alert('Maksimal 6 pemain yang dapat ditambahkan ke Beranda Utama.');
+        const currentSeasonFeaturedCount = seasonSquadPlayers.filter(isPlayerFeaturedInSeason).length;
+        if (currentSeasonFeaturedCount >= 6) {
+          alert(`Maksimal 6 pemain yang dapat ditambahkan ke Beranda Utama untuk Musim ${selectedSeason}.`);
           return;
         }
       }
 
-      const res = await fetch(`/api/players/${player.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          isFeatured: newFeaturedState,
-        }),
-      });
+      if (currentSeasonObj?.id) {
+        const res = await fetch(`/api/admin/seasons/${currentSeasonObj.id}/featured`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerId: player.id,
+            isFeatured: newFeaturedState,
+          }),
+        });
 
-      if (res.ok) {
-        setPlayers((prev) =>
-          prev.map((p) => (p.id === player.id ? { ...p, isFeatured: newFeaturedState } : p))
-        );
+        if (res.ok) {
+          const data = await res.json();
+          setSeasons((prev) =>
+            prev.map((s) =>
+              s.id === currentSeasonObj.id
+                ? { ...s, featuredPlayerIds: data.featuredPlayerIds }
+                : s
+            )
+          );
+          setPlayers((prev) =>
+            prev.map((p) => (p.id === player.id ? { ...p, isFeatured: newFeaturedState } : p))
+          );
+        } else {
+          const errData = await res.json();
+          alert(errData.error || 'Gagal mengubah status pemain bintang');
+        }
       } else {
-        const errData = await res.json();
-        alert(errData.error || 'Gagal mengubah status pemain bintang');
+        const res = await fetch(`/api/players/${player.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isFeatured: newFeaturedState,
+          }),
+        });
+
+        if (res.ok) {
+          setPlayers((prev) =>
+            prev.map((p) => (p.id === player.id ? { ...p, isFeatured: newFeaturedState } : p))
+          );
+        } else {
+          const errData = await res.json();
+          alert(errData.error || 'Gagal mengubah status pemain bintang');
+        }
       }
     } catch {
       alert('Terjadi kesalahan saat mengubah status pemain bintang');
@@ -552,7 +600,7 @@ export default function AdminPlayersPage() {
     }
   };
 
-  const featuredCount = players.filter((p) => p.isFeatured).length;
+  const featuredCount = seasonSquadPlayers.filter(isPlayerFeaturedInSeason).length;
   const isLimitReached = featuredCount >= 6;
 
   return (
@@ -718,18 +766,20 @@ export default function AdminPlayersPage() {
                       </button>
                     )}
 
-                    <button
-                      onClick={() => toggleStar(player)}
-                      disabled={isLimitReached && !player.isFeatured}
-                      title={player.isFeatured ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
-                      className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                        player.isFeatured
-                          ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
-                          : 'bg-slate-800 border-slate-700 text-slate-500'
-                      }`}
-                    >
-                      <Star className={`w-3.5 h-3.5 ${player.isFeatured ? 'fill-amber-400' : ''}`} />
-                    </button>
+                    {activeTab === 'season_squad' && (
+                      <button
+                        onClick={() => toggleStar(player)}
+                        disabled={isLimitReached && !isPlayerFeaturedInSeason(player)}
+                        title={isPlayerFeaturedInSeason(player) ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
+                        className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                          isPlayerFeaturedInSeason(player)
+                            ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
+                            : 'bg-slate-800 border-slate-700 text-slate-500'
+                        }`}
+                      >
+                        <Star className={`w-3.5 h-3.5 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-400' : ''}`} />
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(player)}
                       className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
@@ -821,26 +871,30 @@ export default function AdminPlayersPage() {
 
                       {/* TOMBOL BINTANG BERANDA */}
                       <td className="p-3 text-center">
-                        <button
-                          onClick={() => toggleStar(player)}
-                          disabled={isLimitReached && !player.isFeatured}
-                          title={
-                            player.isFeatured
-                              ? 'Hapus dari Pemain Beranda'
-                              : isLimitReached
-                              ? 'Maksimal 6 Pemain Beranda Tercapai'
-                              : 'Tampilkan di Pemain Beranda'
-                          }
-                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                            player.isFeatured
-                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
-                              : isLimitReached
-                              ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
-                              : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
-                          }`}
-                        >
-                          <Star className={`w-4 h-4 ${player.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
-                        </button>
+                        {activeTab === 'season_squad' ? (
+                          <button
+                            onClick={() => toggleStar(player)}
+                            disabled={isLimitReached && !isPlayerFeaturedInSeason(player)}
+                            title={
+                              isPlayerFeaturedInSeason(player)
+                                ? 'Hapus dari Pemain Beranda'
+                                : isLimitReached
+                                ? `Maksimal 6 Pemain Beranda Musim ${selectedSeason} Tercapai`
+                                : 'Tampilkan di Pemain Beranda'
+                            }
+                            className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                              isPlayerFeaturedInSeason(player)
+                                ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                                : isLimitReached
+                                ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
+                                : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                            }`}
+                          >
+                            <Star className={`w-4 h-4 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-400 text-amber-400' : ''}`} />
+                          </button>
+                        ) : (
+                          <span className="text-slate-600 text-xs">-</span>
+                        )}
                       </td>
 
                       <td className="p-3 text-right space-x-1.5 whitespace-nowrap">

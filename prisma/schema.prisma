@@ -53,10 +53,11 @@ model Player {
 
 model Season {
   id           String         @id @default(uuid())
-  name         String         @unique // e.g. "2026", "2027"
-  year         Int            @default(2026)
-  isCurrent    Boolean        @default(false)
-  createdAt    DateTime       @default(now())
+  name              String         @unique // e.g. "2026", "2027"
+  year              Int            @default(2026)
+  isCurrent         Boolean        @default(false)
+  featuredPlayerIds String[]       @default([])
+  createdAt         DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
   competitions Competition[]

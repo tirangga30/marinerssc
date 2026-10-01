@@ -124,7 +124,19 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
       ? p.seasons.some((s: any) => s.name === selectedSeason || s.id === selectedSeason)
       : true
   );
-  const currentFeaturedPlayers = seasonPlayers.length > 0 ? seasonPlayers.slice(0, 6) : allPlayers.slice(0, 6);
+
+  const currentSeasonObj = seasons.find((s: any) => s.name === selectedSeason || s.id === selectedSeason);
+  const featuredIds: string[] = currentSeasonObj?.featuredPlayerIds || [];
+
+  let currentFeaturedPlayers = seasonPlayers.filter((p: any) => featuredIds.includes(p.id));
+  if (currentFeaturedPlayers.length === 0) {
+    currentFeaturedPlayers = seasonPlayers.filter((p: any) => p.isFeatured);
+  }
+  if (currentFeaturedPlayers.length === 0) {
+    currentFeaturedPlayers = seasonPlayers.slice(0, 6);
+  } else {
+    currentFeaturedPlayers = currentFeaturedPlayers.slice(0, 6);
+  }
   const articles = mainSquadData.articles;
 
   const {
