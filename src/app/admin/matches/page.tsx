@@ -15,6 +15,8 @@ import {
   Loader2,
   Trophy,
   Filter,
+  Shield,
+  Plane,
 } from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
@@ -736,16 +738,38 @@ export default function AdminMatchesPage() {
                 />
               </div>
 
-              <div className="flex items-center pt-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-sky-400">
-                  <input
-                    type="checkbox"
-                    checked={formData.isHome}
-                    onChange={(e) => setFormData({ ...formData, isHome: e.target.checked })}
-                    className="w-4 h-4 rounded text-blue-600"
-                  />
-                  <span>Mariners SC Tuan Rumah (Home Match)</span>
+              {/* HOME / AWAY TOGGLE SWITCHER (SEPERTI NAVIGASI SUMMARY & LINEUP) */}
+              <div>
+                <label className="font-bold text-slate-200 uppercase block mb-1.5 text-xs">
+                  Status Pertandingan
                 </label>
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isHome: true })}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                      formData.isHome
+                        ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/30 scale-[1.02]'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <Shield className="w-4 h-4 text-sky-300" />
+                    <span>Home (Tuan Rumah)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isHome: false })}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                      !formData.isHome
+                        ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/30 scale-[1.02]'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <Plane className="w-4 h-4 text-sky-300" />
+                    <span>Away (Tandang)</span>
+                  </button>
+                </div>
               </div>
 
 
