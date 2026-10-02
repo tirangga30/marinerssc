@@ -21,6 +21,9 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   title: 'Mariners SC - Website Resmi Klub Sepak Bola',
   description: 'Website resmi klub sepak bola Mariners SC. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.',
+  verification: {
+    google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',
+  },
 };
 
 export default function RootLayout({
