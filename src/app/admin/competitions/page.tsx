@@ -14,6 +14,7 @@ import {
   Loader2,
   AlertCircle,
   X,
+  Filter,
 } from 'lucide-react';
 import { getClientAdminSeason } from '@/lib/adminSeason';
 
@@ -46,7 +47,7 @@ export default function AdminCompetitionsPage() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSeason, setSelectedSeason] = useState<string>('2026');
+  const [selectedSeason, setSelectedSeason] = useState<string>('all');
 
   const [showModal, setShowModal] = useState(false);
   const [editingComp, setEditingComp] = useState<Competition | null>(null);
@@ -203,6 +204,7 @@ export default function AdminCompetitionsPage() {
   };
 
   const filteredCompetitions = competitions.filter((c) => {
+    if (selectedSeason === 'all') return true;
     return c.season === selectedSeason || c.seasonId === selectedSeason;
   });
 
@@ -267,7 +269,7 @@ export default function AdminCompetitionsPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-black uppercase text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-sky-400" />
-            Daftar Kompetisi Musim {selectedSeason} ({filteredCompetitions.length})
+            Daftar Kompetisi {selectedSeason !== 'all' ? `Musim ${selectedSeason}` : ''} ({filteredCompetitions.length})
           </h2>
         </div>
 
@@ -280,7 +282,7 @@ export default function AdminCompetitionsPage() {
           <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
             <Trophy className="w-10 h-10 text-slate-600 mx-auto" />
             <p className="text-sm font-bold text-slate-400">
-              Belum ada kompetisi terdaftar untuk Musim {selectedSeason}.
+              Belum ada kompetisi terdaftar {selectedSeason !== 'all' ? `untuk Musim ${selectedSeason}` : ''}.
             </p>
             <button
               onClick={openAddModal}

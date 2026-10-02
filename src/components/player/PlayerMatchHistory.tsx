@@ -61,17 +61,20 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
           <>
             {/* ── Table Header ── */}
             <div
-              className="grid px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
+              className="grid px-3 sm:px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
               style={{
-                gridTemplateColumns: '64px 1fr auto',
+                gridTemplateColumns: '52px 1fr auto',
                 background: 'rgba(255,255,255,0.03)',
                 borderBottom: '1px solid rgba(255,255,255,0.06)',
                 color: '#64748b',
               }}
             >
               <span>Tanggal</span>
-              <span>Pertandingan</span>
-              <span className="text-right pr-1">Skor &amp; Hasil</span>
+              <div className="flex items-center justify-between pr-1 sm:pr-2">
+                <span>Pertandingan</span>
+                <span className="text-right">Status / Menit</span>
+              </div>
+              <span className="text-right pr-1">Skor</span>
             </div>
 
             {/* ── Rows ── */}
@@ -257,19 +260,16 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                   .replace('/', '.');
 
                 const matchComp = (match.competition || 'FRIENDLY').toUpperCase();
-                const isFriendly = matchComp === 'FRIENDLY';
                 const prevMatch = idx > 0 ? displayedMatches[idx - 1] : null;
                 const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
-                const prevStage = prevMatch ? (prevMatch.stage || '').trim().toUpperCase() : '';
-                const currentStage = (match.stage || '').trim().toUpperCase();
                 const prevSeason = prevMatch ? (prevMatch.seasonName || '') : '';
                 const currentSeason = match.seasonName || '';
 
+                // Group strictly by competition and season, NOT per matchday
                 const isNewCompGroup =
                   idx === 0 ||
                   matchComp !== prevComp ||
-                  currentSeason !== prevSeason ||
-                  (!isFriendly && currentStage !== prevStage);
+                  currentSeason !== prevSeason;
 
                 // Extract only year from seasonName (e.g. "2026")
                 const seasonYear = match.seasonName
@@ -297,19 +297,14 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                             </span>
                           )}
                         </div>
-                        {!isFriendly && match.stage ? (
-                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-400">
-                            {match.stage}
-                          </span>
-                        ) : null}
                       </div>
                     )}
 
                     <Link
                       href={`/matches/${match.id}`}
-                      className="grid px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
+                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
                       style={{
-                        gridTemplateColumns: '64px 1fr auto',
+                        gridTemplateColumns: '52px 1fr auto',
                         borderTop: isNewCompGroup ? 'none' : rowBorder,
                       }}
                     >
@@ -318,32 +313,33 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                         {dateStr}
                       </span>
 
-                      {/* Match Teams & Event Badges */}
-                      <div className="min-w-0 pr-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                            <TopTeam />
-                            <BottomTeam />
-                          </div>
-                          {/* Tidak masuk skuad / On the bench text OR Menit Bermain & Event icons */}
+                      {/* Match Teams & Status / Minutes */}
+                      <div className="flex items-center justify-between gap-3 min-w-0 pr-1 sm:pr-2">
+                        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                          <TopTeam />
+                          <BottomTeam />
+                        </div>
+
+                        {/* Status / Menit Bermain & Event Icons (Di sebelah kiri skor) */}
+                        <div className="flex items-center justify-end gap-1.5 shrink-0 text-right">
                           {isNotInSquad ? (
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">
+                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400">
                               {nonSquadStatus}
                             </span>
                           ) : isOnBenchOnly ? (
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">
+                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400">
                               On the bench
                             </span>
                           ) : (
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <>
                               {hasEvents && (
-                                <div className="flex items-center gap-1 shrink-0">
+                                <div className="flex items-center gap-1">
                                   {chronEvts.map((e: any) => (
                                     <span key={e.id} className="inline-flex items-center justify-center">
-                                      {e.type === 'goal' && <BallIcon size={11} />}
+                                      {e.type === 'goal' && <BallIcon size={12} />}
                                       {e.type === 'own_goal' && (
                                         <i
-                                          className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0"
+                                          className="fa-regular fa-futbol text-red-500 text-[11px] shrink-0"
                                           title="Gol Bunuh Diri"
                                         />
                                       )}
@@ -352,7 +348,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                           className="relative inline-flex items-center shrink-0 mr-1"
                                           title="Gol Penalti"
                                         >
-                                          <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                          <i className="fa-regular fa-futbol text-amber-400 text-[11px]" />
                                           <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
                                             P
                                           </span>
@@ -360,7 +356,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                       )}
                                       {e.type === 'assist' && (
                                         <span
-                                          className="text-amber-400 font-black text-[10px] leading-none shrink-0"
+                                          className="text-amber-400 font-black text-[11px] leading-none shrink-0"
                                           title="Assist"
                                         >
                                           A
@@ -368,7 +364,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                       )}
                                       {e.type === 'yellow_card' && (
                                         <span
-                                          className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40"
+                                          className="w-2.5 h-3.5 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40"
                                           title="Kartu Kuning"
                                         />
                                       )}
@@ -378,15 +374,15 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                           title="Kartu Kuning 2x (Kartu Merah)"
                                         >
                                           <span
-                                            className="w-2 h-3 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs"
+                                            className="w-2.5 h-3.5 bg-amber-500 rounded-[1px] border border-amber-600/50 shadow-xs"
                                             style={{ transform: 'translate(-1.5px, -0.5px)' }}
                                           />
-                                          <span className="w-2 h-3 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
+                                          <span className="w-2.5 h-3.5 bg-red-600 rounded-[1px] border border-red-400/40 shadow-xs absolute top-0 left-0" />
                                         </span>
                                       )}
                                       {e.type === 'red_card' && (
                                         <span
-                                          className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40"
+                                          className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40"
                                           title="Kartu Merah"
                                         />
                                       )}
@@ -394,40 +390,40 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                   ))}
                                 </div>
                               )}
-                              <span className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 shrink-0">
+                              <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-300">
                                 {minutesPlayed}&apos;
                               </span>
-                            </div>
+                            </>
                           )}
-                      </div>
-                    </div>
-
-                    {/* Vertically Stacked Scores directly to the left of Result Badge */}
-                    <div className="flex items-center justify-end gap-2.5 shrink-0">
-                      <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                        <span style={{ color: match.isHome ? '#38bdf8' : '#f1f5f9' }}>
-                          {match.homeScore ?? '—'}
-                        </span>
-                        <span style={{ color: match.isHome ? '#f1f5f9' : '#38bdf8' }}>
-                          {match.awayScore ?? '—'}
-                        </span>
+                        </div>
                       </div>
 
-                      {result ? (
-                        <span
-                          className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
-                          style={{ background: resultBg }}
-                        >
-                          {result}
-                        </span>
-                      ) : (
-                        <span style={{ color: '#334155' }}>—</span>
-                      )}
-                    </div>
-                  </Link>
-                </React.Fragment>
-              );
-            })}
+                      {/* Vertically Stacked Scores directly to the left of Result Badge */}
+                      <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0 pl-1">
+                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                          <span style={{ color: match.isHome ? '#38bdf8' : '#f1f5f9' }}>
+                            {match.homeScore ?? '—'}
+                          </span>
+                          <span style={{ color: match.isHome ? '#f1f5f9' : '#38bdf8' }}>
+                            {match.awayScore ?? '—'}
+                          </span>
+                        </div>
+
+                        {result ? (
+                          <span
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                            style={{ background: resultBg }}
+                          >
+                            {result}
+                          </span>
+                        ) : (
+                          <span className="w-5 text-center text-slate-600 font-mono text-xs">—</span>
+                        )}
+                      </div>
+                    </Link>
+                  </React.Fragment>
+                );
+              })}
             </div>
 
             {/* ── Navigation Bar ── */}
