@@ -116,10 +116,17 @@ export default async function HomePage() {
       }),
     ]);
 
-    matches = rawMatches.map((m: any, idx: number) => ({
-      ...m,
-      matchday: idx + 1,
-    }));
+    let friendlyCounter = 0;
+    matches = rawMatches.map((m: any) => {
+      const isFriendly = (m.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
+      if (isFriendly) friendlyCounter++;
+      const stageMatch = m.stage?.match(/matchday\s*(\d+)/i);
+      const stageNum = stageMatch ? parseInt(stageMatch[1], 10) : null;
+      return {
+        ...m,
+        matchday: stageNum || (isFriendly ? friendlyCounter : 1),
+      };
+    });
 
     articles = fetchedArticles;
     featuredPlayers = starredPlayers;

@@ -326,7 +326,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                   )}
                   {currentNextMatch && (
                     <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                      {currentNextMatch?.stage || (currentNextMatch?.competition === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
+                      {currentNextMatch?.stage || ((currentNextMatch?.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
                     </span>
                   )}
                 </span>
@@ -457,7 +457,7 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                                 {formatWibDate(m.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                               <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
-                                {m.stage || (m.competition === 'FRIENDLY' ? `Matchday ${m.matchday}` : m.competition)}
+                                {m.stage || ((m.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${m.matchday || 1}` : m.competition)}
                               </span>
                             </span>
                           </div>

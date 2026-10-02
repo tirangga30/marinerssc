@@ -57,13 +57,8 @@ export default async function MatchDetailPage({
     notFound();
   }
 
-  const allMatches = await prisma.footballMatch.findMany({
-    orderBy: { matchDate: 'asc' },
-    select: { id: true },
-  });
-
-  const matchdayIndex = allMatches.findIndex((m) => m.id === id) + 1;
-  const matchdayLabel = matchdayIndex > 0 ? `Matchday ${matchdayIndex}` : match.competition;
+  const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
+  const matchLabel = match.stage || (isFriendly ? 'Friendly Match' : match.competition || 'Pertandingan');
   const status = getDynamicMatchStatus(match);
 
   return (
@@ -77,8 +72,8 @@ export default async function MatchDetailPage({
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
             </span>
           ) : (
-            <span className="text-sky-400">
-              {matchdayLabel}
+            <span className="text-sky-400 font-bold">
+              {matchLabel}
             </span>
           )}
           <span className="text-slate-400">

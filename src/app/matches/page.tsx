@@ -46,8 +46,8 @@ function MatchCard({ match }: { match: any }) {
     : null;
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
   const resultBg   = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
-
-  const displayStage = match.stage || (match.competition === 'FRIENDLY' ? `Matchday ${match.matchday}` : '');
+  const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
+  const displayStage = match.stage || (isFriendly ? 'Friendly Match' : match.competition);
 
   return (
     <Link
@@ -166,32 +166,41 @@ function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
     return <p className="text-center text-slate-500 text-xs py-8">Tidak ada pertandingan.</p>;
   }
 
-  return (
-    <div className="space-y-3">
-      {matches.map((m, idx) => {
-        const prevMatch = idx > 0 ? matches[idx - 1] : null;
-        const currentComp = (m.competition || 'FRIENDLY').toUpperCase();
-        const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
-        const isNewComp = idx === 0 || currentComp !== prevComp;
+  // Kelompokkan laga berdasarkan kompetisi agar tidak terpecah selang-seling
+  const compGroups: { [key: string]: any[] } = {};
+  matches.forEach((m) => {
+    const compKey = (m.competition || 'FRIENDLY').toUpperCase();
+    if (!compGroups[compKey]) compGroups[compKey] = [];
+    compGroups[compKey].push(m);
+  });
 
+  return (
+    <div className="space-y-8">
+      {Object.entries(compGroups).map(([compKey, compMatches]) => {
+        const firstMatch = compMatches[0];
         return (
-          <React.Fragment key={m.id}>
-            {isNewComp && (
-              <div className="flex items-center gap-2 pt-4 pb-2 border-b border-sky-400/20 mt-4 first:mt-0">
-                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{m.competition || 'FRIENDLY'}</span>
-                  {m.seasonName && (
-                    <span className="text-slate-400 font-mono text-[11px] font-bold">
-                      {m.seasonName.replace(/[^0-9]/g, '') || m.seasonName}
-                    </span>
-                  )}
-                </h3>
-              </div>
-            )}
-            <MatchCard match={m} />
-          </React.Fragment>
+          <div key={compKey} className="space-y-3">
+            <div className="flex items-center gap-2 pt-2 pb-2 border-b border-sky-400/20">
+              <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <span>{firstMatch.competition || 'FRIENDLY'}</span>
+                {firstMatch.seasonName && (
+                  <span className="text-slate-400 font-mono text-[11px] font-bold">
+                    {firstMatch.seasonName.replace(/[^0-9]/g, '') || firstMatch.seasonName}
+                  </span>
+                )}
+                <span className="text-[10px] font-mono text-slate-500 font-normal">
+                  ({compMatches.length} Laga)
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {compMatches.map((m) => (
+                <MatchCard key={m.id} match={m} />
+              ))}
+            </div>
+          </div>
         );
       })}
     </div>
@@ -221,20 +230,19 @@ export default async function MatchesPage({
     orderBy: { matchDate: 'asc' },
   });
 
-  // Hitung Matchday & Computed Dynamic Status
-  const matchesWithMatchday = allMatchesRaw.map((m, index) => ({
+  // Computed Dynamic Status
+  const matchesWithStatus = allMatchesRaw.map((m) => ({
     ...m,
-    matchday: index + 1,
     computedStatus: getDynamicMatchStatus(m),
   }));
 
   // Upcoming / Live: terdekat dulu (ASC)
-  const upcomingMatches = matchesWithMatchday
+  const upcomingMatches = matchesWithStatus
     .filter((m) => m.computedStatus === 'scheduled' || m.computedStatus === 'live')
     .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
   // Finished / History: terbaru dulu (DESC)
-  const finishedMatches = matchesWithMatchday
+  const finishedMatches = matchesWithStatus
     .filter((m) => m.computedStatus === 'finished' || m.computedStatus === 'score_pending')
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
