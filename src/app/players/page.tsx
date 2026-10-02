@@ -75,6 +75,16 @@ export default async function PlayersPage({
           },
         },
       },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        number: true,
+        position: true,
+        photoUrl: true,
+        hidePhoto: true,
+        isCaptain: true,
+      },
       orderBy: { number: 'asc' },
     });
   } catch (error) {

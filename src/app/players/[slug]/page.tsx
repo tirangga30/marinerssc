@@ -63,34 +63,70 @@ export default async function PlayerDetailPage({
 }) {
   const { slug } = await params;
 
-  const [player, allMatches] = await Promise.all([
-    prisma.player.findUnique({
-      where: { slug },
-      include: {
-        member: true,
-        lineups: {
-          include: { match: { include: { events: true } } },
-          orderBy: { match: { matchDate: 'desc' } },
-        },
-        events: {
-          include: { match: true },
-        },
-        assistedEvents: {
-          include: { match: true },
+  const player = await prisma.player.findUnique({
+    where: { slug },
+    include: {
+      member: true,
+      events: {
+        select: {
+          id: true,
+          matchId: true,
+          type: true,
+          minute: true,
+          playerId: true,
+          assistPlayerId: true,
         },
       },
-    }),
-    prisma.footballMatch.findMany({
-      include: {
-        events: true,
-        lineups: true,
-        attendances: true,
+      assistedEvents: {
+        select: {
+          id: true,
+          matchId: true,
+          type: true,
+          minute: true,
+          playerId: true,
+          assistPlayerId: true,
+        },
       },
-      orderBy: { matchDate: 'desc' },
-    }),
-  ]);
+    },
+  });
 
   if (!player || player.isGuest) notFound();
+
+  const allMatches = await prisma.footballMatch.findMany({
+    select: {
+      id: true,
+      opponentName: true,
+      opponentLogo: true,
+      matchDate: true,
+      competition: true,
+      stage: true,
+      seasonName: true,
+      venue: true,
+      isHome: true,
+      homeScore: true,
+      awayScore: true,
+      status: true,
+      duration: true,
+      lineups: {
+        where: { playerId: player.id },
+        select: { id: true, isStarter: true, playerId: true },
+      },
+      attendances: {
+        where: { playerId: player.id },
+        select: { id: true, status: true, declineReason: true, playerId: true },
+      },
+      events: {
+        select: {
+          id: true,
+          type: true,
+          minute: true,
+          playerId: true,
+          assistPlayerId: true,
+        },
+      },
+    },
+    orderBy: { matchDate: 'desc' },
+  });
 
   // Check if player is a Member or matches a member record
   const member = player.member || await prisma.member.findFirst({

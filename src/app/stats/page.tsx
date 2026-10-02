@@ -40,10 +40,38 @@ export default async function StatsPage({
         some: { name: selectedSeason },
       },
     },
-    include: {
-      events: true,
-      assistedEvents: true,
-      lineups: { include: { match: true } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      number: true,
+      position: true,
+      photoUrl: true,
+      goals: true,
+      assists: true,
+      appearances: true,
+      yellowCards: true,
+      redCards: true,
+      events: {
+        select: { type: true },
+      },
+      assistedEvents: {
+        select: { type: true },
+      },
+      lineups: {
+        select: {
+          isStarter: true,
+          match: {
+            select: {
+              status: true,
+              matchDate: true,
+              events: {
+                select: { type: true, playerId: true },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
