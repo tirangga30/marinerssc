@@ -47,7 +47,9 @@ function MatchCard({ match }: { match: any }) {
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
   const resultBg   = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
-  const displayStage = match.stage || (isFriendly ? 'Friendly Match' : match.competition);
+  const displayStage = match.competition && !isFriendly
+    ? `${match.competition}${match.stage ? ` • ${match.stage}` : ''}`
+    : (match.stage || 'Friendly Match');
 
   return (
     <Link
@@ -161,48 +163,16 @@ function MatchCard({ match }: { match: any }) {
   );
 }
 
-function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
+function MatchList({ matches }: { matches: any[] }) {
   if (matches.length === 0) {
     return <p className="text-center text-slate-500 text-xs py-8">Tidak ada pertandingan.</p>;
   }
 
-  // Kelompokkan laga berdasarkan kompetisi agar tidak terpecah selang-seling
-  const compGroups: { [key: string]: any[] } = {};
-  matches.forEach((m) => {
-    const compKey = (m.competition || 'FRIENDLY').toUpperCase();
-    if (!compGroups[compKey]) compGroups[compKey] = [];
-    compGroups[compKey].push(m);
-  });
-
   return (
-    <div className="space-y-8">
-      {Object.entries(compGroups).map(([compKey, compMatches]) => {
-        const firstMatch = compMatches[0];
-        return (
-          <div key={compKey} className="space-y-3">
-            <div className="flex items-center gap-2 pt-2 pb-2 border-b border-sky-400/20">
-              <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span>{firstMatch.competition || 'FRIENDLY'}</span>
-                {firstMatch.seasonName && (
-                  <span className="text-slate-400 font-mono text-[11px] font-bold">
-                    {firstMatch.seasonName.replace(/[^0-9]/g, '') || firstMatch.seasonName}
-                  </span>
-                )}
-                <span className="text-[10px] font-mono text-slate-500 font-normal">
-                  ({compMatches.length} Laga)
-                </span>
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {compMatches.map((m) => (
-                <MatchCard key={m.id} match={m} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+    <div className="space-y-3">
+      {matches.map((m) => (
+        <MatchCard key={m.id} match={m} />
+      ))}
     </div>
   );
 }
@@ -307,7 +277,7 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({upcomingMatches.length})</span>
               </div>
-              <MatchListGroupedByCompetition matches={upcomingMatches} />
+              <MatchList matches={upcomingMatches} />
             </div>
           )}
 
@@ -321,13 +291,13 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({finishedMatches.length})</span>
               </div>
-              <MatchListGroupedByCompetition matches={finishedMatches} />
+              <MatchList matches={finishedMatches} />
             </div>
           )}
         </div>
       ) : (
         <div>
-          <MatchListGroupedByCompetition matches={filteredMatches} />
+          <MatchList matches={filteredMatches} />
         </div>
       )}
     </div>
