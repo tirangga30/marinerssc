@@ -98,6 +98,12 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
   }, [heroPosters]);
 
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const touchStartX = React.useRef(0);
+  const touchStartY = React.useRef(0);
+  const isSwiping = React.useRef(false);
+  const hasSwiped = React.useRef(false);
 
   React.useEffect(() => {
     if (activePosters.length <= 1) return;
@@ -106,7 +112,110 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
       setCurrentPosterIndex((prev) => (prev + 1) % activePosters.length);
     }, intervalSec * 1000);
     return () => clearInterval(interval);
-  }, [activePosters.length, systemSetting?.posterInterval]);
+  }, [activePosters.length, systemSetting?.posterInterval, currentPosterIndex]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (activePosters.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwiping.current = true;
+    hasSwiped.current = false;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping.current || activePosters.length <= 1) return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = currentX - touchStartX.current;
+    const deltaY = currentY - touchStartY.current;
+
+    // Track horizontal swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (Math.abs(deltaX) > 8) {
+        hasSwiped.current = true;
+      }
+      setDragOffset(deltaX);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isSwiping.current) return;
+    isSwiping.current = false;
+    setIsDragging(false);
+
+    const threshold = 40;
+    if (dragOffset < -threshold) {
+      // Swiped left -> next poster
+      setCurrentPosterIndex((prev) => (prev + 1) % activePosters.length);
+    } else if (dragOffset > threshold) {
+      // Swiped right -> previous poster
+      setCurrentPosterIndex((prev) => (prev - 1 + activePosters.length) % activePosters.length);
+    }
+    setDragOffset(0);
+
+    setTimeout(() => {
+      hasSwiped.current = false;
+    }, 100);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (activePosters.length <= 1) return;
+    touchStartX.current = e.clientX;
+    touchStartY.current = e.clientY;
+    isSwiping.current = true;
+    hasSwiped.current = false;
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isSwiping.current || activePosters.length <= 1) return;
+    const deltaX = e.clientX - touchStartX.current;
+    if (Math.abs(deltaX) > 8) {
+      hasSwiped.current = true;
+    }
+    setDragOffset(deltaX);
+  };
+
+  const handleMouseUp = () => {
+    handleTouchEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isSwiping.current) {
+      handleTouchEnd();
+    }
+  };
+
+  const handlePosterClick = (poster: any) => {
+    if (hasSwiped.current || Math.abs(dragOffset) > 8) return;
+    const rawLink = poster?.linkUrl?.trim();
+    if (!rawLink) return;
+    const isExternal = rawLink.startsWith('http://') || rawLink.startsWith('https://');
+    if (isExternal) {
+      window.open(rawLink, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = rawLink;
+    }
+  };
+
+  const getSlideStyle = (idx: number) => {
+    if (activePosters.length <= 1) {
+      return { transform: 'translateX(0%)' };
+    }
+    const total = activePosters.length;
+    let diff = idx - currentPosterIndex;
+    if (total > 2) {
+      while (diff < -Math.floor(total / 2)) diff += total;
+      while (diff > Math.floor((total - 1) / 2)) diff -= total;
+    }
+    const isCurrent = idx === currentPosterIndex;
+    return {
+      transform: `translateX(calc(${diff * 100}% + ${dragOffset}px))`,
+      transition: isDragging ? 'none' : 'transform 450ms cubic-bezier(0.25, 1, 0.5, 1)',
+      zIndex: isCurrent ? 10 : 5,
+    };
+  };
 
   React.useEffect(() => {
     const saved = getClientPublicSeason();
@@ -210,61 +319,38 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
       {/* ═════════════════════════════════════════════════════════════
           HERO SECTION DENGAN SLIDE TOGGLE SWITCHER
          ═════════════════════════════════════════════════════════════ */}
-      <section className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
-        {/* Dynamic Carousel Slides (Switches every 5 seconds) */}
+      {/* ═════════════════════════════════════════════════════════════
+          HERO SECTION DENGAN SLIDE TOGGLE SWITCHER (TOUCH & SWIPEABLE)
+         ═════════════════════════════════════════════════════════════ */}
+      <section
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3 touch-pan-y select-none cursor-grab active:cursor-grabbing"
+      >
+        {/* Dynamic Carousel Slides (Swipeable via finger or mouse) */}
         {activePosters.map((poster: any, idx: number) => {
-          const isCurrent = idx === currentPosterIndex;
           const rawLink = poster.linkUrl?.trim();
           const hasLink = Boolean(rawLink);
-          const isExternal = hasLink && (rawLink.startsWith('http://') || rawLink.startsWith('https://'));
 
           return (
             <div
               key={poster.id || idx}
-              onClick={() => {
-                if (hasLink && isCurrent) {
-                  if (isExternal) {
-                    window.open(rawLink, '_blank', 'noopener,noreferrer');
-                  } else {
-                    window.location.href = rawLink;
-                  }
-                }
+              onClick={() => handlePosterClick(poster)}
+              style={{
+                backgroundImage: `url('${poster.imageUrl}')`,
+                ...getSlideStyle(idx),
               }}
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
-                isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-0 pointer-events-none'
-              } ${hasLink && isCurrent ? 'cursor-pointer' : ''}`}
-              style={{ backgroundImage: `url('${poster.imageUrl}')` }}
-            >
-              {hasLink && isCurrent && (
-                <a
-                  href={rawLink}
-                  target={isExternal ? '_blank' : '_self'}
-                  rel={isExternal ? 'noopener noreferrer' : undefined}
-                  className="absolute inset-0 z-0"
-                  aria-label="Buka Tautan Poster"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                />
-              )}
-            </div>
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${
+                hasLink ? 'cursor-pointer' : ''
+              }`}
+            />
           );
         })}
-
-        {/* Floating Link Badge when active poster has linkUrl */}
-        {activePosters[currentPosterIndex]?.linkUrl?.trim() && (
-          <a
-            href={activePosters[currentPosterIndex].linkUrl.trim()}
-            target={
-              activePosters[currentPosterIndex].linkUrl.trim().startsWith('http') ? '_blank' : '_self'
-            }
-            rel="noopener noreferrer"
-            className="absolute top-4 left-4 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 hover:bg-sky-600 text-white text-[10px] sm:text-xs font-bold shadow-2xl backdrop-blur-md border border-white/20 hover:border-sky-400 transition-all cursor-pointer group"
-          >
-            <span>Buka Link Poster</span>
-            <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:text-white transition-colors" />
-          </a>
-        )}
 
         {/* Carousel Slide Indicators / Dots */}
         {activePosters.length > 1 && (
@@ -273,7 +359,10 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <button
                 key={idx}
                 type="button"
-                onClick={() => setCurrentPosterIndex(idx)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentPosterIndex(idx);
+                }}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                   idx === currentPosterIndex ? 'w-5 bg-sky-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
                 }`}

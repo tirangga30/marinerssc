@@ -126,7 +126,8 @@ export default function Navbar() {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white focus:outline-hidden"
+                className="p-1 text-slate-300 hover:text-white transition-colors focus:outline-hidden cursor-pointer"
+                aria-label="Menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -245,9 +246,10 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white focus:outline-hidden"
+              className="p-1 text-slate-300 hover:text-white transition-colors focus:outline-hidden cursor-pointer"
+              aria-label="Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
 
