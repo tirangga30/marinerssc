@@ -47,9 +47,7 @@ function MatchCard({ match }: { match: any }) {
   const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
   const resultBg   = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
-  const displayStage = match.competition && !isFriendly
-    ? `${match.competition}${match.stage ? ` • ${match.stage}` : ''}`
-    : (match.stage || 'Friendly Match');
+  const displayStage = match.stage || (isFriendly ? 'Friendly Match' : match.competition);
 
   return (
     <Link
@@ -163,16 +161,39 @@ function MatchCard({ match }: { match: any }) {
   );
 }
 
-function MatchList({ matches }: { matches: any[] }) {
+function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
   if (matches.length === 0) {
     return <p className="text-center text-slate-500 text-xs py-8">Tidak ada pertandingan.</p>;
   }
 
   return (
     <div className="space-y-3">
-      {matches.map((m) => (
-        <MatchCard key={m.id} match={m} />
-      ))}
+      {matches.map((m, idx) => {
+        const prevMatch = idx > 0 ? matches[idx - 1] : null;
+        const currentComp = (m.competition || 'FRIENDLY').toUpperCase();
+        const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
+        const isNewComp = idx === 0 || currentComp !== prevComp;
+
+        return (
+          <React.Fragment key={m.id}>
+            {isNewComp && (
+              <div className="flex items-center gap-2 pt-4 pb-2 border-b border-sky-400/20 mt-4 first:mt-0">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{m.competition || 'FRIENDLY'}</span>
+                  {m.seasonName && (
+                    <span className="text-slate-400 font-mono text-[11px] font-bold">
+                      {m.seasonName.replace(/[^0-9]/g, '') || m.seasonName}
+                    </span>
+                  )}
+                </h3>
+              </div>
+            )}
+            <MatchCard match={m} />
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -277,7 +298,7 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({upcomingMatches.length})</span>
               </div>
-              <MatchList matches={upcomingMatches} />
+              <MatchListGroupedByCompetition matches={upcomingMatches} />
             </div>
           )}
 
@@ -291,13 +312,13 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({finishedMatches.length})</span>
               </div>
-              <MatchList matches={finishedMatches} />
+              <MatchListGroupedByCompetition matches={finishedMatches} />
             </div>
           )}
         </div>
       ) : (
         <div>
-          <MatchList matches={filteredMatches} />
+          <MatchListGroupedByCompetition matches={filteredMatches} />
         </div>
       )}
     </div>
