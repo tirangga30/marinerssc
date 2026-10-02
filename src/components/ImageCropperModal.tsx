@@ -121,9 +121,16 @@ export default function ImageCropperModal({
       const containerWidth = containerRect.width;
       const containerHeight = containerRect.height;
 
-      // High-resolution output canvas (1080 x 1350 px for 4:5 ratio)
-      const targetWidth = 1080;
-      const targetHeight = Math.round(targetWidth / aspectRatio); // 1350
+      // High-resolution output canvas (1920x1080 for 16:9 landscape, 1080x1350 for 4:5 portrait)
+      let targetWidth = 1080;
+      let targetHeight = 1350;
+      if (aspectRatio >= 1) {
+        targetWidth = 1920;
+        targetHeight = Math.round(1920 / aspectRatio);
+      } else {
+        targetHeight = 1350;
+        targetWidth = Math.round(1350 * aspectRatio);
+      }
 
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
@@ -199,9 +206,15 @@ export default function ImageCropperModal({
 
   if (!isOpen || !imageSrc) return null;
 
+  const isLandscape = aspectRatio >= 1;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-      <div className="w-full max-w-md glass-panel p-5 sm:p-6 rounded-3xl border border-sky-400/30 space-y-4 shadow-2xl my-auto">
+      <div
+        className={`w-full ${
+          isLandscape ? 'max-w-2xl sm:max-w-3xl' : 'max-w-md'
+        } glass-panel p-5 sm:p-6 rounded-3xl border border-sky-400/30 space-y-4 shadow-2xl my-auto transition-all`}
+      >
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -214,13 +227,13 @@ export default function ImageCropperModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Cropper Frame (Strict 4:5 Aspect Ratio) */}
+        {/* Cropper Frame (Dynamic Aspect Ratio) */}
         <div className="flex flex-col items-center">
           <div
             ref={containerRef}
@@ -228,7 +241,10 @@ export default function ImageCropperModal({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className="relative w-64 sm:w-72 aspect-[4/5] rounded-2xl overflow-hidden bg-slate-950 border-2 border-sky-400/50 shadow-2xl cursor-grab active:cursor-grabbing select-none"
+            style={{ aspectRatio: `${aspectRatio}` }}
+            className={`relative ${
+              isLandscape ? 'w-full max-w-xl sm:max-w-2xl' : 'w-64 sm:w-72'
+            } rounded-2xl overflow-hidden bg-slate-950 border-2 border-sky-400/50 shadow-2xl cursor-grab active:cursor-grabbing select-none`}
           >
             {imgElement && (
               <div
@@ -244,11 +260,11 @@ export default function ImageCropperModal({
                   className="max-w-none transition-none"
                   style={{
                     width:
-                      imgElement.naturalWidth / imgElement.naturalHeight > 4 / 5
+                      imgElement.naturalWidth / imgElement.naturalHeight > aspectRatio
                         ? 'auto'
                         : '100%',
                     height:
-                      imgElement.naturalWidth / imgElement.naturalHeight > 4 / 5
+                      imgElement.naturalWidth / imgElement.naturalHeight > aspectRatio
                         ? '100%'
                         : 'auto',
                     transform: `scale(${scale})`,

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
     }
 
-    const validFolders = ['players', 'matches', 'articles', 'members', 'general'];
+    const validFolders = ['players', 'matches', 'articles', 'members', 'general', 'team', 'posters', 'wallpapers'];
     const targetFolder = requestedFolder && validFolders.includes(requestedFolder.toLowerCase())
       ? requestedFolder.toLowerCase()
       : 'general';
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       const baseNameWithoutExt = path.parse(file.name).name;
       const cleanFileName = sanitizeFilename(baseNameWithoutExt.replace(/[^a-zA-Z0-9.-]/g, '_'));
       fileName = `${Date.now()}-${cleanFileName}${finalExt}`;
-      publicUrl = `/uploads/general/${fileName}`;
+      publicUrl = `/uploads/${targetFolder}/${fileName}`;
     }
 
     // If running in Vercel / serverless with read-only filesystem, return Data URL

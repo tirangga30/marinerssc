@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar, ArrowRight, Flame, Sparkles, Shield, Users,
-  Trophy, Award, Activity, MapPin, CheckCircle2, UserCheck, Star, ChevronDown
+  Trophy, Award, Activity, MapPin, CheckCircle2, UserCheck, Star, ChevronDown, ExternalLink
 } from 'lucide-react';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
@@ -65,9 +65,11 @@ interface HomeClientViewProps {
     topScorerName: string;
     topScorerGoals: number;
   };
+  heroPosters?: any[];
+  systemSetting?: any;
 }
 
-export default function HomeClientView({ mainSquadData, communityData }: HomeClientViewProps) {
+export default function HomeClientView({ mainSquadData, communityData, heroPosters, systemSetting }: HomeClientViewProps) {
   const { clubMode, setClubMode } = useClubMode();
   const [showRegModal, setShowRegModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -86,6 +88,25 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
     '2026';
   const [selectedSeason, setSelectedSeason] = useState(initialSeason);
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
+
+  // Active Hero Posters with 5-second automatic rotation
+  const activePosters = React.useMemo(() => {
+    if (heroPosters && heroPosters.length > 0) {
+      return heroPosters;
+    }
+    return [{ id: 'default', imageUrl: '/LOGIN.webp' }];
+  }, [heroPosters]);
+
+  const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
+
+  React.useEffect(() => {
+    if (activePosters.length <= 1) return;
+    const intervalSec = Math.max(3, Math.min(10, Number(systemSetting?.posterInterval) || 5));
+    const interval = setInterval(() => {
+      setCurrentPosterIndex((prev) => (prev + 1) % activePosters.length);
+    }, intervalSec * 1000);
+    return () => clearInterval(interval);
+  }, [activePosters.length, systemSetting?.posterInterval]);
 
   React.useEffect(() => {
     const saved = getClientPublicSeason();
@@ -190,10 +211,78 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
           HERO SECTION DENGAN SLIDE TOGGLE SWITCHER
          ═════════════════════════════════════════════════════════════ */}
       <section className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[85vh] w-full flex items-end justify-center overflow-hidden border-b border-blue-500/20 px-2 sm:px-3">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url('/LOGIN.webp')` }}
-        />
+        {/* Dynamic Carousel Slides (Switches every 5 seconds) */}
+        {activePosters.map((poster: any, idx: number) => {
+          const isCurrent = idx === currentPosterIndex;
+          const rawLink = poster.linkUrl?.trim();
+          const hasLink = Boolean(rawLink);
+          const isExternal = hasLink && (rawLink.startsWith('http://') || rawLink.startsWith('https://'));
+
+          return (
+            <div
+              key={poster.id || idx}
+              onClick={() => {
+                if (hasLink && isCurrent) {
+                  if (isExternal) {
+                    window.open(rawLink, '_blank', 'noopener,noreferrer');
+                  } else {
+                    window.location.href = rawLink;
+                  }
+                }
+              }}
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
+                isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-0 pointer-events-none'
+              } ${hasLink && isCurrent ? 'cursor-pointer' : ''}`}
+              style={{ backgroundImage: `url('${poster.imageUrl}')` }}
+            >
+              {hasLink && isCurrent && (
+                <a
+                  href={rawLink}
+                  target={isExternal ? '_blank' : '_self'}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                  className="absolute inset-0 z-0"
+                  aria-label="Buka Tautan Poster"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+
+        {/* Floating Link Badge when active poster has linkUrl */}
+        {activePosters[currentPosterIndex]?.linkUrl?.trim() && (
+          <a
+            href={activePosters[currentPosterIndex].linkUrl.trim()}
+            target={
+              activePosters[currentPosterIndex].linkUrl.trim().startsWith('http') ? '_blank' : '_self'
+            }
+            rel="noopener noreferrer"
+            className="absolute top-4 left-4 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 hover:bg-sky-600 text-white text-[10px] sm:text-xs font-bold shadow-2xl backdrop-blur-md border border-white/20 hover:border-sky-400 transition-all cursor-pointer group"
+          >
+            <span>Buka Link Poster</span>
+            <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:text-white transition-colors" />
+          </a>
+        )}
+
+        {/* Carousel Slide Indicators / Dots */}
+        {activePosters.length > 1 && (
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10">
+            {activePosters.map((_: any, idx: number) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentPosterIndex(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === currentPosterIndex ? 'w-5 bg-sky-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                }`}
+                aria-label={`Slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Subtle bottom gradient */}
         <div className="absolute bottom-0 inset-x-0 h-32 sm:h-56 bg-gradient-to-t from-[#060b14] via-[#060b14]/70 to-transparent pointer-events-none" />
 
@@ -310,8 +399,14 @@ export default function HomeClientView({ mainSquadData, communityData }: HomeCli
                     <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
                   </span>
                 ) : currentFeaturedStatus === 'scheduled' ? (
-                  <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">
-                    Laga Mendatang
+                  <h3 className="text-[10px] sm:text-sm uppercase tracking-widest transition-colors flex items-center gap-1.5 flex-wrap">
+                    <span className="font-normal text-slate-300">UPCOMING :</span>
+                    <span className="font-black text-white group-hover:text-sky-300 transition-colors">
+                      {currentNextMatch?.competition || 'FRIENDLY'}
+                    </span>
+                    <span className="font-bold text-slate-400">
+                      {currentNextMatch?.seasonName || selectedSeason || '2026'}
+                    </span>
                   </h3>
                 ) : (
                   <h3 className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-white group-hover:text-sky-300 transition-colors">

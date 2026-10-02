@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
-import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles, Trophy } from 'lucide-react';
+import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles, Trophy, Lock, Layers } from 'lucide-react';
 import DashboardSeasonSelector from '@/components/admin/DashboardSeasonSelector';
 
 export const dynamic = 'force-dynamic';
@@ -264,6 +264,54 @@ export default async function AdminDashboardPage({
           </div>
           <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-sky-400 flex items-center gap-1">
             Buka Artikel <ArrowRight className="w-3.5 h-3.5" />
+          </div>
+        </Link>
+
+        {/* Module 6: Team Management (Portal Khusus PIN) */}
+        <Link
+          href="/admin/team-management"
+          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-500/40 card-glow-hover space-y-3 bg-gradient-to-br from-amber-950/20 via-slate-900/60 to-slate-950/80 relative overflow-hidden"
+        >
+          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+            <Lock className="w-2.5 h-2.5 text-amber-400" /> TERKUNCI PIN
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center shadow-lg border border-white/20">
+            <Shield className="w-5 h-5 text-slate-950" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors uppercase">
+              Team Management
+            </h3>
+            <p className="text-[11px] text-slate-300 mt-1">
+              Logo klub, nama tim, wallpaper login &amp; panel admin, kelola user &amp; PIN keamanan.
+            </p>
+          </div>
+          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400 flex items-center gap-1">
+            Buka Portal (PIN) <ArrowRight className="w-3.5 h-3.5" />
+          </div>
+        </Link>
+
+        {/* Module 7: Main Poster (Hero Beranda Slide) */}
+        <Link
+          href="/admin/main-poster"
+          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-sky-400/40 card-glow-hover space-y-3 bg-gradient-to-br from-sky-950/20 via-slate-900/60 to-slate-950/80 relative overflow-hidden"
+        >
+          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+            <Sparkles className="w-2.5 h-2.5 text-sky-300" /> SLIDE 5 DETIK
+          </div>
+          <div className="w-10 h-10 rounded-xl blue-gradient-bg text-white flex items-center justify-center shadow-lg border border-white/20">
+            <Layers className="w-5 h-5 text-sky-300" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-white group-hover:text-sky-300 transition-colors uppercase">
+              Main Poster
+            </h3>
+            <p className="text-[11px] text-slate-300 mt-1">
+              Unggah hingga 5 poster beranda yang berputar bergantian secara otomatis tiap 5 detik.
+            </p>
+          </div>
+          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-sky-400 flex items-center gap-1">
+            Kelola Poster <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </Link>
 

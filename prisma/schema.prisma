@@ -250,3 +250,28 @@ model FunMatchEvent {
   funMatch    FunMatch      @relation(fields: [funMatchId], references: [id], onDelete: Cascade)
   member      Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
 }
+
+model SystemSetting {
+  id             String   @id @default("default")
+  teamName       String   @default("Mariners SC")
+  teamLogo       String   @default("/marinerssc.webp")
+  loginWallpaper String   @default("/newposter.webp")
+  adminWallpaper String   @default("/stadium_hero2.png")
+  posterInterval Int      @default(5)
+  securityPin    String   @default("1234")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model HeroPoster {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  title     String?
+  subtitle  String?
+  linkUrl   String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

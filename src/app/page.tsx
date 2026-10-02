@@ -73,6 +73,8 @@ export default async function HomePage() {
   let allFunMatchEvents: any[] = [];
 
   let seasons: any[] = [];
+  let heroPosters: any[] = [];
+  let systemSetting: any = null;
 
   try {
     const [
@@ -83,6 +85,8 @@ export default async function HomePage() {
       activeMembers,
       events,
       rawSeasons,
+      rawPosters,
+      rawSetting,
     ] = await Promise.all([
       prisma.footballMatch.findMany({
         include: { events: true },
@@ -114,6 +118,14 @@ export default async function HomePage() {
         orderBy: [{ year: 'desc' }, { name: 'desc' }],
         select: { id: true, name: true, year: true, isCurrent: true, featuredPlayerIds: true },
       }),
+      ((prisma as any).heroPoster?.findMany({
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+        take: 5,
+      })?.catch(() => []) || Promise.resolve([])) as Promise<any[]>,
+      (prisma.$queryRawUnsafe('SELECT * FROM "SystemSetting" WHERE id = $1 LIMIT 1', 'default')
+        .then((rows: any) => (Array.isArray(rows) && rows.length > 0 ? rows[0] : null))
+        .catch(() => (prisma as any).systemSetting?.findUnique({ where: { id: 'default' } }).catch(() => null)) || Promise.resolve(null)) as Promise<any>,
     ]);
 
     let friendlyCounter = 0;
@@ -131,6 +143,8 @@ export default async function HomePage() {
     articles = fetchedArticles;
     featuredPlayers = starredPlayers;
     seasons = rawSeasons;
+    heroPosters = rawPosters || [];
+    systemSetting = rawSetting || null;
 
     funMatches = rawFunMatches;
     communityMembers = activeMembers;
@@ -265,5 +279,12 @@ export default async function HomePage() {
     topScorerGoals,
   };
 
-  return <HomeClientView mainSquadData={mainSquadData} communityData={communityData} />;
+  return (
+    <HomeClientView
+      mainSquadData={mainSquadData}
+      communityData={communityData}
+      heroPosters={heroPosters}
+      systemSetting={systemSetting}
+    />
+  );
 }
