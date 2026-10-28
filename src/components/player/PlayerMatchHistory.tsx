@@ -41,19 +41,19 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
   const hasMore = visibleCount < matches.length;
   const remainingCount = matches.length - visibleCount;
 
-  const panelBg = { background: '#0d1628', border: '1px solid rgba(255,255,255,0.08)' };
+  const panelBg = { background: '#ffffff', border: '1px solid #e2e8f0' };
 
   return (
     <div>
       <div className="flex items-end justify-between mb-3">
-        <h2 className="text-l font-black text-white">Last Matches</h2>
+        <h2 className="text-base sm:text-lg font-black text-slate-900">Last Matches</h2>
       </div>
 
-      <div className="rounded-2xl overflow-hidden shadow-xl" style={panelBg}>
+      <div className="rounded-2xl overflow-hidden shadow-sm" style={panelBg}>
         {matches.length === 0 ? (
           <div className="py-14 text-center space-y-2">
-            <Shield className="w-9 h-9 mx-auto" style={{ color: '#1e293b' }} />
-            <p className="text-sm font-semibold" style={{ color: '#475569' }}>
+            <Shield className="w-9 h-9 mx-auto text-slate-300" />
+            <p className="text-sm font-semibold text-slate-500">
               Belum ada riwayat pertandingan
             </p>
           </div>
@@ -64,8 +64,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
               className="grid px-3 sm:px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
               style={{
                 gridTemplateColumns: '52px 1fr auto',
-                background: 'rgba(255,255,255,0.03)',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                background: '#f8fafc',
+                borderBottom: '1px solid #e2e8f0',
                 color: '#64748b',
               }}
             >
@@ -105,7 +105,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
 
                 const resultBg =
                   result === 'W' ? '#16a34a' : result === 'L' ? '#dc2626' : '#d97706';
-                const rowBorder = idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)';
+                const rowBorder = idx === 0 ? 'none' : '1px solid #f1f5f9';
 
                 /* Shared match team labels */
                 const TopTeam = match.isHome
@@ -116,7 +116,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt="Mariners SC"
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>
+                        <span className="text-xs font-bold truncate flex-1 text-blue-600">
                           Mariners SC
                         </span>
                       </div>
@@ -128,7 +128,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={match.opponentName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold truncate flex-1" style={{ color: '#94a3b8' }}>
+                        <span className="text-xs font-semibold truncate flex-1 text-slate-800">
                           {match.opponentName}
                         </span>
                       </div>
@@ -142,7 +142,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={match.opponentName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold truncate flex-1" style={{ color: '#94a3b8' }}>
+                        <span className="text-xs font-semibold truncate flex-1 text-slate-800">
                           {match.opponentName}
                         </span>
                       </div>
@@ -154,7 +154,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt="Mariners SC"
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold truncate flex-1" style={{ color: '#38bdf8' }}>
+                        <span className="text-xs font-bold truncate flex-1 text-blue-600">
                           Mariners SC
                         </span>
                       </div>
@@ -282,17 +282,17 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                       <div
                         className="px-4 py-2 flex items-center justify-between text-[11px] font-black uppercase tracking-wider"
                         style={{
-                          background: 'rgba(56, 189, 248, 0.08)',
-                          borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                          borderBottom: '1px solid rgba(56, 189, 248, 0.15)',
-                          color: '#38bdf8',
+                          background: '#eff6ff',
+                          borderTop: idx === 0 ? 'none' : '1px solid #e2e8f0',
+                          borderBottom: '1px solid #dbeafe',
+                          color: '#1d4ed8',
                         }}
                       >
                         <div className="flex items-center gap-1.5 sm:gap-2">
-                          <i className="fa-solid fa-trophy text-amber-400 text-xs" />
+                          <i className="fa-solid fa-trophy text-amber-500 text-xs" />
                           <span>{match.competition || 'FRIENDLY'}</span>
                           {seasonYear && (
-                            <span className="text-slate-400 font-mono text-[10px] font-bold">
+                            <span className="text-slate-500 font-mono text-[10px] font-bold">
                               {seasonYear}
                             </span>
                           )}
@@ -302,14 +302,14 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
 
                     <Link
                       href={`/matches/${match.id}`}
-                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-white/[0.03] transition-colors items-center cursor-pointer"
+                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer"
                       style={{
                         gridTemplateColumns: '52px 1fr auto',
                         borderTop: isNewCompGroup ? 'none' : rowBorder,
                       }}
                     >
                       {/* Date */}
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-400">
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-500">
                         {dateStr}
                       </span>
 
@@ -323,11 +323,11 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                         {/* Status / Menit Bermain & Event Icons (Di sebelah kiri skor) */}
                         <div className="flex items-center justify-end gap-1.5 shrink-0 text-right">
                           {isNotInSquad ? (
-                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400">
+                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500">
                               {nonSquadStatus}
                             </span>
                           ) : isOnBenchOnly ? (
-                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400">
+                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500">
                               On the bench
                             </span>
                           ) : (
@@ -348,7 +348,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                           className="relative inline-flex items-center shrink-0 mr-1"
                                           title="Gol Penalti"
                                         >
-                                          <i className="fa-regular fa-futbol text-amber-400 text-[11px]" />
+                                          <i className="fa-regular fa-futbol text-amber-500 text-[11px]" />
                                           <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
                                             P
                                           </span>
@@ -356,7 +356,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                       )}
                                       {e.type === 'assist' && (
                                         <span
-                                          className="text-amber-400 font-black text-[11px] leading-none shrink-0"
+                                          className="text-amber-600 font-black text-[11px] leading-none shrink-0"
                                           title="Assist"
                                         >
                                           A
@@ -364,7 +364,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                       )}
                                       {e.type === 'yellow_card' && (
                                         <span
-                                          className="w-2.5 h-3.5 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40"
+                                          className="w-2.5 h-3.5 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-400"
                                           title="Kartu Kuning"
                                         />
                                       )}
@@ -382,7 +382,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                       )}
                                       {e.type === 'red_card' && (
                                         <span
-                                          className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40"
+                                          className="w-2.5 h-3.5 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-500"
                                           title="Kartu Merah"
                                         />
                                       )}
@@ -390,7 +390,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                                   ))}
                                 </div>
                               )}
-                              <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-300">
+                              <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-800">
                                 {minutesPlayed}&apos;
                               </span>
                             </>
@@ -401,10 +401,10 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                       {/* Vertically Stacked Scores directly to the left of Result Badge */}
                       <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0 pl-1">
                         <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                          <span style={{ color: match.isHome ? '#38bdf8' : '#f1f5f9' }}>
+                          <span style={{ color: match.isHome ? '#2563eb' : '#0f172a' }}>
                             {match.homeScore ?? '—'}
                           </span>
-                          <span style={{ color: match.isHome ? '#f1f5f9' : '#38bdf8' }}>
+                          <span style={{ color: match.isHome ? '#0f172a' : '#2563eb' }}>
                             {match.awayScore ?? '—'}
                           </span>
                         </div>
@@ -417,7 +417,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                             {result}
                           </span>
                         ) : (
-                          <span className="w-5 text-center text-slate-600 font-mono text-xs">—</span>
+                          <span className="w-5 text-center text-slate-400 font-mono text-xs">—</span>
                         )}
                       </div>
                     </Link>
@@ -428,16 +428,16 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
 
             {/* ── Navigation Bar ── */}
             {matches.length > 10 && (
-              <div className="py-3 px-4 flex items-center justify-between border-t border-white/[0.04] bg-slate-950/20 text-xs text-slate-400">
+              <div className="py-3 px-4 flex items-center justify-between border-t border-slate-100 bg-slate-50 text-xs text-slate-500">
                 <span className="text-[11px] sm:text-xs">
                   {hasMore ? (
                     <>
-                      Menampilkan <strong className="text-white font-mono">{displayedMatches.length}</strong> dari{' '}
-                      <strong className="text-white font-mono">{matches.length}</strong> riwayat pertandingan
+                      Menampilkan <strong className="text-slate-900 font-mono">{displayedMatches.length}</strong> dari{' '}
+                      <strong className="text-slate-900 font-mono">{matches.length}</strong> riwayat pertandingan
                     </>
                   ) : (
                     <>
-                      Menampilkan seluruh <strong className="text-white font-mono">{matches.length}</strong> riwayat pertandingan
+                      Menampilkan seluruh <strong className="text-slate-900 font-mono">{matches.length}</strong> riwayat pertandingan
                     </>
                   )}
                 </span>
@@ -446,7 +446,7 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                     <button
                       type="button"
                       onClick={() => setVisibleCount(10)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-sky-400 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
                     >
                       <ChevronUp className="w-3.5 h-3.5" />
                       Tutup ke 10 awal

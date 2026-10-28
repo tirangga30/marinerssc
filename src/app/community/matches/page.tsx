@@ -2,10 +2,29 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatWibDate, formatWibTime } from '@/lib/date';
+import { unstable_cache } from 'next/cache';
 import MatchTimer from '@/components/MatchTimer';
 import { Calendar, Sparkles, MapPin, Clock, ArrowRight, Shield } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+const getCachedFunMatches = unstable_cache(
+  async () => {
+    try {
+      return await prisma.funMatch.findMany({
+        include: {
+          events: true,
+        },
+        orderBy: { matchDate: 'asc' },
+      });
+    } catch (e) {
+      console.error('Error fetching fun matches:', e);
+      return [];
+    }
+  },
+  ['mariners-community-matches-cache'],
+  { revalidate: 60, tags: ['fun-matches'] }
+);
 
 function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
   if (!fm) return 'scheduled';
@@ -141,17 +160,7 @@ export default async function CommunityMatchesPage({
   const params = await searchParams;
   const filter = params.filter || 'all';
 
-  let allMatches: any[] = [];
-  try {
-    allMatches = await prisma.funMatch.findMany({
-      include: {
-        events: true,
-      },
-      orderBy: { matchDate: 'asc' },
-    });
-  } catch (e) {
-    console.error('Error fetching fun matches:', e);
-  }
+  const allMatches = await getCachedFunMatches();
 
   const matchesWithDay = allMatches.map((m, idx) => ({
     ...m,
@@ -176,48 +185,35 @@ export default async function CommunityMatchesPage({
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
-      {/* Header Banner (IDENTIK DENGAN TIM UTAMA) */}
-      <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-amber-400/20 text-center space-y-2 relative overflow-hidden bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14]">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-400">
-          Jadwal &amp; Hasil Fun Match
-        </span>
-        <h1 className="text-2xl sm:text-4xl font-black uppercase text-white tracking-tight">
-          Season 2026/2027
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-          Pantau seluruh jadwal fun match mendatang dan rekap hasil pertandingan Soccer Community Mariners SC.
-        </p>
-      </div>
 
-      {/* Filter Tabs */}
-      <div className="flex justify-center gap-1.5 sm:gap-2">
+      {/* Filter Tabs (Navbar Underline Style) */}
+      <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-amber-400/30 overflow-x-auto no-scrollbar">
         <Link
           href="/community/matches?filter=all"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             filter === 'all'
-              ? 'bg-amber-400 text-blue-950 font-black shadow-lg shadow-amber-500/20'
-              : 'glass-panel text-slate-300 hover:text-amber-300'
+              ? 'text-amber-400 border-amber-400 font-black'
+              : 'text-slate-400 border-transparent hover:text-amber-300 hover:border-amber-400/50'
           }`}
         >
           Semua ({allMatches.length})
         </Link>
         <Link
           href="/community/matches?filter=upcoming"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             filter === 'upcoming'
-              ? 'bg-amber-400 text-blue-950 font-black shadow-lg shadow-amber-500/20'
-              : 'glass-panel text-slate-300 hover:text-amber-300'
+              ? 'text-amber-400 border-amber-400 font-black'
+              : 'text-slate-400 border-transparent hover:text-amber-300 hover:border-amber-400/50'
           }`}
         >
           Mendatang ({upcomingMatches.length})
         </Link>
         <Link
           href="/community/matches?filter=finished"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             filter === 'finished'
-              ? 'bg-amber-400 text-blue-950 font-black shadow-lg shadow-amber-500/20'
-              : 'glass-panel text-slate-300 hover:text-amber-300'
+              ? 'text-amber-400 border-amber-400 font-black'
+              : 'text-slate-400 border-transparent hover:text-amber-300 hover:border-amber-400/50'
           }`}
         >
           Selesai ({finishedMatches.length})

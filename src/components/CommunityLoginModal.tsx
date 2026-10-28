@@ -49,6 +49,9 @@ export default function CommunityLoginModal({
       }
 
       onSuccess(data.member);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('member_auth_changed', { detail: data.member }));
+      }
       onClose();
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat login');

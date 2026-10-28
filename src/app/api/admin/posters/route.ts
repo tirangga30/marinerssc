@@ -7,23 +7,14 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     let interval = 5;
-    try {
-      const rows: any = await (prisma as any).$queryRawUnsafe(
-        `SELECT "posterInterval" FROM "SystemSetting" WHERE id = 'default' LIMIT 1`
-      );
-      if (rows && rows[0] && typeof rows[0].posterInterval === 'number') {
-        interval = rows[0].posterInterval;
-      }
-    } catch {
-      const setting = await (prisma as any).systemSetting.findUnique({
-        where: { id: 'default' },
-      }).catch(() => null);
-      if (setting && typeof setting.posterInterval === 'number') {
-        interval = setting.posterInterval;
-      }
+    const setting = await prisma.systemSetting.findUnique({
+      where: { id: 'default' },
+    }).catch(() => null);
+    if (setting && typeof setting.posterInterval === 'number') {
+      interval = setting.posterInterval;
     }
 
-    const posters = await (prisma as any).heroPoster.findMany({
+    const posters = await prisma.heroPoster.findMany({
       orderBy: { order: 'asc' },
     });
 
@@ -50,21 +41,11 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Durasi pergantian poster harus antara 3 hingga 10 detik' }, { status: 400 });
     }
 
-    try {
-      await (prisma as any).$executeRawUnsafe(
-        `INSERT INTO "SystemSetting" (id, "posterInterval", "teamName", "teamLogo", "loginWallpaper", "adminWallpaper", "securityPin", "createdAt", "updatedAt")
-        VALUES ('default', $1, 'Mariners SC', '/marinerssc.webp', '/newposter.webp', '/stadium_hero2.png', '1234', NOW(), NOW())
-        ON CONFLICT (id) DO UPDATE SET "posterInterval" = $1, "updatedAt" = NOW()`,
-        rawInterval
-      );
-    } catch (sqlErr) {
-      console.warn('Raw SQL insert on conflict failed, trying Prisma upsert:', sqlErr);
-      await (prisma as any).systemSetting.upsert({
-        where: { id: 'default' },
-        update: { posterInterval: rawInterval },
-        create: { id: 'default', posterInterval: rawInterval },
-      });
-    }
+    await prisma.systemSetting.upsert({
+      where: { id: 'default' },
+      update: { posterInterval: rawInterval },
+      create: { id: 'default', posterInterval: rawInterval },
+    });
 
     return NextResponse.json({ success: true, interval: rawInterval });
   } catch (err: any) {

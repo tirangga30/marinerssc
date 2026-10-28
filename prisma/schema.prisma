@@ -40,6 +40,7 @@ model Player {
   appearances    Int          @default(0)
   yellowCards    Int          @default(0)
   redCards       Int          @default(0)
+  seasonData     String?      @default("{}") // JSON overrides per season: { "2026": { "photoUrl": "...", "number": 10 } }
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -274,4 +275,3 @@ model HeroPoster {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-

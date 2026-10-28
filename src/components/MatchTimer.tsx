@@ -62,8 +62,8 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
 
   if (status === 'finished' || timeLeft.isPast) {
     return (
-      <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
-        <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+      <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+        <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
           <CheckCircle2 className="w-3.5 h-3.5" /> Pertandingan Selesai (Full Time)
         </span>
       </div>
@@ -71,7 +71,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
   }
 
   return (
-    <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-800/80 text-center">
+    <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80 text-center">
       <div className="flex items-center justify-center gap-1.5 sm:gap-3">
         {/* Days */}
         <div className="flex flex-col items-center">
@@ -80,7 +80,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
               {String(timeLeft.days).padStart(2, '0')}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Hari</span>
+          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-600 mt-1">Hari</span>
         </div>
 
         <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
@@ -92,7 +92,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
               {String(timeLeft.hours).padStart(2, '0')}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Jam</span>
+          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-600 mt-1">Jam</span>
         </div>
 
         <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
@@ -104,7 +104,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
               {String(timeLeft.minutes).padStart(2, '0')}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Menit</span>
+          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-600 mt-1">Menit</span>
         </div>
 
         <span className="text-sky-400 font-bold text-base sm:text-3xl mb-3 sm:mb-4">:</span>
@@ -116,7 +116,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
               {String(timeLeft.seconds).padStart(2, '0')}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1">Detik</span>
+          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-600 mt-1">Detik</span>
         </div>
       </div>
     </div>

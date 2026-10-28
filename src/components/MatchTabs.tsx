@@ -47,6 +47,7 @@ interface EventItem {
 interface MatchTabsProps {
   match: {
     id: string;
+    seasonName?: string;
     opponentName: string;
     opponentLogo: string;
     matchDate: Date | string;
@@ -137,6 +138,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
     playerId: e.player?.id || '',
     type: e.type,
     assistPlayerId: e.assistPlayer?.id || undefined,
+    minute: e.minute,
+    player: e.player,
+    assistPlayer: e.assistPlayer,
   }));
 
   const dur = match.duration || 60;
@@ -201,31 +205,29 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* ═══════════════════════════════════════════════════ */}
-      {/* SLIDE TOGGLE BUTTONS                                */}
+      {/* TAB NAVIGATION: SUMMARY & LINE UP (NAVBAR STYLE)    */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="flex items-center justify-center gap-2 p-1.5 glass-panel rounded-2xl max-w-sm mx-auto border border-sky-400/20 shadow-lg shadow-sky-950/40">
+      <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
         <button
           onClick={() => setActiveTab('summary')}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-300 flex items-center justify-center gap-2 ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             activeTab === 'summary'
-              ? 'blue-gradient-bg text-white shadow-md shadow-sky-500/30 scale-[1.02]'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'border-blue-600 text-blue-600 font-black'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Activity className="w-4 h-4" />
-          <span>Summary</span>
+          Ringkasan
         </button>
 
         <button
           onClick={() => setActiveTab('lineup')}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-300 flex items-center justify-center gap-2 ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             activeTab === 'lineup'
-              ? 'blue-gradient-bg text-white shadow-md shadow-sky-500/30 scale-[1.02]'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'border-blue-600 text-blue-600 font-black'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Users className="w-4 h-4" />
-          <span>Line Up</span>
+          Line Up
         </button>
       </div>
 
@@ -236,45 +238,45 @@ export default function MatchTabs({ match }: MatchTabsProps) {
         <div className="space-y-6 animate-fadeIn">
           {/* Summary Text Box - ONLY SHOW IF NOT EMPTY */}
           {Boolean(match.summary && match.summary.trim()) && (
-            <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-sky-500/20 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-400">
-                <Activity className="w-4 h-4 text-sky-400" />
+            <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                <Activity className="w-4 h-4 text-blue-600" />
                 Ringkasan Laga
               </div>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
                 "{match.summary}"
               </p>
             </div>
           )}
 
           {/* Timeline Section */}
-          <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-slate-800 space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-              <Clock className="w-4 h-4 text-sky-400" />
-              <h3 className="text-xs sm:text-sm font-black uppercase text-sky-300 tracking-wide">
+          <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <h3 className="text-xs sm:text-sm font-black uppercase text-slate-900 tracking-wide">
                 Timeline Pertandingan
               </h3>
             </div>
 
             {displayTimelineEvents.length === 0 ? (
               <div className="text-center py-8 space-y-2">
-                <Shield className="w-8 h-8 text-slate-700 mx-auto" />
+                <Shield className="w-8 h-8 text-slate-300 mx-auto" />
                 <p className="text-xs font-semibold text-slate-500">
                   {match.status === 'scheduled' ? 'Pertandingan belum dimulai.' : 'Belum ada event tercatat untuk pertandingan ini.'}
                 </p>
               </div>
             ) : (
-              <div className="relative pl-5 sm:pl-7 border-l border-slate-800 space-y-4 max-w-3xl mx-auto">
+              <div className="relative pl-5 sm:pl-7 border-l border-slate-200 space-y-4 max-w-3xl mx-auto">
                 {displayTimelineEvents.map((event) => (
                   <div key={event.id} className="relative group">
                     {/* Minute Badge */}
-                    <div className="absolute -left-[31px] sm:-left-[39px] top-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-900 border border-slate-700 text-slate-400 text-[9px] sm:text-[10px] font-mono font-bold flex items-center justify-center shadow">
+                    <div className="absolute -left-[31px] sm:-left-[39px] top-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white border border-slate-200 text-slate-700 text-[9px] sm:text-[10px] font-mono font-bold flex items-center justify-center shadow-xs">
                       {event.minute}'
                     </div>
 
-                    <div className="bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-800/80 space-y-1 hover:border-slate-700 transition-colors">
+                    <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 space-y-1 hover:border-slate-300 transition-colors">
                       <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold">
-                        <span className="uppercase text-slate-400 flex items-center gap-1.5">
+                        <span className="uppercase text-slate-500 flex items-center gap-1.5">
                           {event.type === 'goal' && (
                             <>
                               <BallIcon size={14} /> GOL!
@@ -288,8 +290,8 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                           {event.type === 'penalty' && (
                             <>
                               <span className="relative inline-flex items-center shrink-0 mr-1">
-                                <i className="fa-regular fa-futbol text-amber-400 text-xs" />
-                                <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-sm">
+                                <i className="fa-regular fa-futbol text-amber-500 text-xs" />
+                                <span className="absolute -top-1.5 -right-2 w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black text-[7px] flex items-center justify-center leading-none shadow-xs">
                                   P
                                 </span>
                               </span> GOL PENALTI!
@@ -315,55 +317,55 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                           )}
                           {event.type === 'sub' && (
                             <>
-                              <i className="fa-solid fa-right-left text-sky-400 shrink-0" /> Pergantian Pemain
+                              <i className="fa-solid fa-right-left text-blue-600 shrink-0" /> Pergantian Pemain
                             </>
                           )}
                           {event.type === 'kickoff_1' && (
-                            <span className="text-cyan-400 flex items-center gap-1"><Play className="w-3 h-3 fill-cyan-400" /> KICKOFF BABAK 1</span>
+                            <span className="text-blue-600 flex items-center gap-1"><Play className="w-3 h-3 fill-blue-600" /> KICKOFF BABAK 1</span>
                           )}
                           {event.type === 'kickoff_2' && (
-                            <span className="text-cyan-400 flex items-center gap-1"><Play className="w-3 h-3 fill-cyan-400" /> KICKOFF BABAK 2</span>
+                            <span className="text-blue-600 flex items-center gap-1"><Play className="w-3 h-3 fill-blue-600" /> KICKOFF BABAK 2</span>
                           )}
                           {event.type === 'halftime' && (
-                            <span className="text-sky-300">HALF-TIME</span>
+                            <span className="text-blue-600 font-bold">HALF-TIME</span>
                           )}
                           {event.type === 'fulltime' && (
-                            <span className="text-sky-300">FULL-TIME</span>
+                            <span className="text-blue-600 font-bold">FULL-TIME</span>
                           )}
                         </span>
                       </div>
 
                       {event.isSystem || ['kickoff_1', 'kickoff_2', 'halftime', 'fulltime'].includes(event.type) ? (
-                        <div className="text-xs sm:text-sm font-bold text-slate-200">
+                        <div className="text-xs sm:text-sm font-bold text-slate-900">
                           {event.type === 'kickoff_1' && 'Kickoff Babak Pertama'}
                           {event.type === 'kickoff_2' && 'Kickoff Babak Kedua'}
                           {event.type === 'halftime' && 'Babak Pertama Berakhir'}
                           {event.type === 'fulltime' && 'Pertandingan Selesai'}
                         </div>
                       ) : event.type === 'sub' ? (
-                        <div className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5 flex-wrap">
-                          <span className="text-green-400">{event.player?.name}</span>
-                          <i className="fa-solid fa-right-left text-sky-400 text-[10px]" />
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-emerald-600 font-bold">{event.player?.name}</span>
+                          <i className="fa-solid fa-right-left text-blue-600 text-[10px]" />
                           {event.assistPlayer ? (
-                            <span className="text-red-400">{event.assistPlayer.name}</span>
+                            <span className="text-rose-600 font-bold">{event.assistPlayer.name}</span>
                           ) : null}
                         </div>
                       ) : (
-                        <div className="text-xs sm:text-sm font-bold text-slate-200">
+                        <div className="text-xs sm:text-sm font-bold text-slate-900">
                           {event.player?.name}
                         </div>
                       )}
 
                       {!event.isSystem && event.type !== 'sub' && event.assistPlayer && (
-                        <div className="text-[10px] sm:text-xs text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-3.5 h-3.5 rounded-full bg-amber-400/20 border border-amber-400/60 text-amber-400 font-mono font-black text-[9px] inline-flex items-center justify-center">A</span>
+                        <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1">
+                          <span className="w-3.5 h-3.5 rounded-full bg-amber-100 border border-amber-300 text-amber-700 font-mono font-black text-[9px] inline-flex items-center justify-center">A</span>
                           <span>Assist:</span>
-                          <span className="font-semibold text-slate-300">{event.assistPlayer.name}</span>
+                          <span className="font-semibold text-slate-700">{event.assistPlayer.name}</span>
                         </div>
                       )}
 
                       {event.description && (
-                        <div className="text-[10px] sm:text-xs text-slate-400 italic pt-1 border-t border-slate-800/60 mt-1">
+                        <div className="text-[10px] sm:text-xs text-slate-500 italic pt-1 border-t border-slate-200 mt-1">
                           "{event.description}"
                         </div>
                       )}
@@ -380,24 +382,26 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* TAB CONTENT: LINEUP & TACTICAL PITCH                */}
       {/* ═══════════════════════════════════════════════════ */}
       {activeTab === 'lineup' && (
-        <div className="space-y-4 animate-fadeIn">
-          {/* Tactical Pitch 2D */}
-          <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-sky-400/20">
-            <TacticalPitch lineups={match.lineups} formation={match.formation} events={pitchEvents} />
-          </div>
+        <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+          {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
+          <TacticalPitch
+            lineups={match.lineups}
+            formation={match.formation}
+            events={pitchEvents}
+            season={match.seasonName}
+          />
 
           {/* Lineup Detail Grid (Starting XI + Substitutes) */}
           <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
             {/* Starting XI List */}
-            <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-emerald-400" />
-                  <h4 className="text-sm sm:text-base font-black uppercase text-white">
+            <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h4 className="text-sm sm:text-base font-black uppercase text-slate-900">
                     Starting
                   </h4>
                 </div>
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs font-bold text-slate-500">
                   {starters.length} Pemain
                 </span>
               </div>
@@ -407,7 +411,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                   Belum ada Starting XI tercatat.
                 </p>
               ) : (
-                <div className="divide-y divide-slate-800/60">
+                <div className="divide-y divide-slate-100">
                   {starters.map((item) => {
                     const chronEvts = getPlayerChronologicalEvents(item.player.id);
                     const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
@@ -416,7 +420,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                     const Content = (
                       <>
                         {/* Photo Avatar */}
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
                             src={item.player.photoUrl || '/playertemplate.webp'}
                             alt={item.player.name}
@@ -425,19 +429,19 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         </div>
 
                         {/* Squad Number — Compact Aligned Column */}
-                        <span className="w-5 text-center text-xs font-black text-sky-400 font-mono shrink-0">
+                        <span className="w-5 text-center text-xs font-black text-blue-600 font-mono shrink-0">
                           {item.player.number}
                         </span>
 
                         {/* Player Name — Tight Left */}
-                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
-                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
+                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-300">Loan</span>}
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
                               className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.type === 'sub_in' ? 'text-emerald-400' : 'text-red-500'
+                                sub.type === 'sub_in' ? 'text-emerald-600' : 'text-red-500'
                               }`}
                               title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
@@ -452,19 +456,19 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                               {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
                               {e.type === 'penalty' && (
                                 <span className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
-                                  <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                  <i className="fa-regular fa-futbol text-amber-500 text-[10px]" />
                                   <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
                                     P
                                   </span>
                                 </span>
                               )}
                               {e.type === 'assist' && (
-                                <span className="text-amber-400 font-black text-[10px] leading-none shrink-0" title="Assist">
+                                <span className="text-amber-600 font-black text-[10px] leading-none shrink-0" title="Assist">
                                   A
                                 </span>
                               )}
                               {e.type === 'yellow_card' && (
-                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" title="Kartu Kuning" />
+                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-400" title="Kartu Kuning" />
                               )}
                               {e.type === 'second_yellow' && (
                                 <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
@@ -473,7 +477,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                                 </span>
                               )}
                               {e.type === 'red_card' && (
-                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-500" title="Kartu Merah" />
                               )}
                             </span>
                           ))}
@@ -482,14 +486,14 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                     );
 
                     return isGuest ? (
-                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-300 select-none">
+                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-800 select-none">
                         {Content}
                       </div>
                     ) : (
                       <Link
                         key={item.id}
                         href={`/players/${item.player.slug}`}
-                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
+                        className="flex items-center gap-2 py-2 hover:bg-slate-50 px-1.5 rounded-xl transition-colors group"
                       >
                         {Content}
                       </Link>
@@ -501,20 +505,19 @@ export default function MatchTabs({ match }: MatchTabsProps) {
 
             {/* Bench / Substitutes List - ONLY SHOW IF BENCH HAS PLAYERS */}
             {bench.length > 0 && (
-              <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-sky-400" />
-                    <h4 className="text-sm sm:text-base font-black uppercase text-white">
+              <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h4 className="text-sm sm:text-base font-black uppercase text-slate-900">
                       Substitution
                     </h4>
                   </div>
-                  <span className="text-xs font-bold text-slate-400">
+                  <span className="text-xs font-bold text-slate-500">
                     {bench.length} Pemain
                   </span>
                 </div>
 
-                <div className="divide-y divide-slate-800/60">
+                <div className="divide-y divide-slate-100">
                   {bench.map((item) => {
                     const chronEvts = getPlayerChronologicalEvents(item.player.id);
                     const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
@@ -523,28 +526,28 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                     const Content = (
                       <>
                         {/* Photo Avatar */}
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
                             src={item.player.photoUrl || '/playertemplate.webp'}
                             alt={item.player.name}
-                            className="w-full h-full object-cover object-top scale-[1.35] origin-top opacity-80 group-hover:opacity-100"
+                            className="w-full h-full object-cover object-top scale-[1.35] origin-top opacity-90 group-hover:opacity-100"
                           />
                         </div>
 
                         {/* Squad Number — Compact Aligned Column */}
-                        <span className="w-5 text-center text-xs font-black text-slate-400 font-mono shrink-0">
+                        <span className="w-5 text-center text-xs font-black text-slate-500 font-mono shrink-0">
                           {item.player.number}
                         </span>
 
                         {/* Player Name — Tight Left */}
-                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-300 group-hover:text-sky-300 transition-colors truncate flex items-center gap-1">
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1">
                           {item.player.name}
-                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Loan</span>}
+                          {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-300">Loan</span>}
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
                               className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.type === 'sub_in' ? 'text-emerald-400' : 'text-red-500'
+                                sub.type === 'sub_in' ? 'text-emerald-600' : 'text-red-500'
                               }`}
                               title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
@@ -559,19 +562,19 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                               {e.type === 'own_goal' && <i className="fa-regular fa-futbol text-red-500 text-[10px] shrink-0" title="Gol Bunuh Diri" />}
                               {e.type === 'penalty' && (
                                 <span className="relative inline-flex items-center shrink-0 mr-1" title="Gol Penalti">
-                                  <i className="fa-regular fa-futbol text-amber-400 text-[10px]" />
+                                  <i className="fa-regular fa-futbol text-amber-500 text-[10px]" />
                                   <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-slate-950 font-black text-[6px] flex items-center justify-center leading-none shadow-xs">
                                     P
                                   </span>
                                 </span>
                               )}
                               {e.type === 'assist' && (
-                                <span className="text-amber-400 font-black text-[10px] leading-none shrink-0" title="Assist">
+                                <span className="text-amber-600 font-black text-[10px] leading-none shrink-0" title="Assist">
                                   A
                                 </span>
                               )}
                               {e.type === 'yellow_card' && (
-                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-300/40" title="Kartu Kuning" />
+                                <span className="w-2 h-3 bg-amber-400 rounded-[1px] inline-block shrink-0 shadow-xs border border-amber-400" title="Kartu Kuning" />
                               )}
                               {e.type === 'second_yellow' && (
                                 <span className="relative inline-flex items-center shrink-0 align-middle ml-0.5" title="Kartu Kuning 2x (Kartu Merah)">
@@ -580,7 +583,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                                 </span>
                               )}
                               {e.type === 'red_card' && (
-                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-400/40" title="Kartu Merah" />
+                                <span className="w-2 h-3 bg-red-600 rounded-[1px] inline-block shrink-0 shadow-xs border border-red-500" title="Kartu Merah" />
                               )}
                             </span>
                           ))}
@@ -589,14 +592,14 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                     );
 
                     return isGuest ? (
-                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-300 select-none">
+                      <div key={item.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-800 select-none">
                         {Content}
                       </div>
                     ) : (
                       <Link
                         key={item.id}
                         href={`/players/${item.player.slug}`}
-                        className="flex items-center gap-2 py-2 hover:bg-slate-800/40 px-1.5 rounded-xl transition-colors group"
+                        className="flex items-center gap-2 py-2 hover:bg-slate-50 px-1.5 rounded-xl transition-colors group"
                       >
                         {Content}
                       </Link>

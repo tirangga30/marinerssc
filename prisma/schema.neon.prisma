@@ -1,0 +1,277 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Player {
+  id             String       @id @default(uuid())
+  name           String
+  slug           String       @unique
+  number         Int
+  position       String       // GK, DF, MF, FW
+  birthDate      DateTime?
+  nationality    String       @default("Indonesia")
+  heightCm       Int?
+  weightKg       Int?
+  photoUrl       String
+  bio            String
+  isCaptain      Boolean      @default(false)
+  isFeatured     Boolean      @default(false)
+  status         String       @default("Active") // Active, Injured
+  isGuest        Boolean      @default(false)
+  hidePhoto      Boolean      @default(false)
+  guestMatchId   String?
+  goals          Int          @default(0)
+  assists        Int          @default(0)
+  appearances    Int          @default(0)
+  yellowCards    Int          @default(0)
+  redCards       Int          @default(0)
+  seasonData     String?      @default("{}") // JSON overrides per season: { "2026": { "photoUrl": "...", "number": 10 } }
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  lineups        MatchLineup[]
+  events         MatchEvent[]       @relation("PlayerEvents")
+  assistedEvents MatchEvent[]       @relation("AssistPlayerEvents")
+  attendances    MatchAttendance[]
+  member         Member?
+  seasons        Season[]
+}
+
+model Season {
+  id           String         @id @default(uuid())
+  name              String         @unique // e.g. "2026", "2027"
+  year              Int            @default(2026)
+  isCurrent         Boolean        @default(false)
+  featuredPlayerIds String[]       @default([])
+  createdAt         DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  competitions Competition[]
+  matches      FootballMatch[]
+  players      Player[]
+}
+
+model FootballMatch {
+  id            String        @id @default(uuid())
+  opponentName  String
+  opponentLogo  String
+  matchDate     DateTime
+  competition   String        @default("FRIENDLY")
+  competitionId String?
+  competitionRef Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  stage         String?       @default("Matchday 1")
+  seasonName    String        @default("2026")
+  seasonId      String?
+  season        Season?       @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  venue         String        @default("Stadion Gelora Samudra, Jakarta")
+  isHome        Boolean       @default(true)
+  isLiveEnabled Boolean       @default(false)
+  status        String        @default("scheduled") // scheduled, live, finished
+  homeScore     Int?
+  awayScore     Int?
+  formation     String        @default("Belum Tersedia")
+  summary       String?
+  duration      Int           @default(60)
+  extraTime     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  lineups       MatchLineup[]
+  events        MatchEvent[]
+  attendances   MatchAttendance[]
+}
+
+model MatchLineup {
+  id            String        @id @default(uuid())
+  matchId       String
+  playerId      String
+  isStarter     Boolean       @default(true)
+  pitchPosition String        // e.g. GK, RB, CB1, CB2, LB, CM1, CM2, CAM, RW, ST, LW, SUB
+  positionName  String        // e.g. Goalkeeper, Right Back, Striker
+  x             Float?
+  y             Float?
+  createdAt     DateTime      @default(now())
+
+  match         FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player        Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model MatchEvent {
+  id             String        @id @default(uuid())
+  matchId        String
+  playerId       String
+  assistPlayerId String?
+  type           String        // goal, assist, yellow_card, red_card, sub, own_goal, penalty
+  minute         Int
+  description    String?
+  createdAt      DateTime      @default(now())
+
+  match          FootballMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player         Player        @relation("PlayerEvents", fields: [playerId], references: [id], onDelete: Cascade)
+  assistPlayer   Player?       @relation("AssistPlayerEvents", fields: [assistPlayerId], references: [id], onDelete: SetNull)
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  category    String   @default("Kabar Tim") // Laporan Pertandingan, Kabar Tim, Transfer
+  thumbnail   String
+  images      String?
+  content     String
+  isHidden    Boolean  @default(false)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Competition {
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  season      String         @default("2026")
+  seasonId    String?
+  seasonRef   Season?        @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  type        String         @default("Turnamen") // Friendly, Turnamen, Liga
+  isPrimary   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  matches     FootballMatch[]
+}
+
+// ──────────────────────────────────────────
+// SOCCER COMMUNITY & MEMBER MODELS
+// ──────────────────────────────────────────
+
+model Member {
+  id              String       @id @default(uuid())
+  memberCode      String       @unique // Login ID e.g. MSC-M1024
+  password        String       // Plain / hashed password for member login
+  fullName        String
+  nickname        String?
+  origin          String       // Asal / Domisili
+  phone           String       // WhatsApp Number
+  photoUrl        String?
+  position        String       @default("MF") // GK, DF, MF, FW
+  altPosition     String?
+  jerseyNumber    Int          // 30 - 99 random or custom
+  tier            String       @default("FAN") // FAN, PRO, ELITE
+  status          String       @default("ACTIVE") // ACTIVE, INACTIVE, PENDING
+  paymentProof    String?
+  paymentStatus   String       @default("VERIFIED") // PENDING, VERIFIED, REJECTED
+  joinedAt        DateTime     @default(now())
+  expiresAt       DateTime?
+  isPermanent     Boolean      @default(false)
+  playerId        String?      @unique
+  player          Player?      @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  // Personal Stats
+  funAppearances  Int          @default(0)
+  mainAppearances Int          @default(0)
+  goals           Int          @default(0)
+  assists         Int          @default(0)
+  yellowCards     Int          @default(0)
+  redCards        Int          @default(0)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  matchAttendances MatchAttendance[]
+  funMatchEvents   FunMatchEvent[]
+}
+
+model FunMatch {
+  id          String        @id @default(uuid())
+  title       String        @default("Fun Match Community")
+  matchDate   DateTime
+  venue       String        @default("Stadion Gelora Samudra, Jakarta")
+  teamAName   String        @default("TIM A (NAVY)")
+  teamBName   String        @default("TIM B (GOLD)")
+  teamALogo   String?       @default("/marinerssc.webp")
+  teamBLogo   String?       @default("/defaultteam.webp")
+  teamAScore  Int?
+  teamBScore  Int?
+  status      String        @default("scheduled") // scheduled, live, finished
+  duration    Int           @default(60)
+  summary     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  attendances MatchAttendance[]
+  events      FunMatchEvent[]
+}
+
+model MatchAttendance {
+  id            String         @id @default(uuid())
+  matchId       String?        // Tim Utama (FootballMatch)
+  funMatchId    String?        // Fun Match (FunMatch)
+  memberId      String?        // Jika player adalah Member
+  playerId      String?        // Jika player adalah Skuad Utama / Tamu
+  playerType    String         @default("MEMBER") // "SQUAD" | "MEMBER" | "GUEST"
+  playerName    String?
+  status        String         @default("INVITED") // "INVITED" (Menunggu Konfirmasi), "CONFIRMED" (Ikut), "DECLINED" (Tidak Ikut)
+  declineReason String?
+  assignedTeam  String?        // For Fun Match: "TEAM_A" | "TEAM_B" | null
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  footballMatch FootballMatch? @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  funMatch      FunMatch?      @relation(fields: [funMatchId], references: [id], onDelete: Cascade)
+  member        Member?        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  player        Player?        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model FunMatchEvent {
+  id          String        @id @default(uuid())
+  funMatchId  String
+  memberId    String?
+  playerName  String?
+  team        String        // "TEAM_A" | "TEAM_B"
+  type        String        // goal, assist, yellow_card, red_card
+  minute      Int
+  description String?
+  createdAt   DateTime      @default(now())
+
+  funMatch    FunMatch      @relation(fields: [funMatchId], references: [id], onDelete: Cascade)
+  member      Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+}
+
+model SystemSetting {
+  id             String   @id @default("default")
+  teamName       String   @default("Mariners SC")
+  teamLogo       String   @default("/marinerssc.webp")
+  loginWallpaper String   @default("/newposter.webp")
+  adminWallpaper String   @default("/stadium_hero2.png")
+  posterInterval Int      @default(5)
+  securityPin    String   @default("1234")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model HeroPoster {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  title     String?
+  subtitle  String?
+  linkUrl   String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

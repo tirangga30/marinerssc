@@ -175,14 +175,13 @@ export default function ImageCropperModal({
       const destW = currentRenderWidth * scaleMultiplier;
       const destH = currentRenderHeight * scaleMultiplier;
 
-      // Fill background dark slate
-      ctx.fillStyle = '#060b14';
-      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      // Clear canvas to preserve full alpha transparency for PNGs
+      ctx.clearRect(0, 0, targetWidth, targetHeight);
 
       // Draw the image onto canvas
       ctx.drawImage(imgElement, destX, destY, destW, destH);
 
-      // Convert to high-quality JPEG Blob
+      // Convert to high-quality PNG Blob so transparency is fully preserved
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -194,8 +193,7 @@ export default function ImageCropperModal({
           }
           setIsProcessing(false);
         },
-        'image/jpeg',
-        0.85
+        'image/png'
       );
     } catch (err: any) {
       console.error('Gagal melakukan crop foto:', err);
@@ -241,10 +239,14 @@ export default function ImageCropperModal({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            style={{ aspectRatio: `${aspectRatio}` }}
+            style={{
+              aspectRatio: `${aspectRatio}`,
+              backgroundImage: 'repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%)',
+              backgroundSize: '20px 20px',
+            }}
             className={`relative ${
               isLandscape ? 'w-full max-w-xl sm:max-w-2xl' : 'w-64 sm:w-72'
-            } rounded-2xl overflow-hidden bg-slate-950 border-2 border-sky-400/50 shadow-2xl cursor-grab active:cursor-grabbing select-none`}
+            } rounded-2xl overflow-hidden border-2 border-sky-400/50 shadow-2xl cursor-grab active:cursor-grabbing select-none`}
           >
             {imgElement && (
               <div

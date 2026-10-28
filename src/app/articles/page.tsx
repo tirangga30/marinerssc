@@ -1,10 +1,27 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { getMainThumbnail } from '@/lib/articles';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+const getCachedArticles = unstable_cache(
+  async () => {
+    try {
+      return await prisma.article.findMany({
+        where: { isHidden: false },
+        orderBy: { publishedAt: 'desc' },
+      });
+    } catch (e) {
+      console.warn('Database unreachable in getCachedArticles, fallback to empty array:', e);
+      return [];
+    }
+  },
+  ['mariners-articles-page-cache'],
+  { revalidate: 60, tags: ['articles'] }
+);
 
 export default async function ArticlesPage({
   searchParams,
@@ -15,10 +32,7 @@ export default async function ArticlesPage({
   const category = params.category || 'all';
   const query = params.search || '';
 
-  const articles = await prisma.article.findMany({
-    where: { isHidden: false },
-    orderBy: { publishedAt: 'desc' },
-  });
+  const articles = await getCachedArticles();
 
   const filteredArticles = articles.filter((article) => {
     const matchCategory = category === 'all' || article.category === category;
@@ -34,26 +48,15 @@ export default async function ArticlesPage({
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       
-      {/* Header Banner */}
-      <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-sky-400/20 text-center space-y-2 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">Pemberitaan Resmi Klub</span>
-        <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
-          Kabar & Berita Mariners SC
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-          Informasi terkini laporan laga, kabar kebugaran pemain, pengumuman klub, dan aktivitas tim.
-        </p>
-      </div>
 
-      {/* Category Filter Bar */}
-      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+      {/* Category Filter Bar (Navbar Underline Style) */}
+      <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
         <Link
           href="/articles?category=all"
-          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
             category === 'all'
-              ? 'white-blue-btn'
-              : 'glass-panel text-slate-300 hover:text-sky-300'
+              ? 'text-blue-600 border-blue-600 font-black'
+              : 'text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300'
           }`}
         >
           Semua
@@ -62,10 +65,10 @@ export default async function ArticlesPage({
           <Link
             key={cat}
             href={`/articles?category=${encodeURIComponent(cat)}`}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
               category === cat
-                ? 'white-blue-btn'
-                : 'glass-panel text-slate-300 hover:text-sky-300'
+                ? 'text-blue-600 border-blue-600 font-black'
+                : 'text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300'
             }`}
           >
             {cat}
@@ -79,37 +82,30 @@ export default async function ArticlesPage({
           <Link
             key={article.id}
             href={`/articles/${article.slug}`}
-            className="group glass-panel rounded-lg sm:rounded-2xl overflow-hidden border border-slate-800 card-glow-hover flex flex-col justify-between"
+            className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-end bg-slate-900"
           >
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-900">
-              <img
-                src={getMainThumbnail(article.thumbnail)}
-                alt={article.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-1 sm:top-3 left-1 sm:left-3 px-1 sm:px-2.5 py-0.5 rounded bg-white text-blue-950 font-black text-[7px] sm:text-[10px] uppercase tracking-wider shadow">
-                {article.category}
-              </div>
-            </div>
+            {/* Article Thumbnail Image */}
+            <img
+              src={getMainThumbnail(article.thumbnail)}
+              alt={article.title}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
 
-            <div className="p-2 sm:p-5 space-y-1 sm:space-y-3 flex-1 flex flex-col justify-between">
-              <div>
-                <span className="text-[8px] sm:text-[11px] text-slate-400 flex items-center gap-1 mb-1">
-                  <Calendar className="w-3 h-3 text-sky-400" />
-                  {new Date(article.publishedAt).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'short',
-                  })}
-                </span>
-                <h3 className="text-[10px] sm:text-base font-bold text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-tight sm:leading-normal">
-                  {article.title}
-                </h3>
-              </div>
+            {/* Black Gradient Overlay from Bottom - Compact & Smooth Easing */}
+            <div className="absolute inset-x-0 bottom-0 h-[42%] sm:h-[38%] player-card-scrim pointer-events-none" />
 
-              <div className="pt-1 sm:pt-3 border-t border-slate-800 hidden sm:flex items-center justify-between text-xs font-bold text-sky-400">
-                <span>Baca Selengkapnya</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
+            {/* Title & Date Inside the Image Box */}
+            <div className="relative z-10 p-2 sm:p-4 space-y-0.5 sm:space-y-1">
+              <span className="text-[7px] sm:text-[10px] text-sky-300 font-bold block leading-none drop-shadow-xs">
+                {new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+              <h3 className="text-[9px] sm:text-sm md:text-base font-black text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-tight drop-shadow-md">
+                {article.title}
+              </h3>
             </div>
           </Link>
         ))}

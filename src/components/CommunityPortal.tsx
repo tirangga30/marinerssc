@@ -84,6 +84,9 @@ export default function CommunityPortal({
       if (!updateRes.ok) throw new Error(updateData.error || 'Gagal menyimpan foto profil baru');
 
       setMember((prev: any) => ({ ...prev, photoUrl: newPhotoUrl }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('member_auth_changed'));
+      }
       setMessage({ type: 'success', text: 'Foto profil Anda berhasil diubah!' });
       router.refresh();
     } catch (err: any) {
@@ -97,6 +100,9 @@ export default function CommunityPortal({
     try {
       await fetch('/api/community/auth/logout', { method: 'POST' });
       setMember(null);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('member_auth_changed'));
+      }
       router.refresh();
     } catch (e) {
       console.error(e);

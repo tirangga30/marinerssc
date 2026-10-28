@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
+import { getClientPublicSeason } from '@/lib/publicSeason';
 
 interface LineupPlayer {
   id: string;
@@ -18,20 +20,22 @@ interface LineupPlayer {
     number: number;
     position: string;
     photoUrl: string;
+    seasonData?: any;
   };
 }
 
 interface TacticalPitchProps {
   lineups: LineupPlayer[];
   formation?: string;
+  season?: string;
   events?: Array<{
-    id: string;
+    id?: string;
     playerId: string;
     type: string;
-    assistPlayerId?: string;
+    assistPlayerId?: string | null;
     minute?: number;
-    player?: { id: string; name?: string };
-    assistPlayer?: { id: string; name?: string };
+    player?: { id: string; name?: string; slug?: string; photoUrl?: string; number?: number; seasonData?: any } | null;
+    assistPlayer?: { id: string; name?: string; slug?: string; photoUrl?: string; number?: number; seasonData?: any } | null;
   }>;
 }
 
@@ -57,7 +61,15 @@ const positionCoordinates: Record<string, { top: number; left: number }> = {
   CF: { top: 14, left: 50 },
 };
 
-export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', events = [] }: TacticalPitchProps) {
+
+export default function TacticalPitch({
+  lineups,
+  formation = 'Belum Tersedia',
+  events = [],
+  season,
+}: TacticalPitchProps) {
+  const activeSeason = season || getClientPublicSeason() || '2026';
+
   const getPosWeight = (pos: string, pitchPos?: string): number => {
     const p = (pos || '').toUpperCase();
     const pitchP = (pitchPos || '').toUpperCase();
@@ -81,34 +93,84 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
   const starters = sortLineupsByPos(lineups.filter((l) => l.isStarter));
   const bench = sortLineupsByPos(lineups.filter((l) => !l.isStarter));
 
+  const subEvents = (events || [])
+    .filter((e) => e.type === 'sub')
+    .map((e, idx) => {
+      // Dapatkan referensi kedua pemain dalam event pergantian
+      // Prioritaskan player yang sudah ada di lineups karena lineups sudah ter-resolve untuk musim pertandingan
+      const p1Lineup = lineups.find((l) => l.player?.id === (e.player?.id || e.playerId));
+      const p2Lineup = lineups.find((l) => l.player?.id === (e.assistPlayer?.id || e.assistPlayerId));
+
+      let p1: any = p1Lineup?.player || e.player;
+      let p2: any = p2Lineup?.player || e.assistPlayer;
+
+      if (p1) p1 = resolvePlayerForSeason(p1, activeSeason);
+      if (p2) p2 = resolvePlayerForSeason(p2, activeSeason);
+
+      // User requirement:
+      // Pemain CADANGAN yang di ATAS (termasuk fotonya) -> benchPlayer
+      // Pemain di LAPANG yang di BAWAH (di sebelah ikon putar) -> pitchPlayer
+      let benchPlayer: any;
+      let pitchPlayer: any;
+
+      if (!p1Lineup?.isStarter && p2Lineup?.isStarter) {
+        benchPlayer = p1;
+        pitchPlayer = p2;
+      } else if (!p2Lineup?.isStarter && p1Lineup?.isStarter) {
+        benchPlayer = p2;
+        pitchPlayer = p1;
+      } else {
+        // Fallback jika status starter sama: p1 adalah cadangan (atas), p2 adalah pemain di lapang (bawah)
+        benchPlayer = p1;
+        pitchPlayer = p2;
+      }
+
+      // Pastikan foto dan nomor benchPlayer & pitchPlayer selalu ter-resolve untuk activeSeason
+      if (benchPlayer) benchPlayer = resolvePlayerForSeason(benchPlayer, activeSeason);
+      if (pitchPlayer) pitchPlayer = resolvePlayerForSeason(pitchPlayer, activeSeason);
+
+      const benchNumber =
+        benchPlayer?.number ??
+        (benchPlayer?.id === p1?.id ? p1Lineup?.player?.number : p2Lineup?.player?.number);
+      const pitchNumber =
+        pitchPlayer?.number ??
+        (pitchPlayer?.id === p1?.id ? p1Lineup?.player?.number : p2Lineup?.player?.number);
+
+      return {
+        id: e.id || `sub-${idx}`,
+        minute: e.minute || 0,
+        benchPlayer,
+        pitchPlayer,
+        benchNumber,
+        pitchNumber,
+      };
+    })
+    .filter((item) => Boolean(item.benchPlayer || item.pitchPlayer))
+    .sort((a, b) => a.minute - b.minute);
+
   return (
-    <div className="space-y-2">
-      {/* Formation Badge Only (Compact top-right) */}
-      <div className="flex items-center justify-end pb-1">
-        <span className="text-[10px] sm:text-xs font-black font-mono px-3 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-400/30 shadow-sm">
+    <div className="bg-[#eff3f7] p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs space-y-4 max-w-4xl mx-auto">
+      {/* 1. Header (Luar Garis Lapang Atas): Tulisan Formasi di Kiri, Formasi di Kanan */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-300/60">
+        <span className="text-sm sm:text-base font-bold text-slate-800">
+          Formasi
+        </span>
+        <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
           {formation || 'Belum Tersedia'}
         </span>
       </div>
 
-      {/* Tactical Pitch (Tight Layout Filling Card) */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] max-w-4xl mx-auto">
-        
-        {/* Pitch Lines Overlay */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Outer Boundary */}
-          <div className="absolute inset-1 sm:inset-2 border-2 border-white/25 rounded-lg"></div>
-          
-          {/* Halfway Line & Center Circle */}
-          <div className="absolute top-1/2 left-1 right-1 sm:left-2 sm:right-2 h-0.5 bg-white/25 -translate-y-1/2"></div>
-          <div className="absolute top-1/2 left-1/2 w-24 sm:w-32 h-24 sm:h-32 rounded-full border-2 border-white/25 -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/35 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-          
-          {/* Penalty Area Top (Opponent side) */}
-          <div className="absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-b-2 border-x-2 border-white/25 rounded-b-lg"></div>
-          
-          {/* Penalty Area Bottom (Our side) */}
-          <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 w-3/5 h-1/5 border-t-2 border-x-2 border-white/25 rounded-t-lg"></div>
-        </div>
+      {/* 2. Tactical Pitch (Gambar /pitch.png & Marker Pemain) */}
+      <div
+        className="relative w-full max-w-xl mx-auto rounded-xl sm:rounded-2xl overflow-hidden select-none"
+        style={{ aspectRatio: '1132 / 1389' }}
+      >
+        {/* Background Gambar Lapangan (Garis dibuat transparan dan lembut) */}
+        <img
+          src="/pitch.png"
+          alt="Tactical Pitch"
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none mix-blend-multiply opacity-25"
+        />
 
         {/* Starter Markers on Pitch */}
         {starters.map((lineup) => {
@@ -134,8 +196,11 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
 
               const m = e.minute || 0;
               if (e.type === 'sub') {
-                if (isPlayer) evts.push({ id: e.id || `subin-${idx}`, type: 'sub_in', minute: m });
-                if (isAssist) evts.push({ id: e.id || `subout-${idx}`, type: 'sub_out', minute: m });
+                if (lineup.isStarter) {
+                  evts.push({ id: e.id || `subout-${idx}`, type: 'sub_out', minute: m });
+                } else {
+                  evts.push({ id: e.id || `subin-${idx}`, type: 'sub_in', minute: m });
+                }
               } else if (e.type === 'goal' || e.type === 'own_goal' || e.type === 'penalty') {
                 if (isPlayer) evts.push({ id: e.id || `evt-${idx}`, type: e.type, minute: m });
                 if (isAssist) evts.push({ id: e.id || `ast-${idx}`, type: 'assist', minute: m });
@@ -152,9 +217,9 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
           const isGuest = (lineup.player as any)?.isGuest;
           const TokenContent = (
             <>
-              {/* Player Avatar Circle */}
-              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-sky-400 shadow-lg shadow-blue-500/40 bg-slate-900 group-hover:border-white">
-                <div className="w-full h-full rounded-full overflow-hidden">
+              {/* Player Avatar Circle with Blue Gradient Border */}
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#003893] via-[#004bb8] to-sky-400 shadow-md shadow-blue-600/30 group-hover:scale-105 transition-transform">
+                <div className="w-full h-full rounded-full overflow-hidden bg-slate-100">
                   <img
                     src={lineup.player.photoUrl || '/playertemplate.webp'}
                     alt={lineup.player.name}
@@ -215,12 +280,12 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
 
               </div>
 
-              {/* Player Name Tag with squad number on the left in blue */}
-              <div className="mt-0.5 z-10 glass-panel px-2 py-0.5 rounded text-[9px] sm:text-xs font-bold text-white whitespace-nowrap group-hover:bg-blue-600 group-hover:text-white transition-colors border border-white/20 flex items-center gap-1 shadow-md">
-                <span className="text-sky-400 font-black font-mono">
+              {/* Player Name Tag with squad number on the left in blue and clear dark name text */}
+              <div className="mt-1 z-10 px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-xs font-bold whitespace-nowrap bg-white/95 text-slate-900 group-hover:bg-blue-50 group-hover:border-blue-400 transition-colors border border-slate-300/80 flex items-center gap-1 shadow-sm backdrop-blur-xs">
+                <span className="text-blue-600 font-black font-mono">
                   {lineup.player.number}
                 </span>
-                <span>
+                <span className="text-slate-900 font-black">
                   {lineup.player.name.split(' ')[0]}
                 </span>
               </div>
@@ -248,7 +313,97 @@ export default function TacticalPitch({ lineups, formation = 'Belum Tersedia', e
         })}
       </div>
 
+      {/* 3. Footer: Pemain yang digantikan (Luar Garis Lapang Bawah, Masih di Dalam Box #eff3f7) */}
+      {subEvents.length > 0 && (
+        <div className="pt-4 border-t border-slate-300/60 space-y-4">
+          <h4 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            Pemain yang digantikan
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+            {subEvents.map((sub, idx) => (
+              <div
+                key={sub.id || idx}
+                className="flex items-center gap-3.5 p-1 rounded-xl hover:bg-slate-200/50 transition-colors"
+              >
+                {/* Photo avatar pemain cadangan (di atas) */}
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-slate-300 shrink-0 bg-white flex items-center justify-center">
+                  {sub.benchPlayer?.photoUrl ? (
+                    <img
+                      src={sub.benchPlayer.photoUrl}
+                      alt={sub.benchPlayer?.name || 'Pemain Cadangan'}
+                      className="w-full h-full object-cover object-top scale-[1.35] origin-top"
+                    />
+                  ) : (
+                    <svg
+                      className="w-7 h-7 sm:w-8 sm:h-8 text-slate-400"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  )}
+                </div>
 
+                {/* Nama & Info Pergantian */}
+                <div className="min-w-0 flex-1">
+                  {/* Baris Atas: Pemain Cadangan Masuk (Nomor Punggung Biru di Kiri Nama) */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {sub.benchNumber != null && (
+                      <span className="text-blue-600 font-black font-mono text-xs sm:text-sm shrink-0">
+                        {sub.benchNumber}
+                      </span>
+                    )}
+                    {sub.benchPlayer?.slug ? (
+                      <Link
+                        href={`/players/${sub.benchPlayer.slug}`}
+                        className="text-sm sm:text-base font-semibold text-slate-900 hover:text-blue-600 transition-colors block truncate"
+                      >
+                        {sub.benchPlayer.name}
+                      </Link>
+                    ) : (
+                      <span className="text-sm sm:text-base font-semibold text-slate-900 block truncate">
+                        {sub.benchPlayer?.name || 'Pemain'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Baris Bawah: Menit di Ujung Kiri sebelum Icon, Nomor Punggung Pemain Digantikan Abu-Abu di Kiri Nama */}
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 font-medium mt-0.5 min-w-0">
+                    {Boolean(sub.minute) && (
+                      <span className="text-slate-500 font-bold font-mono text-[11px] sm:text-xs shrink-0">
+                        {sub.minute}'
+                      </span>
+                    )}
+                    <i className="fa-solid fa-arrows-rotate text-slate-400 text-[10px] sm:text-xs shrink-0" />
+                    {sub.pitchNumber != null && (
+                      <span className="text-slate-400 font-bold font-mono text-[11px] sm:text-xs shrink-0">
+                        {sub.pitchNumber}
+                      </span>
+                    )}
+                    {sub.pitchPlayer?.slug ? (
+                      <Link
+                        href={`/players/${sub.pitchPlayer.slug}`}
+                        className="hover:text-blue-600 transition-colors truncate block"
+                      >
+                        {sub.pitchPlayer.name}
+                      </Link>
+                    ) : (
+                      <span className="truncate block">
+                        {sub.pitchPlayer?.name || 'Pemain'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

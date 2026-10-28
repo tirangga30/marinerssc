@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
 import { renamePlayerPhotoFile } from '@/lib/fileNaming';
+import { parsePlayerSeasonData } from '@/lib/seasonPlayer';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -43,43 +44,40 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       updateData.slug = slug;
     }
 
+    // Determine target season if provided
+    const targetSeason = (data.seasonName || data.seasonId || '').trim();
+
+    // 1. Number validation and season override
+    let targetNumber = existingPlayer.number;
     if (data.number !== undefined) {
       const newNum = parseInt(data.number);
-      updateData.number = newNum;
+      targetNumber = newNum;
 
-      if (!existingPlayer.isGuest && newNum !== existingPlayer.number) {
-        const targetSeasonName = data.seasonName;
-        let targetSeasonId = data.seasonId;
-        if (!targetSeasonId && targetSeasonName) {
-          const s = await prisma.season.findUnique({ where: { name: targetSeasonName } });
-          if (s) targetSeasonId = s.id;
-        }
-
-        const seasonIdsToCheck = targetSeasonId
-          ? [targetSeasonId]
-          : existingPlayer.seasons.map((s) => s.id);
-
-        if (seasonIdsToCheck.length > 0) {
-          const conflict = await prisma.player.findFirst({
+      if (!existingPlayer.isGuest) {
+        if (targetSeason) {
+          // Check conflict strictly among other players in this target season
+          const otherPlayersInSeason = await prisma.player.findMany({
             where: {
-              number: newNum,
               isGuest: false,
               NOT: { id },
-              seasons: {
-                some: { id: { in: seasonIdsToCheck } },
-              },
+              seasons: { some: { OR: [{ name: targetSeason }, { id: targetSeason }] } },
             },
-            include: { seasons: true },
+            select: { id: true, name: true, number: true, seasonData: true },
           });
 
-          if (conflict) {
-            const matchedSeason = conflict.seasons.find((s) => seasonIdsToCheck.includes(s.id));
+          const conflictPlayer = otherPlayersInSeason.find((p) => {
+            const sd = parsePlayerSeasonData(p.seasonData);
+            const resolvedNum = typeof sd[targetSeason]?.number === 'number' ? sd[targetSeason].number : p.number;
+            return resolvedNum === newNum;
+          });
+
+          if (conflictPlayer) {
             return NextResponse.json(
-              { error: `Nomor punggung ${newNum} sudah digunakan oleh ${conflict.name}${matchedSeason ? ` di musim ${matchedSeason.name}` : ''}.` },
+              { error: `Nomor punggung ${newNum} sudah digunakan oleh ${conflictPlayer.name} di musim ${targetSeason}.` },
               { status: 400 }
             );
           }
-        } else {
+        } else if (newNum !== existingPlayer.number) {
           const conflict = await prisma.player.findFirst({
             where: {
               number: newNum,
@@ -96,6 +94,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         }
       }
     }
+
     if (data.position !== undefined) {
       const p = (data.position || '').trim().toUpperCase();
       if (p === 'GK' || p === 'GOALKEEPER') updateData.position = 'GOALKEEPER';
@@ -107,6 +106,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.birthDate !== undefined) updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
     if (data.heightCm !== undefined) updateData.heightCm = data.heightCm ? parseInt(data.heightCm) : null;
     if (data.weightKg !== undefined) updateData.weightKg = data.weightKg ? parseInt(data.weightKg) : null;
+
+    // 2. Photo validation
+    let targetPhotoUrl = existingPlayer.photoUrl;
     if (data.photoUrl !== undefined) {
       const rawPhotoUrl = (data.photoUrl || '').trim();
       const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.webp' || rawPhotoUrl.includes('unsplash.com');
@@ -125,8 +127,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           );
         }
       }
-      updateData.photoUrl = rawPhotoUrl;
+      targetPhotoUrl = rawPhotoUrl;
     }
+
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.isCaptain !== undefined) updateData.isCaptain = Boolean(data.isCaptain);
     if (data.isFeatured !== undefined) updateData.isFeatured = Boolean(data.isFeatured);
@@ -138,17 +141,50 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.yellowCards !== undefined) updateData.yellowCards = parseInt(data.yellowCards || 0);
     if (data.redCards !== undefined) updateData.redCards = parseInt(data.redCards || 0);
 
-    // Auto-rename photo file on disk if position, number, or name changed
+    // 3. Rename photo on disk if needed
     const finalPos = updateData.position || existingPlayer.position;
-    const finalNum = updateData.number !== undefined ? updateData.number : existingPlayer.number;
     const finalName = updateData.name || existingPlayer.name;
-    const sourcePhoto = updateData.photoUrl !== undefined ? updateData.photoUrl : existingPlayer.photoUrl;
 
-    if (sourcePhoto && sourcePhoto.startsWith('/uploads/players/')) {
-      const renamedUrl = renamePlayerPhotoFile(sourcePhoto, finalPos, finalNum, finalName);
+    if (targetPhotoUrl && targetPhotoUrl.startsWith('/uploads/players/')) {
+      const renamedUrl = renamePlayerPhotoFile(targetPhotoUrl, finalPos, targetNumber, finalName, targetSeason || null);
       if (renamedUrl) {
-        updateData.photoUrl = renamedUrl;
+        targetPhotoUrl = renamedUrl;
       }
+    }
+
+    // 4. Handle season-specific data isolation
+    if (targetSeason) {
+      const seasonMap = parsePlayerSeasonData(existingPlayer.seasonData);
+
+      // Snapshot other existing seasons if they don't have an override yet
+      // This guarantees editing in 2027 will NEVER mutate 2026 data!
+      existingPlayer.seasons.forEach((s) => {
+        const sKey = s.name;
+        if (sKey !== targetSeason && !seasonMap[sKey]) {
+          seasonMap[sKey] = {
+            photoUrl: existingPlayer.photoUrl,
+            number: existingPlayer.number,
+          };
+        }
+      });
+
+      // Set target season overrides
+      seasonMap[targetSeason] = {
+        photoUrl: targetPhotoUrl,
+        number: targetNumber,
+      };
+
+      updateData.seasonData = JSON.stringify(seasonMap);
+
+      // Also update baseline if target season is marked as current or is the only season
+      const targetSeasonObj = existingPlayer.seasons.find((s) => s.name === targetSeason || s.id === targetSeason);
+      if (!targetSeasonObj || targetSeasonObj.isCurrent || existingPlayer.seasons.length <= 1) {
+        updateData.photoUrl = targetPhotoUrl;
+        updateData.number = targetNumber;
+      }
+    } else {
+      updateData.photoUrl = targetPhotoUrl;
+      updateData.number = targetNumber;
     }
 
     const player = await prisma.player.update({
@@ -162,6 +198,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     revalidatePath('/');
     revalidatePath('/players');
     revalidatePath(`/players/${player.slug}`);
+    revalidatePath('/admin/players');
     revalidatePath('/stats');
 
     return NextResponse.json(player);

@@ -29,7 +29,10 @@ export async function POST(
     if (Array.isArray(featuredPlayerIds)) {
       finalIds = featuredPlayerIds.slice(0, 6);
     } else if (playerId) {
-      const current = season.featuredPlayerIds || [];
+      const rawCurrent = season.featuredPlayerIds;
+      const current: string[] = typeof rawCurrent === 'string'
+        ? (() => { try { return JSON.parse(rawCurrent); } catch { return []; } })()
+        : (Array.isArray(rawCurrent) ? rawCurrent : []);
       if (isFeatured) {
         if (current.length >= 6) {
           return NextResponse.json(
@@ -43,9 +46,10 @@ export async function POST(
       }
     }
 
+    const isSqlite = typeof season.featuredPlayerIds === 'string';
     const updatedSeason = await prisma.season.update({
       where: { id },
-      data: { featuredPlayerIds: finalIds },
+      data: { featuredPlayerIds: isSqlite ? JSON.stringify(finalIds) : (finalIds as any) },
     });
 
     if (playerId) {
@@ -61,7 +65,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      featuredPlayerIds: updatedSeason.featuredPlayerIds,
+      featuredPlayerIds: finalIds,
     });
   } catch (error: any) {
     console.error('Failed to update featured players for season:', error);

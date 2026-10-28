@@ -9,7 +9,7 @@ import { ClubModeProvider } from '@/context/ClubModeContext';
 
 /**
  * Membungkus Navbar, Footer & PageLoader dengan pengecekan path.
- * Halaman /admin/* tidak akan menampilkan Navbar & Footer publik.
+ * Halaman /admin/* tidak akan menampilkan Navbar & Footer publik dan tidak menggunakan wallpaper publik.
  */
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,9 +20,17 @@ export default function PublicShell({ children }: { children: React.ReactNode })
       <Suspense fallback={null}>
         <PageLoader />
       </Suspense>
-      {!isAdminPage && <Navbar />}
-      <main className="flex-1">{children}</main>
-      {!isAdminPage && <Footer />}
+      <div
+        className={
+          !isAdminPage
+            ? "min-h-screen flex flex-col cycling-main-bg"
+            : "min-h-screen flex flex-col"
+        }
+      >
+        {!isAdminPage && <Navbar />}
+        <main className="flex-1">{children}</main>
+        {!isAdminPage && <Footer />}
+      </div>
     </ClubModeProvider>
   );
 }

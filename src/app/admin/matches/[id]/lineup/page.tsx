@@ -9,6 +9,7 @@ import {
   UserCheck, Upload, Loader2, Play, Users, UserPlus, UserX
 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
+import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
 interface Player {
   id: string;
@@ -18,6 +19,7 @@ interface Player {
   photoUrl: string;
   isGuest: boolean;
   guestMatchId?: string | null;
+  seasonData?: any;
   member?: {
     id: string;
     isPermanent: boolean;
@@ -405,7 +407,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         const attData = await attRes.json();
         const pData = await pRes.json();
         if (attData.attendances) setMatchAttendances(attData.attendances);
-        if (pData) setPlayers(pData);
+        if (pData) setPlayers(Array.isArray(pData) ? pData.map((p: any) => resolvePlayerForSeason(p, matchData?.seasonName)) : pData);
       }
     } catch (e) {
       console.error(e);
@@ -430,7 +432,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         const attData = attRes.ok ? await attRes.json() : null;
         const memData = memRes.ok ? await memRes.json() : null;
 
-        setPlayers(playersData);
+        const resolvedPlayers = Array.isArray(playersData)
+          ? playersData.map((p: any) => resolvePlayerForSeason(p, matchInfo.seasonName))
+          : playersData;
+
+        setPlayers(resolvedPlayers);
         setMatchData(matchInfo);
         if (attData?.attendances) {
           setMatchAttendances(attData.attendances);
@@ -1048,9 +1054,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   />
                 </div>
 
-                {/* Pitch area — direct lines without box fill */}
+                {/* Pitch area — Modern Solid White-Grey Pitch */}
                 <div
-                  className="relative w-full select-none"
+                  className="relative w-full select-none rounded-2xl overflow-hidden shadow-sm border-2 border-slate-300 bg-slate-100"
                   style={{
                     paddingBottom: '115%',
                   }}
@@ -1059,22 +1065,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 >
                   {/* SVG Pitch Lines */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 115" preserveAspectRatio="none">
-                    <rect x="2" y="2" width="96" height="111" rx="0.5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                    <line x1="2" y1="57.5" x2="98" y2="57.5" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <circle cx="50" cy="57.5" r="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <circle cx="50" cy="57.5" r="0.7" fill="rgba(255,255,255,0.5)" />
+                    <rect x="2" y="2" width="96" height="111" rx="0.5" fill="none" stroke="rgba(100,116,139,0.5)" strokeWidth="0.5" />
+                    <line x1="2" y1="57.5" x2="98" y2="57.5" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
+                    <circle cx="50" cy="57.5" r="10" fill="none" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
+                    <circle cx="50" cy="57.5" r="0.7" fill="rgba(100,116,139,0.7)" />
                     {/* Top penalty area */}
-                    <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+                    <rect x="22" y="2" width="56" height="18" fill="none" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
+                    <rect x="35" y="2" width="30" height="7" fill="none" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
                     {/* Bottom penalty area */}
-                    <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
-                    <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+                    <rect x="22" y="95" width="56" height="18" fill="none" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
+                    <rect x="35" y="106" width="30" height="7" fill="none" stroke="rgba(100,116,139,0.4)" strokeWidth="0.4" />
                   </svg>
 
                   {/* Attack Arrow */}
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-30 pointer-events-none">
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-40 pointer-events-none">
                     <svg width="12" height="14" viewBox="0 0 12 14">
-                      <path d="M6 0L12 8H8v6H4V8H0Z" fill="white" />
+                      <path d="M6 0L12 8H8v6H4V8H0Z" fill="#64748b" />
                     </svg>
                   </div>
 

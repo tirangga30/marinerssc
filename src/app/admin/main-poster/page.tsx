@@ -404,12 +404,12 @@ export default function MainPosterAdminPage() {
           </span>
         </div>
 
-        {/* Carousel Viewport */}
-        <div className="relative aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+        {/* Carousel Viewport (Rasio 16:9 Full Gambar, Tanpa Gradasi Putih) */}
+        <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-2xl">
           {activePosters.length === 0 ? (
-            <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 text-xs space-y-2">
-              <ImageIcon className="w-8 h-8 text-slate-600" />
-              <span>Belum ada poster aktif. Poster bawaan (/LOGIN.webp) akan ditampilkan.</span>
+            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs space-y-2">
+              <ImageIcon className="w-8 h-8 text-slate-400" />
+              <span>Belum ada poster aktif. Poster bawaan (/newposter.webp) akan ditampilkan.</span>
             </div>
           ) : (
             activePosters.map((poster, idx) => (
@@ -421,34 +421,64 @@ export default function MainPosterAdminPage() {
               >
                 <img
                   src={poster.imageUrl}
-                  alt={`Slide ${idx + 1}`}
-                  className="w-full h-full object-cover"
+                  alt={poster.title || "Hero Poster"}
+                  className="w-full h-full object-cover object-center select-none"
+                  draggable={false}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
-                <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-slate-950/80 text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-                    Slot {poster.order || idx + 1}
-                  </span>
-                  {poster.linkUrl && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30 text-[10px] font-mono font-medium flex items-center gap-1 drop-shadow">
-                      <LinkIcon className="w-3 h-3 text-sky-400 shrink-0" />
-                      <span className="truncate max-w-[200px]">{poster.linkUrl}</span>
+
+                {/* Left sample typography (Hanya ditampilkan pada Slide 1) */}
+                {previewIndex === 0 && (
+                  <div className="absolute inset-y-0 left-0 w-full max-w-xs sm:max-w-md p-2.5 sm:p-6 flex flex-col justify-between z-10 pointer-events-none">
+                    <span className="text-[7px] sm:text-[9px] font-extrabold uppercase tracking-[0.25em] text-slate-700 leading-none drop-shadow-xs">
+                      S O C C E R &nbsp; C L U B
                     </span>
-                  )}
-                </div>
+                    <div className="space-y-0 sm:space-y-1 my-auto">
+                      <h3 className="text-xs sm:text-xl font-black text-slate-900 uppercase drop-shadow-xs">
+                        MARINERS SC
+                      </h3>
+                      <p className="text-[8px] sm:text-xs font-bold text-slate-900 drop-shadow-xs">
+                        Lebih dari sekadar sepak bola.
+                      </p>
+                      <p className="hidden sm:block text-[8px] sm:text-[10px] text-slate-700 line-clamp-1 drop-shadow-xs">
+                        Kami adalah keluarga, semangat, dan perjalanan tanpa henti.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 pointer-events-auto">
+                      <span className="px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[7px] sm:text-[8px] font-bold uppercase">
+                        Slot {poster.order || idx + 1}
+                      </span>
+                      {poster.linkUrl && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-slate-900/80 text-white border border-white/20 text-[7px] sm:text-[8px] font-mono flex items-center gap-1 truncate max-w-[120px] sm:max-w-[150px]">
+                          <LinkIcon className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                          {poster.linkUrl}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Right tagline (Hanya ditampilkan pada Slide 1) */}
+                {previewIndex === 0 && (
+                  <div className="hidden sm:flex absolute right-4 bottom-4 z-10 flex-col items-start gap-0.5 text-slate-900 select-none drop-shadow-sm">
+                    <span className="w-4 h-0.5 bg-blue-600 rounded-full mb-0.5" />
+                    <span className="text-[8px] font-bold text-slate-800 leading-tight">Satu Tim</span>
+                    <span className="text-[8px] font-black text-slate-900 leading-tight">Satu Tujuan</span>
+                    <span className="text-[8px] font-black text-blue-600 leading-tight">Mariners SC</span>
+                  </div>
+                )}
               </div>
             ))
           )}
 
-          {/* Dots Indicator */}
+          {/* Line Indicators */}
           {activePosters.length > 1 && (
-            <div className="absolute bottom-3 right-4 z-30 flex items-center gap-1.5">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/15">
               {activePosters.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setPreviewIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === previewIndex ? 'w-6 bg-sky-400' : 'w-2 bg-white/40 hover:bg-white/80'
+                  className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                    idx === previewIndex ? 'w-5 bg-blue-500' : 'w-1.5 bg-white/40 hover:bg-white/70'
                   }`}
                 />
               ))}

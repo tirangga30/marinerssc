@@ -1,9 +1,8 @@
 import React from 'react';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import HomeClientView from '@/components/HomeClientView';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
@@ -60,9 +59,6 @@ function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {
 }
 
 export default async function HomePage() {
-  const cookieStore = await cookies();
-  const cookieSeason = cookieStore.get('public_season')?.value;
-
   let matches: any[] = [];
   let articles: any[] = [];
   let featuredPlayers: any[] = [];
@@ -89,17 +85,89 @@ export default async function HomePage() {
       rawSetting,
     ] = await Promise.all([
       prisma.footballMatch.findMany({
-        include: { events: true },
+        select: {
+          id: true,
+          matchDate: true,
+          competition: true,
+          seasonName: true,
+          seasonId: true,
+          isHome: true,
+          homeScore: true,
+          awayScore: true,
+          opponentName: true,
+          opponentLogo: true,
+          venue: true,
+          stage: true,
+          isLiveEnabled: true,
+          duration: true,
+          status: true,
+          events: {
+            select: {
+              type: true,
+              minute: true,
+              createdAt: true,
+            },
+          },
+        },
         orderBy: { matchDate: 'asc' },
       }),
       prisma.article.findMany({
         where: { isHidden: false },
         orderBy: { publishedAt: 'desc' },
         take: 3,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: true,
+          thumbnail: true,
+          publishedAt: true,
+        },
       }),
       prisma.player.findMany({
         where: { isGuest: false, member: null },
-        include: { seasons: { select: { id: true, name: true } } },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          number: true,
+          position: true,
+          photoUrl: true,
+          isCaptain: true,
+          isFeatured: true,
+          status: true,
+          goals: true,
+          assists: true,
+          appearances: true,
+          yellowCards: true,
+          redCards: true,
+          seasonData: true,
+          seasons: { select: { id: true, name: true } },
+          events: {
+            select: {
+              type: true,
+              match: { select: { status: true, seasonName: true } },
+            },
+          },
+          assistedEvents: {
+            select: {
+              type: true,
+              match: { select: { status: true, seasonName: true } },
+            },
+          },
+          lineups: {
+            select: {
+              isStarter: true,
+              match: {
+                select: {
+                  status: true,
+                  seasonName: true,
+                  events: { select: { type: true, playerId: true } },
+                },
+              },
+            },
+          },
+        },
         orderBy: [{ number: 'asc' }, { appearances: 'desc' }],
       }),
       prisma.funMatch.findMany({
@@ -109,23 +177,43 @@ export default async function HomePage() {
       prisma.member.findMany({
         where: { status: 'ACTIVE' },
         orderBy: { jerseyNumber: 'asc' },
+        select: {
+          id: true,
+          fullName: true,
+          nickname: true,
+          jerseyNumber: true,
+          position: true,
+          photoUrl: true,
+          status: true,
+          goals: true,
+        },
       }),
       prisma.funMatchEvent.findMany({
         where: { type: 'goal' },
-        include: { member: true },
+        include: {
+          member: {
+            select: {
+              id: true,
+              fullName: true,
+              nickname: true,
+              jerseyNumber: true,
+              photoUrl: true,
+            },
+          },
+        },
       }),
       prisma.season.findMany({
         orderBy: [{ year: 'desc' }, { name: 'desc' }],
         select: { id: true, name: true, year: true, isCurrent: true, featuredPlayerIds: true },
       }),
-      ((prisma as any).heroPoster?.findMany({
+      prisma.heroPoster.findMany({
         where: { isActive: true },
         orderBy: { order: 'asc' },
         take: 5,
-      })?.catch(() => []) || Promise.resolve([])) as Promise<any[]>,
-      (prisma.$queryRawUnsafe('SELECT * FROM "SystemSetting" WHERE id = $1 LIMIT 1', 'default')
-        .then((rows: any) => (Array.isArray(rows) && rows.length > 0 ? rows[0] : null))
-        .catch(() => (prisma as any).systemSetting?.findUnique({ where: { id: 'default' } }).catch(() => null)) || Promise.resolve(null)) as Promise<any>,
+      }).catch(() => []),
+      prisma.systemSetting.findUnique({
+        where: { id: 'default' },
+      }).catch(() => null),
     ]);
 
     let friendlyCounter = 0;
@@ -142,7 +230,13 @@ export default async function HomePage() {
 
     articles = fetchedArticles;
     featuredPlayers = starredPlayers;
-    seasons = rawSeasons;
+    seasons = rawSeasons.map((s: any) => ({
+      ...s,
+      isCurrent: Boolean(s.isCurrent),
+      featuredPlayerIds: typeof s.featuredPlayerIds === 'string'
+        ? (() => { try { return JSON.parse(s.featuredPlayerIds); } catch { return []; } })()
+        : (Array.isArray(s.featuredPlayerIds) ? s.featuredPlayerIds : []),
+    }));
     heroPosters = rawPosters || [];
     systemSetting = rawSetting || null;
 
@@ -249,6 +343,8 @@ export default async function HomePage() {
     }
   });
 
+  const activeSeason = seasons.find((s: any) => Boolean(s.isCurrent))?.name || seasons[0]?.name || '2026';
+
   const mainSquadData = {
     nextMatch,
     featuredStatus,
@@ -265,7 +361,7 @@ export default async function HomePage() {
     seasons,
     allMatches: matchesWithStatus,
     allPlayers: featuredPlayers,
-    defaultSelectedSeason: cookieSeason,
+    defaultSelectedSeason: activeSeason,
   };
 
   const communityData = {

@@ -20,7 +20,8 @@ export function renamePlayerPhotoFile(
   currentPhotoUrl: string | null | undefined,
   newPosition: string,
   newNumber: number | string,
-  newPlayerName: string
+  newPlayerName: string,
+  seasonName?: string | null
 ): string | null {
   if (!currentPhotoUrl || !currentPhotoUrl.startsWith('/uploads/players/') || process.env.VERCEL) {
     return currentPhotoUrl || null;
@@ -31,7 +32,8 @@ export function renamePlayerPhotoFile(
     const pos = getPosShort(newPosition);
     const num = String(newNumber).trim();
     const cleanName = sanitizeFilename(newPlayerName);
-    const newFileName = `${pos}_${num}_${cleanName}${ext}`;
+    const seasonPart = seasonName ? `_${sanitizeFilename(seasonName)}` : '';
+    const newFileName = `${pos}_${num}_${cleanName}${seasonPart}${ext}`;
 
     const oldDiskPath = path.join(process.cwd(), 'public', currentPhotoUrl.replace(/^\//, '').replace(/\//g, path.sep));
     const targetDir = path.join(process.cwd(), 'public', 'uploads', 'players');

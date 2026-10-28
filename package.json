@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:restore": "npx tsx prisma/seed_from_backup.ts"
+    "db:restore": "npx tsx prisma/seed_from_backup.ts",
+    "use:local": "node scripts/switch_db.js local",
+    "use:cloud": "node scripts/switch_db.js cloud"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

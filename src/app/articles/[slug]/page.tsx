@@ -38,8 +38,7 @@ export default async function ArticleDetailPage({
             <span className="px-3 py-1 rounded-md bg-sky-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow">
               {article.category}
             </span>
-            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-xs text-slate-400 font-medium">
               {new Date(article.publishedAt).toLocaleDateString('id-ID', {
                 weekday: 'long',
                 day: 'numeric',

@@ -62,9 +62,19 @@ export async function cleanupUnusedUploads(): Promise<{
   const referenced = new Set<string>();
 
   try {
-    const players = await prisma.player.findMany({ select: { photoUrl: true } });
+    const players = await prisma.player.findMany({ select: { photoUrl: true, seasonData: true } });
     players.forEach((p) => {
       if (p.photoUrl) referenced.add(p.photoUrl.trim());
+      if (p.seasonData) {
+        try {
+          const sd = typeof p.seasonData === 'string' ? JSON.parse(p.seasonData) : p.seasonData;
+          if (sd && typeof sd === 'object') {
+            Object.values(sd).forEach((entry: any) => {
+              if (entry?.photoUrl) referenced.add(String(entry.photoUrl).trim());
+            });
+          }
+        } catch {}
+      }
     });
 
     const matches = await prisma.footballMatch.findMany({ select: { opponentLogo: true } });

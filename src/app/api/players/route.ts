@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
+import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
 export async function GET(req: Request) {
   try {
@@ -140,14 +141,18 @@ export async function GET(req: Request) {
       return 5;
     };
 
-    players.sort((a, b) => {
+    const mappedPlayers = (season || seasonId)
+      ? players.map((p) => resolvePlayerForSeason(p, season || seasonId))
+      : players;
+
+    mappedPlayers.sort((a, b) => {
       const wA = getPositionWeight(a.position);
       const wB = getPositionWeight(b.position);
       if (wA !== wB) return wA - wB;
       return a.number - b.number;
     });
 
-    return NextResponse.json(players);
+    return NextResponse.json(mappedPlayers);
   } catch (error) {
     return NextResponse.json({ error: 'Gagal mengambil data pemain' }, { status: 500 });
   }
@@ -276,6 +281,14 @@ export async function POST(req: Request) {
         appearances: parseInt(data.appearances || 0),
         yellowCards: parseInt(data.yellowCards || 0),
         redCards: parseInt(data.redCards || 0),
+        seasonData: targetSeason
+          ? JSON.stringify({
+              [targetSeason.name]: {
+                photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80',
+                number: finalNumber,
+              },
+            })
+          : "{}",
       },
     });
 

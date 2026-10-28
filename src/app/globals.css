@@ -2,16 +2,16 @@
 
 @layer base {
   :root {
-    --bg-ocean-dark: #060b14;
-    --bg-card: rgba(15, 23, 42, 0.75);
-    --blue-primary: #2563eb;
-    --blue-light: #38bdf8;
-    --blue-glow: rgba(37, 99, 235, 0.3);
+    --bg-ocean-dark: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --blue-primary: #1d4ed8;
+    --blue-light: #2563eb;
+    --blue-glow: rgba(37, 99, 235, 0.12);
   }
 
   body {
-    background-color: #060b14;
-    color: #f8fafc;
+    background-color: #f8fafc;
+    color: #0f172a;
     font-family: var(--font-jakarta), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
   }
@@ -24,33 +24,37 @@
   letter-spacing: 0.05em;
 }
 
-/* Glassmorphism Panels */
+/* Glassmorphism Panels (Light Theme) */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  color: #0f172a;
 }
 
 .glass-panel-blue {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(239, 246, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  box-shadow: 0 0 25px rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(191, 219, 254, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.08);
+  color: #1e40af;
 }
 
 .glass-panel-white {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
   color: #0f172a;
 }
 
 /* Gradients */
 .gold-gradient-text {
-  background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -61,28 +65,28 @@
 }
 
 .blue-gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #2563eb 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 60%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .blue-gradient-bg {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0284c7 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
 }
 
 .white-blue-btn {
-  background: #ffffff;
-  color: #1e3a8a;
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
   transition: all 0.3s ease;
 }
 
 .white-blue-btn:hover {
-  background: #f0f9ff;
-  color: #2563eb;
+  background: #1d4ed8;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
 }
 
 /* Hover Cards */
@@ -92,13 +96,13 @@
 
 .card-glow-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 35px -10px rgba(56, 189, 248, 0.35);
-  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 12px 30px -8px rgba(37, 99, 235, 0.12);
+  border-color: rgba(147, 197, 253, 0.9);
 }
 
-/* Tactical Pitch Background (Plain Dark Navy matching container box) */
+/* Tactical Pitch Background (Modern White-Grey for tactical board) */
 .tactical-pitch-bg {
-  background-color: #0d1628;
+  background-color: #f1f5f9;
 }
 
 /* Custom Scrollbar */
@@ -107,14 +111,14 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #060b14;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: #94a3b8;
 }
 
 /* Loading Shimmer & Spin Animations */
@@ -135,4 +139,150 @@
 .animate-spin-reverse {
   animation: spinReverse 2.5s linear infinite;
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   LIGHT THEME ADAPTATION OVERRIDES FOR HIGH CONTRAST & LEGIBILITY
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* Inputs, select fields, and textareas */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+select,
+textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Light Theme Containers and Surfaces */
+.bg-slate-950,
+.bg-slate-950\/90,
+.bg-slate-950\/95,
+.bg-slate-950\/80,
+.bg-slate-900,
+.bg-slate-900\/90,
+.bg-slate-900\/80,
+.bg-\[\#060b14\],
+.bg-\[\#070e1c\],
+.bg-\[\#09111e\],
+.bg-\[\#0a1526\],
+.bg-\[\#0d1628\] {
+  background-color: #ffffff;
+}
+
+.bg-slate-900\/50,
+.bg-slate-900\/40,
+.bg-slate-800\/60,
+.bg-slate-800\/40,
+.bg-slate-800\/30 {
+  background-color: #f8fafc;
+}
+
+.bg-blue-950\/80,
+.bg-blue-950\/60,
+.bg-sky-950\/60 {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.bg-amber-950\/80,
+.bg-amber-950\/60,
+.bg-amber-950\/40 {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* Borders */
+.border-slate-800,
+.border-slate-800\/80,
+.border-slate-800\/60,
+.border-slate-700,
+.border-slate-700\/50,
+.border-sky-400\/30,
+.border-sky-400\/20,
+.border-sky-400\/40,
+.border-amber-400\/30,
+.border-amber-400\/20,
+.border-amber-400\/40 {
+  border-color: #e2e8f0;
+}
+
+/* Soft Light Shadows */
+.shadow-slate-950 {
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Headings and Titles inside light panels */
+.glass-panel h1,
+.glass-panel h2,
+.glass-panel h3,
+.glass-panel h4,
+.glass-panel h5,
+.glass-panel h6 {
+  color: #0f172a;
+}
+
+/* Light theme text adjustments */
+.glass-panel .text-slate-400,
+.glass-panel .text-slate-300 {
+  color: #475569;
+}
+
+.glass-panel .text-sky-300,
+.glass-panel .text-sky-400 {
+  color: #1d4ed8;
+}
+
+.glass-panel .text-amber-300,
+.glass-panel .text-amber-400 {
+  color: #b45309;
+}
+
+/* Ensure player cards with dark photo scrim retain white name & bright number */
+[class*="aspect-"] .text-sky-400 {
+  color: #38bdf8 !important;
+}
+
+[class*="aspect-"] .text-amber-400 {
+  color: #fbbf24 !important;
+}
+
+[class*="aspect-"] h3.text-white,
+[class*="aspect-"] .text-white {
+  color: #ffffff !important;
+}
+
+/* Background Bergulir dengan Siklus Berulang (Mengikuti Scroll Halaman & Repeat Vertikal) */
+.cycling-main-bg {
+  background-image: url('/mainbackground.jpeg');
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-position: top center;
+  background-attachment: scroll;
+}
+
+/* Deep & Silky-Smooth Easing Scrim for Player Cards */
+.player-card-scrim {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.98) 0%,
+    rgba(0, 0, 0, 0.92) 20%,
+    rgba(0, 0, 0, 0.72) 45%,
+    rgba(0, 0, 0, 0.42) 68%,
+    rgba(0, 0, 0, 0.16) 86%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
 

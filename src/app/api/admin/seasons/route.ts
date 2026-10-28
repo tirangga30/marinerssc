@@ -17,7 +17,13 @@ export async function GET() {
         },
       },
     });
-    return NextResponse.json(seasons);
+    const parsedSeasons = seasons.map((s) => ({
+      ...s,
+      featuredPlayerIds: typeof s.featuredPlayerIds === 'string'
+        ? (() => { try { return JSON.parse(s.featuredPlayerIds); } catch { return []; } })()
+        : (Array.isArray(s.featuredPlayerIds) ? s.featuredPlayerIds : []),
+    }));
+    return NextResponse.json(parsedSeasons);
   } catch (error: any) {
     console.error('Failed to fetch admin seasons:', error);
     return NextResponse.json({ error: 'Gagal mengambil data musim' }, { status: 500 });
@@ -122,6 +128,15 @@ export async function PUT(req: Request) {
     const existing = await prisma.season.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Musim tidak ditemukan' }, { status: 404 });
+    }
+
+    if (name && name.trim() !== existing.name) {
+      const duplicate = await prisma.season.findUnique({
+        where: { name: name.trim() },
+      });
+      if (duplicate && duplicate.id !== id) {
+        return NextResponse.json({ error: `Nama musim "${name.trim()}" sudah digunakan` }, { status: 400 });
+      }
     }
 
     if (isCurrent) {

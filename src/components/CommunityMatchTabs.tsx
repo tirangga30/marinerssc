@@ -116,7 +116,7 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>Summary</span>
+          <span>Ringkasan</span>
         </button>
       </div>
 
@@ -129,24 +129,24 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             
             {/* SISI KIRI: TIM A */}
-            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 bg-gradient-to-b from-[#091426] via-[#060b14] to-[#0a1526] space-y-4 shadow-xl">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 shadow-sm">
               
-              <div className="flex items-center justify-between border-b border-sky-400/20 pb-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-900/60 border border-sky-400/40 flex items-center justify-center text-sky-400 font-black text-sm">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-black text-sm">
                     A
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-black uppercase text-sky-300">
+                    <h3 className="text-sm sm:text-base font-black uppercase text-slate-900">
                       {funMatch.teamAName}
                     </h3>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">
                       {teamAPlayers.length} Pemain Terdaftar
                     </span>
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30 font-mono font-black text-xs">
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-mono font-black text-xs">
                   {funMatch.teamAScore ?? 0} GOL
                 </span>
               </div>
@@ -170,11 +170,11 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                       <Link
                         key={p.id}
                         href={memberId ? `/community/players/${memberId}` : '#'}
-                        className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-slate-950/70 hover:bg-slate-900 border border-slate-800/80 hover:border-sky-400/50 transition-all group"
+                        className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-400 transition-all group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Jersey Number */}
-                          <span className="w-7 sm:w-8 text-center font-mono font-black text-base sm:text-lg text-sky-400 drop-shadow">
+                          <span className="w-7 sm:w-8 text-center font-mono font-black text-base sm:text-lg text-blue-600 drop-shadow-xs">
                             {jerseyNum}
                           </span>
 
@@ -182,15 +182,15 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                           <img
                             src={photo}
                             alt={displayName}
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover bg-slate-900 border border-slate-700 shrink-0"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                           />
 
                           {/* Name & Position */}
                           <div className="min-w-0">
-                            <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-sky-300 transition-colors truncate block">
+                            <span className="font-extrabold text-slate-900 text-xs sm:text-sm group-hover:text-blue-600 transition-colors truncate block">
                               {displayName}
                             </span>
-                            <span className="text-[9px] sm:text-[10px] font-bold uppercase text-sky-400/90 tracking-wider">
+                            <span className="text-[9px] sm:text-[10px] font-bold uppercase text-blue-600 tracking-wider">
                               {position}
                             </span>
                           </div>
@@ -202,12 +202,12 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                             {evts.map((e) => (
                               <span
                                 key={e.id}
-                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-[9px] font-mono font-bold text-slate-200"
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[9px] font-mono font-bold text-slate-700 shadow-xs"
                                 title={`${e.type.toUpperCase()} (${e.minute}')`}
                               >
                                 {e.type === 'goal' && <BallIcon size={12} />}
-                                {e.type === 'assist' && <span className="text-sky-400">👟</span>}
-                                {e.type === 'yellow_card' && <span className="text-amber-400">🟨</span>}
+                                {e.type === 'assist' && <span className="text-blue-600">👟</span>}
+                                {e.type === 'yellow_card' && <span className="text-amber-500">🟨</span>}
                                 {e.type === 'red_card' && <span className="text-rose-500">🟥</span>}
                                 <span>{e.minute}&apos;</span>
                               </span>
@@ -223,24 +223,24 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
             </div>
 
             {/* SISI KANAN: TIM B */}
-            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#1c160a] via-[#0b0c14] to-[#060b14] space-y-4 shadow-xl">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 shadow-sm">
               
-              <div className="flex items-center justify-between border-b border-amber-400/20 pb-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-950/60 border border-amber-400/40 flex items-center justify-center text-amber-400 font-black text-sm">
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-black text-sm">
                     B
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-black uppercase text-amber-300">
+                    <h3 className="text-sm sm:text-base font-black uppercase text-slate-900">
                       {funMatch.teamBName}
                     </h3>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">
                       {teamBPlayers.length} Pemain Terdaftar
                     </span>
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-400/30 font-mono font-black text-xs">
+                <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-mono font-black text-xs">
                   {funMatch.teamBScore ?? 0} GOL
                 </span>
               </div>
@@ -264,11 +264,11 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                       <Link
                         key={p.id}
                         href={memberId ? `/community/players/${memberId}` : '#'}
-                        className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-slate-950/70 hover:bg-slate-900 border border-slate-800/80 hover:border-amber-400/50 transition-all group"
+                        className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-amber-400 transition-all group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Jersey Number */}
-                          <span className="w-7 sm:w-8 text-center font-mono font-black text-base sm:text-lg text-amber-400 drop-shadow">
+                          <span className="w-7 sm:w-8 text-center font-mono font-black text-base sm:text-lg text-amber-700 drop-shadow-xs">
                             {jerseyNum}
                           </span>
 
@@ -276,15 +276,15 @@ export default function CommunityMatchTabs({ funMatch }: CommunityMatchTabsProps
                           <img
                             src={photo}
                             alt={displayName}
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover bg-slate-900 border border-slate-700 shrink-0"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                           />
 
                           {/* Name & Position */}
                           <div className="min-w-0">
-                            <span className="font-extrabold text-white text-xs sm:text-sm group-hover:text-amber-300 transition-colors truncate block">
+                            <span className="font-extrabold text-slate-900 text-xs sm:text-sm group-hover:text-amber-700 transition-colors truncate block">
                               {displayName}
                             </span>
-                            <span className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-400/90 tracking-wider">
+                            <span className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-700 tracking-wider">
                               {position}
                             </span>
                           </div>

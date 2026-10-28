@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Sparkles, Users, ArrowRight, Shield, Award } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {
@@ -42,29 +42,23 @@ export default async function CommunityPlayersPage() {
         status: 'ACTIVE',
         isPermanent: false,
       },
+      select: {
+        id: true,
+        fullName: true,
+        nickname: true,
+        jerseyNumber: true,
+        position: true,
+        photoUrl: true,
+      },
       orderBy: { jerseyNumber: 'asc' },
     });
   } catch (error) {
-    console.error('Error fetching community members:', error);
+    console.warn('Database unreachable in CommunityPlayersPage, fallback to empty array:', error);
   }
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-8 sm:space-y-12">
       
-      {/* Header Banner */}
-      <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-amber-400/30 text-center space-y-3 bg-gradient-to-b from-[#15120a] via-[#090b14] to-[#060b14] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>Soccer Community Roster</span>
-        </div>
-        <h1 className="text-2xl sm:text-4xl font-black uppercase text-white tracking-tight">
-          Squad Aktif Member
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-          Daftar seluruh member aktif Mariners SC Soccer Community.
-        </p>
-      </div>
 
       {members.length === 0 ? (
         <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
@@ -117,8 +111,8 @@ export default async function CommunityPlayersPage() {
                       </span>
                     </div>
                     
-                    {/* Compact Black Gradient Overlay at Bottom */}
-                    <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/60 to-transparent pointer-events-none" />
+                    {/* Deep & Silky-Smooth Easing Scrim at Bottom */}
+                    <div className="absolute inset-x-0 bottom-0 h-[38%] sm:h-[34%] player-card-scrim pointer-events-none" />
 
                     {/* Bottom Info: Number alongside Name & Position */}
                     <div className="relative z-10 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">

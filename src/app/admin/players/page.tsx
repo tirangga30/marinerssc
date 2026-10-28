@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import ImageCropperModal from '@/components/ImageCropperModal';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
+import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
 interface SeasonRef {
   id: string;
@@ -50,6 +51,7 @@ interface Player {
   yellowCards: number;
   redCards: number;
   seasons?: SeasonRef[];
+  seasonData?: any;
 }
 
 interface Season {
@@ -200,9 +202,9 @@ export default function AdminPlayersPage() {
     return Boolean(player.isFeatured);
   };
 
-  const seasonSquadPlayers = players.filter((p) =>
-    p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
-  );
+  const seasonSquadPlayers = players
+    .filter((p) => p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id))
+    .map((p) => resolvePlayerForSeason(p, selectedSeason));
 
   const availableToPullPlayers = players.filter(
     (p) => !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
@@ -537,7 +539,7 @@ export default function AdminPlayersPage() {
   const handleCropComplete = async (croppedBlob: Blob) => {
     setUploading(true);
     const body = new FormData();
-    body.append('file', croppedBlob, 'player_photo.jpg');
+    body.append('file', croppedBlob, 'player_photo.png');
     body.append('folder', 'players');
     body.append('position', formData.position);
     body.append('number', formData.number);

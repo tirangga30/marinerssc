@@ -2,11 +2,35 @@ import React from 'react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+const getCachedMatchesData = unstable_cache(
+  async () => {
+    try {
+      const [seasons, allMatchesRaw] = await Promise.all([
+        prisma.season.findMany({
+          orderBy: { year: 'desc' },
+          select: { id: true, name: true, year: true, isCurrent: true },
+        }),
+        prisma.footballMatch.findMany({
+          include: { events: true },
+          orderBy: { matchDate: 'asc' },
+        }),
+      ]);
+      return { seasons, allMatchesRaw };
+    } catch (e) {
+      console.warn('Database unreachable in getCachedMatchesData, fallback to empty arrays:', e);
+      return { seasons: [], allMatchesRaw: [] };
+    }
+  },
+  ['mariners-matches-page-cache'],
+  { revalidate: 60, tags: ['matches', 'seasons'] }
+);
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
@@ -52,12 +76,12 @@ function MatchCard({ match }: { match: any }) {
   return (
     <Link
       href={`/matches/${match.id}`}
-      className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-sky-400/30 hover:border-sky-400/60 shadow-2xl shadow-slate-950 hover:shadow-sky-500/10 transition-all duration-300 cursor-pointer"
+      className="block group bg-white p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
     >
       {/* Top Bar Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2 sm:pb-4 mb-3 sm:mb-6">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
         {status === 'live' ? (
-          <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+          <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-300 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
           </span>
         ) : result ? (
@@ -71,11 +95,11 @@ function MatchCard({ match }: { match: any }) {
           <div />
         )}
         <span className="flex items-center gap-1.5 sm:gap-2">
-          <span className="text-[9px] sm:text-xs font-medium text-slate-400">
+          <span className="text-[9px] sm:text-xs font-medium text-slate-500">
             {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
           {displayStage && (
-            <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-950/80 text-sky-300 border border-sky-400/30">
+            <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
               {displayStage}
             </span>
           )}
@@ -87,7 +111,7 @@ function MatchCard({ match }: { match: any }) {
         {/* Home Team */}
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
           <div className="order-2 sm:order-1 text-center sm:text-right">
-            <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
               {match.isHome ? 'MARINERS SC' : match.opponentName}
             </h4>
           </div>
@@ -95,7 +119,7 @@ function MatchCard({ match }: { match: any }) {
             <img
               src={match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
               alt={match.isHome ? 'Mariners SC' : match.opponentName}
-              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
+              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         </div>
@@ -114,29 +138,29 @@ function MatchCard({ match }: { match: any }) {
             />
           ) : status === 'score_pending' ? (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
-              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
+              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200">
                 VS
               </div>
             </>
           ) : status === 'finished' ? (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">FULL TIME</p>
+              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
               <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                 {match.homeScore ?? 0} : {match.awayScore ?? 0}
               </div>
             </>
           ) : (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-400 font-medium">
+              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">
                 {formatWibTime(match.matchDate)}
               </p>
-              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600/30 text-sky-300 font-black text-xs sm:text-2xl border border-sky-400/50">
+              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200">
                 VS
               </div>
             </>
           )}
-          <p className="text-[8px] sm:text-[10px] text-slate-400 truncate max-w-xs mx-auto">
+          <p className="text-[8px] sm:text-[10px] text-slate-500 truncate max-w-xs mx-auto">
             {match.venue}
           </p>
         </div>
@@ -147,11 +171,11 @@ function MatchCard({ match }: { match: any }) {
             <img
               src={!match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
               alt={!match.isHome ? 'Mariners SC' : match.opponentName}
-              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
+              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="text-center sm:text-left">
-            <h4 className="text-[10px] sm:text-xl font-black text-white uppercase group-hover:text-sky-200 transition-colors">
+            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
               {!match.isHome ? 'MARINERS SC' : match.opponentName}
             </h4>
           </div>
@@ -207,19 +231,15 @@ export default async function MatchesPage({
   const cookieStore = await cookies();
   const cookieSeason = cookieStore.get('public_season')?.value;
 
-  const seasons = await prisma.season.findMany({
-    orderBy: { year: 'desc' },
-    select: { id: true, name: true, year: true, isCurrent: true },
-  });
+  const { seasons, allMatchesRaw: allRaw } = await getCachedMatchesData();
 
   const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
   const filter = params.filter || 'all';
   const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
 
-  const allMatchesRaw = await prisma.footballMatch.findMany({
-    where: selectedSeason !== 'all' ? { seasonName: selectedSeason } : {},
-    orderBy: { matchDate: 'asc' },
-  });
+  const allMatchesRaw = selectedSeason !== 'all'
+    ? allRaw.filter((m: any) => m.seasonName === selectedSeason)
+    : allRaw;
 
   // Computed Dynamic Status
   const matchesWithStatus = allMatchesRaw.map((m) => ({
@@ -243,42 +263,35 @@ export default async function MatchesPage({
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-      {/* Header Banner */}
-      <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-sky-400/20 text-center space-y-2 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-400">
-          Jadwal &amp; Hasil Pertandingan
-        </span>
-        <h1 className="text-2xl sm:text-4xl font-black uppercase text-white blue-gradient-text">
-          {selectedSeason !== 'all' ? `Musim ${selectedSeason}` : 'Semua Musim'}
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-          Pantau seluruh hasil laga dan jadwal mendatang klub sepak bola Mariners SC.
-        </p>
-      </div>
 
-      {/* Filter Tabs */}
-      <div className="flex justify-center gap-1.5 sm:gap-2">
+      {/* Filter Tabs (Navbar Underline Style) */}
+      <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
         <Link
-          href="/matches?filter=all"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
-            filter === 'all' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
+          href={`/matches?filter=all${selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : ''}`}
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+            filter === 'all'
+              ? 'text-blue-600 border-blue-600 font-black'
+              : 'text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300'
           }`}
         >
           Semua ({allMatchesRaw.length})
         </Link>
         <Link
-          href="/matches?filter=upcoming"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
-            filter === 'upcoming' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
+          href={`/matches?filter=upcoming${selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : ''}`}
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+            filter === 'upcoming'
+              ? 'text-blue-600 border-blue-600 font-black'
+              : 'text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300'
           }`}
         >
           Mendatang ({upcomingMatches.length})
         </Link>
         <Link
-          href="/matches?filter=finished"
-          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
-            filter === 'finished' ? 'white-blue-btn' : 'glass-panel text-slate-300 hover:text-sky-300'
+          href={`/matches?filter=finished${selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : ''}`}
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+            filter === 'finished'
+              ? 'text-blue-600 border-blue-600 font-black'
+              : 'text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300'
           }`}
         >
           Selesai ({finishedMatches.length})
@@ -292,8 +305,8 @@ export default async function MatchesPage({
           {upcomingMatches.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-1 h-5 rounded-full bg-sky-400 inline-block" />
-                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">
+                <span className="w-1 h-5 rounded-full bg-blue-600 inline-block" />
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
                   Laga Mendatang
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({upcomingMatches.length})</span>
@@ -306,8 +319,8 @@ export default async function MatchesPage({
           {finishedMatches.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-1 h-5 rounded-full bg-emerald-400 inline-block" />
-                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">
+                <span className="w-1 h-5 rounded-full bg-emerald-600 inline-block" />
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
                   Riwayat Pertandingan
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({finishedMatches.length})</span>
