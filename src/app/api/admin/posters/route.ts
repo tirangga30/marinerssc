@@ -111,12 +111,13 @@ export async function POST(req: Request) {
     }
 
     // Auto cleanup template poster if a custom poster is uploaded
-    if (imageUrl !== '/newposter.webp') {
+    if (imageUrl !== '/newposter.webp' && imageUrl !== '/NYCOMP.webp') {
       try {
         await (prisma as any).heroPoster.deleteMany({
           where: {
             OR: [
               { imageUrl: '/newposter.webp' },
+              { imageUrl: '/NYCOMP.webp' },
               { order: 0 },
               { id: { startsWith: 'poster-' } }
             ],

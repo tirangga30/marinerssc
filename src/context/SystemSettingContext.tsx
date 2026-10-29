@@ -24,7 +24,7 @@ interface SystemSettingContextType extends SystemSettingData {
 const defaultSettings: SystemSettingData = {
   teamName: 'Mariners SC',
   teamLogo: '/marinerssc.webp',
-  loginWallpaper: '/newposter.webp',
+  loginWallpaper: '/NYCOMP.webp',
   adminWallpaper: '/stadium_hero2.png',
   playerCardBg: '/bgprofil2.jpeg',
   hasCustomPin: false,

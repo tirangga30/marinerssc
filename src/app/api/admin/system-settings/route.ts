@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({
       teamName: setting?.teamName || 'Mariners SC',
       teamLogo: setting?.teamLogo || '/marinerssc.webp',
-      loginWallpaper: setting?.loginWallpaper || '/newposter.webp',
+      loginWallpaper: setting?.loginWallpaper || '/NYCOMP.webp',
       adminWallpaper: setting?.adminWallpaper || '/stadium_hero2.png',
       playerCardBg: setting?.playerCardBg || '/bgprofil2.jpeg',
       hasCustomPin: setting ? setting.securityPin !== '1234' : false,
@@ -32,7 +32,7 @@ export async function GET() {
     return NextResponse.json({
       teamName: 'Mariners SC',
       teamLogo: '/marinerssc.webp',
-      loginWallpaper: '/newposter.webp',
+      loginWallpaper: '/NYCOMP.webp',
       adminWallpaper: '/stadium_hero2.png',
       playerCardBg: '/bgprofil2.jpeg',
       hasCustomPin: false,
@@ -123,7 +123,7 @@ export async function PUT(req: Request) {
     }
 
     if (loginWallpaper !== undefined && typeof loginWallpaper === 'string') {
-      updateData.loginWallpaper = loginWallpaper.trim() || '/newposter.webp';
+      updateData.loginWallpaper = loginWallpaper.trim() || '/NYCOMP.webp';
     }
 
     if (adminWallpaper !== undefined && typeof adminWallpaper === 'string') {
@@ -152,7 +152,7 @@ export async function PUT(req: Request) {
         id: 'default',
         teamName: updateData.teamName || 'Mariners SC',
         teamLogo: updateData.teamLogo || '/marinerssc.webp',
-        loginWallpaper: updateData.loginWallpaper || '/newposter.webp',
+        loginWallpaper: updateData.loginWallpaper || '/NYCOMP.webp',
         adminWallpaper: updateData.adminWallpaper || '/stadium_hero2.png',
         playerCardBg: updateData.playerCardBg || '/bgprofil2.jpeg',
         securityPin: updateData.securityPin || '1234',

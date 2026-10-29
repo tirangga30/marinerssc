@@ -131,7 +131,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
     if (heroPosters && heroPosters.length > 0) {
       return heroPosters;
     }
-    return [{ id: 'default', imageUrl: '/newposter.webp' }];
+    return [{ id: 'default', imageUrl: '/NYCOMP.webp' }];
   }, [heroPosters]);
 
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);

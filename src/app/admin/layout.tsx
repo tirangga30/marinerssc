@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
 
-  const [loginWallpaper, setLoginWallpaper] = useState('/newposter.webp');
+  const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
 
   const fetchWallpapers = () => {

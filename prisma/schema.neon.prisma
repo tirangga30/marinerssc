@@ -256,7 +256,7 @@ model SystemSetting {
   id             String   @id @default("default")
   teamName       String   @default("Mariners SC")
   teamLogo       String   @default("/marinerssc.webp")
-  loginWallpaper String   @default("/newposter.webp")
+  loginWallpaper String   @default("/NYCOMP.webp")
   adminWallpaper String   @default("/stadium_hero2.png")
   posterInterval     Int      @default(5)
   securityPin        String   @default("1234")

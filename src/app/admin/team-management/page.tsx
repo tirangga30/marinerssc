@@ -28,7 +28,7 @@ export default function TeamManagementPage() {
   // Settings State
   const [teamName, setTeamName] = useState('Mariners SC');
   const [teamLogo, setTeamLogo] = useState('/marinerssc.webp');
-  const [loginWallpaper, setLoginWallpaper] = useState('/newposter.webp');
+  const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
   const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.jpeg');
   const [isCommunityEnabled, setIsCommunityEnabled] = useState(true);
@@ -531,8 +531,8 @@ export default function TeamManagementPage() {
                 </div>
 
                 <div className="space-y-2 text-center sm:text-left flex-1">
-                  <span className="text-[11px] font-mono text-slate-400 break-all block">
-                    {teamLogo}
+                  <span className="text-[11px] text-slate-400 block font-medium">
+                    Logo Resmi Klub
                   </span>
                   <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
                     <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5">
@@ -554,7 +554,7 @@ export default function TeamManagementPage() {
                       onClick={() => setTeamLogo('/marinerssc.webp')}
                       className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
                     >
-                      Reset Default
+                      Kembalikan Logo Sistem
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-400">
@@ -648,7 +648,7 @@ export default function TeamManagementPage() {
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
-                  Wallpaper Halaman Login (/admin/login)
+                  Wallpaper Halaman Login
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">16:9 Lanskap</span>
               </div>
@@ -684,10 +684,10 @@ export default function TeamManagementPage() {
 
                 <button
                   type="button"
-                  onClick={() => setLoginWallpaper('/newposter.webp')}
+                  onClick={() => setLoginWallpaper('/NYCOMP.webp')}
                   className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
                 >
-                  Reset Default
+                  Kembalikan Template Sistem
                 </button>
               </div>
             </div>
@@ -696,7 +696,7 @@ export default function TeamManagementPage() {
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
-                  Wallpaper Panel Admin (Seluruh Admin)
+                  Wallpaper Panel Admin
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">16:9 Lanskap</span>
               </div>
@@ -735,7 +735,7 @@ export default function TeamManagementPage() {
                   onClick={() => setAdminWallpaper('/stadium_hero2.png')}
                   className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
                 >
-                  Reset Default
+                  Kembalikan Template Sistem
                 </button>
               </div>
             </div>
@@ -751,7 +751,7 @@ export default function TeamManagementPage() {
                     Gambar latar ini digunakan pada kartu profil pemain di halaman daftar pemain, beranda, dan detail pemain.
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono self-start sm:self-auto">Template: bgprofil2.jpeg</span>
+                <span className="text-[10px] text-sky-400 font-bold self-start sm:self-auto">Template Sistem</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
@@ -773,7 +773,7 @@ export default function TeamManagementPage() {
                 {/* Upload & Reset Controls */}
                 <div className="sm:col-span-7 space-y-2.5">
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Unggah gambar khusus (misal foto stadion atau grafis klub) untuk menjadi latar belakang kartu seluruh pemain. Anda dapat mengembalikan ke template sistem bawaan kapan saja.
+                    Unggah gambar khusus (misal foto stadion atau grafis klub) untuk menjadi latar belakang kartu seluruh pemain. Anda dapat mengembalikan ke template sistem kapan saja.
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <label className="py-2.5 px-4 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-2">
@@ -795,7 +795,7 @@ export default function TeamManagementPage() {
                       onClick={() => setPlayerCardBg('/bgprofil2.jpeg')}
                       className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5"
                     >
-                      <span>Jadikan Template Sistem (bgprofil2.jpeg)</span>
+                      <span>Jadikan Template Sistem</span>
                     </button>
                   </div>
                 </div>

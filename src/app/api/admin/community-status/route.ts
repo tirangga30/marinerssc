@@ -39,7 +39,7 @@ export async function PUT(req: Request) {
         id: 'default',
         teamName: 'Mariners SC',
         teamLogo: '/marinerssc.webp',
-        loginWallpaper: '/newposter.webp',
+        loginWallpaper: '/NYCOMP.webp',
         adminWallpaper: '/stadium_hero2.png',
         securityPin: '1234',
         isCommunityEnabled: enabled,
