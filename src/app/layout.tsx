@@ -67,7 +67,12 @@ export default async function RootLayout({
         teamLogo: setting.teamLogo,
         loginWallpaper: setting.loginWallpaper,
         adminWallpaper: setting.adminWallpaper,
+        playerCardBg: setting.playerCardBg || '/bgprofil2.jpeg',
         isCommunityEnabled: setting.isCommunityEnabled !== false,
+        showHeroOverlay: Boolean(setting.showHeroOverlay),
+        heroTagline: setting.heroTagline || 'SOCCER CLUB',
+        heroSubtitle: setting.heroSubtitle || 'Lebih dari sekadar sepak bola.',
+        heroCtaText: setting.heroCtaText || 'LIHAT TIM',
       };
     }
   } catch (e) {

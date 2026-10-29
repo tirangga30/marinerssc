@@ -31,6 +31,13 @@ export default function MainPosterAdminPage() {
   const [slideInterval, setSlideInterval] = useState<number>(5);
   const [savingInterval, setSavingInterval] = useState<boolean>(false);
 
+  // Hero Overlay text & toggle states (SOCCER CLUB / LEBIH DARI SEKEDAR SEPAKBOLA / LIHAT TIM)
+  const [showHeroOverlay, setShowHeroOverlay] = useState<boolean>(false);
+  const [heroTagline, setHeroTagline] = useState<string>('SOCCER CLUB');
+  const [heroSubtitle, setHeroSubtitle] = useState<string>('Lebih dari sekadar sepak bola.');
+  const [heroCtaText, setHeroCtaText] = useState<string>('LIHAT TIM');
+  const [savingOverlay, setSavingOverlay] = useState<boolean>(false);
+
   // Live Carousel Preview index
   const [previewIndex, setPreviewIndex] = useState(0);
 
@@ -63,6 +70,18 @@ export default function MainPosterAdminPage() {
         if (data.interval) {
           setSlideInterval(data.interval);
         }
+        if (data.showHeroOverlay !== undefined) {
+          setShowHeroOverlay(Boolean(data.showHeroOverlay));
+        }
+        if (data.heroTagline) {
+          setHeroTagline(data.heroTagline);
+        }
+        if (data.heroSubtitle) {
+          setHeroSubtitle(data.heroSubtitle);
+        }
+        if (data.heroCtaText) {
+          setHeroCtaText(data.heroCtaText);
+        }
       })
       .catch((err) => console.error('Error loading posters:', err))
       .finally(() => setLoading(false));
@@ -93,6 +112,35 @@ export default function MainPosterAdminPage() {
       showToast('error', 'Terjadi kesalahan jaringan');
     } finally {
       setSavingInterval(false);
+    }
+  };
+
+  // Update Hero Overlay settings (Toggle on/off, Tagline, Subtitle, CTA text)
+  const handleSaveOverlaySettings = async (overrideOverlay?: boolean) => {
+    setSavingOverlay(true);
+    const newShowOverlay = overrideOverlay !== undefined ? overrideOverlay : showHeroOverlay;
+    try {
+      const res = await fetch('/api/admin/posters', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          showHeroOverlay: newShowOverlay,
+          heroTagline,
+          heroSubtitle,
+          heroCtaText,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast('error', data.error || 'Gagal menyimpan pengaturan teks');
+      } else {
+        showToast('success', 'Pengaturan teks overlay hero berhasil disimpan!');
+        window.dispatchEvent(new Event('system_settings_updated'));
+      }
+    } catch {
+      showToast('error', 'Terjadi kesalahan jaringan');
+    } finally {
+      setSavingOverlay(false);
     }
   };
 
@@ -394,6 +442,115 @@ export default function MainPosterAdminPage() {
         </div>
       </div>
 
+      {/* ── PENGATURAN TEKS & TOMBOL OVERLAY HERO (DEFAULT NONAKTIF) ── */}
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl blue-gradient-bg flex items-center justify-center text-white shadow shrink-0">
+              <FileText className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xs sm:text-sm font-black uppercase text-white tracking-wide flex items-center gap-2">
+                <span>Teks &amp; Navigasi Overlay di Atas Poster</span>
+                {savingOverlay && (
+                  <span className="text-[10px] text-sky-400 font-normal flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Menyimpan...
+                  </span>
+                )}
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                Atur tulisan SOCCER CLUB, slogan, dan tombol LIHAT TIM di atas poster, atau nonaktifkan agar poster tampil bersih 100% full gambar.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${showHeroOverlay ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+              {showHeroOverlay ? 'Aktif (Teks Ditampilkan)' : 'Nonaktif (Poster Bersih - Default)'}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+                const nextVal = !showHeroOverlay;
+                setShowHeroOverlay(nextVal);
+                handleSaveOverlaySettings(nextVal);
+              }}
+              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showHeroOverlay ? 'bg-emerald-500' : 'bg-slate-700'}`}
+              title={showHeroOverlay ? 'Klik untuk Menonaktifkan Teks' : 'Klik untuk Mengaktifkan Teks'}
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${showHeroOverlay ? 'translate-x-7' : 'translate-x-0'}`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Form Inputs (Hanya tampil jika overlay diaktifkan) */}
+        {showHeroOverlay ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1 animate-fadeIn">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+                Tagline Atas
+              </label>
+              <input
+                type="text"
+                value={heroTagline}
+                onChange={(e) => setHeroTagline(e.target.value)}
+                placeholder="SOCCER CLUB"
+                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden uppercase"
+              />
+              <span className="text-[9px] text-slate-500 block">Contoh: SOCCER CLUB</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+                Slogan / Subtitle
+              </label>
+              <input
+                type="text"
+                value={heroSubtitle}
+                onChange={(e) => setHeroSubtitle(e.target.value)}
+                placeholder="Lebih dari sekadar sepak bola."
+                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden"
+              />
+              <span className="text-[9px] text-slate-500 block">Contoh: Lebih dari sekadar sepak bola.</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+                Teks Tombol Aksi (CTA)
+              </label>
+              <input
+                type="text"
+                value={heroCtaText}
+                onChange={(e) => setHeroCtaText(e.target.value)}
+                placeholder="LIHAT TIM"
+                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden uppercase"
+              />
+              <span className="text-[9px] text-slate-500 block">Contoh: LIHAT TIM / SQUAD</span>
+            </div>
+
+            <div className="sm:col-span-3 flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => handleSaveOverlaySettings()}
+                disabled={savingOverlay}
+                className="px-5 py-2.5 rounded-xl blue-gradient-bg text-white font-black text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Simpan Teks Overlay</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
+            <span className="text-emerald-400 font-bold">✓ Mode Poster Bersih Aktif:</span>
+            <span>Gambar poster beranda akan tampil 100% full tanpa tertutup teks judul, slogan, maupun tombol aksi.</span>
+          </div>
+        )}
+      </div>
+
       {/* ── LIVE PREVIEW CAROUSEL ── */}
       <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-3 shadow-xl">
         <div className="flex items-center justify-between">
@@ -428,26 +585,23 @@ export default function MainPosterAdminPage() {
                   draggable={false}
                 />
 
-                {/* Left sample typography (Hanya ditampilkan pada Slide 1) */}
-                {previewIndex === 0 && (
+                {/* Left sample typography (Hanya ditampilkan jika showHeroOverlay aktif) */}
+                {showHeroOverlay && previewIndex === 0 && (
                   <div className="absolute inset-y-0 left-0 w-full max-w-xs sm:max-w-md p-2.5 sm:p-6 flex flex-col justify-between z-10 pointer-events-none">
                     <span className="text-[7px] sm:text-[9px] font-extrabold uppercase tracking-[0.25em] text-slate-700 leading-none drop-shadow-xs">
-                      S O C C E R &nbsp; C L U B
+                      {heroTagline}
                     </span>
                     <div className="space-y-0 sm:space-y-1 my-auto">
                       <h3 className="text-xs sm:text-xl font-black text-slate-900 uppercase drop-shadow-xs">
                         {(teamName || 'MARINERS SC').toUpperCase()}
                       </h3>
                       <p className="text-[8px] sm:text-xs font-bold text-slate-900 drop-shadow-xs">
-                        Lebih dari sekadar sepak bola.
-                      </p>
-                      <p className="hidden sm:block text-[8px] sm:text-[10px] text-slate-700 line-clamp-1 drop-shadow-xs">
-                        Kami adalah keluarga, semangat, dan perjalanan tanpa henti.
+                        {heroSubtitle}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5 pointer-events-auto">
                       <span className="px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[7px] sm:text-[8px] font-bold uppercase">
-                        Slot {poster.order || idx + 1}
+                        {heroCtaText}
                       </span>
                       {poster.linkUrl && (
                         <span className="px-1.5 py-0.5 rounded-md bg-slate-900/80 text-white border border-white/20 text-[7px] sm:text-[8px] font-mono flex items-center gap-1 truncate max-w-[120px] sm:max-w-[150px]">
@@ -459,8 +613,8 @@ export default function MainPosterAdminPage() {
                   </div>
                 )}
 
-                {/* Right tagline (Hanya ditampilkan pada Slide 1) */}
-                {previewIndex === 0 && (
+                {/* Right tagline (Hanya ditampilkan jika showHeroOverlay aktif) */}
+                {showHeroOverlay && previewIndex === 0 && (
                   <div className="hidden sm:flex absolute right-4 bottom-4 z-10 flex-col items-start gap-0.5 text-slate-900 select-none drop-shadow-sm">
                     <span className="w-4 h-0.5 bg-blue-600 rounded-full mb-0.5" />
                     <span className="text-[8px] font-bold text-slate-800 leading-tight">Satu Tim</span>

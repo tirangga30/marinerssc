@@ -261,6 +261,11 @@ model SystemSetting {
   posterInterval     Int      @default(5)
   securityPin        String   @default("1234")
   isCommunityEnabled Boolean  @default(true)
+  playerCardBg       String   @default("/bgprofil2.jpeg")
+  showHeroOverlay    Boolean  @default(false)
+  heroTagline        String?  @default("SOCCER CLUB")
+  heroSubtitle       String?  @default("Lebih dari sekadar sepak bola.")
+  heroCtaText        String?  @default("LIHAT TIM")
   createdAt          DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

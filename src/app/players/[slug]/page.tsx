@@ -71,8 +71,16 @@ export default async function PlayerDetailPage({
   let allMatches: any[] = [];
 
   let member: any = null;
+  let playerCardBg = '/bgprofil2.jpeg';
 
   try {
+    const systemSetting = await (prisma as any).systemSetting.findUnique({
+      where: { id: 'default' },
+    }).catch(() => null);
+    if (systemSetting?.playerCardBg) {
+      playerCardBg = systemSetting.playerCardBg;
+    }
+
     currentSeasonObj = await prisma.season.findFirst({
       where: { isCurrent: true },
       select: { name: true },
@@ -246,7 +254,7 @@ export default async function PlayerDetailPage({
         <div className="group relative w-full aspect-[4/3] overflow-hidden bg-slate-950 select-none">
           {/* Background Stadium Photo */}
           <img
-            src="/bgprofil.jpeg"
+            src={playerCardBg}
             alt="Stadium Background"
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -403,7 +411,7 @@ export default async function PlayerDetailPage({
           <div className="group relative aspect-[4/5] w-full overflow-hidden flex flex-col justify-end bg-slate-950">
             {/* Background Stadium Photo */}
             <img
-              src="/bgprofil.jpeg"
+              src={playerCardBg}
               alt="Stadium Background"
               className="absolute inset-0 w-full h-full object-cover"
             />

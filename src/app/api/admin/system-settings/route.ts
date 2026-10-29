@@ -19,8 +19,13 @@ export async function GET() {
       teamLogo: setting?.teamLogo || '/marinerssc.webp',
       loginWallpaper: setting?.loginWallpaper || '/newposter.webp',
       adminWallpaper: setting?.adminWallpaper || '/stadium_hero2.png',
+      playerCardBg: setting?.playerCardBg || '/bgprofil2.jpeg',
       hasCustomPin: setting ? setting.securityPin !== '1234' : false,
       isCommunityEnabled: setting ? setting.isCommunityEnabled !== false : true,
+      showHeroOverlay: setting ? Boolean(setting.showHeroOverlay) : false,
+      heroTagline: setting?.heroTagline || 'SOCCER CLUB',
+      heroSubtitle: setting?.heroSubtitle || 'Lebih dari sekadar sepak bola.',
+      heroCtaText: setting?.heroCtaText || 'LIHAT TIM',
     });
   } catch (err: any) {
     console.error('Error fetching system settings:', err);
@@ -29,8 +34,13 @@ export async function GET() {
       teamLogo: '/marinerssc.webp',
       loginWallpaper: '/newposter.webp',
       adminWallpaper: '/stadium_hero2.png',
+      playerCardBg: '/bgprofil2.jpeg',
       hasCustomPin: false,
       isCommunityEnabled: true,
+      showHeroOverlay: false,
+      heroTagline: 'SOCCER CLUB',
+      heroSubtitle: 'Lebih dari sekadar sepak bola.',
+      heroCtaText: 'LIHAT TIM',
     });
   }
 }
@@ -49,7 +59,12 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
-    const { teamName, teamLogo, loginWallpaper, adminWallpaper, isCommunityEnabled, currentPin, newPin } = body;
+    const {
+      teamName, teamLogo, loginWallpaper, adminWallpaper,
+      playerCardBg, isCommunityEnabled, showHeroOverlay,
+      heroTagline, heroSubtitle, heroCtaText,
+      currentPin, newPin
+    } = body;
 
     const currentSetting = await (prisma as any).systemSetting.findUnique({
       where: { id: 'default' },
@@ -59,6 +74,26 @@ export async function PUT(req: Request) {
 
     if (isCommunityEnabled !== undefined) {
       updateData.isCommunityEnabled = Boolean(isCommunityEnabled);
+    }
+
+    if (showHeroOverlay !== undefined) {
+      updateData.showHeroOverlay = Boolean(showHeroOverlay);
+    }
+
+    if (heroTagline !== undefined && typeof heroTagline === 'string') {
+      updateData.heroTagline = heroTagline.trim() || 'SOCCER CLUB';
+    }
+
+    if (heroSubtitle !== undefined && typeof heroSubtitle === 'string') {
+      updateData.heroSubtitle = heroSubtitle.trim() || 'Lebih dari sekadar sepak bola.';
+    }
+
+    if (heroCtaText !== undefined && typeof heroCtaText === 'string') {
+      updateData.heroCtaText = heroCtaText.trim() || 'LIHAT TIM';
+    }
+
+    if (playerCardBg !== undefined && typeof playerCardBg === 'string') {
+      updateData.playerCardBg = playerCardBg.trim() || '/bgprofil2.jpeg';
     }
 
     if (teamName !== undefined && typeof teamName === 'string') {
@@ -119,8 +154,13 @@ export async function PUT(req: Request) {
         teamLogo: updateData.teamLogo || '/marinerssc.webp',
         loginWallpaper: updateData.loginWallpaper || '/newposter.webp',
         adminWallpaper: updateData.adminWallpaper || '/stadium_hero2.png',
+        playerCardBg: updateData.playerCardBg || '/bgprofil2.jpeg',
         securityPin: updateData.securityPin || '1234',
         isCommunityEnabled: updateData.isCommunityEnabled !== undefined ? updateData.isCommunityEnabled : true,
+        showHeroOverlay: updateData.showHeroOverlay !== undefined ? updateData.showHeroOverlay : false,
+        heroTagline: updateData.heroTagline || 'SOCCER CLUB',
+        heroSubtitle: updateData.heroSubtitle || 'Lebih dari sekadar sepak bola.',
+        heroCtaText: updateData.heroCtaText || 'LIHAT TIM',
       },
     });
 
@@ -141,6 +181,11 @@ export async function PUT(req: Request) {
         teamLogo: updated.teamLogo,
         loginWallpaper: updated.loginWallpaper,
         adminWallpaper: updated.adminWallpaper,
+        playerCardBg: updated.playerCardBg,
+        showHeroOverlay: updated.showHeroOverlay,
+        heroTagline: updated.heroTagline,
+        heroSubtitle: updated.heroSubtitle,
+        heroCtaText: updated.heroCtaText,
       },
     });
   } catch (err: any) {

@@ -7,8 +7,13 @@ export interface SystemSettingData {
   teamLogo: string;
   loginWallpaper: string;
   adminWallpaper: string;
+  playerCardBg: string;
   hasCustomPin?: boolean;
   isCommunityEnabled: boolean;
+  showHeroOverlay: boolean;
+  heroTagline: string;
+  heroSubtitle: string;
+  heroCtaText: string;
 }
 
 interface SystemSettingContextType extends SystemSettingData {
@@ -21,8 +26,13 @@ const defaultSettings: SystemSettingData = {
   teamLogo: '/marinerssc.webp',
   loginWallpaper: '/newposter.webp',
   adminWallpaper: '/stadium_hero2.png',
+  playerCardBg: '/bgprofil2.jpeg',
   hasCustomPin: false,
   isCommunityEnabled: true,
+  showHeroOverlay: false,
+  heroTagline: 'SOCCER CLUB',
+  heroSubtitle: 'Lebih dari sekadar sepak bola.',
+  heroCtaText: 'LIHAT TIM',
 };
 
 const SystemSettingContext = createContext<SystemSettingContextType>({
@@ -57,8 +67,13 @@ export function SystemSettingProvider({
           teamLogo: data.teamLogo || defaultSettings.teamLogo,
           loginWallpaper: data.loginWallpaper || defaultSettings.loginWallpaper,
           adminWallpaper: data.adminWallpaper || defaultSettings.adminWallpaper,
+          playerCardBg: data.playerCardBg || defaultSettings.playerCardBg,
           hasCustomPin: Boolean(data.hasCustomPin),
           isCommunityEnabled: data.isCommunityEnabled !== false,
+          showHeroOverlay: Boolean(data.showHeroOverlay),
+          heroTagline: data.heroTagline || defaultSettings.heroTagline,
+          heroSubtitle: data.heroSubtitle || defaultSettings.heroSubtitle,
+          heroCtaText: data.heroCtaText || defaultSettings.heroCtaText,
         });
       }
     } catch (err) {

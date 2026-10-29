@@ -30,6 +30,7 @@ export default function TeamManagementPage() {
   const [teamLogo, setTeamLogo] = useState('/marinerssc.webp');
   const [loginWallpaper, setLoginWallpaper] = useState('/newposter.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
+  const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.jpeg');
   const [isCommunityEnabled, setIsCommunityEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -76,6 +77,7 @@ export default function TeamManagementPage() {
           if (data.teamLogo) setTeamLogo(data.teamLogo);
           if (data.loginWallpaper) setLoginWallpaper(data.loginWallpaper);
           if (data.adminWallpaper) setAdminWallpaper(data.adminWallpaper);
+          if (data.playerCardBg) setPlayerCardBg(data.playerCardBg);
           if (data.isCommunityEnabled !== undefined) setIsCommunityEnabled(Boolean(data.isCommunityEnabled));
         }
       })
@@ -169,6 +171,7 @@ export default function TeamManagementPage() {
           teamLogo,
           loginWallpaper,
           adminWallpaper,
+          playerCardBg,
           isCommunityEnabled,
         }),
       });
@@ -734,6 +737,68 @@ export default function TeamManagementPage() {
                 >
                   Reset Default
                 </button>
+              </div>
+            </div>
+
+            {/* 3. Latar Box Pemain (Player Card Background) */}
+            <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-300 block">
+                    Latar Box Pemain (Player Card Background)
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    Gambar latar ini digunakan pada kartu profil pemain di halaman daftar pemain, beranda, dan detail pemain.
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono self-start sm:self-auto">Template: bgprofil2.jpeg</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                {/* Preview Box */}
+                <div className="sm:col-span-5 relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-800 group shadow-lg">
+                  <img
+                    src={playerCardBg || '/bgprofil2.jpeg'}
+                    alt="Player Card Background Preview"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {/* Sample silhouette/overlay to visualize player card */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#060b14]/90 via-transparent to-transparent flex items-end p-3">
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-500/80 text-white text-[9px] font-bold uppercase tracking-wider">
+                      Pratinjau Box Pemain
+                    </span>
+                  </div>
+                </div>
+
+                {/* Upload & Reset Controls */}
+                <div className="sm:col-span-7 space-y-2.5">
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Unggah gambar khusus (misal foto stadion atau grafis klub) untuk menjadi latar belakang kartu seluruh pemain. Anda dapat mengembalikan ke template sistem bawaan kapan saja.
+                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="py-2.5 px-4 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Ganti Latar Box</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, 'wallpapers', (url) => setPlayerCardBg(url));
+                        }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setPlayerCardBg('/bgprofil2.jpeg')}
+                      className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span>Jadikan Template Sistem (bgprofil2.jpeg)</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

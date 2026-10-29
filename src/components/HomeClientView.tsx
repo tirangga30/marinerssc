@@ -74,12 +74,29 @@ interface HomeClientViewProps {
 
 export default function HomeClientView({ mainSquadData, communityData, heroPosters, systemSetting }: HomeClientViewProps) {
   const { clubMode, setClubMode } = useClubMode();
-  const { teamName: liveTeamName, teamLogo: liveTeamLogo, isCommunityEnabled: liveCommunityEnabled } = useSystemSetting();
+  const {
+    teamName: liveTeamName,
+    teamLogo: liveTeamLogo,
+    isCommunityEnabled: liveCommunityEnabled,
+    playerCardBg: livePlayerCardBg,
+    showHeroOverlay: liveShowHeroOverlay,
+    heroTagline: liveHeroTagline,
+    heroSubtitle: liveHeroSubtitle,
+    heroCtaText: liveHeroCtaText,
+  } = useSystemSetting();
+
   const currentTeamName = liveTeamName || systemSetting?.teamName || 'Mariners SC';
   const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/marinerssc.webp';
+  const playerCardBg = livePlayerCardBg || systemSetting?.playerCardBg || '/bgprofil2.jpeg';
   const isCommunityEnabled = liveCommunityEnabled !== undefined
     ? liveCommunityEnabled
     : (systemSetting?.isCommunityEnabled !== undefined ? Boolean(systemSetting.isCommunityEnabled) : true);
+  const showHeroOverlay = liveShowHeroOverlay !== undefined
+    ? liveShowHeroOverlay
+    : (systemSetting?.showHeroOverlay !== undefined ? Boolean(systemSetting.showHeroOverlay) : false);
+  const heroTagline = liveHeroTagline || systemSetting?.heroTagline || 'SOCCER CLUB';
+  const heroSubtitle = liveHeroSubtitle || systemSetting?.heroSubtitle || 'Lebih dari sekadar sepak bola.';
+  const heroCtaText = liveHeroCtaText || systemSetting?.heroCtaText || 'LIHAT TIM';
 
   React.useEffect(() => {
     if (!isCommunityEnabled && clubMode === 'community') {
@@ -527,75 +544,79 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
             )}
           </div>
 
-          {/* Center Left: Main Typography & Buttons */}
-          <div className="max-w-xs sm:max-w-xl space-y-0.5 sm:space-y-2 lg:space-y-3 my-auto pt-0.5 sm:pt-2">
-            <p className="text-[7px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-slate-700 leading-none drop-shadow-xs">
-              S O C C E R &nbsp; C L U B
-            </p>
-            <h1 className="text-base sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none drop-shadow-xs">
-              {currentTeamName.toUpperCase()}
-            </h1>
-            <p className="text-[10px] sm:text-base lg:text-xl font-bold text-slate-900 leading-tight drop-shadow-xs">
-              Lebih dari sekadar sepak bola.
-            </p>
-            {isCommunityEnabled && (
-              <p className="text-[8px] sm:text-sm text-slate-700 font-medium max-w-xs sm:max-w-md leading-relaxed line-clamp-1 sm:line-clamp-none drop-shadow-xs">
-                Join with us! Click COMMUNITY.
+          {/* Center Left: Main Typography & Buttons (Controlled by showHeroOverlay, default NONAKTIF) */}
+          {showHeroOverlay && (
+            <div className="max-w-xs sm:max-w-xl space-y-0.5 sm:space-y-2 lg:space-y-3 my-auto pt-0.5 sm:pt-2">
+              <p className="text-[7px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-slate-700 leading-none drop-shadow-xs">
+                {heroTagline}
               </p>
-            )}
-
-            {/* Action Buttons: Lihat Tim -> and Community */}
-            <div className={`flex flex-wrap items-center gap-1.5 sm:gap-3.5 pt-0.5 sm:pt-2 ${currentPosterIndex === 0 ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  if (currentPosterIndex !== 0) return;
-                  e.stopPropagation();
-                  setClubMode('main');
-                  const el = document.getElementById('main-matches-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer active:scale-95 ${
-                  clubMode === 'main'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25 scale-[1.02]'
-                    : 'bg-blue-600/90 hover:bg-blue-600 text-white'
-                }`}
-              >
-                <span>Lihat Tim</span>
-                <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
-              </button>
-
+              <h1 className="text-base sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none drop-shadow-xs">
+                {currentTeamName.toUpperCase()}
+              </h1>
+              <p className="text-[10px] sm:text-base lg:text-xl font-bold text-slate-900 leading-tight drop-shadow-xs">
+                {heroSubtitle}
+              </p>
               {isCommunityEnabled && (
+                <p className="text-[8px] sm:text-sm text-slate-700 font-medium max-w-xs sm:max-w-md leading-relaxed line-clamp-1 sm:line-clamp-none drop-shadow-xs">
+                  Join with us! Click COMMUNITY.
+                </p>
+              )}
+
+              {/* Action Buttons: Lihat Tim -> and Community */}
+              <div className={`flex flex-wrap items-center gap-1.5 sm:gap-3.5 pt-0.5 sm:pt-2 ${currentPosterIndex === 0 ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 <button
                   type="button"
                   onClick={(e) => {
                     if (currentPosterIndex !== 0) return;
                     e.stopPropagation();
-                    setClubMode('community');
+                    setClubMode('main');
+                    const el = document.getElementById('main-matches-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 ${
-                    clubMode === 'community'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 border border-transparent scale-[1.02]'
-                      : 'bg-white hover:bg-slate-50 text-slate-800 hover:text-blue-600 border border-slate-300 shadow-xs'
+                  className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer active:scale-95 ${
+                    clubMode === 'main'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25 scale-[1.02]'
+                      : 'bg-blue-600/90 hover:bg-blue-600 text-white'
                   }`}
                 >
-                  <Users className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-blue-600" />
-                  <span>Community</span>
+                  <span>{heroCtaText}</span>
+                  <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
                 </button>
-              )}
+
+                {isCommunityEnabled && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      if (currentPosterIndex !== 0) return;
+                      e.stopPropagation();
+                      setClubMode('community');
+                    }}
+                    className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 ${
+                      clubMode === 'community'
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 border border-transparent scale-[1.02]'
+                        : 'bg-white hover:bg-slate-50 text-slate-800 hover:text-blue-600 border border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    <Users className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-blue-600" />
+                    <span>Community</span>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bottom Row: Right Tagline Only (Slide Indicators diposisikan global) */}
-          <div className="flex items-end justify-end pt-0.5 sm:pt-2">
-            {/* Motto on the right side */}
-            <div className="hidden md:flex flex-col items-start gap-0.5 text-slate-900 select-none drop-shadow-sm">
-              <span className="w-6 h-0.5 bg-blue-600 rounded-full mb-1" />
-              <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Satu Tim</span>
-              <span className="text-xs sm:text-sm font-black text-slate-900 leading-tight">Satu Tujuan</span>
-              <span className="text-xs sm:text-sm font-black text-blue-600 leading-tight">{currentTeamName}</span>
+          {showHeroOverlay && (
+            <div className="flex items-end justify-end pt-0.5 sm:pt-2">
+              {/* Motto on the right side */}
+              <div className="hidden md:flex flex-col items-start gap-0.5 text-slate-900 select-none drop-shadow-sm">
+                <span className="w-6 h-0.5 bg-blue-600 rounded-full mb-1" />
+                <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Satu Tim</span>
+                <span className="text-xs sm:text-sm font-black text-slate-900 leading-tight">Satu Tujuan</span>
+                <span className="text-xs sm:text-sm font-black text-blue-600 leading-tight">{currentTeamName}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Global Carousel Slide Indicators on Bottom Left (Selalu Aktif di Semua Slide) */}
@@ -1054,12 +1075,20 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <Link
                   key={player.id}
                   href={`/players/${player.slug}`}
-                  className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-end bg-white"
+                  className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-end bg-slate-950"
                 >
+                  {/* Latar Box Pemain (Customizable via Team Management, default bgprofil2.jpeg) */}
+                  <img
+                    src={playerCardBg}
+                    alt="Player Card Background"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
+
                   <img
                     src={player.photoUrl || '/playertemplate.webp'}
                     alt={player.name}
-                    className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500 z-10"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-[38%] sm:h-[34%] player-card-scrim pointer-events-none z-10" />
 

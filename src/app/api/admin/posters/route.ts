@@ -7,11 +7,21 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     let interval = 5;
-    const setting = await prisma.systemSetting.findUnique({
+    let showHeroOverlay = false;
+    let heroTagline = 'SOCCER CLUB';
+    let heroSubtitle = 'Lebih dari sekadar sepak bola.';
+    let heroCtaText = 'LIHAT TIM';
+
+    const setting: any = await prisma.systemSetting.findUnique({
       where: { id: 'default' },
     }).catch(() => null);
-    if (setting && typeof setting.posterInterval === 'number') {
-      interval = setting.posterInterval;
+
+    if (setting) {
+      if (typeof setting.posterInterval === 'number') interval = setting.posterInterval;
+      if (setting.showHeroOverlay !== undefined) showHeroOverlay = Boolean(setting.showHeroOverlay);
+      if (setting.heroTagline) heroTagline = setting.heroTagline;
+      if (setting.heroSubtitle) heroSubtitle = setting.heroSubtitle;
+      if (setting.heroCtaText) heroCtaText = setting.heroCtaText;
     }
 
     const posters = await prisma.heroPoster.findMany({
@@ -21,6 +31,10 @@ export async function GET() {
     return NextResponse.json({
       posters: posters || [],
       interval,
+      showHeroOverlay,
+      heroTagline,
+      heroSubtitle,
+      heroCtaText,
     });
   } catch (err: any) {
     console.error('Error fetching hero posters:', err);
@@ -36,21 +50,49 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
-    const rawInterval = parseInt(body.interval, 10);
-    if (isNaN(rawInterval) || rawInterval < 3 || rawInterval > 10) {
-      return NextResponse.json({ error: 'Durasi pergantian poster harus antara 3 hingga 10 detik' }, { status: 400 });
+    const updateData: any = {};
+
+    if (body.interval !== undefined) {
+      const rawInterval = parseInt(body.interval, 10);
+      if (isNaN(rawInterval) || rawInterval < 3 || rawInterval > 10) {
+        return NextResponse.json({ error: 'Durasi pergantian poster harus antara 3 hingga 10 detik' }, { status: 400 });
+      }
+      updateData.posterInterval = rawInterval;
     }
 
-    await prisma.systemSetting.upsert({
+    if (body.showHeroOverlay !== undefined) {
+      updateData.showHeroOverlay = Boolean(body.showHeroOverlay);
+    }
+
+    if (body.heroTagline !== undefined) {
+      updateData.heroTagline = String(body.heroTagline).trim() || 'SOCCER CLUB';
+    }
+
+    if (body.heroSubtitle !== undefined) {
+      updateData.heroSubtitle = String(body.heroSubtitle).trim() || 'Lebih dari sekadar sepak bola.';
+    }
+
+    if (body.heroCtaText !== undefined) {
+      updateData.heroCtaText = String(body.heroCtaText).trim() || 'LIHAT TIM';
+    }
+
+    const updated: any = await (prisma as any).systemSetting.upsert({
       where: { id: 'default' },
-      update: { posterInterval: rawInterval },
-      create: { id: 'default', posterInterval: rawInterval },
+      update: updateData,
+      create: { id: 'default', ...updateData },
     });
 
-    return NextResponse.json({ success: true, interval: rawInterval });
+    return NextResponse.json({
+      success: true,
+      interval: updated.posterInterval,
+      showHeroOverlay: updated.showHeroOverlay,
+      heroTagline: updated.heroTagline,
+      heroSubtitle: updated.heroSubtitle,
+      heroCtaText: updated.heroCtaText,
+    });
   } catch (err: any) {
-    console.error('Error updating poster interval:', err);
-    return NextResponse.json({ error: 'Gagal memperbarui durasi pergantian poster: ' + (err?.message || 'DB Error') }, { status: 500 });
+    console.error('Error updating poster settings:', err);
+    return NextResponse.json({ error: 'Gagal memperbarui pengaturan poster: ' + (err?.message || 'DB Error') }, { status: 500 });
   }
 }
 
@@ -66,6 +108,24 @@ export async function POST(req: Request) {
 
     if (!imageUrl) {
       return NextResponse.json({ error: 'Gambar poster wajib diunggah' }, { status: 400 });
+    }
+
+    // Auto cleanup template poster if a custom poster is uploaded
+    if (imageUrl !== '/newposter.webp') {
+      try {
+        await (prisma as any).heroPoster.deleteMany({
+          where: {
+            OR: [
+              { imageUrl: '/newposter.webp' },
+              { order: 0 },
+              { id: { startsWith: 'poster-' } }
+            ],
+            NOT: id ? { id } : undefined,
+          }
+        });
+      } catch (delErr) {
+        console.warn('Template poster cleanup notice:', delErr);
+      }
     }
 
     // Check if poster already exists by id OR by slot order

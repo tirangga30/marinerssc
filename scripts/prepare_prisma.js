@@ -21,3 +21,4 @@ if (isPostgres) {
     console.log('[prepare_prisma] Detected Local SQLite environment -> Using prisma/schema.local.prisma');
   }
 }
+

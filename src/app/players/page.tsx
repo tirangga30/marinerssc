@@ -11,7 +11,7 @@ export const revalidate = 60;
 const getCachedPlayersData = unstable_cache(
   async () => {
     try {
-      const [seasons, allPlayers] = await Promise.all([
+      const [seasons, allPlayers, systemSetting] = await Promise.all([
         prisma.season.findMany({
           orderBy: { year: 'desc' },
           select: { id: true, name: true, year: true, isCurrent: true },
@@ -39,11 +39,15 @@ const getCachedPlayersData = unstable_cache(
           },
           orderBy: { number: 'asc' },
         }),
+        (prisma as any).systemSetting.findUnique({
+          where: { id: 'default' },
+          select: { playerCardBg: true },
+        }).catch(() => null),
       ]);
-      return { seasons, allPlayers };
+      return { seasons, allPlayers, playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.jpeg' };
     } catch (e) {
       console.warn('Database unreachable in getCachedPlayersData, fallback to empty arrays:', e);
-      return { seasons: [], allPlayers: [] };
+      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.jpeg' };
     }
   },
   ['mariners-players-page-cache'],
@@ -97,7 +101,7 @@ export default async function PlayersPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
   const cookieAdminSeason = cookieStore.get('admin_season')?.value;
 
-  const { seasons, allPlayers } = await getCachedPlayersData();
+  const { seasons, allPlayers, playerCardBg } = await getCachedPlayersData();
 
   const validNames = new Set(seasons.map((s) => s.name));
   const currentDbSeason = seasons.find((s) => s.isCurrent)?.name;
@@ -191,13 +195,21 @@ export default async function PlayersPage({
                 <Link
                   key={player.id}
                   href={`/players/${player.slug}`}
-                  className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-end bg-white"
+                  className="group relative aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-end bg-slate-950"
                 >
-                  {/* Full Photo (Transparent PNG cutout on clean white box) */}
+                  {/* Latar Box Pemain (Customizable via Team Management, default bgprofil2.jpeg) */}
+                  <img
+                    src={playerCardBg}
+                    alt="Player Card Background"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
+
+                  {/* Full Photo (Transparent PNG cutout on clean box) */}
                   <img
                     src={player.photoUrl || '/playertemplate.webp'}
                     alt={player.name}
-                    className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500 z-10"
                   />
 
                   {/* Top-Right MEMBER tag if player is a member */}

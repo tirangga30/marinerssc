@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -57,7 +57,7 @@ model Season {
   name              String         @unique // e.g. "2026", "2027"
   year              Int            @default(2026)
   isCurrent         Boolean        @default(false)
-  featuredPlayerIds String[]       @default([])
+  featuredPlayerIds String         @default("[]")
   createdAt         DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -261,6 +261,11 @@ model SystemSetting {
   posterInterval     Int      @default(5)
   securityPin        String   @default("1234")
   isCommunityEnabled Boolean  @default(true)
+  playerCardBg       String   @default("/bgprofil2.jpeg")
+  showHeroOverlay    Boolean  @default(false)
+  heroTagline        String?  @default("SOCCER CLUB")
+  heroSubtitle       String?  @default("Lebih dari sekadar sepak bola.")
+  heroCtaText        String?  @default("LIHAT TIM")
   createdAt          DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

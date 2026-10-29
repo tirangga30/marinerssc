@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "build": "node scripts/prepare_prisma.js && prisma generate && next build",
+    "build": "node scripts/prepare_prisma.js && next build",
     "postinstall": "node scripts/prepare_prisma.js && prisma generate",
     "start": "next start",
     "lint": "eslint",
