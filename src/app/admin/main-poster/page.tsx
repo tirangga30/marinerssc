@@ -569,12 +569,12 @@ export default function MainPosterAdminPage() {
           {activePosters.length === 0 ? (
             <div className="relative w-full h-full">
               <img
-                src="/NYCOMP.webp"
+                src="/newposter.webp"
                 alt="Poster Default"
                 className="w-full h-full object-cover object-center select-none"
               />
               <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-sky-400/30 text-sky-300 text-[11px] font-black uppercase flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Poster Otomatis: /NYCOMP.webp
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Poster Otomatis: /newposter.webp
               </div>
             </div>
           ) : (
