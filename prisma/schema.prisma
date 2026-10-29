@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -57,7 +57,7 @@ model Season {
   name              String         @unique // e.g. "2026", "2027"
   year              Int            @default(2026)
   isCurrent         Boolean        @default(false)
-  featuredPlayerIds String         @default("[]")
+  featuredPlayerIds String[]       @default([])
   createdAt         DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
