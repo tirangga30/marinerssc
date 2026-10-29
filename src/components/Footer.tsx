@@ -90,7 +90,7 @@ export default function Footer() {
                     <div className="flex items-center gap-3">
                       <img src={displayTeamLogo} alt={displayTeamName} className="h-6 w-auto object-contain drop-shadow" />
                       <span className="text-white/40">|</span>
-                      <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
+                      <img src="/NYCOMPLOGO.png" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                     </div>
                     <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-sky-300 mt-2">
                       Official Developer Partners
@@ -137,7 +137,7 @@ export default function Footer() {
                       <div className="flex items-center gap-3">
                         <img src={displayTeamLogo} alt={displayTeamName} className="h-6 w-auto object-contain drop-shadow" />
                         <span className="text-white/40">|</span>
-                        <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
+                        <img src="/NYCOMPLOGO.png" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                       </div>
                       <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-sky-300 mt-2">
                         Official Developer Partners
