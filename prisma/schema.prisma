@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -57,7 +57,7 @@ model Season {
   name              String         @unique // e.g. "2026", "2027"
   year              Int            @default(2026)
   isCurrent         Boolean        @default(false)
-  featuredPlayerIds String[]       @default([])
+  featuredPlayerIds String         @default("[]")
   createdAt         DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -258,9 +258,10 @@ model SystemSetting {
   teamLogo       String   @default("/marinerssc.webp")
   loginWallpaper String   @default("/newposter.webp")
   adminWallpaper String   @default("/stadium_hero2.png")
-  posterInterval Int      @default(5)
-  securityPin    String   @default("1234")
-  createdAt      DateTime @default(now())
+  posterInterval     Int      @default(5)
+  securityPin        String   @default("1234")
+  isCommunityEnabled Boolean  @default(true)
+  createdAt          DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
 

@@ -6,18 +6,24 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import PageLoader from './PageLoader';
 import { ClubModeProvider } from '@/context/ClubModeContext';
-import { SystemSettingProvider } from '@/context/SystemSettingContext';
+import { SystemSettingProvider, SystemSettingData } from '@/context/SystemSettingContext';
 
 /**
  * Membungkus Navbar, Footer & PageLoader dengan pengecekan path.
  * Halaman /admin/* tidak akan menampilkan Navbar & Footer publik dan tidak menggunakan wallpaper publik.
  */
-export default function PublicShell({ children }: { children: React.ReactNode }) {
+export default function PublicShell({
+  children,
+  initialSettings,
+}: {
+  children: React.ReactNode;
+  initialSettings?: Partial<SystemSettingData>;
+}) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith('/admin');
 
   return (
-    <SystemSettingProvider>
+    <SystemSettingProvider initialSettings={initialSettings}>
       <ClubModeProvider>
         <Suspense fallback={null}>
           <PageLoader />

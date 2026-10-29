@@ -106,3 +106,4 @@ main().catch(err => {
   console.error('❌ Gagal menyiapkan database tim baru:', err);
   process.exit(1);
 });
+

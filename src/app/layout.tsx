@@ -19,6 +19,8 @@ const oswald = Oswald({
   fallback: ['ui-monospace', 'monospace'],
 });
 
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   let teamName = 'Mariners SC';
   let teamLogo = '/marinerssc.webp';
@@ -49,11 +51,29 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let initialSettings: any = undefined;
+  try {
+    const setting = await (prisma as any).systemSetting.findUnique({
+      where: { id: 'default' },
+    });
+    if (setting) {
+      initialSettings = {
+        teamName: setting.teamName,
+        teamLogo: setting.teamLogo,
+        loginWallpaper: setting.loginWallpaper,
+        adminWallpaper: setting.adminWallpaper,
+        isCommunityEnabled: setting.isCommunityEnabled !== false,
+      };
+    }
+  } catch (e) {
+    // fallback if db connection fails during build
+  }
+
   return (
     <html lang="id" className={`${jakarta.variable} ${oswald.variable}`}>
       <head>
@@ -67,7 +87,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-        <PublicShell>{children}</PublicShell>
+        <PublicShell initialSettings={initialSettings}>{children}</PublicShell>
       </body>
     </html>
   );

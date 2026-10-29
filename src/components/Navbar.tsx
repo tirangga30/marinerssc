@@ -25,9 +25,15 @@ export default function Navbar() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { clubMode, setClubMode } = useClubMode();
-  const { teamName, teamLogo } = useSystemSetting();
+  const { teamName, teamLogo, isCommunityEnabled } = useSystemSetting();
   const [publicSeason, setPublicSeason] = useState<string | null>(null);
   const [currentMember, setCurrentMember] = useState<CurrentMember | null>(null);
+
+  useEffect(() => {
+    if (isCommunityEnabled === false && clubMode === 'community') {
+      setClubMode('main');
+    }
+  }, [isCommunityEnabled, clubMode, setClubMode]);
 
   useEffect(() => {
     setPublicSeason(getClientPublicSeason());
@@ -109,7 +115,7 @@ export default function Navbar() {
   ];
 
   // Active public nav links based on clubMode
-  const activeNavLinks = clubMode === 'community' ? communityNavLinks : mainNavLinks;
+  const activeNavLinks = (isCommunityEnabled !== false && clubMode === 'community') ? communityNavLinks : mainNavLinks;
 
   const toggleClubMode = (targetMode: 'main' | 'community') => {
     setClubMode(targetMode);
@@ -284,8 +290,8 @@ export default function Navbar() {
           </nav>
 
           {/* SISI KANAN: JOIN WITH US / FOTO MEMBER (Box Ujung Melingkar / rounded-full) */}
-          {/* Sembunyikan di halaman portal community (/community) */}
-          {!isCommunityPortal && (
+          {/* Sembunyikan jika community dinonaktifkan atau di halaman portal community (/community) */}
+          {isCommunityEnabled !== false && !isCommunityPortal && (
             <div className="flex items-center gap-2 sm:gap-3">
               {currentMember ? (
                 /* Sudah Menjadi Member: Tampilkan Foto Member dengan Box Ujung Melingkar & Outline Putih */

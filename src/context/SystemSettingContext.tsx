@@ -8,6 +8,7 @@ export interface SystemSettingData {
   loginWallpaper: string;
   adminWallpaper: string;
   hasCustomPin?: boolean;
+  isCommunityEnabled: boolean;
 }
 
 interface SystemSettingContextType extends SystemSettingData {
@@ -21,6 +22,7 @@ const defaultSettings: SystemSettingData = {
   loginWallpaper: '/newposter.webp',
   adminWallpaper: '/stadium_hero2.png',
   hasCustomPin: false,
+  isCommunityEnabled: true,
 };
 
 const SystemSettingContext = createContext<SystemSettingContextType>({
@@ -56,6 +58,7 @@ export function SystemSettingProvider({
           loginWallpaper: data.loginWallpaper || defaultSettings.loginWallpaper,
           adminWallpaper: data.adminWallpaper || defaultSettings.adminWallpaper,
           hasCustomPin: Boolean(data.hasCustomPin),
+          isCommunityEnabled: data.isCommunityEnabled !== false,
         });
       }
     } catch (err) {

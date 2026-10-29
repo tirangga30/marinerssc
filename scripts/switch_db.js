@@ -47,7 +47,11 @@ if (target === 'local') {
 
   console.log('Pushing schema to dev.db & generating Prisma Client...');
   execSync('npx prisma db push --skip-generate', { cwd: rootDir, stdio: 'inherit' });
-  execSync('npx prisma generate', { cwd: rootDir, stdio: 'inherit' });
+  try {
+    execSync('npx prisma generate', { cwd: rootDir, stdio: 'inherit' });
+  } catch (genErr) {
+    console.warn('Prisma generate notice (engine DLL already loaded):', genErr.message);
+  }
 
   // Run seeding for missing models in dev.db
   console.log('Ensuring default settings, seasons, and posters in dev.db...');
@@ -66,6 +70,7 @@ if (target === 'local') {
           adminWallpaper: '/stadium_hero2.png',
           posterInterval: 5,
           securityPin: '1234',
+          isCommunityEnabled: true,
         },
       });
 
@@ -126,6 +131,10 @@ if (target === 'local') {
   console.log('Updated .env and .env.local with Neon PostgreSQL URL');
 
   console.log('Generating Prisma Client for PostgreSQL...');
-  execSync('npx prisma generate', { cwd: rootDir, stdio: 'inherit' });
+  try {
+    execSync('npx prisma generate', { cwd: rootDir, stdio: 'inherit' });
+  } catch (genErr) {
+    console.warn('Prisma generate notice (engine DLL already loaded):', genErr.message);
+  }
   console.log('Switched back to Neon Cloud PostgreSQL successfully.');
 }

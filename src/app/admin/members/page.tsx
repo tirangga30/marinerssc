@@ -58,6 +58,10 @@ export default function AdminMembersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [tierFilter, setTierFilter] = useState('ALL');
 
+  // Community Status Toggle State
+  const [isCommunityActive, setIsCommunityActive] = useState<boolean>(true);
+  const [togglingCommunity, setTogglingCommunity] = useState<boolean>(false);
+
   // Password visibility map
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
 
@@ -114,16 +118,21 @@ export default function AdminMembersPage() {
       if (tierFilter !== 'ALL') query.set('tier', tierFilter);
       if (search) query.set('search', search);
 
-      const [resMembers, resFunMatches] = await Promise.all([
+      const [resMembers, resFunMatches, resStatus] = await Promise.all([
         fetch(`/api/admin/members?${query.toString()}`),
         fetch('/api/admin/fun-matches'),
+        fetch('/api/admin/community-status'),
       ]);
 
       const dataMembers = await resMembers.json();
       const dataFunMatches = await resFunMatches.json();
+      const dataStatus = await resStatus.json();
 
       if (dataMembers.members) setMembers(dataMembers.members);
       if (dataFunMatches.funMatches) setFunMatches(dataFunMatches.funMatches);
+      if (dataStatus && typeof dataStatus.isCommunityEnabled === 'boolean') {
+        setIsCommunityActive(dataStatus.isCommunityEnabled);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -487,6 +496,28 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
     }
   };
 
+  // Toggle Community Feature On / Off for End Users
+  const handleToggleCommunity = async () => {
+    setTogglingCommunity(true);
+    try {
+      const newStatus = !isCommunityActive;
+      const res = await fetch('/api/admin/community-status', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCommunityEnabled: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengubah status');
+      setIsCommunityActive(newStatus);
+      setAlertMsg({ type: 'success', text: data.message });
+      window.dispatchEvent(new Event('system_settings_updated'));
+    } catch (err: any) {
+      setAlertMsg({ type: 'error', text: err.message || 'Terjadi kesalahan' });
+    } finally {
+      setTogglingCommunity(false);
+    }
+  };
+
   const pendingMembersCount = members.filter((m) => m.status === 'PENDING' || m.paymentStatus === 'PENDING').length;
 
   return (
@@ -542,6 +573,60 @@ Selamat bergabung bersama keluarga besar Mariners SC! 🔥⚽`;
           </button>
         </div>
       )}
+
+      {/* ── TOGGLE STATUS FITUR COMMUNITY DI WEB PUBLIK ── */}
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-sky-400/20 bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-3.5 w-full sm:w-auto">
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
+            isCommunityActive 
+              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
+              : 'bg-slate-800 text-slate-400 border-slate-700'
+          }`}>
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                Status Fitur Community di Web Publik
+              </h3>
+              <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border tracking-wider transition-colors ${
+                isCommunityActive
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-xs'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {isCommunityActive ? 'AKTIF (TAMPIL DI WEB)' : 'NONAKTIF (DISEMBUNYIKAN)'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              {isCommunityActive
+                ? 'Fitur komunitas sedang AKTIF. Pengunjung web publik dapat melihat tombol join, fun match, dan portal member.'
+                : 'Fitur komunitas sedang NONAKTIF. Seluruh konten komunitas disembunyikan sepenuhnya dari pengunjung publik (end user).'}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle Switch */}
+        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+          <span className="text-xs font-bold text-slate-400 hidden sm:inline">
+            {isCommunityActive ? 'Matikan' : 'Aktifkan'}
+          </span>
+          <button
+            type="button"
+            onClick={handleToggleCommunity}
+            disabled={togglingCommunity}
+            className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+              isCommunityActive ? 'bg-emerald-500' : 'bg-slate-700'
+            }`}
+            title={isCommunityActive ? 'Klik untuk Menonaktifkan Community' : 'Klik untuk Mengaktifkan Community'}
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                isCommunityActive ? 'translate-x-7' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       {/* Main Tabs (Data Member vs Fun Match) */}
       <div className="flex gap-2 p-1.5 glass-panel rounded-2xl max-w-md border border-slate-800">

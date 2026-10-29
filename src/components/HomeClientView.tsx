@@ -74,9 +74,18 @@ interface HomeClientViewProps {
 
 export default function HomeClientView({ mainSquadData, communityData, heroPosters, systemSetting }: HomeClientViewProps) {
   const { clubMode, setClubMode } = useClubMode();
-  const { teamName: liveTeamName, teamLogo: liveTeamLogo } = useSystemSetting();
+  const { teamName: liveTeamName, teamLogo: liveTeamLogo, isCommunityEnabled: liveCommunityEnabled } = useSystemSetting();
   const currentTeamName = liveTeamName || systemSetting?.teamName || 'Mariners SC';
   const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/marinerssc.webp';
+  const isCommunityEnabled = liveCommunityEnabled !== undefined
+    ? liveCommunityEnabled
+    : (systemSetting?.isCommunityEnabled !== undefined ? Boolean(systemSetting.isCommunityEnabled) : true);
+
+  React.useEffect(() => {
+    if (!isCommunityEnabled && clubMode === 'community') {
+      setClubMode('main');
+    }
+  }, [isCommunityEnabled, clubMode, setClubMode]);
   const [showRegModal, setShowRegModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -529,9 +538,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
             <p className="text-[10px] sm:text-base lg:text-xl font-bold text-slate-900 leading-tight drop-shadow-xs">
               Lebih dari sekadar sepak bola.
             </p>
-            <p className="text-[8px] sm:text-sm text-slate-700 font-medium max-w-xs sm:max-w-md leading-relaxed line-clamp-1 sm:line-clamp-none drop-shadow-xs">
-              Join with us! Click COMMUNITY.
-            </p>
+            {isCommunityEnabled && (
+              <p className="text-[8px] sm:text-sm text-slate-700 font-medium max-w-xs sm:max-w-md leading-relaxed line-clamp-1 sm:line-clamp-none drop-shadow-xs">
+                Join with us! Click COMMUNITY.
+              </p>
+            )}
 
             {/* Action Buttons: Lihat Tim -> and Community */}
             <div className={`flex flex-wrap items-center gap-1.5 sm:gap-3.5 pt-0.5 sm:pt-2 ${currentPosterIndex === 0 ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -554,22 +565,24 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
               </button>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  if (currentPosterIndex !== 0) return;
-                  e.stopPropagation();
-                  setClubMode('community');
-                }}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 ${
-                  clubMode === 'community'
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 border border-transparent scale-[1.02]'
-                    : 'bg-white hover:bg-slate-50 text-slate-800 hover:text-blue-600 border border-slate-300 shadow-xs'
-                }`}
-              >
-                <Users className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-blue-600" />
-                <span>Community</span>
-              </button>
+              {isCommunityEnabled && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    if (currentPosterIndex !== 0) return;
+                    e.stopPropagation();
+                    setClubMode('community');
+                  }}
+                  className={`inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-lg sm:rounded-xl font-extrabold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 ${
+                    clubMode === 'community'
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 border border-transparent scale-[1.02]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 hover:text-blue-600 border border-slate-300 shadow-xs'
+                  }`}
+                >
+                  <Users className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-blue-600" />
+                  <span>Community</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -1214,7 +1227,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
       {/* ═════════════════════════════════════════════════════════════
           TAB 2: SOCCER COMMUNITY (KHUSUS MEMBER KOMUNITAS)
          ═════════════════════════════════════════════════════════════ */}
-      {clubMode === 'community' && (
+      {isCommunityEnabled && clubMode === 'community' && (
         <div className="space-y-8 sm:space-y-16 animate-fadeIn">
 
           {/* FEATURED FUN MATCH SCORECARD */}
@@ -1512,33 +1525,37 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
       )}
 
       {/* REGISTRATION & LOGIN MODALS */}
-      <CommunityRegistrationModal
-        isOpen={showRegModal}
-        onClose={() => setShowRegModal(false)}
-        onOpenLogin={() => {
-          setShowRegModal(false);
-          setShowLoginModal(true);
-        }}
-        onSuccess={() => {
-          setShowRegModal(false);
-          setMessage({
-            type: 'success',
-            text: 'Pendaftaran berhasil terkirim! Bukti pembayaran Anda sedang diverifikasi oleh admin (maksimal 1x24 jam). Akun & kata sandi akan dikonfirmasi via WhatsApp.',
-          });
-        }}
-      />
-      <CommunityLoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onOpenRegister={() => {
-          setShowLoginModal(false);
-          setShowRegModal(true);
-        }}
-        onSuccess={() => {
-          setShowLoginModal(false);
-          window.location.reload();
-        }}
-      />
+      {isCommunityEnabled && (
+        <>
+          <CommunityRegistrationModal
+            isOpen={showRegModal}
+            onClose={() => setShowRegModal(false)}
+            onOpenLogin={() => {
+              setShowRegModal(false);
+              setShowLoginModal(true);
+            }}
+            onSuccess={() => {
+              setShowRegModal(false);
+              setMessage({
+                type: 'success',
+                text: 'Pendaftaran berhasil terkirim! Bukti pembayaran Anda sedang diverifikasi oleh admin (maksimal 1x24 jam). Akun & kata sandi akan dikonfirmasi via WhatsApp.',
+              });
+            }}
+          />
+          <CommunityLoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onOpenRegister={() => {
+              setShowLoginModal(false);
+              setShowRegModal(true);
+            }}
+            onSuccess={() => {
+              setShowLoginModal(false);
+              window.location.reload();
+            }}
+          />
+        </>
+      )}
 
     </div>
   );

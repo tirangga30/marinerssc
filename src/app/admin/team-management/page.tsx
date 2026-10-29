@@ -30,6 +30,7 @@ export default function TeamManagementPage() {
   const [teamLogo, setTeamLogo] = useState('/marinerssc.webp');
   const [loginWallpaper, setLoginWallpaper] = useState('/newposter.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
+  const [isCommunityEnabled, setIsCommunityEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
   // Users State
@@ -75,6 +76,7 @@ export default function TeamManagementPage() {
           if (data.teamLogo) setTeamLogo(data.teamLogo);
           if (data.loginWallpaper) setLoginWallpaper(data.loginWallpaper);
           if (data.adminWallpaper) setAdminWallpaper(data.adminWallpaper);
+          if (data.isCommunityEnabled !== undefined) setIsCommunityEnabled(Boolean(data.isCommunityEnabled));
         }
       })
       .catch((err) => console.error('Error loading settings:', err));
@@ -167,6 +169,7 @@ export default function TeamManagementPage() {
           teamLogo,
           loginWallpaper,
           adminWallpaper,
+          isCommunityEnabled,
         }),
       });
 
@@ -576,6 +579,34 @@ export default function TeamManagementPage() {
                   Nama ini digunakan sebagai label klub utama pada scorecard, header beranda, dan modul laga.
                 </p>
               </div>
+            </div>
+
+            {/* Box Fitur Komunitas */}
+            <div className="md:col-span-2 p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Fitur Soccer Community di Web Publik
+                  </span>
+                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${isCommunityEnabled ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                    {isCommunityEnabled ? 'Aktif (Tampil di Web)' : 'Nonaktif (Disembunyikan)'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Jika dinonaktifkan, seluruh elemen Soccer Community (tombol join, fun match, tab komunitas) akan disembunyikan dari pengunjung publik.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCommunityEnabled(!isCommunityEnabled)}
+                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isCommunityEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                title={isCommunityEnabled ? 'Klik untuk Menonaktifkan' : 'Klik untuk Mengaktifkan'}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${isCommunityEnabled ? 'translate-x-7' : 'translate-x-0'}`}
+                />
+              </button>
             </div>
           </div>
 

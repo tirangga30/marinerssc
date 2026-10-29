@@ -20,6 +20,7 @@ export async function GET() {
       loginWallpaper: setting?.loginWallpaper || '/newposter.webp',
       adminWallpaper: setting?.adminWallpaper || '/stadium_hero2.png',
       hasCustomPin: setting ? setting.securityPin !== '1234' : false,
+      isCommunityEnabled: setting ? setting.isCommunityEnabled !== false : true,
     });
   } catch (err: any) {
     console.error('Error fetching system settings:', err);
@@ -29,6 +30,7 @@ export async function GET() {
       loginWallpaper: '/newposter.webp',
       adminWallpaper: '/stadium_hero2.png',
       hasCustomPin: false,
+      isCommunityEnabled: true,
     });
   }
 }
@@ -47,13 +49,17 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
-    const { teamName, teamLogo, loginWallpaper, adminWallpaper, currentPin, newPin } = body;
+    const { teamName, teamLogo, loginWallpaper, adminWallpaper, isCommunityEnabled, currentPin, newPin } = body;
 
     const currentSetting = await (prisma as any).systemSetting.findUnique({
       where: { id: 'default' },
     });
 
     const updateData: any = {};
+
+    if (isCommunityEnabled !== undefined) {
+      updateData.isCommunityEnabled = Boolean(isCommunityEnabled);
+    }
 
     if (teamName !== undefined && typeof teamName === 'string') {
       updateData.teamName = teamName.trim() || 'Mariners SC';
@@ -114,6 +120,7 @@ export async function PUT(req: Request) {
         loginWallpaper: updateData.loginWallpaper || '/newposter.webp',
         adminWallpaper: updateData.adminWallpaper || '/stadium_hero2.png',
         securityPin: updateData.securityPin || '1234',
+        isCommunityEnabled: updateData.isCommunityEnabled !== undefined ? updateData.isCommunityEnabled : true,
       },
     });
 
