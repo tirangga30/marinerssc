@@ -245,8 +245,9 @@ export default function MainPosterAdminPage() {
         showToast('success', `Poster Slot ${targetSlot} berhasil di-crop & disimpan!`);
         loadPosters();
       }
-    } catch {
-      showToast('error', 'Terjadi kesalahan jaringan saat menyimpan poster');
+    } catch (err: any) {
+      console.error('Error saving poster:', err);
+      showToast('error', err?.message ? `Gagal: ${err.message}` : 'Terjadi kesalahan jaringan saat menyimpan poster');
     } finally {
       setUploadingSlot(null);
       setCropperSlotOrder(null);

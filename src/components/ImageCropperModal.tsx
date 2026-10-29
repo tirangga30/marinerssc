@@ -181,7 +181,12 @@ export default function ImageCropperModal({
       // Draw the image onto canvas
       ctx.drawImage(imgElement, destX, destY, destW, destH);
 
-      // Convert to high-quality PNG Blob so transparency is fully preserved
+      // For landscape (posters, banners), use image/jpeg at 0.90 quality for ultra-fast, lightweight upload (~300KB vs 6MB PNG).
+      // For portrait (player cutouts), use image/png to preserve transparent cutout background!
+      const isLandscapeCrop = aspectRatio >= 1;
+      const mimeType = isLandscapeCrop ? 'image/jpeg' : 'image/png';
+      const quality = isLandscapeCrop ? 0.90 : undefined;
+
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -193,7 +198,8 @@ export default function ImageCropperModal({
           }
           setIsProcessing(false);
         },
-        'image/png'
+        mimeType,
+        quality
       );
     } catch (err: any) {
       console.error('Gagal melakukan crop foto:', err);
