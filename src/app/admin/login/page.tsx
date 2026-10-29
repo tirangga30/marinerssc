@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { teamName, teamLogo, loginWallpaper } = useSystemSetting();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -55,15 +57,15 @@ export default function AdminLoginPage() {
           <div className="px-8 pt-8 pb-6 text-center border-b border-white/10">
             <div className="flex justify-center mb-4">
               <img
-                src="/marinerssc.webp"
-                alt="Mariners SC"
+                src={teamLogo || "/marinerssc.webp"}
+                alt={teamName || "Mariners SC"}
                 className="h-16 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
               />
             </div>
             <h1 className="text-2xl font-black uppercase tracking-wide text-white drop-shadow-md">
               Portal <span className="text-sky-400">Admin</span>
             </h1>
-            <p className="text-xs text-slate-300 mt-1 font-medium drop-shadow-sm">Mariners SC — Akses Pengelola Klub</p>
+            <p className="text-xs text-slate-300 mt-1 font-medium drop-shadow-sm">{teamName || "Mariners SC"} — Akses Pengelola Klub</p>
           </div>
 
           {/* Card Body */}
@@ -140,7 +142,7 @@ export default function AdminLoginPage() {
 
         {/* Footer note */}
         <p className="text-center text-[11px] text-slate-300/80 mt-5 font-medium drop-shadow-sm">
-          © 2026 Mariners SC · Akses terbatas untuk pengelola resmi klub
+          © {new Date().getFullYear()} {teamName || "Mariners SC"} · Akses terbatas untuk pengelola resmi klub
         </p>
       </div>
     </div>

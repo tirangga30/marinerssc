@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,6 +116,15 @@ export async function PUT(req: Request) {
         securityPin: updateData.securityPin || '1234',
       },
     });
+
+    try {
+      revalidatePath('/', 'layout');
+      revalidatePath('/matches');
+      revalidatePath('/players');
+      revalidatePath('/stats');
+    } catch (revErr) {
+      console.warn('Revalidation notice:', revErr);
+    }
 
     return NextResponse.json({
       success: true,

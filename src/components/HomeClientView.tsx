@@ -14,6 +14,7 @@ import { getMainThumbnail } from '@/lib/articles';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
 import CommunityLoginModal from '@/components/CommunityLoginModal';
 import { useClubMode } from '@/context/ClubModeContext';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 import { getClientPublicSeason, setClientPublicSeason } from '@/lib/publicSeason';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
@@ -73,6 +74,9 @@ interface HomeClientViewProps {
 
 export default function HomeClientView({ mainSquadData, communityData, heroPosters, systemSetting }: HomeClientViewProps) {
   const { clubMode, setClubMode } = useClubMode();
+  const { teamName: liveTeamName, teamLogo: liveTeamLogo } = useSystemSetting();
+  const currentTeamName = liveTeamName || systemSetting?.teamName || 'Mariners SC';
+  const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/marinerssc.webp';
   const [showRegModal, setShowRegModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -520,7 +524,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               S O C C E R &nbsp; C L U B
             </p>
             <h1 className="text-base sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none drop-shadow-xs">
-              MARINERS SC
+              {currentTeamName.toUpperCase()}
             </h1>
             <p className="text-[10px] sm:text-base lg:text-xl font-bold text-slate-900 leading-tight drop-shadow-xs">
               Lebih dari sekadar sepak bola.
@@ -576,7 +580,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <span className="w-6 h-0.5 bg-blue-600 rounded-full mb-1" />
               <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Satu Tim</span>
               <span className="text-xs sm:text-sm font-black text-slate-900 leading-tight">Satu Tujuan</span>
-              <span className="text-xs sm:text-sm font-black text-blue-600 leading-tight">Mariners SC</span>
+              <span className="text-xs sm:text-sm font-black text-blue-600 leading-tight">{currentTeamName}</span>
             </div>
           </div>
         </div>
@@ -671,13 +675,13 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                         <div className="order-2 sm:order-1 text-center sm:text-right">
                           <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {currentNextMatch.isHome ? 'MARINERS SC' : currentNextMatch.opponentName}
+                            {currentNextMatch.isHome ? currentTeamName.toUpperCase() : currentNextMatch.opponentName}
                           </h4>
                         </div>
                         <div className="order-1 sm:order-2 flex items-center justify-center">
                           <img
-                            src={currentNextMatch.isHome ? '/marinerssc.webp' : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
-                            alt={currentNextMatch.isHome ? 'Mariners SC' : currentNextMatch.opponentName}
+                            src={currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
+                            alt={currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
                             className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
@@ -726,14 +730,14 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                         <div className="flex items-center justify-center">
                           <img
-                            src={!currentNextMatch.isHome ? '/marinerssc.webp' : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
-                            alt={!currentNextMatch.isHome ? 'Mariners SC' : currentNextMatch.opponentName}
+                            src={!currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
+                            alt={!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
                             className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                         <div className="text-center sm:text-left">
                           <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {!currentNextMatch.isHome ? 'MARINERS SC' : currentNextMatch.opponentName}
+                            {!currentNextMatch.isHome ? currentTeamName.toUpperCase() : currentNextMatch.opponentName}
                           </h4>
                         </div>
                       </div>
@@ -800,13 +804,13 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                           <div className="order-2 sm:order-1 text-center sm:text-right">
                             <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-                              {m.isHome ? 'MARINERS SC' : m.opponentName}
+                              {m.isHome ? currentTeamName.toUpperCase() : m.opponentName}
                             </h4>
                           </div>
                           <div className="order-1 sm:order-2 flex items-center justify-center">
                             <img
-                              src={m.isHome ? '/marinerssc.webp' : (m.opponentLogo || '/defaultteam.webp')}
-                              alt={m.isHome ? 'Mariners SC' : m.opponentName}
+                              src={m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
+                              alt={m.isHome ? currentTeamName : m.opponentName}
                               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
@@ -823,14 +827,14 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
                           <div className="flex items-center justify-center">
                             <img
-                              src={!m.isHome ? '/marinerssc.webp' : (m.opponentLogo || '/defaultteam.webp')}
-                              alt={!m.isHome ? 'Mariners SC' : m.opponentName}
+                              src={!m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
+                              alt={!m.isHome ? currentTeamName : m.opponentName}
                               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                           <div className="text-center sm:text-left">
                             <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-                              {!m.isHome ? 'MARINERS SC' : m.opponentName}
+                              {!m.isHome ? currentTeamName.toUpperCase() : m.opponentName}
                             </h4>
                           </div>
                         </div>
@@ -1021,7 +1025,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-4 sm:h-5 rounded-full bg-blue-600 inline-block" />
                 <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
-                  Mariners SC Players ({selectedSeason})
+                  {currentTeamName} Players ({selectedSeason})
                 </h2>
               </div>
               <Link

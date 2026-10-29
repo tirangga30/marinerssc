@@ -13,8 +13,10 @@ import {
   ExternalLink,
   LogOut,
   ChevronDown,
+  Shield,
 } from 'lucide-react';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface SeasonItem {
   id: string;
@@ -29,6 +31,8 @@ export default function AdminTopNav() {
 
   const [seasons, setSeasons] = useState<SeasonItem[]>([]);
   const [activeSeason, setActiveSeason] = useState<string>('2026');
+
+  const { teamName, teamLogo } = useSystemSetting();
 
   // Do not render on login page
   if (pathname === '/admin/login') return null;
@@ -81,6 +85,7 @@ export default function AdminTopNav() {
     { label: 'Kompetisi', href: '/admin/competitions', icon: Trophy },
     { label: 'Member', href: '/admin/members', icon: Sparkles },
     { label: 'Berita', href: '/admin/articles', icon: Newspaper },
+    { label: 'Identitas Tim', href: '/admin/team-management', icon: Shield },
   ];
 
   return (
@@ -89,9 +94,9 @@ export default function AdminTopNav() {
         {/* Left: Brand & Active Season Dropdown */}
         <div className="flex items-center gap-3">
           <Link href="/admin/dashboard" className="flex items-center gap-2 shrink-0">
-            <img src="/marinerssc.webp" alt="Mariners SC" className="w-7 h-7 object-contain drop-shadow-sm" />
+            <img src={teamLogo || "/marinerssc.webp"} alt={teamName || "Mariners SC"} className="w-7 h-7 object-contain drop-shadow-sm" />
             <div className="hidden sm:block">
-              <span className="text-xs font-black text-slate-900 tracking-wider uppercase block">MARINERS SC</span>
+              <span className="text-xs font-black text-slate-900 tracking-wider uppercase block">{teamName || "MARINERS SC"}</span>
               <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest block -mt-1">ADMIN PANEL</span>
             </div>
           </Link>

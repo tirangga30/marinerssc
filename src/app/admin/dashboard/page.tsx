@@ -24,19 +24,24 @@ export default async function AdminDashboardPage({
   const params = await searchParams;
   const requestedSeason = params.season || cookieSeason;
 
-  // Fetch all seasons with their counts
-  const seasons = await prisma.season.findMany({
-    orderBy: { year: 'desc' },
-    include: {
-      _count: {
-        select: {
-          players: true,
-          matches: true,
-          competitions: true,
+  // Fetch all seasons with their counts and system settings
+  const [seasons, systemSetting] = await Promise.all([
+    prisma.season.findMany({
+      orderBy: { year: 'desc' },
+      include: {
+        _count: {
+          select: {
+            players: true,
+            matches: true,
+            competitions: true,
+          },
         },
       },
-    },
-  });
+    }),
+    (prisma as any).systemSetting.findUnique({
+      where: { id: 'default' },
+    }).catch(() => null),
+  ]);
 
   const activeSeason =
     seasons.find((s) => s.name === requestedSeason || s.id === requestedSeason) ||
@@ -96,7 +101,7 @@ export default async function AdminDashboardPage({
             Selamat Datang, {session.email.split('@')[0]}
           </h1>
           <p className="text-[11px] sm:text-xs text-slate-300">
-            Mariners SC · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
+            {systemSetting?.teamName || 'Mariners SC'} · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
           </p>
         </div>
 

@@ -9,6 +9,7 @@ import {
   Award, UserCheck, Flame
 } from 'lucide-react';
 import { useClubMode } from '@/context/ClubModeContext';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 import { getClientPublicSeason } from '@/lib/publicSeason';
 
 interface CurrentMember {
@@ -24,6 +25,7 @@ export default function Navbar() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { clubMode, setClubMode } = useClubMode();
+  const { teamName, teamLogo } = useSystemSetting();
   const [publicSeason, setPublicSeason] = useState<string | null>(null);
   const [currentMember, setCurrentMember] = useState<CurrentMember | null>(null);
 
@@ -133,13 +135,13 @@ export default function Navbar() {
             {/* Logo Admin */}
             <Link href="/admin/dashboard" className="flex items-center gap-2 sm:gap-3 group">
               <img
-                src="/marinerssc.webp"
-                alt="Mariners SC Logo"
+                src={teamLogo || "/marinerssc.webp"}
+                alt={`${teamName || "Mariners SC"} Logo`}
                 className="h-8 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
               />
               <div>
                 <span className="text-base sm:text-xl font-black tracking-wider uppercase blue-gradient-text block leading-none">
-                  MARINERS SC
+                  {(teamName || 'MARINERS SC').toUpperCase()}
                 </span>
                 <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-blue-600 font-extrabold block mt-0.5">
                   PANEL ADMIN KELOLA
@@ -250,10 +252,10 @@ export default function Navbar() {
             </button>
 
             {/* Logo Saja (Teks Dihapus, Logo Diperbesar Lebih Lanjut) */}
-            <Link href="/" className="flex items-center group py-0.5" title="Mariners SC - Beranda">
+            <Link href="/" className="flex items-center group py-0.5" title={`${teamName || "Mariners SC"} - Beranda`}>
               <img
-                src="/marinerssc.webp"
-                alt="Mariners SC Logo"
+                src={teamLogo || "/marinerssc.webp"}
+                alt={`${teamName || "Mariners SC"} Logo`}
                 className="h-12 sm:h-16 md:h-[68px] w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
               />
             </Link>

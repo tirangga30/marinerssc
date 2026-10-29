@@ -12,7 +12,7 @@ export const revalidate = 60;
 const getCachedMatchesData = unstable_cache(
   async () => {
     try {
-      const [seasons, allMatchesRaw] = await Promise.all([
+      const [seasons, allMatchesRaw, systemSetting] = await Promise.all([
         prisma.season.findMany({
           orderBy: { year: 'desc' },
           select: { id: true, name: true, year: true, isCurrent: true },
@@ -21,11 +21,14 @@ const getCachedMatchesData = unstable_cache(
           include: { events: true },
           orderBy: { matchDate: 'asc' },
         }),
+        (prisma as any).systemSetting.findUnique({
+          where: { id: 'default' },
+        }).catch(() => null),
       ]);
-      return { seasons, allMatchesRaw };
+      return { seasons, allMatchesRaw, systemSetting };
     } catch (e) {
       console.warn('Database unreachable in getCachedMatchesData, fallback to empty arrays:', e);
-      return { seasons: [], allMatchesRaw: [] };
+      return { seasons: [], allMatchesRaw: [], systemSetting: null };
     }
   },
   ['mariners-matches-page-cache'],
@@ -61,7 +64,15 @@ function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'sco
   return 'scheduled';
 }
 
-function MatchCard({ match }: { match: any }) {
+function MatchCard({
+  match,
+  teamName = 'MARINERS SC',
+  teamLogo = '/marinerssc.webp',
+}: {
+  match: any;
+  teamName?: string;
+  teamLogo?: string;
+}) {
   const status = getDynamicMatchStatus(match);
   const our = match.isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
   const their = match.isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
@@ -112,13 +123,13 @@ function MatchCard({ match }: { match: any }) {
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
           <div className="order-2 sm:order-1 text-center sm:text-right">
             <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-              {match.isHome ? 'MARINERS SC' : match.opponentName}
+              {match.isHome ? teamName : match.opponentName}
             </h4>
           </div>
           <div className="order-1 sm:order-2 flex items-center justify-center">
             <img
-              src={match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
-              alt={match.isHome ? 'Mariners SC' : match.opponentName}
+              src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
+              alt={match.isHome ? teamName : match.opponentName}
               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
@@ -169,14 +180,14 @@ function MatchCard({ match }: { match: any }) {
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
           <div className="flex items-center justify-center">
             <img
-              src={!match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
-              alt={!match.isHome ? 'Mariners SC' : match.opponentName}
+              src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
+              alt={!match.isHome ? teamName : match.opponentName}
               className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="text-center sm:text-left">
             <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-              {!match.isHome ? 'MARINERS SC' : match.opponentName}
+              {!match.isHome ? teamName : match.opponentName}
             </h4>
           </div>
         </div>
@@ -185,7 +196,15 @@ function MatchCard({ match }: { match: any }) {
   );
 }
 
-function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
+function MatchListGroupedByCompetition({
+  matches,
+  teamName,
+  teamLogo,
+}: {
+  matches: any[];
+  teamName?: string;
+  teamLogo?: string;
+}) {
   if (matches.length === 0) {
     return <p className="text-center text-slate-500 text-xs py-8">Tidak ada pertandingan.</p>;
   }
@@ -214,7 +233,7 @@ function MatchListGroupedByCompetition({ matches }: { matches: any[] }) {
                 </h3>
               </div>
             )}
-            <MatchCard match={m} />
+            <MatchCard match={m} teamName={teamName} teamLogo={teamLogo} />
           </React.Fragment>
         );
       })}
@@ -231,7 +250,9 @@ export default async function MatchesPage({
   const cookieStore = await cookies();
   const cookieSeason = cookieStore.get('public_season')?.value;
 
-  const { seasons, allMatchesRaw: allRaw } = await getCachedMatchesData();
+  const { seasons, allMatchesRaw: allRaw, systemSetting } = await getCachedMatchesData();
+  const displayTeamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'MARINERS SC';
+  const displayTeamLogo = systemSetting?.teamLogo || '/marinerssc.webp';
 
   const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
   const filter = params.filter || 'all';
@@ -311,7 +332,7 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({upcomingMatches.length})</span>
               </div>
-              <MatchListGroupedByCompetition matches={upcomingMatches} />
+              <MatchListGroupedByCompetition matches={upcomingMatches} teamName={displayTeamName} teamLogo={displayTeamLogo} />
             </div>
           )}
 
@@ -325,13 +346,13 @@ export default async function MatchesPage({
                 </h2>
                 <span className="text-[10px] font-bold text-slate-500">({finishedMatches.length})</span>
               </div>
-              <MatchListGroupedByCompetition matches={finishedMatches} />
+              <MatchListGroupedByCompetition matches={finishedMatches} teamName={displayTeamName} teamLogo={displayTeamLogo} />
             </div>
           )}
         </div>
       ) : (
         <div>
-          <MatchListGroupedByCompetition matches={filteredMatches} />
+          <MatchListGroupedByCompetition matches={filteredMatches} teamName={displayTeamName} teamLogo={displayTeamLogo} />
         </div>
       )}
     </div>

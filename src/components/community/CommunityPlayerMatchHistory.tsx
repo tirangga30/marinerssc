@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 /* FontAwesome soccer ball icon */
 const BallIcon = ({ size = 16 }: { size?: number }) => (
@@ -24,6 +25,7 @@ export default function CommunityPlayerMatchHistory({
   attendances,
   member,
 }: CommunityPlayerMatchHistoryProps) {
+  const { teamName } = useSystemSetting();
   const [visibleCount, setVisibleCount] = useState(10);
 
   const displayedAttendances = attendances.slice(0, visibleCount);
@@ -188,7 +190,7 @@ export default function CommunityPlayerMatchHistory({
                                   ★
                                 </span>
                                 <span className="text-xs font-bold truncate flex-1 text-sky-300">
-                                  Mariners SC (Tim Utama)
+                                  {teamName || 'Mariners SC'} (Tim Utama)
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 min-w-0">

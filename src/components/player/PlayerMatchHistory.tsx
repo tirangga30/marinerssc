@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 /* FontAwesome soccer ball icon */
 const BallIcon = ({ size = 16 }: { size?: number }) => (
@@ -35,6 +36,9 @@ interface PlayerMatchHistoryProps {
 }
 
 export default function PlayerMatchHistory({ matches, player }: PlayerMatchHistoryProps) {
+  const { teamName, teamLogo } = useSystemSetting();
+  const displayTeamName = teamName || 'Mariners SC';
+  const displayTeamLogo = teamLogo || '/marinerssc.webp';
   const [visibleCount, setVisibleCount] = useState(10);
 
   const displayedMatches = matches.slice(0, visibleCount);
@@ -112,12 +116,12 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                   ? () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img
-                          src="/marinerssc.webp"
-                          alt="Mariners SC"
+                          src={displayTeamLogo}
+                          alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
                         <span className="text-xs font-bold truncate flex-1 text-blue-600">
-                          Mariners SC
+                          {displayTeamName}
                         </span>
                       </div>
                     )
@@ -150,12 +154,12 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                   : () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img
-                          src="/marinerssc.webp"
-                          alt="Mariners SC"
+                          src={displayTeamLogo}
+                          alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
                         <span className="text-xs font-bold truncate flex-1 text-blue-600">
-                          Mariners SC
+                          {displayTeamName}
                         </span>
                       </div>
                     );

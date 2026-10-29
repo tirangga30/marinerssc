@@ -48,19 +48,27 @@ export default async function MatchDetailPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
 
   let match: any = null;
+  let systemSetting: any = null;
   try {
-    match = await prisma.footballMatch.findUnique({
-      where: { id },
-      include: {
-        lineups: {
-          include: { player: true },
+    const [fetchedMatch, fetchedSetting] = await Promise.all([
+      prisma.footballMatch.findUnique({
+        where: { id },
+        include: {
+          lineups: {
+            include: { player: true },
+          },
+          events: {
+            include: { player: true, assistPlayer: true },
+            orderBy: { minute: 'asc' },
+          },
         },
-        events: {
-          include: { player: true, assistPlayer: true },
-          orderBy: { minute: 'asc' },
-        },
-      },
-    });
+      }),
+      (prisma as any).systemSetting.findUnique({
+        where: { id: 'default' },
+      }).catch(() => null),
+    ]);
+    match = fetchedMatch;
+    systemSetting = fetchedSetting;
   } catch (error) {
     console.error('Database error in MatchDetailPage:', error);
   }
@@ -68,6 +76,9 @@ export default async function MatchDetailPage({
   if (!match) {
     notFound();
   }
+
+  const teamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'MARINERS SC';
+  const teamLogo = systemSetting?.teamLogo || '/marinerssc.webp';
 
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
   const matchLabel = match.stage || (isFriendly ? 'Friendly Match' : match.competition || 'Pertandingan');
@@ -121,13 +132,13 @@ export default async function MatchDetailPage({
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center">
               <img
-                src={match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
-                alt={match.isHome ? 'Mariners SC' : match.opponentName}
+                src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
+                alt={match.isHome ? teamName : match.opponentName}
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
               />
             </div>
             <h2 className="text-xs sm:text-xl font-black text-slate-900 uppercase">
-              {match.isHome ? 'MARINERS SC' : match.opponentName}
+              {match.isHome ? teamName : match.opponentName}
             </h2>
           </div>
 
@@ -167,13 +178,13 @@ export default async function MatchDetailPage({
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center">
               <img
-                src={!match.isHome ? '/marinerssc.webp' : (match.opponentLogo || '/defaultteam.webp')}
-                alt={!match.isHome ? 'Mariners SC' : match.opponentName}
+                src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
+                alt={!match.isHome ? teamName : match.opponentName}
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
               />
             </div>
             <h2 className="text-xs sm:text-xl font-black text-slate-900 uppercase">
-              {!match.isHome ? 'MARINERS SC' : match.opponentName}
+              {!match.isHome ? teamName : match.opponentName}
             </h2>
           </div>
 

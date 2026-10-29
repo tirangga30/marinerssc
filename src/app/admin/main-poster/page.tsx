@@ -8,6 +8,7 @@ import {
   Edit2, Loader2, X, Link as LinkIcon, FileText, Timer
 } from 'lucide-react';
 import ImageCropperModal from '@/components/ImageCropperModal';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface PosterItem {
   id?: string;
@@ -20,6 +21,7 @@ interface PosterItem {
 }
 
 export default function MainPosterAdminPage() {
+  const { teamName } = useSystemSetting();
   const [posters, setPosters] = useState<PosterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingSlot, setUploadingSlot] = useState<number | null>(null);
@@ -434,7 +436,7 @@ export default function MainPosterAdminPage() {
                     </span>
                     <div className="space-y-0 sm:space-y-1 my-auto">
                       <h3 className="text-xs sm:text-xl font-black text-slate-900 uppercase drop-shadow-xs">
-                        MARINERS SC
+                        {(teamName || 'MARINERS SC').toUpperCase()}
                       </h3>
                       <p className="text-[8px] sm:text-xs font-bold text-slate-900 drop-shadow-xs">
                         Lebih dari sekadar sepak bola.
@@ -463,7 +465,7 @@ export default function MainPosterAdminPage() {
                     <span className="w-4 h-0.5 bg-blue-600 rounded-full mb-0.5" />
                     <span className="text-[8px] font-bold text-slate-800 leading-tight">Satu Tim</span>
                     <span className="text-[8px] font-black text-slate-900 leading-tight">Satu Tujuan</span>
-                    <span className="text-[8px] font-black text-blue-600 leading-tight">Mariners SC</span>
+                    <span className="text-[8px] font-black text-blue-600 leading-tight">{teamName || 'Mariners SC'}</span>
                   </div>
                 )}
               </div>

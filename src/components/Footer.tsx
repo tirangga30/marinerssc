@@ -4,10 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MapPin, Mail, Phone } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === '/';
+  const { teamName, teamLogo } = useSystemSetting();
+  const displayTeamName = teamName || 'MARINERS SC';
+  const displayTeamLogo = teamLogo || '/marinerssc.webp';
 
   return (
     <footer className="relative w-full mt-auto overflow-hidden">
@@ -64,13 +68,13 @@ export default function Footer() {
                 <div className="space-y-4 md:col-span-1">
                   <div className="flex items-center gap-3">
                     <img
-                      src="/marinerssc.webp"
-                      alt="Mariners SC Logo"
+                      src={displayTeamLogo}
+                      alt={`${displayTeamName} Logo`}
                       className="h-11 w-auto object-contain drop-shadow-md"
                     />
                     <div>
                       <span className="text-xl font-black uppercase tracking-wider text-white block leading-none">
-                        MARINERS SC
+                        {displayTeamName.toUpperCase()}
                       </span>
                       <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block mt-0.5">
                         SOCCER CLUB
@@ -84,7 +88,7 @@ export default function Footer() {
                   {/* Developer Partners - Desktop Only */}
                   <div className="pt-3 hidden md:block">
                     <div className="flex items-center gap-3">
-                      <img src="/marinerssc.webp" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
+                      <img src={displayTeamLogo} alt={displayTeamName} className="h-6 w-auto object-contain drop-shadow" />
                       <span className="text-white/40">|</span>
                       <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                     </div>
@@ -131,7 +135,7 @@ export default function Footer() {
                     {/* Developer Partners - Mobile Only */}
                     <div className="pt-3 md:hidden">
                       <div className="flex items-center gap-3">
-                        <img src="/marinerssc.webp" alt="Mariners SC" className="h-6 w-auto object-contain drop-shadow" />
+                        <img src={displayTeamLogo} alt={displayTeamName} className="h-6 w-auto object-contain drop-shadow" />
                         <span className="text-white/40">|</span>
                         <img src="/NYCOMP.webp" alt="NY Company" className="h-6 w-auto object-contain drop-shadow" />
                       </div>
@@ -211,13 +215,13 @@ export default function Footer() {
               <div className="flex flex-col items-start gap-1 sm:gap-2 shrink-0">
                 <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group">
                   <img
-                    src="/marinerssc.webp"
-                    alt="Mariners SC Logo"
+                    src={displayTeamLogo}
+                    alt={`${displayTeamName} Logo`}
                     className="h-7 sm:h-10 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
                   />
                   <div className="leading-tight">
                     <span className="text-[11px] sm:text-base font-black uppercase tracking-wider text-white block">
-                      MARINERS SC
+                      {displayTeamName.toUpperCase()}
                     </span>
                     <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block">
                       SOCCER CLUB

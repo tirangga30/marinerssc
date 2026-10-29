@@ -512,7 +512,7 @@ export default function TeamManagementPage() {
             {/* Box Logo */}
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
-                Logo Resmi Tim (Logo Mariners SC)
+                Logo Resmi Tim ({teamName || 'Mariners SC'})
               </label>
 
               <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
