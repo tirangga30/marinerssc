@@ -109,7 +109,7 @@ export function SystemSettingProvider({
           link.rel = 'icon';
           document.head.appendChild(link);
         }
-        link.href = settings.teamLogo;
+        link.href = settings.teamLogo.startsWith('data:') ? '/api/team-logo' : settings.teamLogo;
       }
     }
   }, [settings.teamName, settings.teamLogo]);

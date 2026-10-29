@@ -25,23 +25,32 @@ export default async function AdminDashboardPage({
   const requestedSeason = params.season || cookieSeason;
 
   // Fetch all seasons with their counts and system settings
-  const [seasons, systemSetting] = await Promise.all([
-    prisma.season.findMany({
-      orderBy: { year: 'desc' },
-      include: {
-        _count: {
-          select: {
-            players: true,
-            matches: true,
-            competitions: true,
+  let seasons: any[] = [];
+  let systemSetting: any = null;
+
+  try {
+    const res = await Promise.all([
+      prisma.season.findMany({
+        orderBy: { year: 'desc' },
+        include: {
+          _count: {
+            select: {
+              players: true,
+              matches: true,
+              competitions: true,
+            },
           },
         },
-      },
-    }),
-    (prisma as any).systemSetting.findUnique({
-      where: { id: 'default' },
-    }).catch(() => null),
-  ]);
+      }).catch(() => []),
+      (prisma as any).systemSetting.findUnique({
+        where: { id: 'default' },
+      }).catch(() => null),
+    ]);
+    seasons = res[0] || [];
+    systemSetting = res[1] || null;
+  } catch (err) {
+    console.error('Error fetching admin dashboard initial data:', err);
+  }
 
   const activeSeason =
     seasons.find((s) => s.name === requestedSeason || s.id === requestedSeason) ||

@@ -78,7 +78,7 @@ if (target === 'local') {
       if (pCount === 0) {
         await prisma.heroPoster.createMany({
           data: [
-            { imageUrl: '/newposter.webp', title: 'MARINERS SC', subtitle: 'Official Club Community & Squad', order: 0, isActive: true },
+            { imageUrl: '/NYCOMP.webp', title: 'MARINERS SC', subtitle: 'Official Club Community & Squad', order: 0, isActive: true },
             { imageUrl: '/mainposter.webp', title: 'SEASON 2026', subtitle: 'Rise Together, Play Harder', order: 1, isActive: true },
           ],
         });

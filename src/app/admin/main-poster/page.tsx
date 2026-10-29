@@ -567,9 +567,15 @@ export default function MainPosterAdminPage() {
         {/* Carousel Viewport (Rasio 16:9 Full Gambar, Tanpa Gradasi Putih) */}
         <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-2xl">
           {activePosters.length === 0 ? (
-            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs space-y-2">
-              <ImageIcon className="w-8 h-8 text-slate-400" />
-              <span>Belum ada poster aktif. Poster bawaan (/newposter.webp) akan ditampilkan.</span>
+            <div className="relative w-full h-full">
+              <img
+                src="/NYCOMP.webp"
+                alt="Poster Default"
+                className="w-full h-full object-cover object-center select-none"
+              />
+              <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-sky-400/30 text-sky-300 text-[11px] font-black uppercase flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Poster Otomatis: /NYCOMP.webp
+              </div>
             </div>
           ) : (
             activePosters.map((poster, idx) => (

@@ -23,7 +23,6 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   let teamName = 'Mariners SC';
-  let teamLogo = '/marinerssc.webp';
 
   try {
     const setting = await (prisma as any).systemSetting.findUnique({
@@ -31,7 +30,6 @@ export async function generateMetadata(): Promise<Metadata> {
     });
     if (setting) {
       if (setting.teamName) teamName = setting.teamName;
-      if (setting.teamLogo) teamLogo = setting.teamLogo;
     }
   } catch (e) {
     // fallback
@@ -41,9 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: `${teamName} - Website Resmi Klub Sepak Bola`,
     description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
     icons: {
-      icon: teamLogo,
-      shortcut: teamLogo,
-      apple: teamLogo,
+      icon: '/api/team-logo',
+      shortcut: '/api/team-logo',
+      apple: '/api/team-logo',
     },
     verification: {
       google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',
@@ -64,7 +62,7 @@ export default async function RootLayout({
     if (setting) {
       initialSettings = {
         teamName: setting.teamName,
-        teamLogo: setting.teamLogo,
+        teamLogo: setting.teamLogo?.startsWith('data:') ? '/api/team-logo' : (setting.teamLogo || '/api/team-logo'),
         loginWallpaper: setting.loginWallpaper,
         adminWallpaper: setting.adminWallpaper,
         playerCardBg: setting.playerCardBg || '/bgprofil2.jpeg',
