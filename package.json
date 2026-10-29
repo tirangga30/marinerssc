@@ -12,7 +12,8 @@
     "db:seed": "prisma db seed",
     "db:restore": "npx tsx prisma/seed_from_backup.ts",
     "use:local": "node scripts/switch_db.js local",
-    "use:cloud": "node scripts/switch_db.js cloud"
+    "use:cloud": "node scripts/switch_db.js cloud",
+    "db:new-team": "node scripts/create_new_team_db.js"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
