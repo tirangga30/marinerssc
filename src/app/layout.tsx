@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Oswald } from 'next/font/google';
 import './globals.css';
 import PublicShell from '@/components/PublicShell';
+import { prisma } from '@/lib/db';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -18,13 +19,35 @@ const oswald = Oswald({
   fallback: ['ui-monospace', 'monospace'],
 });
 
-export const metadata: Metadata = {
-  title: 'Mariners SC - Website Resmi Klub Sepak Bola',
-  description: 'Website resmi klub sepak bola Mariners SC. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.',
-  verification: {
-    google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let teamName = 'Mariners SC';
+  let teamLogo = '/marinerssc.webp';
+
+  try {
+    const setting = await (prisma as any).systemSetting.findUnique({
+      where: { id: 'default' },
+    });
+    if (setting) {
+      if (setting.teamName) teamName = setting.teamName;
+      if (setting.teamLogo) teamLogo = setting.teamLogo;
+    }
+  } catch (e) {
+    // fallback
+  }
+
+  return {
+    title: `${teamName} - Website Resmi Klub Sepak Bola`,
+    description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
+    icons: {
+      icon: teamLogo,
+      shortcut: teamLogo,
+      apple: teamLogo,
+    },
+    verification: {
+      google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',
+    },
+  };
+}
 
 export default function RootLayout({
   children,

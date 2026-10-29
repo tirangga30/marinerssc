@@ -78,6 +78,24 @@ export function SystemSettingProvider({
     };
   }, [fetchSettings]);
 
+  // Sync document title and favicon dynamically in the browser tab
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (settings.teamName) {
+        document.title = `${settings.teamName} - Website Resmi Klub Sepak Bola`;
+      }
+      if (settings.teamLogo) {
+        let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.head.appendChild(link);
+        }
+        link.href = settings.teamLogo;
+      }
+    }
+  }, [settings.teamName, settings.teamLogo]);
+
   return (
     <SystemSettingContext.Provider
       value={{
