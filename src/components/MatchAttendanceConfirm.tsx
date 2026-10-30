@@ -22,17 +22,14 @@ interface AttendanceItem {
 
 interface MatchAttendanceConfirmProps {
   matchId: string;
-  opponentName: string;
-  matchDateText: string;
-  venueText: string;
+  opponentName?: string;
+  matchDateText?: string;
+  venueText?: string;
   initialAttendances: AttendanceItem[];
 }
 
 export default function MatchAttendanceConfirm({
   matchId,
-  opponentName,
-  matchDateText,
-  venueText,
   initialAttendances,
 }: MatchAttendanceConfirmProps) {
   const searchParams = useSearchParams();
@@ -155,12 +152,9 @@ export default function MatchAttendanceConfirm({
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 flex-wrap gap-2">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
         <span className="text-xs font-black uppercase tracking-wider text-slate-900">
           Konfirmasi Kehadiran Pemain
-        </span>
-        <span className="text-[11px] text-slate-500 font-medium">
-          {matchDateText} • {venueText}
         </span>
       </div>
 
@@ -174,21 +168,16 @@ export default function MatchAttendanceConfirm({
               className="w-full h-full object-cover object-top scale-[1.35] origin-top"
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-slate-900 uppercase">
-                {playerData.name}
-              </span>
-              <span className="text-xs font-black font-mono text-blue-600">
-                #{playerData.number}
-              </span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 rounded bg-slate-100">
-                {playerData.position}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Panggilan pertandingan melawan <strong className="text-slate-800 uppercase">{opponentName}</strong>.
-            </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-black text-slate-900 uppercase">
+              {playerData.name}
+            </span>
+            <span className="text-xs font-black font-mono text-blue-600">
+              #{playerData.number}
+            </span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 rounded bg-slate-100">
+              {playerData.position}
+            </span>
           </div>
         </div>
 

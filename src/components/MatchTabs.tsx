@@ -259,11 +259,10 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* ═══════════════════════════════════════════════════ */}
-      {/* TAB NAVIGATION: SUMMARY & LINE UP (NAVBAR STYLE)    */}
-      {/* Tampil hanya jika Starting Lineup sudah diatur     */}
+      {/* TAB NAVIGATION: SUMMARY & LINE UP / SQUAD LIST      */}
       {/* ═══════════════════════════════════════════════════ */}
-      {hasLineup && (
-        <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
+      <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
+        {hasLineup && (
           <button
             onClick={() => setActiveTab('summary')}
             className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
@@ -274,19 +273,19 @@ export default function MatchTabs({ match }: MatchTabsProps) {
           >
             Ringkasan
           </button>
+        )}
 
-          <button
-            onClick={() => setActiveTab('lineup')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'lineup'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Line Up
-          </button>
-        </div>
-      )}
+        <button
+          onClick={() => setActiveTab('lineup')}
+          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+            activeTab === 'lineup' || !hasLineup
+              ? 'border-blue-600 text-blue-600 font-black'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          {hasLineup ? 'Line Up' : 'Squad List'}
+        </button>
+      </div>
 
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: SUMMARY & TIMELINE                    */}
@@ -674,7 +673,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
         /* SQUAD LIST (Tampil jika starting lineup belum diatur oleh admin)             */
         /* Box line up lapangan dihilangkan, box starting diganti dengan SQUAD LIST    */
         /* ═══════════════════════════════════════════════════════════════════════════ */
-        <div className={`grid grid-cols-1 ${invitedAttendances.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
+        <div className="max-w-3xl mx-auto">
           {/* Squad List Box (Identik dengan Box Starting) */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -743,68 +742,6 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               </div>
             )}
           </div>
-
-          {/* Menunggu Konfirmasi Box (Identik dengan Box Substitution) */}
-          {invitedAttendances.length > 0 && (
-            <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h4 className="text-sm sm:text-base font-black uppercase text-slate-900">
-                    Menunggu Konfirmasi
-                  </h4>
-                </div>
-                <span className="text-xs font-bold text-slate-500">
-                  {invitedAttendances.length} Pemain
-                </span>
-              </div>
-
-              <div className="divide-y divide-slate-100">
-                {invitedAttendances.map((inv) => {
-                  const p = inv.player;
-                  if (!p) return null;
-                  const isGuest = p.isGuest;
-                  const Content = (
-                    <>
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
-                        <img
-                          src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate}
-                          alt={p.name}
-                          className="w-full h-full object-cover object-top scale-[1.35] origin-top opacity-80 group-hover:opacity-100"
-                        />
-                      </div>
-
-                      <span className="w-5 text-center text-xs font-black text-slate-400 font-mono shrink-0">
-                        {p.number}
-                      </span>
-
-                      <span className="flex-1 text-xs sm:text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1">
-                        {p.name}
-                        {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-300">Loan</span>}
-                      </span>
-
-                      <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">
-                        {p.position}
-                      </span>
-                    </>
-                  );
-
-                  return isGuest ? (
-                    <div key={inv.id} className="flex items-center gap-2 py-2 px-1.5 rounded-xl text-slate-800 select-none">
-                      {Content}
-                    </div>
-                  ) : (
-                    <Link
-                      key={inv.id}
-                      href={`/players/${p.slug}`}
-                      className="flex items-center gap-2 py-2 hover:bg-slate-50 px-1.5 rounded-xl transition-colors group"
-                    >
-                      {Content}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
