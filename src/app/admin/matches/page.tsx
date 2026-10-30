@@ -287,12 +287,25 @@ export default function AdminMatchesPage() {
       const url = editingMatch ? `/api/matches/${editingMatch.id}` : '/api/matches';
       const method = editingMatch ? 'PUT' : 'POST';
 
+      let homeScore = editingMatch ? editingMatch.homeScore : null;
+      let awayScore = editingMatch ? editingMatch.awayScore : null;
+
+      // Jika status kandang/tandang (Home/Away) diubah pada laga yang sudah memiliki skor,
+      // tukar posisi skor agar skor tim kita dan tim lawan tetap menempel pada tim masing-masing.
+      if (editingMatch && editingMatch.isHome !== formData.isHome) {
+        if (homeScore !== null && awayScore !== null) {
+          const temp = homeScore;
+          homeScore = awayScore;
+          awayScore = temp;
+        }
+      }
+
       const payload = {
         ...formData,
         status: editingMatch ? editingMatch.status : 'scheduled',
         formation: editingMatch ? editingMatch.formation : '4-3-3',
-        homeScore: editingMatch ? editingMatch.homeScore : null,
-        awayScore: editingMatch ? editingMatch.awayScore : null,
+        homeScore,
+        awayScore,
       };
 
       const res = await fetch(url, {

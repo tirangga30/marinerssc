@@ -111,7 +111,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     let targetPhotoUrl = existingPlayer.photoUrl;
     if (data.photoUrl !== undefined) {
       const rawPhotoUrl = (data.photoUrl || '').trim();
-      const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.webp' || rawPhotoUrl.includes('unsplash.com');
+      const systemSetting = await (prisma as any).systemSetting.findUnique({ where: { id: 'default' } }).catch(() => null);
+      const clubDefaultTemplate = (systemSetting?.playerDefaultPhoto || '').trim();
+
+      const isDefaultTemplate =
+        !rawPhotoUrl ||
+        rawPhotoUrl === '/playertemplate.webp' ||
+        rawPhotoUrl === clubDefaultTemplate ||
+        rawPhotoUrl.includes('playertemplate') ||
+        rawPhotoUrl.includes('unsplash.com');
 
       if (!isDefaultTemplate) {
         const existingPhotoPlayer = await prisma.player.findFirst({
@@ -127,7 +135,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           );
         }
       }
-      targetPhotoUrl = rawPhotoUrl;
+      targetPhotoUrl = isDefaultTemplate ? '/playertemplate.webp' : rawPhotoUrl;
     }
 
     if (data.bio !== undefined) updateData.bio = data.bio;

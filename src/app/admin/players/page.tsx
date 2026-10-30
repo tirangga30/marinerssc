@@ -585,11 +585,17 @@ export default function AdminPlayersPage() {
       const url = editingPlayer ? `/api/players/${editingPlayer.id}` : '/api/players';
       const method = editingPlayer ? 'PUT' : 'POST';
 
+      const isDefaultTemplate =
+        !formData.photoUrl ||
+        formData.photoUrl === defaultPlayerPhoto ||
+        formData.photoUrl === '/playertemplate.webp';
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          photoUrl: isDefaultTemplate ? '/playertemplate.webp' : formData.photoUrl,
           seasonName: selectedSeason,
         }),
       });

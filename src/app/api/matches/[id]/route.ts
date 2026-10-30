@@ -74,6 +74,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       if (c) competitionName = c.name;
     }
 
+    const newIsHome = data.isHome !== undefined ? Boolean(data.isHome) : existingMatch.isHome;
+    let finalHomeScore = data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : existingMatch.homeScore;
+    let finalAwayScore = data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : existingMatch.awayScore;
+
+    // Safety fallback: jika isHome berubah dan pemanggil mengirim skor yang belum ditukar, tukar posisi skor otomatis
+    if (data.isHome !== undefined && Boolean(data.isHome) !== existingMatch.isHome) {
+      if (
+        data.homeScore === existingMatch.homeScore &&
+        data.awayScore === existingMatch.awayScore &&
+        existingMatch.homeScore !== null &&
+        existingMatch.awayScore !== null
+      ) {
+        const temp = finalHomeScore;
+        finalHomeScore = finalAwayScore;
+        finalAwayScore = temp;
+      }
+    }
+
     const match = await prisma.footballMatch.update({
       where: { id },
       data: {
@@ -86,10 +104,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         seasonName: seasonName,
         seasonId: seasonId,
         venue: data.venue,
-        isHome: Boolean(data.isHome),
+        isHome: newIsHome,
         status: data.status,
-        homeScore: data.homeScore !== undefined && data.homeScore !== null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
-        awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
+        homeScore: finalHomeScore,
+        awayScore: finalAwayScore,
         formation: data.formation || 'Belum Tersedia',
         duration: data.duration !== undefined ? parseInt(data.duration) : 60,
         extraTime: data.extraTime !== undefined ? parseInt(data.extraTime) : 0,

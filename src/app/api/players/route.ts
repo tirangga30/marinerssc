@@ -239,7 +239,15 @@ export async function POST(req: Request) {
 
     // Check for duplicate photo file (ignore default placeholders / template photos)
     const rawPhotoUrl = (data.photoUrl || '').trim();
-    const isDefaultTemplate = !rawPhotoUrl || rawPhotoUrl === '/playertemplate.webp' || rawPhotoUrl.includes('unsplash.com');
+    const systemSetting = await (prisma as any).systemSetting.findUnique({ where: { id: 'default' } }).catch(() => null);
+    const clubDefaultTemplate = (systemSetting?.playerDefaultPhoto || '').trim();
+
+    const isDefaultTemplate =
+      !rawPhotoUrl ||
+      rawPhotoUrl === '/playertemplate.webp' ||
+      rawPhotoUrl === clubDefaultTemplate ||
+      rawPhotoUrl.includes('playertemplate') ||
+      rawPhotoUrl.includes('unsplash.com');
 
     if (!isDefaultTemplate) {
       const existingPhotoPlayer = await prisma.player.findFirst({
@@ -252,6 +260,8 @@ export async function POST(req: Request) {
         );
       }
     }
+
+    const finalPhotoUrl = isDefaultTemplate ? '/playertemplate.webp' : rawPhotoUrl;
 
     const player = await prisma.player.create({
       data: {
@@ -269,7 +279,7 @@ export async function POST(req: Request) {
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
         weightKg: data.weightKg ? parseInt(data.weightKg) : null,
-        photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80',
+        photoUrl: finalPhotoUrl,
         bio: data.bio || '',
         isCaptain: Boolean(data.isCaptain),
         isFeatured: Boolean(data.isFeatured),
@@ -284,7 +294,7 @@ export async function POST(req: Request) {
         seasonData: targetSeason
           ? JSON.stringify({
               [targetSeason.name]: {
-                photoUrl: data.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80',
+                photoUrl: finalPhotoUrl,
                 number: finalNumber,
               },
             })
