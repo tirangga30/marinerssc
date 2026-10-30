@@ -660,7 +660,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
             <div className="mb-2.5 sm:mb-3.5 flex items-center gap-2">
               <span className="w-1.5 h-4 sm:h-5 rounded-full bg-blue-600 inline-block" />
               <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
-                {currentFeaturedStatus === 'live' ? 'LIVE' : currentFeaturedStatus === 'scheduled' ? 'UPCOMING' : 'LATEST'}
+                {currentFeaturedStatus === 'live' ? 'LIVE' : currentFeaturedStatus === 'scheduled' ? 'UPCOMING' : 'LASTEST'}
               </h2>
             </div>
             <Link
@@ -1269,7 +1269,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <div className="mb-2.5 sm:mb-3.5 flex items-center gap-2">
                 <span className="w-1.5 h-4 sm:h-5 rounded-full bg-amber-500 inline-block" />
                 <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
-                  {nextFunMatch.status === 'live' ? 'LIVE' : nextFunMatch.status === 'scheduled' ? 'UPCOMING' : 'LATEST'}
+                  {nextFunMatch.status === 'live' ? 'LIVE' : nextFunMatch.status === 'scheduled' ? 'UPCOMING' : 'LASTEST'}
                 </h2>
               </div>
             )}
