@@ -4,3 +4,4 @@ prisma/dev.db
 *.sqlite
 *.db
 public/backup_originals/
+
