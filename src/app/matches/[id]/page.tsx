@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import MatchTabs from '@/components/MatchTabs';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
+import MatchAttendanceConfirm from '@/components/MatchAttendanceConfirm';
 import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 
 import { formatWibDate, formatWibTime } from '@/lib/date';
@@ -61,6 +62,10 @@ export default async function MatchDetailPage({
             include: { player: true, assistPlayer: true },
             orderBy: { minute: 'asc' },
           },
+          attendances: {
+            include: { player: true },
+            orderBy: { createdAt: 'asc' },
+          },
         },
       }),
       (prisma as any).systemSetting.findUnique({
@@ -98,6 +103,10 @@ export default async function MatchDetailPage({
       ...e,
       player: e.player ? resolvePlayerForSeason(e.player, targetSeason) : e.player,
       assistPlayer: e.assistPlayer ? resolvePlayerForSeason(e.assistPlayer, targetSeason) : e.assistPlayer,
+    })),
+    attendances: (match.attendances || []).map((att: any) => ({
+      ...att,
+      player: att.player ? resolvePlayerForSeason(att.player, targetSeason) : att.player,
     })),
   };
 
@@ -191,6 +200,22 @@ export default async function MatchDetailPage({
         </div>
 
       </div>
+
+      {/* Match Attendance Confirmation Banner for Players (?p=...) */}
+      <React.Suspense fallback={null}>
+        <MatchAttendanceConfirm
+          matchId={match.id}
+          opponentName={match.opponentName}
+          matchDateText={`${formatWibDate(match.matchDate, {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })} • ${formatWibTime(match.matchDate)} WIB`}
+          venueText={match.venue}
+          initialAttendances={resolvedMatch.attendances}
+        />
+      </React.Suspense>
 
       {/* Match Content Tabs (Summary & Timeline / Lineup & Formasi) */}
       <MatchTabs match={resolvedMatch} />

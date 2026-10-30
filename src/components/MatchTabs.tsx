@@ -45,6 +45,16 @@ interface EventItem {
   assistPlayer: Player | null;
 }
 
+interface AttendanceItem {
+  id: string;
+  playerId: string;
+  playerType: string;
+  playerName?: string | null;
+  status: string; // 'INVITED' | 'CONFIRMED' | 'DECLINED'
+  declineReason?: string | null;
+  player?: Player;
+}
+
 interface MatchTabsProps {
   match: {
     id: string;
@@ -65,6 +75,7 @@ interface MatchTabsProps {
     isLiveEnabled?: boolean;
     lineups: LineupItem[];
     events: EventItem[];
+    attendances?: AttendanceItem[];
   };
 }
 
@@ -72,6 +83,31 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const { playerDefaultPhoto } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
   const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('lineup');
+
+  // Attendance local state (synced with parent & live updates)
+  const [localAttendances, setLocalAttendances] = React.useState<AttendanceItem[]>(match.attendances || []);
+
+  React.useEffect(() => {
+    setLocalAttendances(match.attendances || []);
+  }, [match.attendances]);
+
+  React.useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail?.playerId && e.detail?.status) {
+        setLocalAttendances((prev) => {
+          const idx = prev.findIndex((a) => a.playerId === e.detail.playerId);
+          if (idx !== -1) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], status: e.detail.status };
+            return next;
+          }
+          return prev;
+        });
+      }
+    };
+    window.addEventListener('player_attendance_updated', handleUpdate);
+    return () => window.removeEventListener('player_attendance_updated', handleUpdate);
+  }, []);
 
   const getPosWeight = (pos: string, pitchPos?: string): number => {
     const p = (pos || '').toUpperCase();
@@ -95,6 +131,21 @@ export default function MatchTabs({ match }: MatchTabsProps) {
 
   const starters = sortLineupsByPosition(match.lineups.filter((l) => l.isStarter));
   const bench = sortLineupsByPosition(match.lineups.filter((l) => !l.isStarter));
+  const hasLineup = starters.length > 0;
+
+  const confirmedAttendances = localAttendances.filter(
+    (a) => a.status === 'CONFIRMED' && Boolean(a.player)
+  );
+  const invitedAttendances = localAttendances.filter(
+    (a) => a.status === 'INVITED' && Boolean(a.player)
+  );
+
+  const sortedConfirmedAttendances = [...confirmedAttendances].sort((a, b) => {
+    const wA = getPosWeight(a.player?.position || '');
+    const wB = getPosWeight(b.player?.position || '');
+    if (wA !== wB) return wA - wB;
+    return (a.player?.number || 0) - (b.player?.number || 0);
+  });
 
   // Helper to find all events for a specific player in exact chronological minute order matching summary
   const getPlayerChronologicalEvents = (playerId: string) => {
@@ -230,7 +281,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          Line Up
+          {hasLineup ? 'Line Up' : 'Squad List'}
         </button>
       </div>
 
@@ -386,16 +437,18 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {activeTab === 'lineup' && (
         <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-          {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
-          <TacticalPitch
-            lineups={match.lineups}
-            formation={match.formation}
-            events={pitchEvents}
-            season={match.seasonName}
-          />
+          {hasLineup ? (
+            <>
+              {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
+              <TacticalPitch
+                lineups={match.lineups}
+                formation={match.formation}
+                events={pitchEvents}
+                season={match.seasonName}
+              />
 
-          {/* Lineup Detail Grid (Starting XI + Substitutes) */}
-          <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
+              {/* Lineup Detail Grid (Starting XI + Substitutes) */}
+              <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
             {/* Starting XI List */}
             <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -612,7 +665,127 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               </div>
             )}
           </div>
+        </>
+      ) : (
+        /* ═══════════════════════════════════════════════════════════════════════════ */
+        /* SQUAD LIST (Tampil jika starting lineup belum diatur oleh admin)             */
+        /* Box line up lapangan dihilangkan, box starting diganti dengan SQUAD LIST    */
+        /* ═══════════════════════════════════════════════════════════════════════════ */
+        <div className="max-w-3xl mx-auto bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black uppercase text-slate-900 tracking-wide">
+                  SQUAD LIST
+                </h4>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Daftar pemain yang telah konfirmasi hadir untuk pertandingan ini
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black uppercase">
+                {sortedConfirmedAttendances.length} Pemain Siap
+              </span>
+            </div>
+          </div>
+
+          {sortedConfirmedAttendances.length === 0 ? (
+            <div className="py-12 px-4 text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                <Users className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-slate-700">Belum Ada Pemain Mengonfirmasi Kehadiran</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Undangan pertandingan telah disiapkan. Pemain yang memilih IKUT melalui tautan konfirmasi akan otomatis tampil di daftar ini.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {sortedConfirmedAttendances.map((item) => {
+                const p = item.player!;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 sm:gap-3 py-2.5 px-1.5 hover:bg-slate-50 rounded-xl transition-colors group"
+                  >
+                    {/* Photo Avatar */}
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100 shadow-xs">
+                      <img
+                        src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate}
+                        alt={p.name}
+                        className="w-full h-full object-cover object-top scale-[1.35] origin-top"
+                      />
+                    </div>
+
+                    {/* Squad Number */}
+                    <span className="w-5 sm:w-6 text-center text-xs sm:text-sm font-black text-blue-600 font-mono shrink-0">
+                      #{p.number}
+                    </span>
+
+                    {/* Player Name & Position */}
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/players/${p.slug}`}
+                        className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate block"
+                      >
+                        {p.name}
+                      </Link>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">
+                        {p.position}
+                      </span>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="shrink-0">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 shadow-2xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        IKUT
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Waiting list */}
+          {invitedAttendances.length > 0 && (
+            <div className="pt-4 border-t border-slate-100">
+              <details className="group">
+                <summary className="cursor-pointer text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center justify-between select-none py-1">
+                  <span>Menunggu Respon Undangan ({invitedAttendances.length} Pemain)</span>
+                  <span className="text-[10px] text-blue-600 group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-50">
+                  {invitedAttendances.map((inv) => (
+                    <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                      <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-200">
+                        <img
+                          src={(inv.player?.photoUrl && inv.player.photoUrl !== '/playertemplate.webp') ? inv.player.photoUrl : defaultPlayerTemplate}
+                          alt={inv.player?.name || 'Player'}
+                          className="w-full h-full object-cover object-top scale-[1.3] origin-top"
+                        />
+                      </div>
+                      <div className="flex-1 truncate">
+                        <span className="font-bold text-slate-700 block truncate">{inv.player?.name || inv.playerName}</span>
+                        <span className="text-[10px] text-slate-400">#{inv.player?.number} • {inv.player?.position}</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shrink-0">
+                        Menunggu
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          )}
         </div>
+      )}
+    </div>
       )}
     </div>
   );

@@ -284,6 +284,7 @@ export async function POST(req: Request) {
         isCaptain: Boolean(data.isCaptain),
         isFeatured: Boolean(data.isFeatured),
         status: data.status || 'Active',
+        phone: data.phone ? String(data.phone).trim() : null,
         isGuest: Boolean(data.isGuest),
         guestMatchId: data.guestMatchId || null,
         goals: parseInt(data.goals || 0),

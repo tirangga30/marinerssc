@@ -43,6 +43,7 @@ interface Player {
   photoUrl: string;
   bio: string;
   isCaptain: boolean;
+  phone?: string | null;
   isFeatured: boolean;
   status: string;
   isGuest: boolean;
@@ -117,6 +118,7 @@ export default function AdminPlayersPage() {
     weightKg: '',
     photoUrl: '/playertemplate.webp',
     bio: '',
+    phone: '',
     isCaptain: false,
     status: 'Active',
     isGuest: false,
@@ -434,6 +436,7 @@ export default function AdminPlayersPage() {
       weightKg: '',
       photoUrl: defaultPlayerPhoto,
       bio: '',
+      phone: '',
       isCaptain: false,
       status: 'Active',
       isGuest: false,
@@ -460,6 +463,7 @@ export default function AdminPlayersPage() {
         weightKg: guest.weightKg?.toString() || '',
         photoUrl: guest.photoUrl || defaultPlayerPhoto,
         bio: guest.bio || '',
+        phone: guest.phone || '',
         isCaptain: guest.isCaptain || false,
         status: guest.status || 'Active',
         isGuest: false,
@@ -486,6 +490,7 @@ export default function AdminPlayersPage() {
       weightKg: player.weightKg?.toString() || '',
       photoUrl: player.photoUrl || defaultPlayerPhoto,
       bio: player.bio,
+      phone: player.phone || '',
       isCaptain: player.isCaptain,
       status: player.status,
       isGuest: false,
@@ -754,6 +759,14 @@ export default function AdminPlayersPage() {
                       </span>
                       <span>•</span>
                       <span>{player.appearances} Laga</span>
+                      {player.phone && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-400 font-mono text-[9px]" title={`Nomor WhatsApp: ${player.phone}`}>
+                            WA: {player.phone}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                   </div>
@@ -1213,6 +1226,19 @@ export default function AdminPlayersPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-200 uppercase block mb-1 flex items-center justify-between">
+                    <span>Nomor WhatsApp / HP</span>
+                    <span className="text-[10px] text-emerald-400 font-semibold normal-case">Untuk Notifikasi Jadwal WA</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="Contoh: 081234567890"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
                   />
                 </div>

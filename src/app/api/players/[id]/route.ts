@@ -142,6 +142,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.isCaptain !== undefined) updateData.isCaptain = Boolean(data.isCaptain);
     if (data.isFeatured !== undefined) updateData.isFeatured = Boolean(data.isFeatured);
     if (data.status !== undefined) updateData.status = data.status;
+    if (data.phone !== undefined) updateData.phone = data.phone ? String(data.phone).trim() : null;
     if (data.isGuest !== undefined) updateData.isGuest = Boolean(data.isGuest);
     if (data.goals !== undefined) updateData.goals = parseInt(data.goals || 0);
     if (data.assists !== undefined) updateData.assists = parseInt(data.assists || 0);

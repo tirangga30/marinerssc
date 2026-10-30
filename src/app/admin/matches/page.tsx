@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
+import MatchWhatsAppInviteModal from '@/components/admin/MatchWhatsAppInviteModal';
 
 interface FootballMatch {
   id: string;
@@ -93,6 +94,7 @@ export default function AdminMatchesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingMatch, setEditingMatch] = useState<FootballMatch | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [broadcastMatchId, setBroadcastMatchId] = useState<string | null>(null);
 
   const getDefaultMatchDate = () => {
     const d = new Date();
@@ -118,6 +120,7 @@ export default function AdminMatchesPage() {
     venue: '',
     isHome: true,
     summary: '',
+    sendWhatsAppInvite: true,
   });
 
   const fetchMatches = async () => {
@@ -220,6 +223,7 @@ export default function AdminMatchesPage() {
       venue: '',
       isHome: true,
       summary: '',
+      sendWhatsAppInvite: true,
     });
     setShowModal(true);
   };
@@ -238,6 +242,7 @@ export default function AdminMatchesPage() {
       venue: m.venue || '',
       isHome: m.isHome,
       summary: m.summary || '',
+      sendWhatsAppInvite: false,
     });
     setShowModal(true);
   };
@@ -315,8 +320,23 @@ export default function AdminMatchesPage() {
       });
 
       if (res.ok) {
+        const savedData = await res.json().catch(() => null);
         setShowModal(false);
         fetchMatches();
+
+        // Jika tambah pertandingan baru dan opsi kirim WA dicentang:
+        if (!editingMatch && formData.sendWhatsAppInvite && savedData?.id) {
+          try {
+            await fetch(`/api/admin/matches/${savedData.id}/broadcast-invite`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ autoSendWhatsApp: true }),
+            });
+          } catch (e) {
+            console.error('Failed to trigger broadcast invites:', e);
+          }
+          setBroadcastMatchId(savedData.id);
+        }
       } else {
         const errorData = await res.json();
         alert(errorData.error || 'Gagal menyimpan data pertandingan');
@@ -449,6 +469,13 @@ export default function AdminMatchesPage() {
                       <Settings2 className="w-3.5 h-3.5" /> Match Options
                     </Link>
                     <button
+                      onClick={() => setBroadcastMatchId(m.id)}
+                      className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-500/40"
+                      title="Undangan WhatsApp Skuad"
+                    >
+                      <i className="fa-brands fa-whatsapp text-sm" />
+                    </button>
+                    <button
                       onClick={() => openEditModal(m)}
                       className="p-2 rounded-xl bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
                       title="Edit Pertandingan"
@@ -547,6 +574,13 @@ export default function AdminMatchesPage() {
                       >
                         <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
+                      <button
+                        onClick={() => setBroadcastMatchId(m.id)}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                        title="Undangan WhatsApp Skuad"
+                      >
+                        <i className="fa-brands fa-whatsapp text-xs" /> Undangan WA
+                      </button>
                       <button
                         onClick={() => openEditModal(m)}
                         className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
@@ -779,6 +813,27 @@ export default function AdminMatchesPage() {
               </div>
 
 
+              {/* WhatsApp Broadcast Checkbox (Tampil saat tambah pertandingan baru) */}
+              {!editingMatch && (
+                <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex items-start gap-3 transition-colors">
+                  <input
+                    type="checkbox"
+                    id="sendWhatsAppInvite"
+                    checked={formData.sendWhatsAppInvite}
+                    onChange={(e) => setFormData({ ...formData, sendWhatsAppInvite: e.target.checked })}
+                    className="mt-1 w-4 h-4 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700 cursor-pointer"
+                  />
+                  <label htmlFor="sendWhatsAppInvite" className="cursor-pointer select-none">
+                    <span className="font-bold text-emerald-400 uppercase text-xs flex items-center gap-1.5">
+                      <i className="fa-brands fa-whatsapp text-sm" /> Kirim Undangan WhatsApp ke Skuad Aktif
+                    </span>
+                    <span className="text-[11px] text-slate-400 block mt-0.5 leading-relaxed">
+                      Otomatis siapkan rincian pertandingan dan tautan konfirmasi kehadiran via WhatsApp untuk seluruh pemain aktif di musim {formData.seasonName}. Pemain yang memilih IKUT akan otomatis masuk ke daftar <strong>SQUAD LIST</strong>.
+                    </span>
+                  </label>
+                </div>
+              )}
+
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
                 <button
                   type="button"
@@ -798,6 +853,14 @@ export default function AdminMatchesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* WhatsApp Broadcast & Attendance Modal */}
+      {broadcastMatchId && (
+        <MatchWhatsAppInviteModal
+          matchId={broadcastMatchId}
+          onClose={() => setBroadcastMatchId(null)}
+        />
       )}
     </div>
   );
