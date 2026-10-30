@@ -599,8 +599,8 @@ export default function MainPosterAdminPage() {
                       {heroTagline}
                     </span>
                     <div className="space-y-0 sm:space-y-1 my-auto">
-                      <h3 className="text-xs sm:text-xl font-black text-slate-900 uppercase drop-shadow-xs">
-                        {(teamName || 'TEAM').toUpperCase()}
+                      <h3 className="text-xs sm:text-xl font-black text-slate-900 drop-shadow-xs">
+                        {teamName || 'TEAM'}
                       </h3>
                       <p className="text-[8px] sm:text-xs font-bold text-slate-900 drop-shadow-xs">
                         {heroSubtitle}

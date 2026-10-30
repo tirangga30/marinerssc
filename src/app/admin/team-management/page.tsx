@@ -586,7 +586,7 @@ export default function TeamManagementPage() {
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                     placeholder="TEAM"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-sm outline-hidden transition-all uppercase tracking-wide"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-sm outline-hidden transition-all tracking-wide"
                   />
                 </div>
 

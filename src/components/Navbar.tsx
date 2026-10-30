@@ -146,8 +146,8 @@ export default function Navbar() {
                 className="h-8 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
               />
               <div>
-                <span className="text-base sm:text-xl font-black tracking-wider uppercase blue-gradient-text block leading-none">
-                  {(teamName || 'TEAM').toUpperCase()}
+                <span className="text-base sm:text-xl font-black tracking-wider blue-gradient-text block leading-none">
+                  {teamName || 'TEAM'}
                 </span>
                 <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-blue-600 font-extrabold block mt-0.5">
                   PANEL ADMIN KELOLA

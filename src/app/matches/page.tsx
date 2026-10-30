@@ -122,7 +122,7 @@ function MatchCard({
         {/* Home Team */}
         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
           <div className="order-2 sm:order-1 text-center sm:text-right">
-            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
+            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
               {match.isHome ? teamName : match.opponentName}
             </h4>
           </div>
@@ -186,7 +186,7 @@ function MatchCard({
             />
           </div>
           <div className="text-center sm:text-left">
-            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
+            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
               {!match.isHome ? teamName : match.opponentName}
             </h4>
           </div>
@@ -251,7 +251,7 @@ export default async function MatchesPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
 
   const { seasons, allMatchesRaw: allRaw, systemSetting } = await getCachedMatchesData();
-  const displayTeamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'TEAM';
+  const displayTeamName = systemSetting?.teamName || 'TEAM';
   const displayTeamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
   const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';

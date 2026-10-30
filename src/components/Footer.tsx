@@ -73,8 +73,8 @@ export default function Footer() {
                       className="h-11 w-auto object-contain drop-shadow-md"
                     />
                     <div>
-                      <span className="text-xl font-black uppercase tracking-wider text-white block leading-none">
-                        {displayTeamName.toUpperCase()}
+                      <span className="text-xl font-black tracking-wider text-white block leading-none">
+                        {displayTeamName}
                       </span>
                       <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block mt-0.5">
                         {clubType || 'SOCCER CLUB'}
@@ -222,8 +222,8 @@ export default function Footer() {
                     className="h-7 sm:h-10 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
                   />
                   <div className="leading-tight">
-                    <span className="text-[11px] sm:text-base font-black uppercase tracking-wider text-white block">
-                      {displayTeamName.toUpperCase()}
+                    <span className="text-[11px] sm:text-base font-black tracking-wider text-white block">
+                      {displayTeamName}
                     </span>
                     <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block">
                       {clubType || 'SOCCER CLUB'}

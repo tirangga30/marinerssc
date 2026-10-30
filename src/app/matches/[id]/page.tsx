@@ -82,7 +82,7 @@ export default async function MatchDetailPage({
     notFound();
   }
 
-  const teamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'TEAM';
+  const teamName = systemSetting?.teamName || 'TEAM';
   const teamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
@@ -146,7 +146,7 @@ export default async function MatchDetailPage({
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
               />
             </div>
-            <h2 className="text-xs sm:text-xl font-black text-slate-900 uppercase">
+            <h2 className="text-xs sm:text-xl font-black text-slate-900">
               {match.isHome ? teamName : match.opponentName}
             </h2>
           </div>
@@ -192,7 +192,7 @@ export default async function MatchDetailPage({
                 className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
               />
             </div>
-            <h2 className="text-xs sm:text-xl font-black text-slate-900 uppercase">
+            <h2 className="text-xs sm:text-xl font-black text-slate-900">
               {!match.isHome ? teamName : match.opponentName}
             </h2>
           </div>

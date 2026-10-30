@@ -101,7 +101,7 @@ export default function AdminTopNav() {
           <Link href="/admin/dashboard" className="flex items-center gap-2 shrink-0">
             <img src={teamLogo || "/defaultteam.webp"} alt={teamName || "TEAM"} className="w-7 h-7 object-contain drop-shadow-sm" />
             <div className="hidden sm:block">
-              <span className="text-xs font-black text-slate-900 tracking-wider uppercase block">{teamName || "TEAM"}</span>
+              <span className="text-xs font-black text-slate-900 tracking-wider block">{teamName || "TEAM"}</span>
               <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest block -mt-1">ADMIN PANEL</span>
             </div>
           </Link>

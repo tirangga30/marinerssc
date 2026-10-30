@@ -590,8 +590,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <p className="text-[7px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-slate-700 leading-none drop-shadow-xs">
                 {heroTagline}
               </p>
-              <h1 className="text-base sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 uppercase tracking-tight leading-none drop-shadow-xs">
-                {currentTeamName.toUpperCase()}
+              <h1 className="text-base sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-none drop-shadow-xs">
+                {currentTeamName}
               </h1>
               <p className="text-[10px] sm:text-base lg:text-xl font-bold text-slate-900 leading-tight drop-shadow-xs">
                 {heroSubtitle}
@@ -748,8 +748,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       {/* Home Team */}
                       <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                         <div className="order-2 sm:order-1 text-center sm:text-right">
-                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {currentNextMatch.isHome ? currentTeamName.toUpperCase() : currentNextMatch.opponentName}
+                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs">
+                            {currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
                           </h4>
                         </div>
                         <div className="order-1 sm:order-2 flex items-center justify-center">
@@ -810,8 +810,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           />
                         </div>
                         <div className="text-center sm:text-left">
-                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {!currentNextMatch.isHome ? currentTeamName.toUpperCase() : currentNextMatch.opponentName}
+                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs">
+                            {!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
                           </h4>
                         </div>
                       </div>
@@ -877,8 +877,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
                           <div className="order-2 sm:order-1 text-center sm:text-right">
-                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-                              {m.isHome ? currentTeamName.toUpperCase() : m.opponentName}
+                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                              {m.isHome ? currentTeamName : m.opponentName}
                             </h4>
                           </div>
                           <div className="order-1 sm:order-2 flex items-center justify-center">
@@ -907,8 +907,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             />
                           </div>
                           <div className="text-center sm:text-left">
-                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 uppercase group-hover:text-blue-600 transition-colors">
-                              {!m.isHome ? currentTeamName.toUpperCase() : m.opponentName}
+                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                              {!m.isHome ? currentTeamName : m.opponentName}
                             </h4>
                           </div>
                         </div>

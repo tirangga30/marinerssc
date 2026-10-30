@@ -957,7 +957,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           <div className="flex items-center gap-2 sm:gap-6 justify-center w-full max-w-3xl px-1">
             {/* Home Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-1.5 sm:gap-4 text-center sm:text-right min-w-0">
-              <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
+              <span className="font-bold text-white text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
                 {matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
               <img
@@ -1004,7 +1004,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 alt="Away"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 shrink-0"
               />
-              <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
+              <span className="font-bold text-white text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
                 {!matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
             </div>

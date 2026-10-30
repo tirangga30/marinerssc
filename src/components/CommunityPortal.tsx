@@ -200,7 +200,7 @@ export default function CommunityPortal({
           <div className="space-y-3 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>{currentTeamName.toUpperCase()} COMMUNITY</span>
+              <span>{currentTeamName} COMMUNITY</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
