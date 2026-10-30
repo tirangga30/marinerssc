@@ -31,8 +31,8 @@ export default function TeamManagementPage() {
   const [clubType, setClubType] = useState('SOCCER CLUB');
   const [playerDefaultPhoto, setPlayerDefaultPhoto] = useState('/playertemplate.webp');
   const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
-  const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
-  const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.jpeg');
+  const [adminWallpaper, setAdminWallpaper] = useState('/stadium.webp');
+  const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.webp');
   const [isCommunityEnabled, setIsCommunityEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -812,7 +812,7 @@ export default function TeamManagementPage() {
 
                 <button
                   type="button"
-                  onClick={() => setAdminWallpaper('/stadium_hero2.png')}
+                  onClick={() => setAdminWallpaper('/stadium.webp')}
                   className="py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-xs"
                 >
                   Kembalikan Template Sistem
@@ -838,7 +838,7 @@ export default function TeamManagementPage() {
                 {/* Preview Box */}
                 <div className="sm:col-span-5 relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-100">
                   <img
-                    src={playerCardBg || '/bgprofil2.jpeg'}
+                    src={playerCardBg || '/bgprofil2.webp'}
                     alt="Player Card Background Preview"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -872,7 +872,7 @@ export default function TeamManagementPage() {
 
                     <button
                       type="button"
-                      onClick={() => setPlayerCardBg('/bgprofil2.jpeg')}
+                      onClick={() => setPlayerCardBg('/bgprofil2.webp')}
                       className="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                     >
                       <span>Jadikan Template Sistem</span>

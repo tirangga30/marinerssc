@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
         teamName: 'TEAM',
         teamLogo: '/defaultteam.webp',
         loginWallpaper: '/NYCOMP.webp',
-        adminWallpaper: '/stadium_hero2.png',
+        adminWallpaper: '/stadium.webp',
         securityPin: '1234',
         isCommunityEnabled: enabled,
       },

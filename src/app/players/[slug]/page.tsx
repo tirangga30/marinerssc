@@ -71,7 +71,7 @@ export default async function PlayerDetailPage({
   let allMatches: any[] = [];
 
   let member: any = null;
-  let playerCardBg = '/bgprofil2.jpeg';
+  let playerCardBg = '/bgprofil2.webp';
   let playerDefaultPhoto = '/playertemplate.webp';
 
   try {

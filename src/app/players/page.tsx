@@ -47,12 +47,12 @@ const getCachedPlayersData = unstable_cache(
       return {
         seasons,
         allPlayers,
-        playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.jpeg',
+        playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.webp',
         playerDefaultPhoto: systemSetting?.playerDefaultPhoto || '/playertemplate.webp',
       };
     } catch (e) {
       console.warn('Database unreachable in getCachedPlayersData, fallback to empty arrays:', e);
-      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.jpeg', playerDefaultPhoto: '/playertemplate.webp' };
+      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.webp', playerDefaultPhoto: '/playertemplate.webp' };
     }
   },
   ['mariners-players-page-cache'],

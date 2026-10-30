@@ -303,7 +303,7 @@ select option {
 
 /* Background Bergulir dengan Siklus Berulang (Mengikuti Scroll Halaman & Repeat Vertikal) */
 .cycling-main-bg {
-  background-image: url('/mainbackground.jpeg');
+  background-image: url('/mainbackground.webp');
   background-repeat: repeat-y;
   background-size: 100% auto;
   background-position: top center;

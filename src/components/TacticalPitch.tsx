@@ -170,7 +170,7 @@ export default function TacticalPitch({
       >
         {/* Background Gambar Lapangan (Garis dibuat transparan dan lembut) */}
         <img
-          src="/pitch.png"
+          src="/pitch.webp"
           alt="Tactical Pitch"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none mix-blend-multiply opacity-25"
         />

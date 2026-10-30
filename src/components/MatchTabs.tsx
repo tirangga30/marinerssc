@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import TacticalPitch from '@/components/TacticalPitch';
 import { useSystemSetting } from '@/context/SystemSettingContext';
 import {
@@ -213,6 +214,9 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const showLineupTab = hasLineup;
   const showSquadTab = !hasKickedOff;
 
+  const searchParams = useSearchParams();
+  const isInvite = Boolean(searchParams?.get('p') || searchParams?.get('player'));
+
   React.useEffect(() => {
     if (hasKickedOff) {
       if (showSummaryTab) {
@@ -221,13 +225,15 @@ export default function MatchTabs({ match }: MatchTabsProps) {
         setActiveTab('lineup');
       }
     } else {
-      if (showLineupTab) {
+      if (isInvite) {
+        setActiveTab('squad');
+      } else if (showLineupTab) {
         setActiveTab('lineup');
       } else {
         setActiveTab('squad');
       }
     }
-  }, [hasKickedOff, showSummaryTab, showLineupTab]);
+  }, [hasKickedOff, showSummaryTab, showLineupTab, isInvite]);
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -330,19 +336,6 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {showSummaryTab && activeTab === 'summary' && (
         <div className="space-y-6 animate-fadeIn">
-          {/* Summary Text Box - ONLY SHOW IF NOT EMPTY */}
-          {Boolean(match.summary && match.summary.trim()) && (
-            <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
-                <Activity className="w-4 h-4 text-blue-600" />
-                Ringkasan Laga
-              </div>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
-                "{match.summary}"
-              </p>
-            </div>
-          )}
-
           {/* Timeline Section */}
           <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">

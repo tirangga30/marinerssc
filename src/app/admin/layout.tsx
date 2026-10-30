@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname === '/admin/login';
 
   const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
-  const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
+  const [adminWallpaper, setAdminWallpaper] = useState('/stadium.webp');
 
   const fetchWallpapers = () => {
     fetch('/api/admin/system-settings')
@@ -60,16 +60,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-900">
+    <div className="relative min-h-screen bg-slate-900 text-slate-900">
       {/* Stadium/Custom wallpaper for Admin Panel */}
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-all duration-700 opacity-20"
-        style={{ backgroundImage: `url('${adminWallpaper}')`, zIndex: 0 }}
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-all duration-700"
+        style={{ backgroundImage: `url('${adminWallpaper || '/stadium.webp'}')`, zIndex: 0 }}
         aria-hidden="true"
       />
-      {/* Soft light overlay for contrast and legibility */}
+      {/* Translucent overlay for legibility while keeping the stadium image clearly visible */}
       <div
-        className="fixed inset-0 bg-gradient-to-b from-slate-50/95 via-slate-50/90 to-slate-100/95 pointer-events-none"
+        className="fixed inset-0 bg-slate-950/40 backdrop-blur-[1px] pointer-events-none"
         style={{ zIndex: 1 }}
         aria-hidden="true"
       />

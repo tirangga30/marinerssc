@@ -89,7 +89,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
 
   const currentTeamName = liveTeamName || systemSetting?.teamName || 'TEAM';
   const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/defaultteam.webp';
-  const playerCardBg = livePlayerCardBg || systemSetting?.playerCardBg || '/bgprofil2.jpeg';
+  const playerCardBg = livePlayerCardBg || systemSetting?.playerCardBg || '/bgprofil2.webp';
   const clubType = liveClubType || systemSetting?.clubType || 'SOCCER CLUB';
   const playerDefaultPhoto = livePlayerDefaultPhoto || systemSetting?.playerDefaultPhoto || '/playertemplate.webp';
   const isCommunityEnabled = liveCommunityEnabled !== undefined
@@ -706,7 +706,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               {/* Stadium Background */}
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
-                style={{ backgroundImage: `url('/Stadium.jpeg')` }}
+                style={{ backgroundImage: `url('/stadium.webp')` }}
               />
               {/* Subtle light overlay to ensure flawless contrast */}
               <div className="absolute inset-0 bg-white/20 pointer-events-none" />
@@ -748,7 +748,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       {/* Home Team (Nama di sisi luar kiri, Logo di tengah mendekat ke skor) */}
                       <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
                         <div className="text-right min-w-0 flex-1">
-                          <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
+                          <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
                             {(currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName).toUpperCase()}
                           </h4>
                         </div>
@@ -756,13 +756,13 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <img
                             src={currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
                             alt={currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
-                            className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                       </div>
 
                       {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
-                      <div className="space-y-0.5 sm:space-y-2 px-1 flex flex-col items-center justify-center">
+                      <div className="px-1 flex items-center justify-center">
                         {currentFeaturedStatus === 'live' ? (
                           <LiveScoreDisplay
                             targetDate={currentNextMatch.matchDate}
@@ -774,30 +774,23 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             status={currentFeaturedStatus}
                           />
                         ) : currentFeaturedStatus === 'score_pending' ? (
-                          <>
-                            <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
-                            <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs">
-                              VS
-                            </div>
-                          </>
+                          <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs">
+                            VS
+                          </div>
                         ) : currentFeaturedStatus === 'finished' ? (
-                          <>
-                            <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
-                            <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest drop-shadow-xs">
-                              {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
-                            </div>
-                          </>
+                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest drop-shadow-xs flex items-center justify-center leading-none">
+                            {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
+                          </div>
                         ) : (
-                          <>
-                            <p className="text-[9px] sm:text-[11px] text-slate-600 font-bold">
+                          <div className="flex flex-col items-center justify-center">
+                            <p className="text-[9px] sm:text-[11px] text-slate-600 font-bold mb-0.5">
                               {formatWibTime(currentNextMatch.matchDate)}
                             </p>
                             <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs shadow-xs">
                               VS
                             </div>
-                          </>
+                          </div>
                         )}
-                        <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate max-w-xs mx-auto drop-shadow-xs">{currentNextMatch.venue}</p>
                       </div>
 
                       {/* Away Team (Logo di tengah mendekat ke skor, Nama di sisi luar kanan) */}
@@ -806,11 +799,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <img
                             src={!currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
                             alt={!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
-                            className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                         <div className="text-left min-w-0 flex-1">
-                          <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
+                          <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
                             {(!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName).toUpperCase()}
                           </h4>
                         </div>
@@ -878,7 +871,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         {/* Home Team (Nama di sisi luar kiri, Logo di tengah mendekat ke skor) */}
                         <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
                           <div className="text-right min-w-0 flex-1">
-                            <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                               {(m.isHome ? currentTeamName : m.opponentName).toUpperCase()}
                             </h4>
                           </div>
@@ -886,18 +879,16 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             <img
                               src={m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
                               alt={m.isHome ? currentTeamName : m.opponentName}
-                              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                         </div>
 
                         {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
-                        <div className="space-y-0.5 sm:space-y-2 px-1 flex flex-col items-center justify-center">
-                          <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
-                          <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
+                        <div className="px-1 flex items-center justify-center">
+                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none">
                             {m.homeScore} : {m.awayScore}
                           </div>
-                          <p className="text-[8px] sm:text-[10px] text-slate-500 truncate max-w-xs mx-auto">{m.venue}</p>
                         </div>
 
                         {/* Away Team (Logo di tengah mendekat ke skor, Nama di sisi luar kanan) */}
@@ -906,11 +897,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             <img
                               src={!m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
                               alt={!m.isHome ? currentTeamName : m.opponentName}
-                              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                           <div className="text-left min-w-0 flex-1">
-                            <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                               {(!m.isHome ? currentTeamName : m.opponentName).toUpperCase()}
                             </h4>
                           </div>
@@ -940,11 +931,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               </Link>
             </div>
 
-            {/* DESKTOP BANNER (Player di Kanan, Background stattimnew.png) */}
+            {/* DESKTOP BANNER (Player di Kanan, Background stattimnew.webp) */}
             <div className="hidden md:block relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#0d6dca] shadow-xl shadow-blue-900/15 border border-blue-400/30">
-              {/* Background Image: stattimnew.png */}
+              {/* Background Image: stattimnew.webp */}
               <img
-                src="/stattimnew.png"
+                src="/stattimnew.webp"
                 alt={`Statistik Tim ${currentTeamName}`}
                 className="absolute inset-0 w-full h-full object-cover object-right select-none pointer-events-none"
               />
@@ -988,11 +979,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               </div>
             </div>
 
-            {/* MOBILE BANNER (Khusus Mobile: Background statnew.jpeg) */}
+            {/* MOBILE BANNER (Khusus Mobile: Background statnew.webp) */}
             <div className="md:hidden relative overflow-hidden rounded-2xl bg-white shadow-xl border border-slate-200/80 aspect-[2.77/1] min-h-[135px]">
-              {/* Background Image: statnew.jpeg */}
+              {/* Background Image: statnew.webp */}
               <img
-                src="/statnew.jpeg"
+                src="/statnew.webp"
                 alt={`Statistik Tim ${currentTeamName}`}
                 className="absolute inset-0 w-full h-full object-cover object-left select-none pointer-events-none"
               />
@@ -1320,7 +1311,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 {/* Stadium Background */}
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
-                  style={{ backgroundImage: `url('/Stadium.jpeg')` }}
+                  style={{ backgroundImage: `url('/stadium.webp')` }}
                 />
                 {/* Subtle light overlay to ensure flawless contrast */}
                 <div className="absolute inset-0 bg-white/20 pointer-events-none" />

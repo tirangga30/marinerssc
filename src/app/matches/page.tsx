@@ -109,6 +109,11 @@ function MatchCard({
           <span className="text-[9px] sm:text-xs font-medium text-slate-500">
             {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
+          {status === 'finished' && (
+            <span className="text-[9px] sm:text-xs font-black uppercase px-2 py-0.5 sm:py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              FULL TIME
+            </span>
+          )}
           {displayStage && (
             <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
               {displayStage}
@@ -118,11 +123,11 @@ function MatchCard({
       </div>
 
       {/* Main Scoreboard Content */}
-      <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-6 items-center text-center">
         {/* Home Team (Nama di sisi luar, Logo mendekat ke tengah) */}
-        <div className="flex items-center justify-end gap-1 sm:gap-3.5 min-w-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
           <div className="text-right min-w-0 flex-1">
-            <h4 className="text-[10px] sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
               {(match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h4>
           </div>
@@ -130,13 +135,13 @@ function MatchCard({
             <img
               src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
               alt={match.isHome ? teamName : match.opponentName}
-              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         </div>
 
-        {/* Score / VS Badge */}
-        <div className="space-y-0.5 sm:space-y-2 px-1">
+        {/* Score / VS Badge (Sejajar dengan Logo & Nama) */}
+        <div className="flex flex-col items-center justify-center px-1">
           {status === 'live' ? (
             <LiveScoreDisplay
               targetDate={match.matchDate}
@@ -149,44 +154,38 @@ function MatchCard({
             />
           ) : status === 'score_pending' ? (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
-              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase mb-0.5">FULL TIME</span>
+              <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-sm sm:text-2xl border border-blue-200 leading-none">
                 VS
               </div>
             </>
           ) : status === 'finished' ? (
-            <>
-              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
-              <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
-                {match.homeScore ?? 0} : {match.awayScore ?? 0}
-              </div>
-            </>
+            <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center">
+              {match.homeScore ?? 0} : {match.awayScore ?? 0}
+            </div>
           ) : (
             <>
-              <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">
+              <span className="text-[9px] sm:text-[11px] text-slate-500 font-medium mb-0.5">
                 {formatWibTime(match.matchDate)}
-              </p>
-              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200">
+              </span>
+              <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-sm sm:text-2xl border border-blue-200 leading-none">
                 VS
               </div>
             </>
           )}
-          <p className="text-[8px] sm:text-[10px] text-slate-500 truncate max-w-xs mx-auto">
-            {match.venue}
-          </p>
         </div>
 
         {/* Away Team (Logo mendekat ke tengah, Nama di sisi luar) */}
-        <div className="flex items-center justify-start gap-1 sm:gap-3.5 min-w-0">
+        <div className="flex items-center justify-start gap-1.5 sm:gap-3.5 min-w-0">
           <div className="shrink-0 flex items-center justify-center">
             <img
               src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
               alt={!match.isHome ? teamName : match.opponentName}
-              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="text-left min-w-0 flex-1">
-            <h4 className="text-[10px] sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
               {(!match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h4>
           </div>

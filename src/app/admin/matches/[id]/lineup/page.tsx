@@ -1713,10 +1713,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   Daftar Event ({eventsList.length})
                 </h3>
               </div>
-              <div className="divide-y divide-slate-800/60 max-h-80 overflow-y-auto">
+              <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
                 {eventsList.length === 0 ? (
                   <div className="p-6 text-center">
-                    <AlertCircle className="w-7 h-7 text-slate-700 mx-auto mb-1.5" />
+                    <AlertCircle className="w-7 h-7 text-slate-400 mx-auto mb-1.5" />
                     <p className="text-xs text-slate-600">Belum ada event dicatat</p>
                   </div>
                 ) : (
@@ -1725,15 +1725,15 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     const assistObj = ev.assistPlayerId ? getPlayerById(ev.assistPlayerId) : null;
                     const evType = EVENT_TYPES.find(et => et.value === ev.type);
                     return (
-                      <div key={idx} className="px-4 py-2.5 flex items-start gap-3 hover:bg-slate-800/30 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-                          <span className="text-[9px] font-black font-mono text-sky-400">{ev.minute}'</span>
+                      <div key={idx} className="px-4 py-2.5 flex items-start gap-3 hover:bg-slate-50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+                          <span className="text-[9px] font-black font-mono text-blue-700">{ev.minute}'</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <EventIcon type={ev.type} />
                             {!isMatchTimeEvent(ev.type) && (
-                              <span className="text-xs font-black text-slate-100 uppercase">{playerObj?.name || '—'}</span>
+                              <span className="text-xs font-black text-slate-900 uppercase">{playerObj?.name || '—'}</span>
                             )}
                             <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase"
                               style={{ background: `${evType?.color}20`, color: evType?.color, border: `1px solid ${evType?.color}40` }}>
@@ -1741,18 +1741,18 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             </span>
                           </div>
                           {ev.type === 'sub' && assistObj && (
-                            <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1">
-                              <span className="text-green-400 font-bold">{getPlayerById(ev.playerId)?.name}</span>
-                              <i className="fa-solid fa-right-left text-sky-400 text-[8px]" />
-                              <span className="text-red-400 font-bold">{assistObj.name}</span>
+                            <p className="text-[9px] text-slate-600 mt-0.5 flex items-center gap-1">
+                              <span className="text-emerald-700 font-bold">{getPlayerById(ev.playerId)?.name}</span>
+                              <i className="fa-solid fa-right-left text-blue-600 text-[8px]" />
+                              <span className="text-rose-700 font-bold">{assistObj.name}</span>
                             </p>
                           )}
-                          {ev.type !== 'sub' && assistObj && <p className="text-[9px] text-slate-500 mt-0.5">Assist: {assistObj.name}</p>}
+                          {ev.type !== 'sub' && assistObj && <p className="text-[9px] text-slate-600 mt-0.5">Assist: {assistObj.name}</p>}
                           {ev.description && <p className="text-[9px] text-slate-500 italic truncate">{ev.description}</p>}
                         </div>
                         <button
                           onClick={() => handleDeleteEvent(eventsList.indexOf(ev))}
-                          className="p-1 rounded text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                          className="p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

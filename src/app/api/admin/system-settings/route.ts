@@ -20,8 +20,8 @@ export async function GET() {
       clubType: setting?.clubType || 'SOCCER CLUB',
       playerDefaultPhoto: setting?.playerDefaultPhoto || '/playertemplate.webp',
       loginWallpaper: setting?.loginWallpaper || '/NYCOMP.webp',
-      adminWallpaper: setting?.adminWallpaper || '/stadium_hero2.png',
-      playerCardBg: setting?.playerCardBg || '/bgprofil2.jpeg',
+      adminWallpaper: setting?.adminWallpaper || '/stadium.webp',
+      playerCardBg: setting?.playerCardBg || '/bgprofil2.webp',
       hasCustomPin: setting ? setting.securityPin !== '1234' : false,
       isCommunityEnabled: setting ? setting.isCommunityEnabled !== false : true,
       showHeroOverlay: setting ? Boolean(setting.showHeroOverlay) : false,
@@ -37,8 +37,8 @@ export async function GET() {
       clubType: 'SOCCER CLUB',
       playerDefaultPhoto: '/playertemplate.webp',
       loginWallpaper: '/NYCOMP.webp',
-      adminWallpaper: '/stadium_hero2.png',
-      playerCardBg: '/bgprofil2.jpeg',
+      adminWallpaper: '/stadium.webp',
+      playerCardBg: '/bgprofil2.webp',
       hasCustomPin: false,
       isCommunityEnabled: true,
       showHeroOverlay: false,
@@ -106,7 +106,7 @@ export async function PUT(req: Request) {
     }
 
     if (playerCardBg !== undefined && typeof playerCardBg === 'string') {
-      updateData.playerCardBg = playerCardBg.trim() || '/bgprofil2.jpeg';
+      updateData.playerCardBg = playerCardBg.trim() || '/bgprofil2.webp';
     }
 
     if (teamName !== undefined && typeof teamName === 'string') {
@@ -140,7 +140,7 @@ export async function PUT(req: Request) {
     }
 
     if (adminWallpaper !== undefined && typeof adminWallpaper === 'string') {
-      updateData.adminWallpaper = adminWallpaper.trim() || '/stadium_hero2.png';
+      updateData.adminWallpaper = adminWallpaper.trim() || '/stadium.webp';
     }
 
     // Changing Security PIN
@@ -168,8 +168,8 @@ export async function PUT(req: Request) {
         clubType: updateData.clubType || 'SOCCER CLUB',
         playerDefaultPhoto: updateData.playerDefaultPhoto || '/playertemplate.webp',
         loginWallpaper: updateData.loginWallpaper || '/NYCOMP.webp',
-        adminWallpaper: updateData.adminWallpaper || '/stadium_hero2.png',
-        playerCardBg: updateData.playerCardBg || '/bgprofil2.jpeg',
+        adminWallpaper: updateData.adminWallpaper || '/stadium.webp',
+        playerCardBg: updateData.playerCardBg || '/bgprofil2.webp',
         securityPin: updateData.securityPin || '1234',
         isCommunityEnabled: updateData.isCommunityEnabled !== undefined ? updateData.isCommunityEnabled : true,
         showHeroOverlay: updateData.showHeroOverlay !== undefined ? updateData.showHeroOverlay : false,

@@ -519,14 +519,18 @@ export default function AdminMatchesPage() {
                 return (
                   <tr key={m.id} className="hover:bg-slate-50 transition-colors">
                     <td className="p-3 font-bold text-slate-900 whitespace-nowrap">
-                      {new Date(m.matchDate).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        timeZone: WIB_TIMEZONE,
-                      })}
+                      {m.matchDate && !isNaN(new Date(m.matchDate).getTime()) ? (
+                        new Date(m.matchDate).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZone: WIB_TIMEZONE,
+                        })
+                      ) : (
+                        <span className="text-slate-400 font-normal">—</span>
+                      )}
                     </td>
                     <td className="p-3">
                       <div className="space-y-0.5">
@@ -545,9 +549,11 @@ export default function AdminMatchesPage() {
                         )}
                       </div>
                     </td>
-                    <td className="p-3 flex items-center gap-3">
-                      <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow-sm" />
-                      <span className="font-bold text-slate-900 uppercase">{m.opponentName}</span>
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow-sm shrink-0" />
+                        <span className="font-bold text-slate-900 uppercase">{m.opponentName}</span>
+                      </div>
                     </td>
                     <td className="p-3 text-center whitespace-nowrap">
                       {dynamicStatus === 'live' ? (
