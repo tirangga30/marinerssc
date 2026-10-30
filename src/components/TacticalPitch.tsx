@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Shield } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import { getClientPublicSeason } from '@/lib/publicSeason';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface LineupPlayer {
   id: string;
@@ -68,6 +69,8 @@ export default function TacticalPitch({
   events = [],
   season,
 }: TacticalPitchProps) {
+  const { playerDefaultPhoto } = useSystemSetting();
+  const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
   const activeSeason = season || getClientPublicSeason() || '2026';
 
   const getPosWeight = (pos: string, pitchPos?: string): number => {
@@ -221,7 +224,7 @@ export default function TacticalPitch({
               <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#003893] via-[#004bb8] to-sky-400 shadow-md shadow-blue-600/30 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full rounded-full overflow-hidden bg-slate-100">
                   <img
-                    src={lineup.player.photoUrl || '/playertemplate.webp'}
+                    src={(lineup.player.photoUrl && lineup.player.photoUrl !== '/playertemplate.webp') ? lineup.player.photoUrl : defaultPlayerTemplate}
                     alt={lineup.player.name}
                     className="w-full h-full object-cover object-top scale-[1.35] origin-top rounded-full"
                   />
@@ -327,26 +330,11 @@ export default function TacticalPitch({
               >
                 {/* Photo avatar pemain cadangan (di atas) */}
                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-slate-300 shrink-0 bg-white flex items-center justify-center">
-                  {sub.benchPlayer?.photoUrl ? (
-                    <img
-                      src={sub.benchPlayer.photoUrl}
-                      alt={sub.benchPlayer?.name || 'Pemain Cadangan'}
-                      className="w-full h-full object-cover object-top scale-[1.35] origin-top"
-                    />
-                  ) : (
-                    <svg
-                      className="w-7 h-7 sm:w-8 sm:h-8 text-slate-400"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  )}
+                  <img
+                    src={(sub.benchPlayer?.photoUrl && sub.benchPlayer.photoUrl !== '/playertemplate.webp') ? sub.benchPlayer.photoUrl : defaultPlayerTemplate}
+                    alt={sub.benchPlayer?.name || 'Pemain Cadangan'}
+                    className="w-full h-full object-cover object-top scale-[1.35] origin-top"
+                  />
                 </div>
 
                 {/* Nama & Info Pergantian */}

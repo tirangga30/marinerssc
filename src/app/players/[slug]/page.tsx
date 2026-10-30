@@ -425,14 +425,14 @@ export default async function PlayerDetailPage({
 
             {/* Ghost Action Shot */}
             <img
-              src={resolvedPlayer.photoUrl || '/playertemplate.webp'}
+              src={(resolvedPlayer.photoUrl && resolvedPlayer.photoUrl !== '/playertemplate.webp') ? resolvedPlayer.photoUrl : playerDefaultPhoto}
               alt=""
               className="absolute right-[-10%] top-2 h-[95%] object-contain opacity-20 mix-blend-luminosity grayscale pointer-events-none"
             />
 
             {/* Full Cut-out Photo */}
             <img
-              src={resolvedPlayer.photoUrl || '/playertemplate.webp'}
+              src={(resolvedPlayer.photoUrl && resolvedPlayer.photoUrl !== '/playertemplate.webp') ? resolvedPlayer.photoUrl : playerDefaultPhoto}
               alt={resolvedPlayer.name}
               className="absolute inset-0 w-full h-full object-contain object-bottom drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] z-10"
             />

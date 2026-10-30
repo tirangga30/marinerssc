@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import TacticalPitch from '@/components/TacticalPitch';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 import {
   FileText,
   Users,
@@ -68,6 +69,8 @@ interface MatchTabsProps {
 }
 
 export default function MatchTabs({ match }: MatchTabsProps) {
+  const { playerDefaultPhoto } = useSystemSetting();
+  const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
   const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('lineup');
 
   const getPosWeight = (pos: string, pitchPos?: string): number => {
@@ -422,7 +425,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
-                            src={item.player.photoUrl || '/playertemplate.webp'}
+                            src={(item.player.photoUrl && item.player.photoUrl !== '/playertemplate.webp') ? item.player.photoUrl : defaultPlayerTemplate}
                             alt={item.player.name}
                             className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                           />
@@ -528,7 +531,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
                         {/* Photo Avatar */}
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
-                            src={item.player.photoUrl || '/playertemplate.webp'}
+                            src={(item.player.photoUrl && item.player.photoUrl !== '/playertemplate.webp') ? item.player.photoUrl : defaultPlayerTemplate}
                             alt={item.player.name}
                             className="w-full h-full object-cover object-top scale-[1.35] origin-top opacity-90 group-hover:opacity-100"
                           />

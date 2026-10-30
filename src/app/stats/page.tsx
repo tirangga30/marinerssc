@@ -10,7 +10,7 @@ export const revalidate = 60;
 const getCachedStatsData = unstable_cache(
   async () => {
     try {
-      const [seasons, allMatches, allPlayersRaw] = await Promise.all([
+      const [seasons, allMatches, allPlayersRaw, systemSetting] = await Promise.all([
         prisma.season.findMany({
           orderBy: { year: 'desc' },
           select: { id: true, name: true, year: true, isCurrent: true },
@@ -58,11 +58,17 @@ const getCachedStatsData = unstable_cache(
             },
           },
         }),
+        (prisma as any).systemSetting.findUnique({ where: { id: 'default' } }).catch(() => null),
       ]);
-      return { seasons, allMatches, allPlayersRaw };
+      return {
+        seasons: seasons || [],
+        allMatches: allMatches || [],
+        allPlayersRaw: allPlayersRaw || [],
+        playerDefaultPhoto: systemSetting?.playerDefaultPhoto || '/playertemplate.webp',
+      };
     } catch (e) {
       console.warn('Database unreachable in getCachedStatsData, fallback to empty arrays:', e);
-      return { seasons: [], allMatches: [], allPlayersRaw: [] };
+      return { seasons: [], allMatches: [], allPlayersRaw: [], playerDefaultPhoto: '/playertemplate.webp' };
     }
   },
   ['mariners-stats-page-cache'],
@@ -87,7 +93,7 @@ export default async function StatsPage({
   const cookieStore = await cookies();
   const cookieSeason = cookieStore.get('public_season')?.value;
 
-  const { seasons, allMatches, allPlayersRaw } = await getCachedStatsData();
+  const { seasons, allMatches, allPlayersRaw, playerDefaultPhoto } = await getCachedStatsData();
 
   const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
   const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
@@ -301,7 +307,7 @@ export default async function StatsPage({
                   {/* Photo avatar sama dengan ukuran di line up: w-8 h-8 */}
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                     <img
-                      src={player.photoUrl || '/playertemplate.webp'}
+                      src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                       alt={player.name}
                       className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                     />
@@ -353,7 +359,7 @@ export default async function StatsPage({
                       {/* Photo avatar sama dengan ukuran di line up: w-8 h-8 */}
                       <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         <img
-                          src={player.photoUrl || '/playertemplate.webp'}
+                          src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                           alt={player.name}
                           className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                         />
@@ -398,7 +404,7 @@ export default async function StatsPage({
                       {/* Photo avatar sama dengan ukuran di line up: w-8 h-8 */}
                       <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         <img
-                          src={player.photoUrl || '/playertemplate.webp'}
+                          src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                           alt={player.name}
                           className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                         />
@@ -443,7 +449,7 @@ export default async function StatsPage({
                       {/* Photo avatar sama dengan ukuran di line up: w-8 h-8 */}
                       <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         <img
-                          src={player.photoUrl || '/playertemplate.webp'}
+                          src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                           alt={player.name}
                           className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                         />
