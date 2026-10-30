@@ -13,6 +13,7 @@ import { formatWibDate, formatWibTime } from '@/lib/date';
 import CommunityRegistrationModal from '@/components/CommunityRegistrationModal';
 import CommunityLoginModal from '@/components/CommunityLoginModal';
 import MemberDurationCountdown from '@/components/MemberDurationCountdown';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface CommunityPortalProps {
   initialMember: any | null;
@@ -36,6 +37,8 @@ export default function CommunityPortal({
   totalMembersCount = 0,
 }: CommunityPortalProps) {
   const router = useRouter();
+  const { teamName } = useSystemSetting();
+  const currentTeamName = teamName || 'MARINERS SC';
   const [member, setMember] = useState<any | null>(initialMember);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<'FAN' | 'PRO' | 'ELITE'>('PRO');
@@ -197,15 +200,15 @@ export default function CommunityPortal({
           <div className="space-y-3 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>MARINERS SC COMMUNITY</span>
+              <span>{currentTeamName.toUpperCase()} COMMUNITY</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-              Komunitas Mini Soccer <span className="blue-gradient-text">Mariners SC</span>
+              Komunitas Mini Soccer <span className="blue-gradient-text">{currentTeamName}</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Wadah resmi komunitas Mini Soccer Mariners SC. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!
+              Wadah resmi komunitas Mini Soccer {currentTeamName}. Ikuti fun match rutin tiap minggu, rasakan atmosfer kompetitif yang sehat, dan raih peluang promosi ke Skuad Utama!
             </p>
           </div>
 
@@ -465,7 +468,7 @@ export default function CommunityPortal({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-wider">
                   <Crown className="w-4 h-4 animate-bounce" />
-                  <span>Panggilan Pertandingan Skuad Utama Mariners SC!</span>
+                  <span>Panggilan Pertandingan Skuad Utama {currentTeamName}!</span>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-400/20 text-amber-300 border border-amber-400/40">
                   Undangan Khusus
@@ -475,7 +478,7 @@ export default function CommunityPortal({
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/80 border border-amber-400/20">
                 <div>
                   <h3 className="text-base sm:text-lg font-black uppercase text-white">
-                    Mariners SC vs {upcomingMainSquadInvitation.footballMatch.opponentName}
+                    {currentTeamName} vs {upcomingMainSquadInvitation.footballMatch.opponentName}
                   </h3>
                   <p className="text-xs text-slate-300 mt-0.5">
                     {formatWibDate(upcomingMainSquadInvitation.footballMatch.matchDate, {
@@ -938,7 +941,7 @@ export default function CommunityPortal({
               Pilih Paket Membership Komunitas
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Dapatkan akses fun match rutin mingguan, nomor punggung eksklusif, serta peluang promosi ke Skuad Utama Mariners SC.
+              Dapatkan akses fun match rutin mingguan, nomor punggung eksklusif, serta peluang promosi ke Skuad Utama {currentTeamName}.
             </p>
           </div>
 

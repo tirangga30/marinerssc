@@ -7,6 +7,7 @@ import {
   Clock, AlertCircle, MessageCircle, ArrowRight, ArrowLeft, Check,
   QrCode, HelpCircle
 } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -67,6 +68,8 @@ export default function CommunityRegistrationModal({
   onSuccess,
   onOpenLogin,
 }: RegistrationModalProps) {
+  const { teamName } = useSystemSetting();
+  const currentTeamName = teamName || 'MARINERS SC';
   // Steps: 1 (Choose Membership), 2 (Personal Data & Profile), 3 (Payment & QRIS), 4 (Submitted / Success)
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -239,7 +242,7 @@ export default function CommunityRegistrationModal({
               <h2 className="text-sm sm:text-lg font-black uppercase text-white tracking-wider">
                 Pendaftaran Soccer Community
               </h2>
-              <p className="text-[11px] sm:text-xs text-sky-300">Bergabung dengan keluarga Mariners SC</p>
+              <p className="text-[11px] sm:text-xs text-sky-300">Bergabung dengan keluarga {currentTeamName}</p>
             </div>
           </div>
           <button
@@ -685,7 +688,7 @@ export default function CommunityRegistrationModal({
                 <div className="max-w-[240px] sm:max-w-[260px] mx-auto rounded-2xl overflow-hidden border-2 border-white/20 bg-white p-2.5 shadow-2xl">
                   <img
                     src="/qris.webp"
-                    alt="QRIS Pembayaran Mariners SC"
+                    alt={`QRIS Pembayaran ${currentTeamName}`}
                     className="w-full h-auto object-contain rounded-xl"
                     onError={(e) => {
                       // Fallback text if qris.jpeg is not yet placed
@@ -798,7 +801,7 @@ export default function CommunityRegistrationModal({
                     </span>
                     <div>
                       <strong className="text-white block">Pengecekan Pembayaran oleh Admin</strong>
-                      <span className="text-[11px] text-slate-400">Tim admin Mariners SC sedang memvalidasi mutasi bukti transfer pembayaran Anda.</span>
+                      <span className="text-[11px] text-slate-400">Tim admin {currentTeamName} sedang memvalidasi mutasi bukti transfer pembayaran Anda.</span>
                     </div>
                   </div>
 
@@ -845,7 +848,7 @@ export default function CommunityRegistrationModal({
                 </p>
                 <a
                   href={`https://wa.me/6285223337028?text=${encodeURIComponent(
-                    `Halo Admin Mariners SC, saya telah mendaftar member baru dan mengunggah bukti pembayaran.\n\nDetail Pendaftar:\n• Nama: ${submittedData.fullName}\n• No WA: ${submittedData.phone}\n• Paket: ${submittedData.tier}\n• No Punggung: #${submittedData.jerseyNumber}\n\nMohon bantu verifikasi dan aktivasi akun saya. Terima kasih!`
+                    `Halo Admin ${currentTeamName}, saya telah mendaftar member baru dan mengunggah bukti pembayaran.\n\nDetail Pendaftar:\n• Nama: ${submittedData.fullName}\n• No WA: ${submittedData.phone}\n• Paket: ${submittedData.tier}\n• No Punggung: #${submittedData.jerseyNumber}\n\nMohon bantu verifikasi dan aktivasi akun saya. Terima kasih!`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

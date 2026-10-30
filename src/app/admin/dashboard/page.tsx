@@ -52,6 +52,8 @@ export default async function AdminDashboardPage({
     console.error('Error fetching admin dashboard initial data:', err);
   }
 
+  const isCommunityEnabled = systemSetting?.isCommunityEnabled !== false;
+
   const activeSeason =
     seasons.find((s) => s.name === requestedSeason || s.id === requestedSeason) ||
     seasons.find((s) => s.isCurrent) ||
@@ -164,14 +166,16 @@ export default async function AdminDashboardPage({
           <p className="text-[10px] text-slate-400 font-semibold truncate">Rasio Menang</p>
         </div>
 
-        <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-amber-400">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-amber-600/20 text-amber-300 rounded">Komunitas</span>
+        {isCommunityEnabled && (
+          <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1">
+            <div className="flex items-center justify-between text-amber-400">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 bg-amber-600/20 text-amber-300 rounded">Komunitas</span>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black font-mono text-amber-300">{memberCount}</p>
+            <p className="text-[10px] text-slate-400 font-semibold truncate">Member Aktif ({funMatchCount} Fun Match)</p>
           </div>
-          <p className="text-2xl sm:text-3xl font-black font-mono text-amber-300">{memberCount}</p>
-          <p className="text-[10px] text-slate-400 font-semibold truncate">Member Aktif ({funMatchCount} Fun Match)</p>
-        </div>
+        )}
 
         <div className="glass-panel p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between text-sky-400">
@@ -244,23 +248,25 @@ export default async function AdminDashboardPage({
         </Link>
 
         {/* Module 4: Members & Community */}
-        <Link
-          href="/admin/members"
-          className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-500/30 card-glow-hover space-y-3 bg-amber-950/10"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shadow-lg border border-white/20">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors uppercase">
-              Kelola Member &amp; Fun Match
-            </h3>
-            <p className="text-[11px] text-slate-300 mt-1">Data member, ID login, tarik ke skuad utama, dan jadwal fun match.</p>
-          </div>
-          <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400 flex items-center gap-1">
-            Buka Member <ArrowRight className="w-3.5 h-3.5" />
-          </div>
-        </Link>
+        {isCommunityEnabled && (
+          <Link
+            href="/admin/members"
+            className="group glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-500/30 card-glow-hover space-y-3 bg-amber-950/10"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shadow-lg border border-white/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors uppercase">
+                Kelola Member &amp; Fun Match
+              </h3>
+              <p className="text-[11px] text-slate-300 mt-1">Data member, ID login, tarik ke skuad utama, dan jadwal fun match.</p>
+            </div>
+            <div className="pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400 flex items-center gap-1">
+              Buka Member <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+        )}
 
         {/* Module 5: Articles */}
         <Link

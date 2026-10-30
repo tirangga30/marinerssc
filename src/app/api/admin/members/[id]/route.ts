@@ -116,7 +116,7 @@ export async function PATCH(
           number: finalNumber,
           position: member.position,
           photoUrl: member.photoUrl || '/defaultplayer.png',
-          bio: `Pemain promosi resmi dari Mariners Soccer Community (Tier ${member.tier}).`,
+          bio: `Pemain promosi resmi dari Soccer Community (Tier ${member.tier}).`,
           nationality: 'Indonesia',
           isGuest: false,
           status: 'Active',

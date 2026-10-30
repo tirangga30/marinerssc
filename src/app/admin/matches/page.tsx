@@ -39,6 +39,7 @@ interface FootballMatch {
   awayScore: number | null;
   formation: string;
   summary: string | null;
+  attendances?: Array<{ id: string; status: string }>;
 }
 
 interface Season {
@@ -468,13 +469,15 @@ export default function AdminMatchesPage() {
                     >
                       <Settings2 className="w-3.5 h-3.5" /> Match Options
                     </Link>
-                    <button
-                      onClick={() => setBroadcastMatchId(m.id)}
-                      className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-500/40"
-                      title="Undangan WhatsApp Skuad"
-                    >
-                      <i className="fa-brands fa-whatsapp text-sm" />
-                    </button>
+                    {Boolean(m.attendances && m.attendances.length > 0) && (
+                      <button
+                        onClick={() => setBroadcastMatchId(m.id)}
+                        className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-500/40"
+                        title="Undangan WhatsApp Skuad"
+                      >
+                        <i className="fa-brands fa-whatsapp text-sm" />
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(m)}
                       className="p-2 rounded-xl bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
@@ -574,13 +577,15 @@ export default function AdminMatchesPage() {
                       >
                         <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
-                      <button
-                        onClick={() => setBroadcastMatchId(m.id)}
-                        className="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
-                        title="Undangan WhatsApp Skuad"
-                      >
-                        <i className="fa-brands fa-whatsapp text-xs" /> Undangan WA
-                      </button>
+                      {Boolean(m.attendances && m.attendances.length > 0) && (
+                        <button
+                          onClick={() => setBroadcastMatchId(m.id)}
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                          title="Undangan WhatsApp Skuad"
+                        >
+                          <i className="fa-brands fa-whatsapp text-xs" /> Undangan WA
+                        </button>
+                      )}
                       <button
                         onClick={() => openEditModal(m)}
                         className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"

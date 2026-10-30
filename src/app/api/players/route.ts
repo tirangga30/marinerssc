@@ -77,7 +77,7 @@ export async function GET(req: Request) {
                   })(),
                   photoUrl: att.member.photoUrl || '/defaultplayer.png',
                   isGuest: false,
-                  bio: `Member Komunitas Mariners SC (${att.member.tier})`,
+                  bio: `Member Soccer Community (${att.member.tier})`,
                 },
               });
             }

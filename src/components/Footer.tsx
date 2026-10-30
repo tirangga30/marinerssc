@@ -9,7 +9,7 @@ import { useSystemSetting } from '@/context/SystemSettingContext';
 export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const { teamName, teamLogo, clubType } = useSystemSetting();
+  const { teamName, teamLogo, clubType, isCommunityEnabled } = useSystemSetting();
   const displayTeamName = teamName || 'TEAM';
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
 
@@ -109,7 +109,9 @@ export default function Footer() {
                     <li><Link href="/players" className="hover:text-white hover:underline transition-all">Skuad Tim Utama</Link></li>
                     <li><Link href="/articles" className="hover:text-white hover:underline transition-all">Kabar &amp; Artikel Berita</Link></li>
                     <li><Link href="/stats" className="hover:text-white hover:underline transition-all">Statistik Tim &amp; Pemain</Link></li>
-                    <li><Link href="/community" className="hover:text-white hover:underline transition-all">Soccer Community</Link></li>
+                    {isCommunityEnabled !== false && (
+                      <li><Link href="/community" className="hover:text-white hover:underline transition-all">Soccer Community</Link></li>
+                    )}
                   </ul>
                 </div>
 

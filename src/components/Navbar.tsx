@@ -111,7 +111,7 @@ export default function Navbar() {
     { name: 'Kelola Laga', href: '/admin/matches', icon: Calendar },
     { name: 'Kelola Kompetisi', href: '/admin/competitions', icon: Trophy },
     { name: 'Kelola Berita', href: '/admin/articles', icon: Newspaper },
-    { name: 'Kelola Member', href: '/admin/members', icon: Sparkles },
+    ...(isCommunityEnabled !== false ? [{ name: 'Kelola Member', href: '/admin/members', icon: Sparkles }] : []),
   ];
 
   // Active public nav links based on clubMode

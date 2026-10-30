@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
     if (member.paymentStatus === 'REJECTED') {
       return NextResponse.json(
-        { error: 'Bukti pembayaran pendaftaran Anda ditolak. Silakan hubungi admin Mariners SC.' },
+        { error: 'Bukti pembayaran pendaftaran Anda ditolak. Silakan hubungi admin.' },
         { status: 403 }
       );
     }

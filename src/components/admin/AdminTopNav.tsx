@@ -32,7 +32,7 @@ export default function AdminTopNav() {
   const [seasons, setSeasons] = useState<SeasonItem[]>([]);
   const [activeSeason, setActiveSeason] = useState<string>('2026');
 
-  const { teamName, teamLogo } = useSystemSetting();
+  const { teamName, teamLogo, isCommunityEnabled } = useSystemSetting();
 
   // Do not render on login page
   if (pathname === '/admin/login') return null;
@@ -78,7 +78,7 @@ export default function AdminTopNav() {
     router.refresh();
   };
 
-  const navItems = [
+  const allNavItems = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Laga', href: '/admin/matches', icon: Calendar },
     { label: 'Skuad', href: '/admin/players', icon: Users },
@@ -87,6 +87,11 @@ export default function AdminTopNav() {
     { label: 'Berita', href: '/admin/articles', icon: Newspaper },
     { label: 'Identitas Tim', href: '/admin/team-management', icon: Shield },
   ];
+
+  const navItems = allNavItems.filter((item) => {
+    if (item.href === '/admin/members' && isCommunityEnabled === false) return false;
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 py-2.5 shadow-xs">

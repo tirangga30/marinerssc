@@ -98,7 +98,7 @@ export async function POST(req: Request) {
                 })(),
                 photoUrl: mem.photoUrl || '/defaultplayer.png',
                 isGuest: false,
-                bio: `Member Komunitas Mariners SC (${mem.tier})`,
+                bio: `Member Soccer Community (${mem.tier})`,
               },
             });
           }

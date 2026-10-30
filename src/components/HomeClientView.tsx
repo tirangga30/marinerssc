@@ -942,7 +942,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               {/* Background Image: stattimnew.png */}
               <img
                 src="/stattimnew.png"
-                alt="Statistik Tim Mariners SC"
+                alt={`Statistik Tim ${currentTeamName}`}
                 className="absolute inset-0 w-full h-full object-cover object-right select-none pointer-events-none"
               />
 
@@ -990,7 +990,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               {/* Background Image: statnew.jpeg */}
               <img
                 src="/statnew.jpeg"
-                alt="Statistik Tim Mariners SC"
+                alt={`Statistik Tim ${currentTeamName}`}
                 className="absolute inset-0 w-full h-full object-cover object-left select-none pointer-events-none"
               />
 
@@ -1408,7 +1408,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <Sparkles className="w-8 h-8 text-amber-500 mx-auto animate-pulse" />
                 <h3 className="text-base sm:text-lg font-black uppercase text-slate-900">Jadwal Fun Match Segera Dirilis</h3>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Fun match mingguan Soccer Community Mariners SC akan segera dijadwalkan oleh admin.
+                  Fun match mingguan Soccer Community {currentTeamName} akan segera dijadwalkan oleh admin.
                 </p>
               </div>
             )}
@@ -1563,7 +1563,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                   Ingin Bergabung Bermain Bersama Kami?
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600">
-                  Dapatkan pengalaman fun match mingguan, statistik resmi web, nomor punggung eksklusif, dan kesempatan ditarik bermain di Skuad Utama Mariners SC!
+                  Dapatkan pengalaman fun match mingguan, statistik resmi web, nomor punggung eksklusif, dan kesempatan ditarik bermain di Skuad Utama {currentTeamName}!
                 </p>
               </div>
 

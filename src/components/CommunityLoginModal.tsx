@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Shield, Lock, User, Loader2, AlertCircle } from 'lucide-react';
+import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function CommunityLoginModal({
   onSuccess,
   onOpenRegister,
 }: LoginModalProps) {
+  const { teamName } = useSystemSetting();
   const [memberCode, setMemberCode] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,7 +76,7 @@ export default function CommunityLoginModal({
               <h2 className="text-base sm:text-lg font-black uppercase text-white tracking-wider">
                 Portal Login Member
               </h2>
-              <p className="text-xs text-sky-300">Mariners Soccer Community</p>
+              <p className="text-xs text-sky-300">{teamName || 'MARINERS SC'} Soccer Community</p>
             </div>
           </div>
           <button

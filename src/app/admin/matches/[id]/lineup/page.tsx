@@ -130,7 +130,7 @@ const EventIcon = ({ type }: { type: string }) => {
 export default function MatchLineupBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: matchId } = use(params);
   const router = useRouter();
-  const { teamName, teamLogo, playerDefaultPhoto } = useSystemSetting();
+  const { teamName, teamLogo, playerDefaultPhoto, isCommunityEnabled } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
 
   const [players, setPlayers] = useState<Player[]>([]);
@@ -642,15 +642,15 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
     if (newEvent.type === 'goal' || newEvent.type === 'penalty' || newEvent.type === 'own_goal') {
       const isHome = matchData?.isHome;
-      const marinersScoreStr = isHome ? matchDetails.homeScore : matchDetails.awayScore;
+      const teamScoreStr = isHome ? matchDetails.homeScore : matchDetails.awayScore;
       const opponentScoreStr = isHome ? matchDetails.awayScore : matchDetails.homeScore;
-      const marinersScore = parseInt(marinersScoreStr) || 0;
+      const teamScore = parseInt(teamScoreStr) || 0;
       const opponentScore = parseInt(opponentScoreStr) || 0;
 
       if (newEvent.type === 'goal' || newEvent.type === 'penalty') {
-        const currentMarinersGoals = eventsList.filter(e => e.type === 'goal' || e.type === 'penalty').length;
-        if (currentMarinersGoals >= marinersScore) {
-          alert('Gagal! Jumlah gol Mariners melebihi skor yang diinputkan.');
+        const currentTeamGoals = eventsList.filter(e => e.type === 'goal' || e.type === 'penalty').length;
+        if (currentTeamGoals >= teamScore) {
+          alert(`Gagal! Jumlah gol ${teamName || 'tim'} melebihi skor yang diinputkan.`);
           return;
         }
       }
@@ -805,8 +805,27 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     });
   };
 
+  useEffect(() => {
+    if (isCommunityEnabled === false && rosterTab === 'members') {
+      setRosterTab('main');
+    }
+  }, [isCommunityEnabled, rosterTab]);
+
+  const hasAttendanceSystem = matchAttendances.length > 0;
+  const confirmedPlayerIds = new Set(
+    matchAttendances
+      .filter((a) => a.status === 'CONFIRMED' && Boolean(a.playerId))
+      .map((a) => a.playerId!)
+  );
+
   const mainSquadAvailable = sortRosterList(
-    availablePlayers.filter((p) => !p.isGuest && (!p.member || p.member.isPermanent))
+    availablePlayers.filter((p) => {
+      if (p.isGuest || (p.member && !p.member.isPermanent)) return false;
+      if (hasAttendanceSystem) {
+        return confirmedPlayerIds.has(p.id);
+      }
+      return true;
+    })
   );
   const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
 
@@ -1134,45 +1153,47 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               </div>
             {/* ── PLAYER ROSTER (drag source & drop target with tabs) ── */}
               <div
-                className={`rounded-2xl bg-slate-900/60 border overflow-hidden flex flex-col transition-all ${
-                  dragPlayerId ? 'border-sky-500/80 bg-sky-500/10 ring-2 ring-sky-500/30' : 'border-slate-800'
+                className={`rounded-2xl bg-slate-950 border overflow-hidden flex flex-col transition-all ${
+                  dragPlayerId ? 'border-sky-500/80 bg-sky-950/40 ring-2 ring-sky-500/30' : 'border-slate-800'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                 onDragEnter={(e) => e.preventDefault()}
                 onDrop={handleDropOnRoster}
               >
                 {/* Roster Header Tabs */}
-                <div className="px-2 py-2 border-b border-slate-800 bg-slate-950/60 flex items-center gap-1 shrink-0">
+                <div className="px-2 py-2 border-b border-slate-800 bg-slate-950 flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => setRosterTab('main')}
                     className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'main'
                         ? 'bg-sky-600/30 text-sky-300 border border-sky-500/50 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                       }`}
                   >
                     <Star className="w-3 h-3 text-sky-400" />
                     Skuad ({mainSquadAvailable.length})
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setRosterTab('members')}
-                    className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'members'
-                        ? 'bg-amber-600/30 text-amber-300 border border-amber-500/50 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                      }`}
-                  >
-                    <Users className="w-3 h-3 text-amber-400" />
-                    Member ({communityMembers.length})
-                  </button>
+                  {isCommunityEnabled !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setRosterTab('members')}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'members'
+                          ? 'bg-amber-600/30 text-amber-300 border border-amber-500/50 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                        }`}
+                    >
+                      <Users className="w-3 h-3 text-amber-400" />
+                      Member ({communityMembers.length})
+                    </button>
+                  )}
 
                   <button
                     type="button"
                     onClick={() => setRosterTab('guests')}
                     className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'guests'
                         ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                       }`}
                   >
                     <UserCheck className="w-3 h-3 text-emerald-400" />
@@ -1190,8 +1211,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   {rosterTab === 'main' && (
                     <>
                       {mainSquadAvailable.length === 0 ? (
-                        <p className="text-[10px] text-slate-500 text-center py-6">
-                          {dragPlayerId ? '📥 Lepas pemain di sini untuk kembalikan ke skuad utama' : 'Semua pemain skuad utama sudah ditempatkan.'}
+                        <p className="text-[10px] text-slate-400 text-center py-6 px-3">
+                          {dragPlayerId
+                            ? '📥 Lepas pemain di sini untuk kembalikan ke skuad utama'
+                            : hasAttendanceSystem
+                            ? 'Belum ada pemain skuad utama yang konfirmasi hadir (IKUT).'
+                            : 'Semua pemain skuad utama sudah ditempatkan.'}
                         </p>
                       ) : (
                         mainSquadAvailable.map((p) => (
@@ -1200,22 +1225,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             draggable
                             onDragStart={(e) => handleDragStart(p.id, false, e)}
                             onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none shadow-sm ${dragPlayerId === p.id
                                 ? 'opacity-40 scale-95'
-                                : 'bg-slate-800/60 border-slate-700 hover:border-sky-500/50 hover:bg-slate-800'
+                                : 'bg-slate-900 border-slate-700/80 hover:border-sky-400 hover:bg-slate-850'
                               }`}
                           >
-                            <GripVertical className="w-3 h-3 text-slate-600 shrink-0" />
+                            <GripVertical className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             {/* Foto Pemain */}
-                            <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                            <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/50 shrink-0 bg-slate-950">
                               <img src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate} alt={p.name} className="w-full h-full object-cover object-top" />
                             </div>
-                            <span className="font-mono font-black text-[11px] text-sky-400 shrink-0 min-w-[18px] text-center">
+                            <span className="font-mono font-black text-xs text-sky-400 shrink-0 min-w-[20px] text-center">
                               {p.number}
                             </span>
                             <span className="flex-1 min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-200 truncate">{p.name}</span>
-                              <span className="text-[8px] text-slate-500">{formatPosition(p.position)}</span>
+                              <span className="block text-xs font-bold text-white truncate">{p.name}</span>
+                              <span className="text-[9px] text-slate-400 font-medium">{formatPosition(p.position)}</span>
                             </span>
                           </div>
                         ))
