@@ -6,7 +6,7 @@ import { unstable_cache } from 'next/cache';
 import MatchTimer from '@/components/MatchTimer';
 import { Calendar, Sparkles, MapPin, Clock, ArrowRight, Shield } from 'lucide-react';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const getCachedFunMatches = unstable_cache(
   async () => {
@@ -23,7 +23,7 @@ const getCachedFunMatches = unstable_cache(
     }
   },
   ['mariners-community-matches-cache'],
-  { revalidate: 60, tags: ['fun-matches'] }
+  { revalidate: 3600, tags: ['fun-matches'] }
 );
 
 function getDynamicFunMatchStatus(fm: any): 'scheduled' | 'live' | 'finished' {

@@ -7,7 +7,7 @@ import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const getCachedMatchesData = unstable_cache(
   async () => {
@@ -32,7 +32,7 @@ const getCachedMatchesData = unstable_cache(
     }
   },
   ['mariners-matches-page-cache'],
-  { revalidate: 60, tags: ['matches', 'seasons'] }
+  { revalidate: 3600, tags: ['matches', 'seasons'] }
 );
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {

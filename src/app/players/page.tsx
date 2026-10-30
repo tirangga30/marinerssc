@@ -6,7 +6,7 @@ import { unstable_cache } from 'next/cache';
 import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const getCachedPlayersData = unstable_cache(
   async () => {
@@ -56,7 +56,7 @@ const getCachedPlayersData = unstable_cache(
     }
   },
   ['mariners-players-page-cache'],
-  { revalidate: 60, tags: ['players', 'seasons'] }
+  { revalidate: 3600, tags: ['players', 'seasons'] }
 );
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];

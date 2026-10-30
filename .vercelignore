@@ -1,0 +1,6 @@
+prisma/backup_data.json
+prisma/backup_pre_webp.json
+prisma/dev.db
+*.sqlite
+*.db
+public/backup_originals/

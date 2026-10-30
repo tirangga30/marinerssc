@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { Trophy, Award, Flame, Shield, Activity, Users, BarChart3 } from 'lucide-react';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const getCachedStatsData = unstable_cache(
   async () => {
@@ -72,7 +72,7 @@ const getCachedStatsData = unstable_cache(
     }
   },
   ['mariners-stats-page-cache'],
-  { revalidate: 60, tags: ['stats', 'matches', 'players', 'seasons'] }
+  { revalidate: 3600, tags: ['stats', 'matches', 'players', 'seasons'] }
 );
 
 const formatPosition = (pos: string) => {

@@ -19,8 +19,6 @@ const oswald = Oswald({
   fallback: ['ui-monospace', 'monospace'],
 });
 
-export const revalidate = 60;
-
 export async function generateMetadata(): Promise<Metadata> {
   let teamName = 'TEAM';
 

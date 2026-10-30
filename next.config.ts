@@ -11,9 +11,6 @@ const nextConfig: NextConfig = {
     'localhost',
     '127.0.0.1',
   ],
-  outputFileTracingIncludes: {
-    '/**': ['./prisma/dev.db', './prisma/**'],
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

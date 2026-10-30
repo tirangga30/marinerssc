@@ -2,7 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/db';
 import HomeClientView from '@/components/HomeClientView';
 
-export const revalidate = 60;
+export const revalidate = 3600; // 1 jam fallback (revalidatePath handles instant admin updates)
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';

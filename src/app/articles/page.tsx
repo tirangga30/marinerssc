@@ -5,7 +5,7 @@ import { unstable_cache } from 'next/cache';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { getMainThumbnail } from '@/lib/articles';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const getCachedArticles = unstable_cache(
   async () => {
@@ -20,7 +20,7 @@ const getCachedArticles = unstable_cache(
     }
   },
   ['mariners-articles-page-cache'],
-  { revalidate: 60, tags: ['articles'] }
+  { revalidate: 3600, tags: ['articles'] }
 );
 
 export default async function ArticlesPage({
