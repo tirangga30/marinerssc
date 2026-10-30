@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,13 @@ export async function PATCH(
       where: { id },
       data: body,
     });
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/', 'layout');
+    } catch (revErr) {
+      console.warn('Revalidation notice for poster PATCH:', revErr);
+    }
 
     return NextResponse.json({ success: true, poster: updated });
   } catch (err: any) {
@@ -44,6 +52,13 @@ export async function DELETE(
     await (prisma as any).heroPoster.delete({
       where: { id },
     });
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/', 'layout');
+    } catch (revErr) {
+      console.warn('Revalidation notice for poster DELETE:', revErr);
+    }
 
     return NextResponse.json({ success: true, message: 'Poster berhasil dihapus' });
   } catch (err: any) {

@@ -130,13 +130,49 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
   const [selectedSeason, setSelectedSeason] = useState(initialSeason);
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
-  // Active Hero Posters with 5-second automatic rotation
-  const activePosters = React.useMemo(() => {
+  // Live Posters state with real-time sync
+  const [livePosters, setLivePosters] = useState<any[]>(heroPosters || []);
+
+  React.useEffect(() => {
     if (heroPosters && heroPosters.length > 0) {
-      return heroPosters;
+      setLivePosters(heroPosters);
+    }
+  }, [heroPosters]);
+
+  React.useEffect(() => {
+    const fetchLivePosters = async () => {
+      try {
+        const res = await fetch('/api/admin/posters', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.posters && Array.isArray(data.posters)) {
+            const active = data.posters.filter((p: any) => p.isActive && p.imageUrl);
+            if (active.length > 0) {
+              setLivePosters(active);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch live posters:', err);
+      }
+    };
+
+    fetchLivePosters();
+    window.addEventListener('posters_updated', fetchLivePosters);
+    window.addEventListener('system_settings_updated', fetchLivePosters);
+    return () => {
+      window.removeEventListener('posters_updated', fetchLivePosters);
+      window.removeEventListener('system_settings_updated', fetchLivePosters);
+    };
+  }, []);
+
+  // Active Hero Posters with automatic rotation
+  const activePosters = React.useMemo(() => {
+    if (livePosters && livePosters.length > 0) {
+      return livePosters;
     }
     return [{ id: 'default', imageUrl: '/NYCOMP.webp' }];
-  }, [heroPosters]);
+  }, [livePosters]);
 
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);

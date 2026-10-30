@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,13 @@ export async function PUT(req: Request) {
       update: updateData,
       create: { id: 'default', ...updateData },
     });
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/', 'layout');
+    } catch (revErr) {
+      console.warn('Revalidation notice for posters settings:', revErr);
+    }
 
     return NextResponse.json({
       success: true,
@@ -167,6 +175,13 @@ export async function POST(req: Request) {
           isActive: isActive !== undefined ? Boolean(isActive) : true,
         },
       });
+    }
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/', 'layout');
+    } catch (revErr) {
+      console.warn('Revalidation notice for hero poster create/update:', revErr);
     }
 
     return NextResponse.json({ success: true, poster });

@@ -66,6 +66,9 @@ export default function MainPosterAdminPage() {
       .then((data) => {
         if (data.posters) {
           setPosters(data.posters);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('posters_updated'));
+          }
         }
         if (data.interval) {
           setSlideInterval(data.interval);
