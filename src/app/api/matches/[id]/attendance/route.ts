@@ -122,3 +122,4 @@ export async function POST(
     return NextResponse.json({ error: 'Gagal memperbarui status kehadiran' }, { status: 500 });
   }
 }
+
