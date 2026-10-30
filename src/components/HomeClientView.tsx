@@ -745,24 +745,24 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                   <>
                     <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
 
-                      {/* Home Team */}
-                      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
-                        <div className="order-2 sm:order-1 text-center sm:text-right">
-                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
+                      {/* Home Team (Nama di sisi luar kiri, Logo di tengah mendekat ke skor) */}
+                      <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
+                        <div className="text-right min-w-0 flex-1">
+                          <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
+                            {(currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName).toUpperCase()}
                           </h4>
                         </div>
-                        <div className="order-1 sm:order-2 flex items-center justify-center">
+                        <div className="shrink-0 flex items-center justify-center">
                           <img
                             src={currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
                             alt={currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
-                            className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                       </div>
 
-                      {/* Score / VS Badge */}
-                      <div className="space-y-0.5 sm:space-y-2">
+                      {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
+                      <div className="space-y-0.5 sm:space-y-2 px-1 flex flex-col items-center justify-center">
                         {currentFeaturedStatus === 'live' ? (
                           <LiveScoreDisplay
                             targetDate={currentNextMatch.matchDate}
@@ -800,18 +800,18 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate max-w-xs mx-auto drop-shadow-xs">{currentNextMatch.venue}</p>
                       </div>
 
-                      {/* Away Team */}
-                      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
-                        <div className="flex items-center justify-center">
+                      {/* Away Team (Logo di tengah mendekat ke skor, Nama di sisi luar kanan) */}
+                      <div className="flex items-center justify-start gap-1.5 sm:gap-3.5 min-w-0">
+                        <div className="shrink-0 flex items-center justify-center">
                           <img
                             src={!currentNextMatch.isHome ? currentTeamLogo : (currentNextMatch.opponentLogo || '/defaultteam.webp')}
                             alt={!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
-                            className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <div className="text-center sm:text-left">
-                          <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs">
-                            {!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName}
+                        <div className="text-left min-w-0 flex-1">
+                          <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors drop-shadow-xs truncate">
+                            {(!currentNextMatch.isHome ? currentTeamName : currentNextMatch.opponentName).toUpperCase()}
                           </h4>
                         </div>
                       </div>
@@ -875,22 +875,24 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       })()}
 
                       <div className="grid grid-cols-3 gap-1 sm:gap-6 items-center text-center">
-                        <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-1 sm:gap-4">
-                          <div className="order-2 sm:order-1 text-center sm:text-right">
-                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                              {m.isHome ? currentTeamName : m.opponentName}
+                        {/* Home Team (Nama di sisi luar kiri, Logo di tengah mendekat ke skor) */}
+                        <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
+                          <div className="text-right min-w-0 flex-1">
+                            <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                              {(m.isHome ? currentTeamName : m.opponentName).toUpperCase()}
                             </h4>
                           </div>
-                          <div className="order-1 sm:order-2 flex items-center justify-center">
+                          <div className="shrink-0 flex items-center justify-center">
                             <img
                               src={m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
                               alt={m.isHome ? currentTeamName : m.opponentName}
-                              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                         </div>
 
-                        <div className="space-y-0.5 sm:space-y-2">
+                        {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
+                        <div className="space-y-0.5 sm:space-y-2 px-1 flex flex-col items-center justify-center">
                           <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium">FULL TIME</p>
                           <div className="text-xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest">
                             {m.homeScore} : {m.awayScore}
@@ -898,17 +900,18 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <p className="text-[8px] sm:text-[10px] text-slate-500 truncate max-w-xs mx-auto">{m.venue}</p>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-4">
-                          <div className="flex items-center justify-center">
+                        {/* Away Team (Logo di tengah mendekat ke skor, Nama di sisi luar kanan) */}
+                        <div className="flex items-center justify-start gap-1.5 sm:gap-3.5 min-w-0">
+                          <div className="shrink-0 flex items-center justify-center">
                             <img
                               src={!m.isHome ? currentTeamLogo : (m.opponentLogo || '/defaultteam.webp')}
                               alt={!m.isHome ? currentTeamName : m.opponentName}
-                              className="w-8 h-8 sm:w-16 sm:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                              className="w-7 h-7 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                          <div className="text-center sm:text-left">
-                            <h4 className="text-[10px] sm:text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                              {!m.isHome ? currentTeamName : m.opponentName}
+                          <div className="text-left min-w-0 flex-1">
+                            <h4 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                              {(!m.isHome ? currentTeamName : m.opponentName).toUpperCase()}
                             </h4>
                           </div>
                         </div>

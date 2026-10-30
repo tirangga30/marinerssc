@@ -161,11 +161,11 @@ export default function CommunityPlayerMatchHistory({
                                   A
                                 </span>
                                 <span
-                                  className={`text-xs font-bold truncate flex-1 ${
+                                  className={`text-xs font-bold uppercase truncate flex-1 ${
                                     isTeamA ? 'text-sky-300' : 'text-slate-400 font-semibold'
                                   }`}
                                 >
-                                  {funMatch.teamAName} {isTeamA && '(Tim Anda)'}
+                                  {funMatch.teamAName?.toUpperCase()} {isTeamA && '(TIM ANDA)'}
                                 </span>
                               </div>
 
@@ -175,11 +175,11 @@ export default function CommunityPlayerMatchHistory({
                                   B
                                 </span>
                                 <span
-                                  className={`text-xs font-bold truncate flex-1 ${
+                                  className={`text-xs font-bold uppercase truncate flex-1 ${
                                     isTeamB ? 'text-amber-300' : 'text-slate-400 font-semibold'
                                   }`}
                                 >
-                                  {funMatch.teamBName} {isTeamB && '(Tim Anda)'}
+                                  {funMatch.teamBName?.toUpperCase()} {isTeamB && '(TIM ANDA)'}
                                 </span>
                               </div>
                             </>
@@ -189,16 +189,16 @@ export default function CommunityPlayerMatchHistory({
                                 <span className="w-3.5 h-3.5 rounded bg-amber-950 text-amber-400 font-mono font-black text-[9px] flex items-center justify-center border border-amber-400/40">
                                   ★
                                 </span>
-                                <span className="text-xs font-bold truncate flex-1 text-sky-300">
-                                  {teamName || 'TEAM'} (Tim Utama)
+                                <span className="text-xs font-bold uppercase truncate flex-1 text-sky-300">
+                                  {(teamName || 'TEAM').toUpperCase()} (TIM UTAMA)
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <span className="w-3.5 h-3.5 rounded bg-slate-900 text-slate-400 font-mono font-black text-[9px] flex items-center justify-center border border-slate-700">
                                   vs
                                 </span>
-                                <span className="text-xs font-bold truncate flex-1 text-slate-300">
-                                  {footballMatch.opponentName}
+                                <span className="text-xs font-bold uppercase truncate flex-1 text-slate-300">
+                                  {footballMatch.opponentName?.toUpperCase()}
                                 </span>
                               </div>
                             </>

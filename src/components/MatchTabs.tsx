@@ -82,7 +82,7 @@ interface MatchTabsProps {
 export default function MatchTabs({ match }: MatchTabsProps) {
   const { playerDefaultPhoto } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
-  const [activeTab, setActiveTab] = useState<'summary' | 'lineup'>('lineup');
+  const [activeTab, setActiveTab] = useState<'summary' | 'lineup' | 'squad'>('lineup');
 
   // Attendance local state (synced with parent & live updates)
   const [localAttendances, setLocalAttendances] = React.useState<AttendanceItem[]>(match.attendances || []);
@@ -207,8 +207,27 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const isStarted = match.status === 'finished' || match.status === 'live' || (!isNaN(startMs) && nowMs >= startMs);
 
   // "ringkasan jangan muncul jika belum kickoff."
+  // "list squad mana? itu tetap ada walaupun line up udah keluar, kecuali udah kickoff maka hilang"
   const hasKickedOff = isStarted;
   const showSummaryTab = hasLineup && hasKickedOff;
+  const showLineupTab = hasLineup;
+  const showSquadTab = !hasKickedOff;
+
+  React.useEffect(() => {
+    if (hasKickedOff) {
+      if (showSummaryTab) {
+        setActiveTab('summary');
+      } else if (showLineupTab) {
+        setActiveTab('lineup');
+      }
+    } else {
+      if (showLineupTab) {
+        setActiveTab('lineup');
+      } else {
+        setActiveTab('squad');
+      }
+    }
+  }, [hasKickedOff, showSummaryTab, showLineupTab]);
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -279,16 +298,31 @@ export default function MatchTabs({ match }: MatchTabsProps) {
           </button>
         )}
 
-        <button
-          onClick={() => setActiveTab('lineup')}
-          className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-            activeTab === 'lineup' || !showSummaryTab
-              ? 'border-blue-600 text-blue-600 font-black'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          {hasLineup ? 'Line Up' : 'Squad List'}
-        </button>
+        {showLineupTab && (
+          <button
+            onClick={() => setActiveTab('lineup')}
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+              activeTab === 'lineup'
+                ? 'border-blue-600 text-blue-600 font-black'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Line Up
+          </button>
+        )}
+
+        {showSquadTab && (
+          <button
+            onClick={() => setActiveTab('squad')}
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+              activeTab === 'squad' || (!showLineupTab && !showSummaryTab)
+                ? 'border-blue-600 text-blue-600 font-black'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Squad List
+          </button>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
@@ -441,20 +475,18 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: LINEUP & TACTICAL PITCH                */}
       {/* ═══════════════════════════════════════════════════ */}
-      {(!showSummaryTab || activeTab === 'lineup') && (
+      {showLineupTab && activeTab === 'lineup' && (
         <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-          {hasLineup ? (
-            <>
-              {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
-              <TacticalPitch
-                lineups={match.lineups}
-                formation={match.formation}
-                events={pitchEvents}
-                season={match.seasonName}
-              />
+          {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
+          <TacticalPitch
+            lineups={match.lineups}
+            formation={match.formation}
+            events={pitchEvents}
+            season={match.seasonName}
+          />
 
-              {/* Lineup Detail Grid (Starting XI + Substitutes) */}
-              <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
+          {/* Lineup Detail Grid (Starting XI + Substitutes) */}
+          <div className={`grid grid-cols-1 ${bench.length > 0 ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-4 sm:gap-6`}>
             {/* Starting XI List */}
             <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -671,13 +703,14 @@ export default function MatchTabs({ match }: MatchTabsProps) {
               </div>
             )}
           </div>
-        </>
-      ) : (
-        /* ═══════════════════════════════════════════════════════════════════════════ */
-        /* SQUAD LIST (Tampil jika starting lineup belum diatur oleh admin)             */
-        /* Box line up lapangan dihilangkan, box starting diganti dengan SQUAD LIST    */
-        /* ═══════════════════════════════════════════════════════════════════════════ */
-        <div className="max-w-3xl mx-auto">
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* TAB CONTENT: SQUAD LIST                             */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {showSquadTab && (activeTab === 'squad' || (!showLineupTab && !showSummaryTab)) && (
+        <div className="max-w-3xl mx-auto animate-fadeIn">
           {/* Squad List Box (Identik dengan Box Starting) */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -747,8 +780,6 @@ export default function MatchTabs({ match }: MatchTabsProps) {
             )}
           </div>
         </div>
-      )}
-    </div>
       )}
     </div>
   );

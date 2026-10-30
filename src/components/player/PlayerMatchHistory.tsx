@@ -37,7 +37,7 @@ interface PlayerMatchHistoryProps {
 
 export default function PlayerMatchHistory({ matches, player }: PlayerMatchHistoryProps) {
   const { teamName, teamLogo } = useSystemSetting();
-  const displayTeamName = teamName || 'TEAM';
+  const displayTeamName = (teamName || 'TEAM').toUpperCase();
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
   const [visibleCount, setVisibleCount] = useState(10);
 
@@ -120,8 +120,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold truncate flex-1 text-blue-600">
-                          {displayTeamName}
+                        <span className="text-xs font-bold uppercase truncate flex-1 text-blue-600">
+                          {displayTeamName.toUpperCase()}
                         </span>
                       </div>
                     )
@@ -132,8 +132,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={match.opponentName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold truncate flex-1 text-slate-800">
-                          {match.opponentName}
+                        <span className="text-xs font-semibold uppercase truncate flex-1 text-slate-800">
+                          {match.opponentName?.toUpperCase()}
                         </span>
                       </div>
                     );
@@ -146,8 +146,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={match.opponentName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold truncate flex-1 text-slate-800">
-                          {match.opponentName}
+                        <span className="text-xs font-semibold uppercase truncate flex-1 text-slate-800">
+                          {match.opponentName?.toUpperCase()}
                         </span>
                       </div>
                     )
@@ -158,8 +158,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold truncate flex-1 text-blue-600">
-                          {displayTeamName}
+                        <span className="text-xs font-bold uppercase truncate flex-1 text-blue-600">
+                          {displayTeamName.toUpperCase()}
                         </span>
                       </div>
                     );

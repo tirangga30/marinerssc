@@ -158,6 +158,11 @@ export default function MatchAttendanceConfirm({
     matchStatus === 'live'
   );
 
+  // Jika waktu pertandingan telah tiba / kickoff, jangan tampilkan box invite sama sekali
+  if (isExpired) {
+    return null;
+  }
+
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
       {/* Header bar */}
