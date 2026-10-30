@@ -135,24 +135,24 @@ export default async function MatchDetailPage({
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-6 items-center">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 max-w-4xl mx-auto">
 
-          {/* Home Team - NO BOX */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center justify-center">
+          {/* Home Team (Nama di sisi luar kiri mendekat ke logo di tengah) */}
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3.5 min-w-0">
+            <h2 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 text-right truncate">
+              {(match.isHome ? teamName : match.opponentName).toUpperCase()}
+            </h2>
+            <div className="shrink-0 w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center">
               <img
                 src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
                 alt={match.isHome ? teamName : match.opponentName}
-                className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
+                className="w-full h-full object-contain drop-shadow-md"
               />
             </div>
-            <h2 className="text-xs sm:text-xl font-black text-slate-900">
-              {match.isHome ? teamName : match.opponentName}
-            </h2>
           </div>
 
-          {/* Score Box */}
-          <div className="-mt-2 space-y-1">
+          {/* Center Score / Status */}
+          <div className="shrink-0 text-center px-1 sm:px-3 space-y-1">
             {status === 'live' ? (
               <LiveScoreDisplay
                 targetDate={match.matchDate}
@@ -166,34 +166,34 @@ export default async function MatchDetailPage({
                 <span className="inline-block mb-1.5 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] sm:text-xs font-bold uppercase border border-emerald-200">
                   Full Time
                 </span>
-                <div className="text-3xl sm:text-6xl font-black font-mono blue-gradient-text tracking-widest">
+                <div className="text-2xl sm:text-5xl md:text-6xl font-black font-mono blue-gradient-text tracking-widest">
                   {match.homeScore ?? 0} : {match.awayScore ?? 0}
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-[10px] sm:text-xs text-blue-600 font-bold uppercase mb-1.5">Mendatang</p>
-                <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl bg-blue-50 text-blue-600 text-xl sm:text-3xl font-black border border-blue-200">
+                <p className="text-[10px] sm:text-xs text-blue-600 font-bold uppercase mb-1">Mendatang</p>
+                <div className="inline-block px-3 sm:px-6 py-1 sm:py-2 rounded-2xl bg-blue-50 text-blue-600 text-lg sm:text-3xl font-black border border-blue-200">
                   VS
                 </div>
               </div>
             )}
-            <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-1">
+            <p className="text-[9px] sm:text-xs text-slate-500 font-medium mt-1 truncate max-w-[130px] sm:max-w-xs mx-auto">
               {match.venue}
             </p>
           </div>
 
-          {/* Away Team - NO BOX */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center justify-center">
+          {/* Away Team (Logo di tengah, Nama di sisi luar kanan mendekat ke logo) */}
+          <div className="flex-1 flex items-center justify-start gap-2 sm:gap-3.5 min-w-0">
+            <div className="shrink-0 w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center">
               <img
                 src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
                 alt={!match.isHome ? teamName : match.opponentName}
-                className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-md"
+                className="w-full h-full object-contain drop-shadow-md"
               />
             </div>
-            <h2 className="text-xs sm:text-xl font-black text-slate-900">
-              {!match.isHome ? teamName : match.opponentName}
+            <h2 className="text-xs sm:text-lg md:text-xl font-black uppercase text-slate-900 text-left truncate">
+              {(!match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h2>
           </div>
 
@@ -206,6 +206,8 @@ export default async function MatchDetailPage({
         <MatchAttendanceConfirm
           matchId={match.id}
           opponentName={match.opponentName}
+          matchDate={match.matchDate}
+          matchStatus={status}
           matchDateText={`${formatWibDate(match.matchDate, {
             weekday: 'long',
             day: 'numeric',

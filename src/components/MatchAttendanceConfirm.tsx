@@ -25,11 +25,15 @@ interface MatchAttendanceConfirmProps {
   opponentName?: string;
   matchDateText?: string;
   venueText?: string;
+  matchDate?: Date | string;
+  matchStatus?: string;
   initialAttendances: AttendanceItem[];
 }
 
 export default function MatchAttendanceConfirm({
   matchId,
+  matchDate,
+  matchStatus,
   initialAttendances,
 }: MatchAttendanceConfirmProps) {
   const searchParams = useSearchParams();
@@ -148,6 +152,11 @@ export default function MatchAttendanceConfirm({
 
   const isConfirmed = status === 'CONFIRMED';
   const isDeclined = status === 'DECLINED';
+  const isExpired = Boolean(
+    (matchDate && !isNaN(new Date(matchDate).getTime()) && new Date(matchDate).getTime() <= Date.now()) ||
+    matchStatus === 'finished' ||
+    matchStatus === 'live'
+  );
 
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
@@ -156,6 +165,11 @@ export default function MatchAttendanceConfirm({
         <span className="text-xs font-black uppercase tracking-wider text-slate-900">
           Konfirmasi Kehadiran Pemain
         </span>
+        {isExpired && (
+          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+            Undangan Ditutup
+          </span>
+        )}
       </div>
 
       {/* Player info & current status */}
@@ -212,8 +226,20 @@ export default function MatchAttendanceConfirm({
         </div>
       )}
 
-      {/* Decline reason input */}
-      {showDeclineInput && (
+      {/* Expired State or Action buttons */}
+      {isExpired ? (
+        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⏳</span>
+            <span>Waktu pertandingan telah tiba. Undangan konfirmasi kehadiran sudah ditutup.</span>
+          </div>
+          {status && (
+            <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-md bg-white border border-amber-300 text-amber-800 shrink-0 self-start sm:self-auto shadow-xs">
+              Status Anda: {isConfirmed ? 'Ikut Bertanding' : isDeclined ? 'Tidak Bisa Ikut' : 'Belum Konfirmasi'}
+            </span>
+          )}
+        </div>
+      ) : showDeclineInput ? (
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
           <label className="text-xs font-bold text-slate-700 block">
             Alasan berhalangan (opsional):
@@ -243,10 +269,7 @@ export default function MatchAttendanceConfirm({
             </button>
           </div>
         </div>
-      )}
-
-      {/* Action buttons */}
-      {!showDeclineInput && (
+      ) : (
         <div className="pt-1 flex flex-col sm:flex-row items-center gap-2">
           <button
             type="button"

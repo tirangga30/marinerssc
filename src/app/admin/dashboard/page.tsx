@@ -108,11 +108,11 @@ export default async function AdminDashboardPage({
             <Shield className="w-3 h-3 text-sky-400" />
             Panel Pengelola Klub
           </div>
-          <h1 className="text-xl sm:text-3xl font-black uppercase text-white blue-gradient-text tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-black uppercase text-blue-700 blue-gradient-text tracking-tight">
             Selamat Datang, {session.email.split('@')[0]}
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-300">
-            {systemSetting?.teamName || 'TEAM'} · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
+          <p className="text-[11px] sm:text-xs text-slate-600 font-medium">
+            <span className="uppercase font-bold">{(systemSetting?.teamName || 'TEAM').toUpperCase()}</span> · Pengelolaan Musim Aktif: <b className="text-blue-700 font-bold">Musim {activeSeasonName}</b>
           </p>
         </div>
 

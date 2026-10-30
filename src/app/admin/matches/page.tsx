@@ -568,8 +568,8 @@ export default function AdminMatchesPage() {
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-slate-700">{m.venue || '—'}</td>
-                    <td className="p-3 text-slate-700 font-medium">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
+                    <td className="p-3 text-slate-800 font-semibold">{m.venue || '—'}</td>
+                    <td className="p-3 text-slate-800 font-semibold">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
                     <td className="p-3 text-right space-x-2 whitespace-nowrap">
                       <Link
                         href={`/admin/matches/${m.id}/lineup`}

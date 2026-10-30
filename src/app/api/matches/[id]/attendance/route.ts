@@ -68,6 +68,22 @@ export async function POST(
       return NextResponse.json({ error: 'Data pemain tidak ditemukan' }, { status: 404 });
     }
 
+    // 1. Validasi waktu pertandingan (Invite kedaluwarsa jika waktu sudah tiba atau laga selesai)
+    const now = new Date();
+    const matchTime = new Date(match.matchDate);
+    if (!isNaN(matchTime.getTime()) && now.getTime() >= matchTime.getTime()) {
+      return NextResponse.json(
+        { error: 'Waktu pertandingan telah tiba. Undangan konfirmasi kehadiran sudah ditutup.' },
+        { status: 400 }
+      );
+    }
+    if (match.status === 'finished') {
+      return NextResponse.json(
+        { error: 'Pertandingan telah selesai. Undangan konfirmasi kehadiran sudah ditutup.' },
+        { status: 400 }
+      );
+    }
+
     const existing = await prisma.matchAttendance.findFirst({
       where: {
         matchId: match.id,
@@ -95,6 +111,41 @@ export async function POST(
           playerName: player.name,
           status,
           declineReason: status === 'DECLINED' ? (declineReason || null) : null,
+        },
+      });
+    }
+
+    // 2. Jika Lineup sudah tersedia dan pemain konfirmasi IKUT, otomatis masukkan ke Cadangan (Substitution)
+    if (status === 'CONFIRMED') {
+      const lineupCount = await prisma.matchLineup.count({
+        where: { matchId: match.id },
+      });
+      if (lineupCount > 0) {
+        const existingLineup = await prisma.matchLineup.findFirst({
+          where: {
+            matchId: match.id,
+            playerId: player.id,
+          },
+        });
+        if (!existingLineup) {
+          await prisma.matchLineup.create({
+            data: {
+              matchId: match.id,
+              playerId: player.id,
+              isStarter: false,
+              pitchPosition: 'SUB',
+              positionName: 'Substitute',
+            },
+          });
+        }
+      }
+    } else if (status === 'DECLINED') {
+      // Jika membatalkan kehadiran, hapus dari cadangan (bukan starter) jika ada
+      await prisma.matchLineup.deleteMany({
+        where: {
+          matchId: match.id,
+          playerId: player.id,
+          isStarter: false,
         },
       });
     }

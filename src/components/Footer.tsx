@@ -10,7 +10,7 @@ export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === '/';
   const { teamName, teamLogo, clubType, isCommunityEnabled } = useSystemSetting();
-  const displayTeamName = teamName || 'TEAM';
+  const displayTeamName = (teamName || 'TEAM').toUpperCase();
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
 
   return (

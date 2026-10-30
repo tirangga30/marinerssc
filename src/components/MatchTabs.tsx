@@ -204,7 +204,11 @@ export default function MatchTabs({ match }: MatchTabsProps) {
   const startMs = new Date(match.matchDate).getTime();
   const nowMs = new Date().getTime();
   const elapsedMin = Math.floor((nowMs - startMs) / 60000);
-  const isStarted = match.status === 'finished' || match.status === 'live' || nowMs >= startMs;
+  const isStarted = match.status === 'finished' || match.status === 'live' || (!isNaN(startMs) && nowMs >= startMs);
+
+  // "ringkasan jangan muncul jika belum kickoff."
+  const hasKickedOff = isStarted;
+  const showSummaryTab = hasLineup && hasKickedOff;
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -262,7 +266,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* TAB NAVIGATION: SUMMARY & LINE UP / SQUAD LIST      */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
-        {hasLineup && (
+        {showSummaryTab && (
           <button
             onClick={() => setActiveTab('summary')}
             className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
@@ -278,7 +282,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
         <button
           onClick={() => setActiveTab('lineup')}
           className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-            activeTab === 'lineup' || !hasLineup
+            activeTab === 'lineup' || !showSummaryTab
               ? 'border-blue-600 text-blue-600 font-black'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
@@ -290,7 +294,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: SUMMARY & TIMELINE                    */}
       {/* ═══════════════════════════════════════════════════ */}
-      {hasLineup && activeTab === 'summary' && (
+      {showSummaryTab && activeTab === 'summary' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Summary Text Box - ONLY SHOW IF NOT EMPTY */}
           {Boolean(match.summary && match.summary.trim()) && (
@@ -437,7 +441,7 @@ export default function MatchTabs({ match }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: LINEUP & TACTICAL PITCH                */}
       {/* ═══════════════════════════════════════════════════ */}
-      {activeTab === 'lineup' && (
+      {(!showSummaryTab || activeTab === 'lineup') && (
         <div className="space-y-4 sm:space-y-6 animate-fadeIn">
           {hasLineup ? (
             <>
