@@ -54,9 +54,9 @@ async function main() {
   const settingRes = await client.query('SELECT count(*) FROM "SystemSetting" WHERE id = $1', ['default']);
   if (parseInt(settingRes.rows[0].count, 10) === 0) {
     await client.query(
-      `INSERT INTO "SystemSetting" ("id", "teamName", "teamLogo", "loginWallpaper", "adminWallpaper", "posterInterval", "securityPin", "isCommunityEnabled", "playerCardBg", "showHeroOverlay", "heroTagline", "heroSubtitle", "heroCtaText", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())`,
-      ['default', 'Klub Sepak Bola Baru', '/marinerssc.webp', '/NYCOMP.webp', '/stadium_hero2.png', 7, '1234', true, '/bgprofil2.jpeg', false, 'SOCCER CLUB', 'Lebih dari sekadar sepak bola.', 'LIHAT TIM']
+      `INSERT INTO "SystemSetting" ("id", "teamName", "teamLogo", "clubType", "playerDefaultPhoto", "loginWallpaper", "adminWallpaper", "posterInterval", "securityPin", "isCommunityEnabled", "playerCardBg", "showHeroOverlay", "heroTagline", "heroSubtitle", "heroCtaText", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())`,
+      ['default', 'TEAM', '/defaultteam.webp', 'SOCCER CLUB', '/playertemplate.webp', '/NYCOMP.webp', '/stadium_hero2.png', 7, '1234', true, '/bgprofil2.jpeg', false, 'SOCCER CLUB', 'Lebih dari sekadar sepak bola.', 'LIHAT TIM']
     );
     console.log('✅ Pengaturan Identitas Tim default dibuat (PIN: 1234)');
   }

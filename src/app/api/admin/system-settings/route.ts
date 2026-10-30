@@ -15,8 +15,10 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      teamName: setting?.teamName || 'Mariners SC',
-      teamLogo: setting?.teamLogo || '/marinerssc.webp',
+      teamName: setting?.teamName || 'TEAM',
+      teamLogo: setting?.teamLogo || '/defaultteam.webp',
+      clubType: setting?.clubType || 'SOCCER CLUB',
+      playerDefaultPhoto: setting?.playerDefaultPhoto || '/playertemplate.webp',
       loginWallpaper: setting?.loginWallpaper || '/NYCOMP.webp',
       adminWallpaper: setting?.adminWallpaper || '/stadium_hero2.png',
       playerCardBg: setting?.playerCardBg || '/bgprofil2.jpeg',
@@ -30,8 +32,10 @@ export async function GET() {
   } catch (err: any) {
     console.error('Error fetching system settings:', err);
     return NextResponse.json({
-      teamName: 'Mariners SC',
-      teamLogo: '/marinerssc.webp',
+      teamName: 'TEAM',
+      teamLogo: '/defaultteam.webp',
+      clubType: 'SOCCER CLUB',
+      playerDefaultPhoto: '/playertemplate.webp',
       loginWallpaper: '/NYCOMP.webp',
       adminWallpaper: '/stadium_hero2.png',
       playerCardBg: '/bgprofil2.jpeg',
@@ -60,7 +64,7 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const {
-      teamName, teamLogo, loginWallpaper, adminWallpaper,
+      teamName, teamLogo, clubType, playerDefaultPhoto, loginWallpaper, adminWallpaper,
       playerCardBg, isCommunityEnabled, showHeroOverlay,
       heroTagline, heroSubtitle, heroCtaText,
       currentPin, newPin
@@ -71,6 +75,15 @@ export async function PUT(req: Request) {
     });
 
     const updateData: any = {};
+
+    if (clubType !== undefined && typeof clubType === 'string') {
+      const cleanClubType = clubType.trim().toUpperCase();
+      updateData.clubType = cleanClubType === 'FOOTBALL CLUB' ? 'FOOTBALL CLUB' : 'SOCCER CLUB';
+    }
+
+    if (playerDefaultPhoto !== undefined && typeof playerDefaultPhoto === 'string') {
+      updateData.playerDefaultPhoto = playerDefaultPhoto.trim() || '/playertemplate.webp';
+    }
 
     if (isCommunityEnabled !== undefined) {
       updateData.isCommunityEnabled = Boolean(isCommunityEnabled);
@@ -97,7 +110,7 @@ export async function PUT(req: Request) {
     }
 
     if (teamName !== undefined && typeof teamName === 'string') {
-      updateData.teamName = teamName.trim() || 'Mariners SC';
+      updateData.teamName = teamName.trim() || 'TEAM';
     }
 
     if (teamLogo !== undefined && typeof teamLogo === 'string' && teamLogo.trim()) {
@@ -150,8 +163,10 @@ export async function PUT(req: Request) {
       update: updateData,
       create: {
         id: 'default',
-        teamName: updateData.teamName || 'Mariners SC',
-        teamLogo: updateData.teamLogo || '/marinerssc.webp',
+        teamName: updateData.teamName || 'TEAM',
+        teamLogo: updateData.teamLogo || '/defaultteam.webp',
+        clubType: updateData.clubType || 'SOCCER CLUB',
+        playerDefaultPhoto: updateData.playerDefaultPhoto || '/playertemplate.webp',
         loginWallpaper: updateData.loginWallpaper || '/NYCOMP.webp',
         adminWallpaper: updateData.adminWallpaper || '/stadium_hero2.png',
         playerCardBg: updateData.playerCardBg || '/bgprofil2.jpeg',
@@ -179,6 +194,8 @@ export async function PUT(req: Request) {
       settings: {
         teamName: updated.teamName,
         teamLogo: updated.teamLogo,
+        clubType: updated.clubType,
+        playerDefaultPhoto: updated.playerDefaultPhoto,
         loginWallpaper: updated.loginWallpaper,
         adminWallpaper: updated.adminWallpaper,
         playerCardBg: updated.playerCardBg,

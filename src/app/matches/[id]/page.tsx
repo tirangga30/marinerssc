@@ -77,8 +77,8 @@ export default async function MatchDetailPage({
     notFound();
   }
 
-  const teamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'MARINERS SC';
-  const teamLogo = systemSetting?.teamLogo || '/marinerssc.webp';
+  const teamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'TEAM';
+  const teamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
   const matchLabel = match.stage || (isFriendly ? 'Friendly Match' : match.competition || 'Pertandingan');

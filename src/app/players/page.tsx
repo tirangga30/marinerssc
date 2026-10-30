@@ -41,13 +41,18 @@ const getCachedPlayersData = unstable_cache(
         }),
         (prisma as any).systemSetting.findUnique({
           where: { id: 'default' },
-          select: { playerCardBg: true },
+          select: { playerCardBg: true, playerDefaultPhoto: true },
         }).catch(() => null),
       ]);
-      return { seasons, allPlayers, playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.jpeg' };
+      return {
+        seasons,
+        allPlayers,
+        playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.jpeg',
+        playerDefaultPhoto: systemSetting?.playerDefaultPhoto || '/playertemplate.webp',
+      };
     } catch (e) {
       console.warn('Database unreachable in getCachedPlayersData, fallback to empty arrays:', e);
-      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.jpeg' };
+      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.jpeg', playerDefaultPhoto: '/playertemplate.webp' };
     }
   },
   ['mariners-players-page-cache'],
@@ -101,7 +106,7 @@ export default async function PlayersPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
   const cookieAdminSeason = cookieStore.get('admin_season')?.value;
 
-  const { seasons, allPlayers, playerCardBg } = await getCachedPlayersData();
+  const { seasons, allPlayers, playerCardBg, playerDefaultPhoto } = await getCachedPlayersData();
 
   const validNames = new Set(seasons.map((s) => s.name));
   const currentDbSeason = seasons.find((s) => s.isCurrent)?.name;
@@ -207,7 +212,7 @@ export default async function PlayersPage({
 
                   {/* Full Photo (Transparent PNG cutout on clean box) */}
                   <img
-                    src={player.photoUrl || '/playertemplate.webp'}
+                    src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                     alt={player.name}
                     className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500 z-10"
                   />

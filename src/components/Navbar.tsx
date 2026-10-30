@@ -141,13 +141,13 @@ export default function Navbar() {
             {/* Logo Admin */}
             <Link href="/admin/dashboard" className="flex items-center gap-2 sm:gap-3 group">
               <img
-                src={teamLogo || "/marinerssc.webp"}
-                alt={`${teamName || "Mariners SC"} Logo`}
+                src={teamLogo || "/defaultteam.webp"}
+                alt={`${teamName || "TEAM"} Logo`}
                 className="h-8 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
               />
               <div>
                 <span className="text-base sm:text-xl font-black tracking-wider uppercase blue-gradient-text block leading-none">
-                  {(teamName || 'MARINERS SC').toUpperCase()}
+                  {(teamName || 'TEAM').toUpperCase()}
                 </span>
                 <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-blue-600 font-extrabold block mt-0.5">
                   PANEL ADMIN KELOLA
@@ -258,10 +258,10 @@ export default function Navbar() {
             </button>
 
             {/* Logo Saja (Teks Dihapus, Logo Diperbesar Lebih Lanjut) */}
-            <Link href="/" className="flex items-center group py-0.5" title={`${teamName || "Mariners SC"} - Beranda`}>
+            <Link href="/" className="flex items-center group py-0.5" title={`${teamName || "TEAM"} - Beranda`}>
               <img
-                src={teamLogo || "/marinerssc.webp"}
-                alt={`${teamName || "Mariners SC"} Logo`}
+                src={teamLogo || "/defaultteam.webp"}
+                alt={`${teamName || "TEAM"} Logo`}
                 className="h-12 sm:h-16 md:h-[68px] w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
               />
             </Link>

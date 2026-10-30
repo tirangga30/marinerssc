@@ -110,7 +110,7 @@ export default async function AdminDashboardPage({
             Selamat Datang, {session.email.split('@')[0]}
           </h1>
           <p className="text-[11px] sm:text-xs text-slate-300">
-            {systemSetting?.teamName || 'Mariners SC'} · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
+            {systemSetting?.teamName || 'TEAM'} · Pengelolaan Musim Aktif: <b className="text-sky-300">Musim {activeSeasonName}</b>
           </p>
         </div>
 

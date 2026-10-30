@@ -26,8 +26,10 @@ export default function TeamManagementPage() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Settings State
-  const [teamName, setTeamName] = useState('Mariners SC');
-  const [teamLogo, setTeamLogo] = useState('/marinerssc.webp');
+  const [teamName, setTeamName] = useState('TEAM');
+  const [teamLogo, setTeamLogo] = useState('/defaultteam.webp');
+  const [clubType, setClubType] = useState('SOCCER CLUB');
+  const [playerDefaultPhoto, setPlayerDefaultPhoto] = useState('/playertemplate.webp');
   const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium_hero2.png');
   const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.jpeg');
@@ -75,6 +77,8 @@ export default function TeamManagementPage() {
         if (data) {
           if (data.teamName) setTeamName(data.teamName);
           if (data.teamLogo) setTeamLogo(data.teamLogo);
+          if (data.clubType) setClubType(data.clubType);
+          if (data.playerDefaultPhoto) setPlayerDefaultPhoto(data.playerDefaultPhoto);
           if (data.loginWallpaper) setLoginWallpaper(data.loginWallpaper);
           if (data.adminWallpaper) setAdminWallpaper(data.adminWallpaper);
           if (data.playerCardBg) setPlayerCardBg(data.playerCardBg);
@@ -136,7 +140,7 @@ export default function TeamManagementPage() {
   };
 
   // Upload handler for team logo or wallpapers
-  const handleFileUpload = async (file: File, folder: 'team' | 'wallpapers', callback: (url: string) => void) => {
+  const handleFileUpload = async (file: File, folder: 'team' | 'wallpapers' | 'players', callback: (url: string) => void) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
@@ -169,6 +173,8 @@ export default function TeamManagementPage() {
         body: JSON.stringify({
           teamName,
           teamLogo,
+          clubType,
+          playerDefaultPhoto,
           loginWallpaper,
           adminWallpaper,
           playerCardBg,
@@ -518,7 +524,7 @@ export default function TeamManagementPage() {
             {/* Box Logo */}
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
-                Logo Resmi Tim ({teamName || 'Mariners SC'})
+                Logo Resmi Tim ({teamName || 'TEAM'})
               </label>
 
               <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
@@ -551,7 +557,7 @@ export default function TeamManagementPage() {
 
                     <button
                       type="button"
-                      onClick={() => setTeamLogo('/marinerssc.webp')}
+                      onClick={() => setTeamLogo('/defaultteam.webp')}
                       className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
                     >
                       Kembalikan Logo Sistem
@@ -564,23 +570,97 @@ export default function TeamManagementPage() {
               </div>
             </div>
 
-            {/* Box Nama Tim */}
+            {/* Box Nama Tim & Istilah Klub */}
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
-                Nama Resmi Tim
+                Nama Resmi Tim &amp; Istilah Klub
               </label>
 
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
-                <input
-                  type="text"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="MARINERS SC"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-sm outline-hidden transition-all uppercase tracking-wide"
-                />
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-4">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
+                    Nama Tim
+                  </label>
+                  <input
+                    type="text"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="TEAM"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-sm outline-hidden transition-all uppercase tracking-wide"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
+                    Istilah Klub (Dropdown)
+                  </label>
+                  <select
+                    value={clubType}
+                    onChange={(e) => setClubType(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-black text-sm outline-hidden transition-all uppercase tracking-wider cursor-pointer"
+                  >
+                    <option value="SOCCER CLUB">SOCCER CLUB</option>
+                    <option value="FOOTBALL CLUB">FOOTBALL CLUB</option>
+                  </select>
+                </div>
+
                 <p className="text-[11px] text-slate-400">
-                  Nama ini digunakan sebagai label klub utama pada scorecard, header beranda, dan modul laga.
+                  Label nama tim dan istilah klub ini ditampilkan pada header, footer, scorecard, dan banner laga.
                 </p>
+              </div>
+            </div>
+
+            {/* Box Foto Template Pemain (Pemain Tanpa Wajah) */}
+            <div className="md:col-span-2 space-y-4">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+                Foto Template Pemain (Pemain Tanpa Wajah)
+              </label>
+
+              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                <div className="w-24 h-28 rounded-2xl bg-[#09111e] border-2 border-sky-400/40 flex items-end justify-center p-2 shadow-xl relative group overflow-hidden">
+                  <img
+                    src={playerDefaultPhoto}
+                    alt="Player Template Preview"
+                    className="w-full h-full object-contain object-bottom drop-shadow-lg transition-transform group-hover:scale-105 duration-300"
+                  />
+                </div>
+
+                <div className="space-y-2 text-center sm:text-left flex-1">
+                  <div className="flex items-center gap-2 justify-center sm:justify-start">
+                    <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
+                      Foto Template Silhouette Tim
+                    </span>
+                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                      Rasio 4:5 Vertikal
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
+                    <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Ganti Template Foto</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, 'players', (url) => setPlayerDefaultPhoto(url));
+                        }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setPlayerDefaultPhoto('/playertemplate.webp')}
+                      className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
+                    >
+                      Kembalikan Template Sistem
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    Foto silhouette/jersey default ini akan otomatis digunakan pada profil pemain tim yang belum memiliki foto wajah sendiri.
+                  </p>
+                </div>
               </div>
             </div>
 

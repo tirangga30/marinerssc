@@ -22,7 +22,7 @@ const oswald = Oswald({
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  let teamName = 'Mariners SC';
+  let teamName = 'TEAM';
 
   try {
     const setting = await (prisma as any).systemSetting.findUnique({
@@ -61,8 +61,10 @@ export default async function RootLayout({
     });
     if (setting) {
       initialSettings = {
-        teamName: setting.teamName,
-        teamLogo: setting.teamLogo?.startsWith('data:') ? '/api/team-logo' : (setting.teamLogo || '/api/team-logo'),
+        teamName: setting.teamName || 'TEAM',
+        teamLogo: setting.teamLogo?.startsWith('data:') ? '/api/team-logo' : (setting.teamLogo || '/defaultteam.webp'),
+        clubType: setting.clubType || 'SOCCER CLUB',
+        playerDefaultPhoto: setting.playerDefaultPhoto || '/playertemplate.webp',
         loginWallpaper: setting.loginWallpaper,
         adminWallpaper: setting.adminWallpaper,
         playerCardBg: setting.playerCardBg || '/bgprofil2.jpeg',

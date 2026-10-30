@@ -9,9 +9,9 @@ import { useSystemSetting } from '@/context/SystemSettingContext';
 export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const { teamName, teamLogo } = useSystemSetting();
-  const displayTeamName = teamName || 'MARINERS SC';
-  const displayTeamLogo = teamLogo || '/marinerssc.webp';
+  const { teamName, teamLogo, clubType } = useSystemSetting();
+  const displayTeamName = teamName || 'TEAM';
+  const displayTeamLogo = teamLogo || '/defaultteam.webp';
 
   return (
     <footer className="relative w-full mt-auto overflow-hidden">
@@ -77,7 +77,7 @@ export default function Footer() {
                         {displayTeamName.toUpperCase()}
                       </span>
                       <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block mt-0.5">
-                        SOCCER CLUB
+                        {clubType || 'SOCCER CLUB'}
                       </span>
                     </div>
                   </div>
@@ -224,7 +224,7 @@ export default function Footer() {
                       {displayTeamName.toUpperCase()}
                     </span>
                     <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.25em] font-extrabold text-blue-200 block">
-                      SOCCER CLUB
+                      {clubType || 'SOCCER CLUB'}
                     </span>
                   </div>
                 </Link>

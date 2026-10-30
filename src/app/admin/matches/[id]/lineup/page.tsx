@@ -932,10 +932,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {/* Home Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-1.5 sm:gap-4 text-center sm:text-right min-w-0">
               <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
-                {matchData?.isHome ? (teamName || 'Mariners SC') : matchData?.opponentName}
+                {matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
               <img
-                src={matchData?.isHome ? (teamLogo || '/marinerssc.webp') : (matchData?.opponentLogo || '/defaultteam.webp')}
+                src={matchData?.isHome ? (teamLogo || '/defaultteam.webp') : (matchData?.opponentLogo || '/defaultteam.webp')}
                 alt="Home"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 sm:order-2 shrink-0"
               />
@@ -974,12 +974,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {/* Away Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-start gap-1.5 sm:gap-4 text-center sm:text-left min-w-0">
               <img
-                src={!matchData?.isHome ? (teamLogo || '/marinerssc.webp') : (matchData?.opponentLogo || '/defaultteam.webp')}
+                src={!matchData?.isHome ? (teamLogo || '/defaultteam.webp') : (matchData?.opponentLogo || '/defaultteam.webp')}
                 alt="Away"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 shrink-0"
               />
               <span className="font-bold text-white uppercase text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
-                {!matchData?.isHome ? (teamName || 'Mariners SC') : matchData?.opponentName}
+                {!matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
             </div>
           </div>

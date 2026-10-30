@@ -83,18 +83,22 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
     heroTagline: liveHeroTagline,
     heroSubtitle: liveHeroSubtitle,
     heroCtaText: liveHeroCtaText,
+    clubType: liveClubType,
+    playerDefaultPhoto: livePlayerDefaultPhoto,
   } = useSystemSetting();
 
-  const currentTeamName = liveTeamName || systemSetting?.teamName || 'Mariners SC';
-  const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/marinerssc.webp';
+  const currentTeamName = liveTeamName || systemSetting?.teamName || 'TEAM';
+  const currentTeamLogo = liveTeamLogo || systemSetting?.teamLogo || '/defaultteam.webp';
   const playerCardBg = livePlayerCardBg || systemSetting?.playerCardBg || '/bgprofil2.jpeg';
+  const clubType = liveClubType || systemSetting?.clubType || 'SOCCER CLUB';
+  const playerDefaultPhoto = livePlayerDefaultPhoto || systemSetting?.playerDefaultPhoto || '/playertemplate.webp';
   const isCommunityEnabled = liveCommunityEnabled !== undefined
     ? liveCommunityEnabled
     : (systemSetting?.isCommunityEnabled !== undefined ? Boolean(systemSetting.isCommunityEnabled) : true);
   const showHeroOverlay = liveShowHeroOverlay !== undefined
     ? liveShowHeroOverlay
     : (systemSetting?.showHeroOverlay !== undefined ? Boolean(systemSetting.showHeroOverlay) : false);
-  const heroTagline = liveHeroTagline || systemSetting?.heroTagline || 'SOCCER CLUB';
+  const heroTagline = liveHeroTagline || systemSetting?.heroTagline || clubType || 'SOCCER CLUB';
   const heroSubtitle = liveHeroSubtitle || systemSetting?.heroSubtitle || 'Lebih dari sekadar sepak bola.';
   const heroCtaText = liveHeroCtaText || systemSetting?.heroCtaText || 'LIHAT TIM';
 
@@ -1086,7 +1090,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                   <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
 
                   <img
-                    src={player.photoUrl || '/playertemplate.webp'}
+                    src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                     alt={player.name}
                     className="absolute inset-0 w-full h-full object-contain object-bottom group-hover:scale-105 transition-transform duration-500 z-10"
                   />
@@ -1151,7 +1155,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       </span>
                       <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         <img
-                          src={player.photoUrl || '/playertemplate.webp'}
+                          src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : playerDefaultPhoto}
                           alt={player.name}
                           className="w-full h-full object-cover object-top scale-[1.35] origin-top"
                         />
@@ -1484,7 +1488,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                   >
                     {/* Member Photo */}
                     <img
-                      src={member.photoUrl || '/playertemplate.webp'}
+                      src={(member.photoUrl && member.photoUrl !== '/playertemplate.webp') ? member.photoUrl : playerDefaultPhoto}
                       alt={member.fullName}
                       className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />

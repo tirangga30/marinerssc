@@ -203,7 +203,7 @@ model FunMatch {
   venue       String        @default("Stadion Gelora Samudra, Jakarta")
   teamAName   String        @default("TIM A (NAVY)")
   teamBName   String        @default("TIM B (GOLD)")
-  teamALogo   String?       @default("/marinerssc.webp")
+  teamALogo   String?       @default("/defaultteam.webp")
   teamBLogo   String?       @default("/defaultteam.webp")
   teamAScore  Int?
   teamBScore  Int?
@@ -253,11 +253,13 @@ model FunMatchEvent {
 }
 
 model SystemSetting {
-  id             String   @id @default("default")
-  teamName       String   @default("Mariners SC")
-  teamLogo       String   @default("/marinerssc.webp")
-  loginWallpaper String   @default("/NYCOMP.webp")
-  adminWallpaper String   @default("/stadium_hero2.png")
+  id                 String   @id @default("default")
+  teamName           String   @default("TEAM")
+  teamLogo           String   @default("/defaultteam.webp")
+  clubType           String   @default("SOCCER CLUB")
+  playerDefaultPhoto String   @default("/playertemplate.webp")
+  loginWallpaper     String   @default("/NYCOMP.webp")
+  adminWallpaper     String   @default("/stadium_hero2.png")
   posterInterval     Int      @default(5)
   securityPin        String   @default("1234")
   isCommunityEnabled Boolean  @default(true)
@@ -267,7 +269,7 @@ model SystemSetting {
   heroSubtitle       String?  @default("Lebih dari sekadar sepak bola.")
   heroCtaText        String?  @default("LIHAT TIM")
   createdAt          DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt          DateTime @updatedAt
 }
 
 model HeroPoster {

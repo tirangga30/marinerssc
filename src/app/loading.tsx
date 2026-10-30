@@ -24,8 +24,8 @@ export default function Loading() {
         {/* Pulsing club logo */}
         <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
           <img
-            src={teamLogo || "/marinerssc.webp"}
-            alt={teamName || "Mariners SC"}
+            src={teamLogo || "/defaultteam.webp"}
+            alt={teamName || "TEAM"}
             className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(37,99,235,0.3)] animate-pulse"
           />
         </div>
@@ -34,7 +34,7 @@ export default function Loading() {
       {/* Club Branding & Loading Text */}
       <div className="text-center space-y-2 z-10">
         <h2 className="text-lg sm:text-xl font-black uppercase tracking-[0.2em] blue-gradient-text">
-          {teamName || "Mariners SC"}
+          {teamName || "TEAM"}
         </h2>
         
         <p className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-blue-600 animate-pulse flex items-center justify-center gap-1.5">

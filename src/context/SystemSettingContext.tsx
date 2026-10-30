@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 export interface SystemSettingData {
   teamName: string;
   teamLogo: string;
+  clubType: string;
+  playerDefaultPhoto: string;
   loginWallpaper: string;
   adminWallpaper: string;
   playerCardBg: string;
@@ -22,8 +24,10 @@ interface SystemSettingContextType extends SystemSettingData {
 }
 
 const defaultSettings: SystemSettingData = {
-  teamName: 'Mariners SC',
-  teamLogo: '/marinerssc.webp',
+  teamName: 'TEAM',
+  teamLogo: '/defaultteam.webp',
+  clubType: 'SOCCER CLUB',
+  playerDefaultPhoto: '/playertemplate.webp',
   loginWallpaper: '/NYCOMP.webp',
   adminWallpaper: '/stadium_hero2.png',
   playerCardBg: '/bgprofil2.jpeg',
@@ -65,6 +69,8 @@ export function SystemSettingProvider({
         setSettings({
           teamName: data.teamName || defaultSettings.teamName,
           teamLogo: data.teamLogo || defaultSettings.teamLogo,
+          clubType: data.clubType || defaultSettings.clubType,
+          playerDefaultPhoto: data.playerDefaultPhoto || defaultSettings.playerDefaultPhoto,
           loginWallpaper: data.loginWallpaper || defaultSettings.loginWallpaper,
           adminWallpaper: data.adminWallpaper || defaultSettings.adminWallpaper,
           playerCardBg: data.playerCardBg || defaultSettings.playerCardBg,

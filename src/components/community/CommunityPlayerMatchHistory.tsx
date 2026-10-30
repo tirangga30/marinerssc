@@ -190,7 +190,7 @@ export default function CommunityPlayerMatchHistory({
                                   ★
                                 </span>
                                 <span className="text-xs font-bold truncate flex-1 text-sky-300">
-                                  {teamName || 'Mariners SC'} (Tim Utama)
+                                  {teamName || 'TEAM'} (Tim Utama)
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 min-w-0">

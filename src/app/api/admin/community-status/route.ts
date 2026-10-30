@@ -37,8 +37,8 @@ export async function PUT(req: Request) {
       },
       create: {
         id: 'default',
-        teamName: 'Mariners SC',
-        teamLogo: '/marinerssc.webp',
+        teamName: 'TEAM',
+        teamLogo: '/defaultteam.webp',
         loginWallpaper: '/NYCOMP.webp',
         adminWallpaper: '/stadium_hero2.png',
         securityPin: '1234',

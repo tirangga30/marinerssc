@@ -64,8 +64,10 @@ if (target === 'local') {
         update: {},
         create: {
           id: 'default',
-          teamName: 'Mariners SC',
-          teamLogo: '/marinerssc.webp',
+          teamName: 'TEAM',
+          teamLogo: '/defaultteam.webp',
+          clubType: 'SOCCER CLUB',
+          playerDefaultPhoto: '/playertemplate.webp',
           loginWallpaper: '/NYCOMP.webp',
           adminWallpaper: '/stadium_hero2.png',
           posterInterval: 5,

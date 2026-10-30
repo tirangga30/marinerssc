@@ -72,6 +72,7 @@ export default async function PlayerDetailPage({
 
   let member: any = null;
   let playerCardBg = '/bgprofil2.jpeg';
+  let playerDefaultPhoto = '/playertemplate.webp';
 
   try {
     const systemSetting = await (prisma as any).systemSetting.findUnique({
@@ -79,6 +80,9 @@ export default async function PlayerDetailPage({
     }).catch(() => null);
     if (systemSetting?.playerCardBg) {
       playerCardBg = systemSetting.playerCardBg;
+    }
+    if (systemSetting?.playerDefaultPhoto) {
+      playerDefaultPhoto = systemSetting.playerDefaultPhoto;
     }
 
     currentSeasonObj = await prisma.season.findFirst({
@@ -270,7 +274,7 @@ export default async function PlayerDetailPage({
           */}
           <div className="absolute inset-x-0 top-0 bottom-[40px] overflow-hidden pointer-events-none z-10">
             <img
-              src={resolvedPlayer.photoUrl || '/playertemplate.webp'}
+              src={(resolvedPlayer.photoUrl && resolvedPlayer.photoUrl !== '/playertemplate.webp') ? resolvedPlayer.photoUrl : playerDefaultPhoto}
               alt={resolvedPlayer.name}
               className="absolute bottom-0 left-[66%] -translate-x-1/2 translate-y-[20%] h-[96%] sm:h-[100%] w-auto max-w-none object-contain object-bottom drop-shadow-[0_8px_20px_rgba(0,0,0,0.65)] scale-[1.18] sm:scale-[1.22] origin-bottom"
             />

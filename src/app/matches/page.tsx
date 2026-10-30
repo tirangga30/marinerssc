@@ -66,8 +66,8 @@ function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'sco
 
 function MatchCard({
   match,
-  teamName = 'MARINERS SC',
-  teamLogo = '/marinerssc.webp',
+  teamName = 'TEAM',
+  teamLogo = '/defaultteam.webp',
 }: {
   match: any;
   teamName?: string;
@@ -251,8 +251,8 @@ export default async function MatchesPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
 
   const { seasons, allMatchesRaw: allRaw, systemSetting } = await getCachedMatchesData();
-  const displayTeamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'MARINERS SC';
-  const displayTeamLogo = systemSetting?.teamLogo || '/marinerssc.webp';
+  const displayTeamName = systemSetting?.teamName ? systemSetting.teamName.toUpperCase() : 'TEAM';
+  const displayTeamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
   const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
   const filter = params.filter || 'all';

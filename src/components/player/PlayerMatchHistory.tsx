@@ -37,8 +37,8 @@ interface PlayerMatchHistoryProps {
 
 export default function PlayerMatchHistory({ matches, player }: PlayerMatchHistoryProps) {
   const { teamName, teamLogo } = useSystemSetting();
-  const displayTeamName = teamName || 'Mariners SC';
-  const displayTeamLogo = teamLogo || '/marinerssc.webp';
+  const displayTeamName = teamName || 'TEAM';
+  const displayTeamLogo = teamLogo || '/defaultteam.webp';
   const [visibleCount, setVisibleCount] = useState(10);
 
   const displayedMatches = matches.slice(0, visibleCount);

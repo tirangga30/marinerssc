@@ -689,7 +689,7 @@ export default function CommunityRegistrationModal({
                     className="w-full h-auto object-contain rounded-xl"
                     onError={(e) => {
                       // Fallback text if qris.jpeg is not yet placed
-                      (e.currentTarget as any).src = '/marinerssc.webp';
+                      (e.currentTarget as any).src = '/defaultteam.webp';
                     }}
                   />
                 </div>
