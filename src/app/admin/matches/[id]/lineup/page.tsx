@@ -847,11 +847,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     <div className="min-h-screen">
 
       {/* ═══ TOP STICKY HEADER ═══ */}
-      <div className="sticky top-0 z-40 border-b border-slate-800/80 backdrop-blur-xl bg-slate-950/85">
+      <div className="sticky top-0 z-40 border-b border-slate-200 backdrop-blur-xl bg-white/90">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <Link
             href="/admin/matches"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-400 hover:text-sky-400 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Manajemen Pertandingan</span>
@@ -860,8 +860,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
           <div className="flex items-center gap-2">
             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-colors ${starterCount === 11
-                ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                : 'bg-sky-500/10 border-sky-500/30 text-sky-400'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : 'bg-blue-50 border-blue-200 text-blue-700'
               }`}>
               {starterCount}/11 Starter
             </div>
@@ -870,14 +870,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             <button
               type="button"
               onClick={() => setShowNonSquadModal(true)}
-              className="px-3 sm:px-4 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 transition-all shadow-md cursor-pointer hover:border-amber-400/50"
+              className="px-3 sm:px-4 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 transition-all shadow-xs cursor-pointer"
               title="Atur status pemain yang tidak masuk skuad (misal: Cedera, Akumulasi Kartu, Izin, dll)"
             >
-              <UserX className="w-4 h-4 text-amber-400" />
+              <UserX className="w-4 h-4 text-amber-600" />
               <span className="hidden sm:inline">Status Luar Skuad</span>
               <span className="sm:hidden">Luar Skuad</span>
               {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] flex items-center justify-center font-mono">
+                <span className="w-4 h-4 rounded-full bg-amber-500 text-white font-black text-[9px] flex items-center justify-center font-mono">
                   {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length}
                 </span>
               )}
@@ -886,9 +886,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             <button
               onClick={handleSaveAll}
               disabled={saving || saveSuccess}
-              className={`px-5 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg transition-all disabled:opacity-70 ${saveSuccess
-                  ? 'bg-green-500 text-white shadow-green-500/25'
-                  : 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/25 hover:shadow-sky-500/35'
+              className={`px-5 py-2 rounded-xl font-extrabold uppercase text-xs flex items-center gap-2 shadow-lg transition-all disabled:opacity-70 cursor-pointer ${saveSuccess
+                  ? 'bg-emerald-600 text-white shadow-emerald-600/25'
+                  : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/25'
                 }`}
             >
               {saving ? (
@@ -907,13 +907,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* ═══ SCOREBOARD ═══ */}
-        <div className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-sky-500/20 flex flex-col items-center justify-center gap-4 relative overflow-hidden shadow-xl">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-50" />
-          <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest text-center flex flex-col items-center gap-1.5">
-            <span className="text-slate-300 font-black tracking-wider text-xs">{matchData?.competition ? matchData.competition : 'Pertandingan'}</span>
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-4 relative overflow-hidden shadow-xs">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest text-center flex flex-col items-center gap-1.5">
+            <span className="text-slate-900 font-black tracking-wider text-xs">{matchData?.competition ? matchData.competition : 'Pertandingan'}</span>
             {matchData?.matchDate && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-400/30 shadow-inner my-0.5">
-                <Clock className="w-3.5 h-3.5 text-sky-400" />
+              <span className="flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200 shadow-inner my-0.5">
+                <Clock className="w-3.5 h-3.5 text-blue-600" />
                 {formatWibDate(matchData.matchDate, {
                   weekday: 'long',
                   day: 'numeric',
@@ -922,13 +922,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 })} • {formatWibTime(matchData.matchDate)}
               </span>
             )}
-            <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+            <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 Waktu Laga:
                 <select
                   value={matchDetails.duration}
                   onChange={e => setMatchDetails(prev => ({ ...prev, duration: parseInt(e.target.value) || 60 }))}
-                  className="bg-slate-900 border border-slate-700 text-sky-400 rounded px-2 py-0.5 text-center outline-none focus:border-sky-500 text-xs"
+                  className="bg-white border border-slate-300 text-slate-900 rounded px-2 py-0.5 text-center outline-none focus:border-blue-500 text-xs"
                   title="Waktu Laga (menit)"
                 >
                   {[10, 20, 30, 40, 50, 60, 70, 80, 90].map(val => (
@@ -937,14 +937,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </select>
               </label>
 
-              <span className="text-slate-600 hidden sm:inline">|</span>
+              <span className="text-slate-400 hidden sm:inline">|</span>
 
               <label className="flex items-center gap-1.5 cursor-pointer">
                 Mode Pertandingan:
                 <select
                   value={matchDetails.isLiveEnabled ? 'true' : 'false'}
                   onChange={e => setMatchDetails(prev => ({ ...prev, isLiveEnabled: e.target.value === 'true' }))}
-                  className="bg-slate-900 border border-slate-700 text-sky-400 rounded px-2 py-0.5 text-center outline-none focus:border-sky-500 text-xs"
+                  className="bg-white border border-slate-300 text-slate-900 rounded px-2 py-0.5 text-center outline-none focus:border-blue-500 text-xs"
                   title="Pilih Mode Pertandingan Live"
                 >
                   <option value="true">Live Score (DEMO)</option>
@@ -957,7 +957,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           <div className="flex items-center gap-2 sm:gap-6 justify-center w-full max-w-3xl px-1">
             {/* Home Team */}
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-1.5 sm:gap-4 text-center sm:text-right min-w-0">
-              <span className="font-bold text-white text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
+              <span className="font-bold text-slate-900 text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 sm:order-1 max-w-[110px] sm:max-w-none">
                 {matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
               <img
@@ -968,9 +968,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             </div>
 
             {/* Score Inputs */}
-            <div className="flex items-center gap-1.5 sm:gap-3 bg-slate-950 px-2 sm:px-4 py-1.5 sm:py-3 rounded-xl border border-slate-700 shadow-inner shrink-0 relative group">
+            <div className="flex items-center gap-1.5 sm:gap-3 bg-slate-100 px-2 sm:px-4 py-1.5 sm:py-3 rounded-xl border border-slate-200 shadow-inner shrink-0 relative group">
               {matchData?.matchDate && new Date() < new Date(matchData.matchDate) && (
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-amber-500/90 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-amber-500 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
                   Skor belum bisa diisi (Laga Belum Dimulai)
                 </div>
               )}
@@ -981,10 +981,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 value={matchDetails.homeScore}
                 onChange={(e) => handleScoreChange('home', e.target.value)}
                 disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
-                className="w-9 sm:w-14 bg-transparent text-white text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 sm:w-14 bg-transparent text-slate-900 text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={matchData?.matchDate && new Date() < new Date(matchData.matchDate) ? "Skor baru bisa diisi setelah jam laga terlewati" : "Skor Kandang"}
               />
-              <span className="text-slate-500 font-bold text-lg sm:text-2xl">-</span>
+              <span className="text-slate-400 font-bold text-lg sm:text-2xl">-</span>
               <input
                 type="number"
                 min="0"
@@ -992,7 +992,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 value={matchDetails.awayScore}
                 onChange={(e) => handleScoreChange('away', e.target.value)}
                 disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
-                className="w-9 sm:w-14 bg-transparent text-white text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 sm:w-14 bg-transparent text-slate-900 text-xl sm:text-4xl font-black font-mono text-center outline-none focus:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={matchData?.matchDate && new Date() < new Date(matchData.matchDate) ? "Skor baru bisa diisi setelah jam laga terlewati" : "Skor Tamu"}
               />
             </div>
@@ -1004,7 +1004,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 alt="Away"
                 className="w-10 sm:w-16 h-10 sm:h-16 object-contain drop-shadow-md order-1 shrink-0"
               />
-              <span className="font-bold text-white text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
+              <span className="font-bold text-slate-900 text-[11px] sm:text-lg line-clamp-2 sm:line-clamp-1 order-2 max-w-[110px] sm:max-w-none">
                 {!matchData?.isHome ? (teamName || 'TEAM') : matchData?.opponentName}
               </span>
             </div>
@@ -1013,20 +1013,20 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           {/* Realtime Timer display for Live Score mode */}
           {matchDetails.isLiveEnabled && (
             <div className="flex flex-col items-center justify-center gap-1 mt-1">
-              <div className="flex items-center gap-1.5 bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800 shadow-inner">
+              <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 shadow-inner">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
-                <span className="text-[10px] font-black text-sky-400 uppercase tracking-widest">{liveTimerDisplay.phase}</span>
-                <span className="text-slate-600">|</span>
+                <span className="text-[10px] font-black text-blue-700 uppercase tracking-widest">{liveTimerDisplay.phase}</span>
+                <span className="text-slate-400">|</span>
                 {liveTimerDisplay.boxText ? (
-                  <span className="text-xs font-black font-mono text-amber-400 animate-pulse">{liveTimerDisplay.boxText}</span>
+                  <span className="text-xs font-black font-mono text-amber-600 animate-pulse">{liveTimerDisplay.boxText}</span>
                 ) : (
-                  <span className="text-xs font-black font-mono text-red-400">{liveTimerDisplay.text}</span>
+                  <span className="text-xs font-black font-mono text-red-600">{liveTimerDisplay.text}</span>
                 )}
               </div>
             </div>
           )}
 
-          <p className="text-[9px] font-bold px-2.5 py-1 rounded mt-0.5 bg-sky-500/10 text-sky-400">
+          <p className="text-[9px] font-bold px-2.5 py-1 rounded mt-0.5 bg-blue-50 text-blue-700 border border-blue-200">
             {(() => {
               const st = getEffectiveStatus();
               if (st === 'finished') {
@@ -1042,11 +1042,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         </div>
 
         {/* ═══ MOBILE TABS ═══ */}
-        <div className="flex lg:hidden gap-1 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+        <div className="flex lg:hidden gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
           {(['lineup', 'events'] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${activeTab === tab ? 'bg-sky-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${activeTab === tab ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:text-slate-900'
                 }`}>
+              {tab === 'lineup' ? <><Shield className="w-3 h-3 inline mr-1" />Susunan Pemain</> : <><Zap className="w-3 h-3 inline mr-1" />Event ({eventsList.length})</>}
               {tab === 'lineup' ? <><Shield className="w-3 h-3 inline mr-1" />Susunan Pemain</> : <><Zap className="w-3 h-3 inline mr-1" />Event ({eventsList.length})</>}
             </button>
           ))}
@@ -1060,8 +1061,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           <div className={`lg:col-span-7 space-y-4 ${activeTab === 'events' ? 'hidden lg:block' : ''}`}>
 
             {/* ─── DRAG HINT ─── */}
-            <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5">
-              <GripVertical className="w-3 h-3" />
+            <p className="text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
+              <GripVertical className="w-3 h-3 text-slate-400" />
               Seret pemain dari daftar ke posisi di lapangan • Seret antar posisi untuk menukar • Lepas ke area bench untuk keluarkan
             </p>
 
@@ -1071,20 +1072,20 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <div>
                 {/* Pitch Header Controls */}
                 <div className="py-1 px-1 flex items-center gap-2 mb-2">
-                  <Shield className="w-3.5 h-3.5 text-sky-400" />
-                  <span className="text-xs font-black uppercase text-slate-200">Lapangan</span>
+                  <Shield className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-xs font-black uppercase text-slate-900">Lapangan</span>
                   <input
                     type="text"
                     placeholder="Formasi (2-3-2)"
                     value={matchDetails.formation}
                     onChange={(e) => setMatchDetails({ ...matchDetails, formation: e.target.value })}
-                    className="w-16 sm:w-20 bg-slate-950 border border-slate-700 text-sky-400 text-[10px] font-mono font-bold text-center rounded px-1 py-0.5 outline-none focus:border-sky-500 transition-colors ml-2"
+                    className="w-16 sm:w-20 bg-white border border-slate-300 text-slate-900 text-[10px] font-mono font-bold text-center rounded px-1 py-0.5 outline-none focus:border-blue-500 transition-colors ml-2"
                   />
                 </div>
 
                 {/* Pitch area — Modern Solid White-Grey Pitch */}
                 <div
-                  className="relative w-full select-none rounded-2xl overflow-hidden shadow-sm border-2 border-slate-300 bg-slate-100"
+                  className="relative w-full select-none rounded-2xl overflow-hidden shadow-xs border-2 border-slate-300 bg-slate-100"
                   style={{
                     paddingBottom: '115%',
                   }}
@@ -1128,7 +1129,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       >
                         {/* Token circle */}
                         <div
-                          className="w-10 h-10 rounded-full border-2 border-sky-400 bg-slate-900 shadow-lg shadow-sky-600/40 hover:scale-110 flex items-center justify-center transition-all overflow-hidden"
+                          className="w-10 h-10 rounded-full border-2 border-blue-500 bg-slate-900 shadow-lg shadow-blue-600/30 hover:scale-110 flex items-center justify-center transition-all overflow-hidden"
                         >
                           <img src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : defaultPlayerTemplate} alt={player.name} className="w-full h-full object-cover object-top scale-[1.35] origin-top" />
                         </div>
@@ -1153,21 +1154,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               </div>
             {/* ── PLAYER ROSTER (drag source & drop target with tabs) ── */}
               <div
-                className={`rounded-2xl bg-slate-950 border overflow-hidden flex flex-col transition-all ${
-                  dragPlayerId ? 'border-sky-500/80 bg-sky-950/40 ring-2 ring-sky-500/30' : 'border-slate-800'
+                className={`rounded-2xl bg-white border overflow-hidden flex flex-col transition-all shadow-xs ${
+                  dragPlayerId ? 'border-blue-500 bg-blue-50/30 ring-2 ring-blue-500/20' : 'border-slate-200'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                 onDragEnter={(e) => e.preventDefault()}
                 onDrop={handleDropOnRoster}
               >
                 {/* Roster Header Tabs */}
-                <div className="px-2 py-2 border-b border-slate-800 bg-slate-950 flex items-center gap-1 shrink-0">
+                <div className="px-2 py-2 border-b border-slate-200 bg-slate-100 flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => setRosterTab('main')}
                     className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'main'
-                        ? 'bg-sky-600/30 text-sky-300 border border-sky-500/50 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                       }`}
                   >
                     <Star className="w-3 h-3 text-sky-400" />
@@ -1179,8 +1180,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       type="button"
                       onClick={() => setRosterTab('members')}
                       className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'members'
-                          ? 'bg-amber-600/30 text-amber-300 border border-amber-500/50 shadow-sm'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                         }`}
                     >
                       <Users className="w-3 h-3 text-amber-400" />
@@ -1192,8 +1193,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     type="button"
                     onClick={() => setRosterTab('guests')}
                     className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] sm:text-[10px] font-extrabold uppercase transition-all flex items-center justify-center gap-1 ${rosterTab === 'guests'
-                        ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                       }`}
                   >
                     <UserCheck className="w-3 h-3 text-emerald-400" />
@@ -1211,7 +1212,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   {rosterTab === 'main' && (
                     <>
                       {mainSquadAvailable.length === 0 ? (
-                        <p className="text-[10px] text-slate-400 text-center py-6 px-3">
+                        <p className="text-[10px] text-slate-500 text-center py-6 px-3">
                           {dragPlayerId
                             ? '📥 Lepas pemain di sini untuk kembalikan ke skuad utama'
                             : hasAttendanceSystem
@@ -1225,22 +1226,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             draggable
                             onDragStart={(e) => handleDragStart(p.id, false, e)}
                             onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none shadow-sm ${dragPlayerId === p.id
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none shadow-xs ${dragPlayerId === p.id
                                 ? 'opacity-40 scale-95'
-                                : 'bg-slate-900 border-slate-700/80 hover:border-sky-400 hover:bg-slate-850'
+                                : 'bg-white border-slate-200 hover:border-blue-400 hover:bg-blue-50/40'
                               }`}
                           >
-                            <GripVertical className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <GripVertical className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             {/* Foto Pemain */}
-                            <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/50 shrink-0 bg-slate-950">
+                            <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                               <img src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate} alt={p.name} className="w-full h-full object-cover object-top" />
                             </div>
-                            <span className="font-mono font-black text-xs text-sky-400 shrink-0 min-w-[20px] text-center">
+                            <span className="font-mono font-black text-xs text-blue-700 shrink-0 min-w-[20px] text-center">
                               {p.number}
                             </span>
                             <span className="flex-1 min-w-0">
-                              <span className="block text-xs font-bold text-white truncate">{p.name}</span>
-                              <span className="text-[9px] text-slate-400 font-medium">{formatPosition(p.position)}</span>
+                              <span className="block text-xs font-bold text-slate-900 truncate">{p.name}</span>
+                              <span className="text-[9px] text-slate-600 font-medium">{formatPosition(p.position)}</span>
                             </span>
                           </div>
                         ))
@@ -1287,48 +1288,48 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 dragPlayerId === matchedPlayer?.id
                                   ? 'opacity-40 scale-95'
                                   : attStatus === 'DECLINED'
-                                  ? 'bg-red-950/40 border-red-500/60 text-red-200'
+                                  ? 'bg-rose-50 border-rose-300 text-rose-900'
                                   : attStatus === 'CONFIRMED'
                                   ? isPitched
-                                    ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300 opacity-60'
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 opacity-60'
                                     : isBenched
-                                    ? 'bg-sky-950/30 border-sky-500/40 text-sky-200'
-                                    : 'bg-emerald-950/40 border-emerald-500/50 text-white shadow-sm'
+                                    ? 'bg-blue-50 border-blue-300 text-blue-900'
+                                    : 'bg-emerald-50 border-emerald-400 text-emerald-950 shadow-xs'
                                   : attStatus === 'INVITED'
-                                  ? 'bg-amber-950/30 border-amber-500/40 text-white'
-                                  : 'bg-slate-900/80 border-slate-800 text-slate-300'
+                                  ? 'bg-amber-50 border-amber-300 text-amber-950'
+                                  : 'bg-white border-slate-200 text-slate-800'
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 {isDraggable && (
-                                  <GripVertical className="w-3 h-3 text-emerald-400/80 shrink-0" />
+                                  <GripVertical className="w-3 h-3 text-emerald-600 shrink-0" />
                                 )}
                                 <img
                                   src={m.photoUrl || '/defaultplayer.png'}
                                   alt={m.fullName}
-                                  className="w-7 h-7 rounded-full object-cover bg-slate-900 border border-slate-700 shrink-0"
+                                  className="w-7 h-7 rounded-full object-cover bg-slate-100 border border-slate-200 shrink-0"
                                 />
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className="font-bold text-[10px] truncate block text-white">
+                                    <span className="font-bold text-[10px] truncate block text-slate-900">
                                       {m.nickname || m.fullName}
                                     </span>
-                                    <span className="text-[10px] font-black text-amber-400 shrink-0">
+                                    <span className="text-[10px] font-black text-amber-700 shrink-0">
                                       #{m.jerseyNumber}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-1 mt-0.5">
-                                    <span className="text-[8px] font-extrabold uppercase px-1 rounded bg-slate-800 text-sky-300">
+                                    <span className="text-[8px] font-extrabold uppercase px-1 rounded bg-slate-100 text-blue-700">
                                       {m.position}
                                     </span>
-                                    <span className="text-[8px] text-slate-400">{m.tier}</span>
+                                    <span className="text-[8px] text-slate-600">{m.tier}</span>
                                     {isPitched && (
-                                      <span className="text-[7.5px] font-bold text-emerald-400 ml-auto">
+                                      <span className="text-[7.5px] font-bold text-emerald-700 ml-auto">
                                         • Di Lapangan
                                       </span>
                                     )}
                                     {isBenched && (
-                                      <span className="text-[7.5px] font-bold text-sky-400 ml-auto">
+                                      <span className="text-[7.5px] font-bold text-blue-700 ml-auto">
                                         • Cadangan
                                       </span>
                                     )}
@@ -1337,13 +1338,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               </div>
 
                               {/* Status & Actions */}
-                              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between gap-1 text-[9px]">
+                              <div className="mt-1.5 pt-1.5 border-t border-slate-200 flex items-center justify-between gap-1 text-[9px]">
                                 {attStatus === 'NOT_INVITED' && (
                                   <button
                                     type="button"
                                     onClick={() => handleInviteMember(m.id)}
                                     disabled={isInviting}
-                                    className="w-full py-1 rounded-lg bg-sky-600/30 hover:bg-sky-600/50 border border-sky-500/40 text-sky-300 font-bold uppercase transition-all flex items-center justify-center gap-1"
+                                    className="w-full py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold uppercase transition-all flex items-center justify-center gap-1 cursor-pointer"
                                   >
                                     <UserPlus className="w-2.5 h-2.5" />
                                     {isInviting ? 'Memanggil...' : 'Panggil ke Laga Ini'}
@@ -1352,13 +1353,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                                 {attStatus === 'INVITED' && (
                                   <div className="w-full flex items-center justify-between">
-                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold uppercase text-[8px] border border-amber-500/30">
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-bold uppercase text-[8px] border border-amber-200">
                                       Menunggu Konfirmasi
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleInviteMember(m.id)}
-                                      className="text-slate-400 hover:text-red-400 text-[8px]"
+                                      className="text-slate-500 hover:text-rose-600 text-[8px] cursor-pointer"
                                     >
                                       Batal
                                     </button>
@@ -1367,8 +1368,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                                 {attStatus === 'CONFIRMED' && (
                                   <div className="w-full flex items-center justify-between gap-1">
-                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black uppercase text-[8px] border border-emerald-500/30 flex items-center gap-1">
-                                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" /> Terkonfirmasi
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-black uppercase text-[8px] border border-emerald-300 flex items-center gap-1">
+                                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> Terkonfirmasi
                                     </span>
                                     {matchedPlayer && !isPitched && !isBenched && (
                                       <div className="flex items-center gap-1">
@@ -1380,7 +1381,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                               { playerId: matchedPlayer.id, x: 50, y: 50, positionName: 'Midfielder', pitchPosition: 'CM' },
                                             ]);
                                           }}
-                                          className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 text-[8px] font-bold"
+                                          className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-[8px] font-bold cursor-pointer"
                                           title="Masukkan langsung ke Lapangan"
                                         >
                                           + Starter
@@ -1388,7 +1389,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                         <button
                                           type="button"
                                           onClick={() => setBenchPlayerIds((prev) => [...prev, matchedPlayer.id])}
-                                          className="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500/40 text-[8px] font-bold"
+                                          className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-[8px] font-bold cursor-pointer"
                                           title="Masukkan ke Cadangan"
                                         >
                                           + Bench
@@ -1400,13 +1401,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                                 {attStatus === 'DECLINED' && (
                                   <div className="w-full flex items-center justify-between">
-                                    <span className="px-2 py-0.5 rounded-md bg-red-500/30 text-red-300 font-black uppercase text-[8px] border border-red-500/50">
+                                    <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-black uppercase text-[8px] border border-rose-300">
                                       ✗ Ditolak oleh Member
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleInviteMember(m.id)}
-                                      className="text-sky-400 hover:underline text-[8px] font-bold"
+                                      className="text-blue-600 hover:underline text-[8px] font-bold cursor-pointer"
                                     >
                                       Undang Lagi
                                     </button>
@@ -1436,25 +1437,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                               draggable
                               onDragStart={(e) => handleDragStart(p.id, false, e)}
                               onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none ${dragPlayerId === p.id
+                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-grab active:cursor-grabbing transition-all select-none shadow-xs ${dragPlayerId === p.id
                                   ? 'opacity-40 scale-95'
                                   : isThisMatch
-                                    ? 'bg-emerald-950/30 border-emerald-500/30 hover:border-emerald-400/50'
-                                    : 'bg-amber-950/20 border-amber-500/30 hover:border-amber-400/50'
+                                    ? 'bg-white border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50/30'
+                                    : 'bg-white border-amber-300 hover:border-amber-500 hover:bg-amber-50/30'
                                 }`}
                             >
-                              <GripVertical className={`w-3 h-3 shrink-0 ${isThisMatch ? 'text-emerald-500/60' : 'text-amber-500/60'}`} />
+                              <GripVertical className={`w-3 h-3 shrink-0 ${isThisMatch ? 'text-emerald-500' : 'text-amber-500'}`} />
                               {/* Foto Pemain */}
-                              <div className={`w-7 h-7 rounded-full overflow-hidden border shrink-0 bg-slate-900 ${isThisMatch ? 'border-emerald-400/40' : 'border-amber-400/40'}`}>
+                              <div className={`w-7 h-7 rounded-full overflow-hidden border shrink-0 bg-slate-100 ${isThisMatch ? 'border-emerald-300' : 'border-amber-300'}`}>
                                 <img src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate} alt={p.name} className="w-full h-full object-cover object-top" />
                               </div>
-                              <span className={`font-mono font-black text-[11px] shrink-0 min-w-[18px] text-center ${isThisMatch ? 'text-emerald-300' : 'text-amber-300'}`}>
+                              <span className={`font-mono font-black text-[11px] shrink-0 min-w-[18px] text-center ${isThisMatch ? 'text-emerald-700' : 'text-amber-700'}`}>
                                 {p.number}
                               </span>
                               <span className="flex-1 min-w-0 flex items-center justify-between gap-1">
                                 <span className="block min-w-0">
-                                  <span className={`block text-[10px] font-bold truncate ${isThisMatch ? 'text-emerald-200' : 'text-amber-200'}`}>{p.name}</span>
-                                  <span className={`text-[8px] ${isThisMatch ? 'text-emerald-400/70' : 'text-amber-400/70'}`}>
+                                  <span className="block text-[10px] font-bold truncate text-slate-900">{p.name}</span>
+                                  <span className={`text-[8px] ${isThisMatch ? 'text-emerald-700' : 'text-amber-700'}`}>
                                     {formatPosition(p.position)} • {isThisMatch ? 'Loan Match Ini' : ''}
                                   </span>
                                 </span>
@@ -1463,7 +1464,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                     <button
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
-                                      className="p-1 rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-white transition-colors"
+                                      className="p-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
                                       title="Edit Pemain Loan"
                                     >
                                       <Edit className="w-3 h-3" />
@@ -1471,7 +1472,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                     <button
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
-                                      className="p-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                                      className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
                                       title="Hapus Pemain Loan"
                                     >
                                       <Trash2 className="w-3 h-3" />
@@ -1485,7 +1486,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                         e.stopPropagation();
                                         setBenchPlayerIds((prev) => [...prev, p.id]);
                                       }}
-                                      className="px-2 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-400 hover:text-slate-950 transition-colors text-[9px] font-bold uppercase flex items-center gap-1 border border-amber-500/40"
+                                      className="px-2 py-1 rounded bg-amber-50 text-amber-800 hover:bg-amber-600 hover:text-white transition-colors text-[9px] font-bold uppercase flex items-center gap-1 border border-amber-300 cursor-pointer"
                                       title="Masukkan ke Cadangan Match Ini"
                                     >
                                       <Edit className="w-3 h-3" />
@@ -1493,7 +1494,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                     <button
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
-                                      className="p-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors border border-red-500/20"
+                                      className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors border border-rose-200 cursor-pointer"
                                       title="Hapus Pemain Loan"
                                     >
                                       <Trash2 className="w-3 h-3" />
@@ -1507,12 +1508,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       )}
 
                       {/* Guest Player Add Button */}
-                      <div className="mt-3 pt-3 border-t border-slate-800">
+                      <div className="mt-3 pt-3 border-t border-slate-200">
                         <button
                           onClick={openAddGuestModal}
-                          className="w-full bg-emerald-950/40 border border-emerald-500/40 hover:bg-emerald-900/50 text-emerald-300 rounded-xl px-2 py-2 text-[10px] font-extrabold uppercase transition-colors flex items-center justify-center gap-1.5 shadow"
+                          className="w-full bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded-xl px-2 py-2 text-[10px] font-extrabold uppercase transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                         >
-                          <Plus className="w-3.5 h-3.5 text-emerald-400" /> Tambah Pemain Loan Baru
+                          <Plus className="w-3.5 h-3.5 text-emerald-600" /> Tambah Pemain Loan Baru
                         </button>
                       </div>
                     </>
@@ -1523,21 +1524,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
             {/* ── BENCH ZONE (drop target) ── */}
             <div
-              className={`rounded-2xl border-2 border-dashed overflow-hidden transition-all ${dragPlayerId ? 'border-sky-500/60 bg-sky-500/5' : 'border-slate-700/60 bg-slate-900/40'
+              className={`rounded-2xl border-2 border-dashed overflow-hidden transition-all ${dragPlayerId ? 'border-blue-400 bg-blue-50/20' : 'border-slate-300 bg-slate-50'
                 }`}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDropOnBench}
             >
-              <div className="px-3 py-2 border-b border-slate-800/60 flex items-center gap-2">
-                <span className="text-xs font-black uppercase text-slate-300">Pemain Cadangan (Bench)</span>
-                <span className="text-[9px] text-slate-500 font-medium">— Seret pemain ke sini untuk jadikan cadangan</span>
-                <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">
+              <div className="px-3 py-2 border-b border-slate-200 bg-slate-100/70 flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-slate-900">Pemain Cadangan (Bench)</span>
+                <span className="text-[9px] text-slate-600 font-medium">— Seret pemain ke sini untuk jadikan cadangan</span>
+                <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-white text-slate-700 font-mono border border-slate-200">
                   {benchPlayerIds.length}
                 </span>
               </div>
               <div className="p-2 flex flex-wrap gap-1.5 min-h-[48px]">
                 {benchPlayerIds.length === 0 ? (
-                  <p className="text-[10px] text-slate-600 w-full text-center py-2">
+                  <p className="text-[10px] text-slate-500 w-full text-center py-2">
                     {dragPlayerId ? '📥 Lepas di sini untuk jadi cadangan' : 'Belum ada pemain cadangan'}
                   </p>
                 ) : (
@@ -1550,21 +1551,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         draggable
                         onDragStart={(e) => handleDragStart(p.id, false, e)}
                         onDragEnd={() => { setDragPlayerId(null); setDragFromPitch(false); }}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-800/90 border border-sky-500/30 text-sky-300 cursor-grab active:cursor-grabbing select-none shadow-sm hover:border-sky-400/50 transition-all"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 cursor-grab active:cursor-grabbing select-none shadow-xs hover:border-blue-400 transition-all"
                       >
-                        <div className="w-7 h-7 rounded-full overflow-hidden border border-sky-400/40 shrink-0 bg-slate-900">
+                        <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate} alt={p.name} className="w-full h-full object-cover object-top" />
                         </div>
-                        <span className="font-mono font-black text-xs text-sky-400 shrink-0 min-w-[16px] text-center">{p.number}</span>
+                        <span className="font-mono font-black text-xs text-blue-700 shrink-0 min-w-[16px] text-center">{p.number}</span>
                         <div className="flex flex-col min-w-0 pr-1">
-                          <span className="text-[10px] font-bold text-slate-100 truncate max-w-[80px] leading-tight">{p.name.split(' ')[0]}</span>
-                          <span className="text-[8.5px] font-semibold text-sky-400/80 leading-none mt-0.5">
+                          <span className="text-[10px] font-bold text-slate-900 truncate max-w-[80px] leading-tight">{p.name.split(' ')[0]}</span>
+                          <span className="text-[8.5px] font-semibold text-slate-600 leading-none mt-0.5">
                             {formatPosition(p.position)}
                           </span>
                         </div>
                         <button
                           onClick={() => removeBenchPlayer(p.id)}
-                          className="ml-0.5 text-slate-500 hover:text-red-400 transition-colors shrink-0"
+                          className="ml-0.5 text-slate-400 hover:text-rose-500 transition-colors shrink-0 cursor-pointer"
                           title="Keluarkan dari cadangan"
                         >
                           <X className="w-3 h-3" />
@@ -1584,25 +1585,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           <div className={`lg:col-span-5 space-y-4 ${activeTab === 'lineup' ? 'hidden lg:block' : ''}`}>
 
             {/* ── EVENT FORM ── */}
-            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-sky-400" />
-                <h2 className="text-sm font-black uppercase text-slate-100">Catat Event Laga</h2>
+            <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs">
+              <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-black uppercase text-slate-900">Catat Event Laga</h2>
               </div>
 
               <div className="p-4 space-y-3">
                 {/* Event type grid */}
                 <div>
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1.5">Tipe Event</label>
+                  <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1.5">Tipe Event</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {EVENT_TYPES.map((et) => (
                       <button
                         key={et.value}
                         type="button"
                         onClick={() => setNewEvent({ ...newEvent, type: et.value })}
-                        className={`px-2 py-2 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight flex items-center gap-1.5 ${newEvent.type === et.value
-                            ? 'bg-sky-600/20 border-sky-400/60 text-sky-300'
-                            : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
+                        className={`px-2 py-2 rounded-xl text-[9px] font-bold border transition-all text-left leading-tight flex items-center gap-1.5 cursor-pointer ${newEvent.type === et.value
+                            ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-xs'
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                           }`}
                       >
                         <EventIcon type={et.value} />
@@ -1615,13 +1616,13 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 {/* Player selectors */}
                 {!isMatchTimeEvent(newEvent.type) && (
                   <div>
-                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">
+                    <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1">
                       {newEvent.type === 'own_goal' ? 'Pemain yang Melakukan Gol Bunuh Diri *' : 'Pemain Utama *'}
                     </label>
                     <select
                       value={newEvent.playerId}
                       onChange={(e) => setNewEvent({ ...newEvent, playerId: e.target.value })}
-                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                      className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                     >
                       <option value="">-- Pilih Pemain --</option>
                       {matchPlayers.map((p) => (
@@ -1633,11 +1634,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                 {newEvent.type === 'goal' && (
                   <div>
-                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Assist (Opsional)</label>
+                    <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1">Assist (Opsional)</label>
                     <select
                       value={newEvent.assistPlayerId}
                       onChange={(e) => setNewEvent({ ...newEvent, assistPlayerId: e.target.value })}
-                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                      className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                     >
                       <option value="">-- Tidak ada assist --</option>
                       {matchPlayers.filter(p => p.id !== newEvent.playerId).map((p) => (
@@ -1649,11 +1650,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                 {newEvent.type === 'sub' && (
                   <div>
-                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Pemain yang Digantikan *</label>
+                    <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1">Pemain yang Digantikan *</label>
                     <select
                       value={newEvent.assistPlayerId}
                       onChange={(e) => setNewEvent({ ...newEvent, assistPlayerId: e.target.value })}
-                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                      className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                     >
                       <option value="">-- Pilih Pemain Keluar --</option>
                       {matchPlayers.filter(p => p.id !== newEvent.playerId).map((p) => (
@@ -1665,21 +1666,21 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Menit</label>
+                    <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1">Menit</label>
                     <input
                       type="number" min="1" max="999" value={newEvent.minute}
                       onChange={(e) => setNewEvent({ ...newEvent, minute: e.target.value })}
-                      className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none text-center font-mono font-bold"
+                      className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none text-center font-mono font-bold"
                     />
                   </div>
                   {newEvent.type !== 'sub' && (
                     <div className="col-span-2">
-                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Deskripsi</label>
+                      <label className="text-[9px] font-bold text-slate-700 uppercase block mb-1">Deskripsi</label>
                       <input
                         type="text" placeholder="Tendangan roket..."
                         value={newEvent.description}
                         onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                        className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-100 focus:border-sky-500 outline-none"
+                        className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                       />
                     </div>
                   )}
@@ -1689,7 +1690,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                   type="button"
                   onClick={addEvent}
                   disabled={matchData?.matchDate && new Date() < new Date(matchData.matchDate)}
-                  className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4 h-4" /> Tambahkan Event
                 </button>
@@ -1697,18 +1698,18 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             </div>
 
             {/* ── EVENTS LIST ── */}
-            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 overflow-hidden relative">
+            <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs relative">
               {matchData?.matchDate && new Date() < new Date(matchData.matchDate) && (
-                <div className="absolute inset-0 z-10 bg-slate-950/80 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+                <div className="absolute inset-0 z-10 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
                   <div className="space-y-2 max-w-[200px]">
                     <Clock className="w-8 h-8 text-sky-400 mx-auto opacity-50" />
-                    <p className="text-[10px] font-bold text-slate-300 uppercase leading-relaxed">Pencatatan Event Belum Tersedia</p>
+                    <p className="text-[10px] font-bold text-white uppercase leading-relaxed">Pencatatan Event Belum Tersedia</p>
                   </div>
                 </div>
               )}
-              <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-sky-400" />
-                <h3 className="text-sm font-black uppercase text-slate-100">
+              <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-black uppercase text-slate-900">
                   Daftar Event ({eventsList.length})
                 </h3>
               </div>
@@ -1768,22 +1769,22 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
       {/* ═══ MODAL PEMAIN LOAN ═══ */}
       {showGuestModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-950 border border-sky-500/30 rounded-3xl w-full max-w-lg shadow-2xl shadow-sky-900/20 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-              <h2 className="text-lg font-black uppercase text-white flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-sky-400" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 sm:p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <h2 className="text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-blue-600" />
                 {editingGuestPlayer ? 'Edit Pemain Loan' : 'Tambah Pemain Loan'}
               </h2>
-              <button onClick={() => setShowGuestModal(false)} className="p-2 bg-slate-800/80 rounded-full text-slate-400 hover:text-white hover:bg-red-500 transition-colors">
+              <button onClick={() => setShowGuestModal(false)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:text-white hover:bg-red-500 transition-colors border border-slate-200 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/50 border border-slate-800">
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-800 border-2 border-sky-400/40 shrink-0">
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-200 shrink-0">
                     <img
                       src={(guestFormData.photoUrl && guestFormData.photoUrl !== '/playertemplate.webp') ? guestFormData.photoUrl : defaultPlayerTemplate}
                       alt="Preview"
@@ -1793,34 +1794,34 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
                   <div className="flex-1 space-y-2 w-full">
                     <div className="flex items-center gap-2">
-                      <label className="cursor-pointer px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
+                      <label className="cursor-pointer px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 text-xs transition-colors">
                         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                         {uploading ? 'Mengunggah...' : 'Upload Foto'}
                         <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="hidden" />
                       </label>
 
-                      <button type="button" onClick={() => setGuestFormData((prev) => ({ ...prev, photoUrl: defaultPlayerTemplate }))} className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
+                      <button type="button" onClick={() => setGuestFormData((prev) => ({ ...prev, photoUrl: defaultPlayerTemplate }))} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 cursor-pointer">
                         Reset
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-400">Pilih file gambar.</p>
+                    <p className="text-[11px] text-slate-600">Pilih file gambar.</p>
                   </div>
                 </div>
               </div>
 
               <form id="guestForm" onSubmit={handleAddGuest} className="space-y-4">
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1 text-xs">Nama Lengkap</label>
-                  <input type="text" required value={guestFormData.name} onChange={(e) => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none text-sm" />
+                  <label className="font-bold text-slate-700 uppercase block mb-1 text-xs">Nama Lengkap</label>
+                  <input type="text" required value={guestFormData.name} onChange={(e) => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none text-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="font-bold text-slate-200 uppercase block mb-1 text-xs">Nomor Punggung</label>
-                    <input type="number" required value={guestFormData.number} onChange={(e) => setGuestFormData({ ...guestFormData, number: e.target.value })} className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none text-sm" />
+                    <label className="font-bold text-slate-700 uppercase block mb-1 text-xs">Nomor Punggung</label>
+                    <input type="number" required value={guestFormData.number} onChange={(e) => setGuestFormData({ ...guestFormData, number: e.target.value })} className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none text-sm" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-200 uppercase block mb-1 text-xs">Posisi</label>
-                    <select value={guestFormData.position} onChange={(e) => setGuestFormData({ ...guestFormData, position: e.target.value })} className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none text-sm">
+                    <label className="font-bold text-slate-700 uppercase block mb-1 text-xs">Posisi</label>
+                    <select value={guestFormData.position} onChange={(e) => setGuestFormData({ ...guestFormData, position: e.target.value })} className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none text-sm">
                       <option value="GOALKEEPER">GOALKEEPER</option>
                       <option value="DEFENDER">DEFENDER</option>
                       <option value="MIDFIELDER">MIDFIELDER</option>
@@ -1831,11 +1832,11 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               </form>
             </div>
 
-            <div className="p-5 sm:p-6 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-              <button onClick={() => setShowGuestModal(false)} className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-colors">
+            <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+              <button onClick={() => setShowGuestModal(false)} className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors border border-slate-200 cursor-pointer">
                 Batal
               </button>
-              <button form="guestForm" type="submit" disabled={addingGuest || uploading} className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-sky-600/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+              <button form="guestForm" type="submit" disabled={addingGuest || uploading} className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer">
                 {addingGuest ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {addingGuest ? 'Menyimpan...' : 'Simpan Pemain Loan'}
               </button>
@@ -1846,19 +1847,19 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
       {/* ═══ MODAL STATUS PEMAIN LUAR SKUAD ═══ */}
       {showNonSquadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-950 border border-amber-400/30 rounded-3xl w-full max-w-2xl shadow-2xl shadow-amber-900/20 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/60">
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center shrink-0">
-                  <UserX className="w-5 h-5 text-amber-400" />
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                  <UserX className="w-5 h-5 text-amber-600" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-black uppercase text-white truncate">
+                  <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 truncate">
                     Status Pemain Luar Skuad
                   </h2>
-                  <p className="text-[11px] text-slate-400 truncate">
+                  <p className="text-[11px] text-slate-600 truncate">
                     Atur status untuk pemain yang tidak masuk skuad pertandingan ini
                   </p>
                 </div>
@@ -1866,7 +1867,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <button
                 type="button"
                 onClick={() => setShowNonSquadModal(false)}
-                className="p-2 bg-slate-800/80 rounded-full text-slate-400 hover:text-white hover:bg-red-500 transition-colors shrink-0"
+                className="p-2 bg-slate-100 rounded-full text-slate-600 hover:text-white hover:bg-red-500 transition-colors shrink-0 border border-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1874,8 +1875,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
             {/* Modal Body */}
             <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5">
-              <div className="p-3 rounded-xl bg-amber-400/5 border border-amber-400/20 text-xs text-amber-200/90 leading-relaxed flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>
                   Status bawaan adalah <strong>&ldquo;Tidak masuk skuad&rdquo;</strong>. Anda dapat memilih opsi cepat seperti <strong>Cedera</strong>, <strong>Akumulasi Kartu</strong>, <strong>Izin</strong>, atau mengetikkan keterangan khusus.
                 </span>
@@ -1883,8 +1884,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
 
               {mainSquadAvailable.length === 0 ? (
                 <div className="text-center py-10 space-y-2">
-                  <UserCheck className="w-8 h-8 mx-auto text-slate-600" />
-                  <p className="text-xs font-semibold text-slate-400">
+                  <UserCheck className="w-8 h-8 mx-auto text-slate-400" />
+                  <p className="text-xs font-semibold text-slate-600">
                     Semua pemain skuad utama telah dimasukkan ke dalam Starter atau Cadangan match ini.
                   </p>
                 </div>
@@ -1897,12 +1898,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     return (
                       <div
                         key={p.id}
-                        className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-slate-700/80 transition-all space-y-2.5 shadow-sm"
+                        className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all space-y-2.5 shadow-xs"
                       >
                         {/* Player Header Info */}
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700 bg-slate-950 shrink-0">
+                            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
                               <img
                                 src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate}
                                 alt={p.name}
@@ -1911,14 +1912,14 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-mono font-black text-sky-400 text-xs sm:text-sm">
+                                <span className="font-mono font-black text-blue-700 text-xs sm:text-sm">
                                   #{p.number}
                                 </span>
-                                <span className="font-extrabold text-white text-xs sm:text-sm truncate">
+                                <span className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">
                                   {p.name}
                                 </span>
                               </div>
-                              <span className="text-[10px] text-slate-400 font-semibold block">
+                              <span className="text-[10px] text-slate-600 font-semibold block">
                                 {formatPosition(p.position)}
                               </span>
                             </div>
@@ -1929,7 +1930,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             <span className="block text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">
                               Tampilan di Profil
                             </span>
-                            <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded border text-slate-400 bg-slate-800/80 border-slate-700/80">
+                            <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded border text-slate-700 bg-white border-slate-300">
                               {displayStatus}
                             </span>
                           </div>
@@ -1962,8 +1963,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 }}
                                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
                                   isSelected
-                                    ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm scale-102'
-                                    : 'bg-slate-800/80 text-slate-300 border-slate-700/80 hover:bg-slate-700 hover:text-white'
+                                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs scale-102'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
                                 }`}
                               >
                                 {preset}
@@ -1985,7 +1986,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 [p.id]: val,
                               }));
                             }}
-                            className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                            className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
                           />
                         </div>
                       </div>
@@ -1996,10 +1997,10 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between gap-3">
-              <span className="text-[11px] text-slate-400 font-semibold">
+            <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-600 font-semibold">
                 {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 ? (
-                  <span className="text-amber-300">
+                  <span className="text-amber-800">
                     {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length} pemain memiliki status khusus
                   </span>
                 ) : (
@@ -2011,7 +2012,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 <button
                   type="button"
                   onClick={() => setShowNonSquadModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
                 >
                   Tutup
                 </button>
@@ -2022,7 +2023,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     await handleSaveAll();
                   }}
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-sky-600/30 transition-all cursor-pointer disabled:opacity-70"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-70"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Simpan Status</span>

@@ -229,7 +229,7 @@ export default function AdminCompetitionsPage() {
         <div className="space-y-1">
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors mb-1"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-700 transition-colors mb-1"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Dashboard
           </Link>
@@ -238,10 +238,10 @@ export default function AdminCompetitionsPage() {
               <Trophy className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black uppercase text-slate-900 tracking-tight">
                 Kelola Kompetisi
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-300">
+              <p className="text-[11px] sm:text-xs text-slate-600">
                 Atur daftar turnamen, liga resmi, dan friendly match klub untuk setiap musim.
               </p>
             </div>
@@ -250,16 +250,16 @@ export default function AdminCompetitionsPage() {
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           {/* Active Season Badge (controlled from Dashboard) */}
-          <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sky-300 text-xs font-bold uppercase font-mono flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-blue-700 text-xs font-bold uppercase font-mono flex items-center gap-1.5 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Musim {selectedSeason}
           </span>
 
           <button
             onClick={openAddModal}
-            className="px-3 sm:px-4 py-2 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer whitespace-nowrap"
+            className="px-3 sm:px-4 py-2 rounded-xl blue-gradient-bg text-white font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Kompetisi
+            <Plus className="w-3.5 h-3.5 text-white" /> Tambah Kompetisi
           </button>
         </div>
       </div>
@@ -267,21 +267,21 @@ export default function AdminCompetitionsPage() {
       {/* Competitions Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-black uppercase text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-sky-400" />
+          <h2 className="text-sm sm:text-base font-black uppercase text-slate-900 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-blue-600" />
             Daftar Kompetisi {selectedSeason !== 'all' ? `Musim ${selectedSeason}` : ''} ({filteredCompetitions.length})
           </h2>
         </div>
 
         {loading ? (
-          <div className="glass-panel p-12 rounded-2xl border border-slate-800 flex items-center justify-center gap-2 text-slate-400">
-            <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
+          <div className="bg-white p-12 rounded-2xl border border-slate-200 flex items-center justify-center gap-2 text-slate-500 shadow-sm">
+            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
             <span className="text-xs font-bold">Memuat kompetisi...</span>
           </div>
         ) : filteredCompetitions.length === 0 ? (
-          <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
-            <Trophy className="w-10 h-10 text-slate-600 mx-auto" />
-            <p className="text-sm font-bold text-slate-400">
+          <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3 shadow-sm">
+            <Trophy className="w-10 h-10 text-slate-400 mx-auto" />
+            <p className="text-sm font-bold text-slate-600">
               Belum ada kompetisi terdaftar {selectedSeason !== 'all' ? `untuk Musim ${selectedSeason}` : ''}.
             </p>
             <button
@@ -297,28 +297,28 @@ export default function AdminCompetitionsPage() {
               const matchCount = comp._count?.matches ?? 0;
               const typeBadgeColor =
                 comp.type === 'Turnamen'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  ? 'bg-amber-50 text-amber-800 border-amber-200'
                   : comp.type === 'Liga'
-                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                  ? 'bg-blue-50 text-blue-800 border-blue-200'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200';
 
               return (
                 <div
                   key={comp.id}
-                  className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-sky-400/40 transition-all flex flex-col justify-between space-y-4"
+                  className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-blue-400 shadow-sm transition-all flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 text-sky-400 flex items-center justify-center font-bold">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
                           <Trophy className="w-4 h-4" />
                         </div>
                         <div>
-                          <h3 className="text-sm sm:text-base font-black uppercase text-white tracking-wide">
+                          <h3 className="text-sm sm:text-base font-black uppercase text-slate-900 tracking-wide">
                             {comp.name}
                           </h3>
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            Musim: <b className="text-slate-200">{comp.season || comp.seasonRef?.name || 'Semua Musim'}</b>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            Musim: <b className="text-slate-900">{comp.season || comp.seasonRef?.name || 'Semua Musim'}</b>
                           </span>
                         </div>
                       </div>
@@ -328,22 +328,22 @@ export default function AdminCompetitionsPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-slate-400 pt-1">
-                      <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                    <div className="flex items-center gap-2 text-xs text-slate-600 pt-1">
+                      <Calendar className="w-3.5 h-3.5 text-blue-600" />
                       <span>{matchCount} Pertandingan Terdaftar</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-1.5 pt-3 border-t border-slate-800/80">
+                  <div className="flex items-center justify-end gap-1.5 pt-3 border-t border-slate-100">
                     <button
                       onClick={() => openEditModal(comp)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer border border-blue-200"
                     >
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
                       onClick={() => handleDeleteComp(comp)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer border border-rose-200"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Hapus
                     </button>
@@ -357,16 +357,16 @@ export default function AdminCompetitionsPage() {
 
       {/* Modal Add/Edit Competition */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-sky-400/40 shadow-2xl space-y-4 bg-slate-950">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-base font-black uppercase text-white flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-400" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md p-6 rounded-3xl border border-slate-200 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-base font-black uppercase text-slate-900 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" />
                 {editingComp ? 'Edit Kompetisi' : 'Tambah Kompetisi Baru'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -374,7 +374,7 @@ export default function AdminCompetitionsPage() {
 
             <form onSubmit={handleSaveComp} className="space-y-4">
               <div>
-                <label className="text-xs font-bold uppercase text-slate-300 block mb-1">
+                <label className="text-xs font-bold uppercase text-slate-700 block mb-1">
                   Nama Kompetisi *
                 </label>
                 <input
@@ -383,18 +383,18 @@ export default function AdminCompetitionsPage() {
                   placeholder="Contoh: BANDUNG CUP, LIGA 3, FRIENDLY"
                   value={compForm.name}
                   onChange={(e) => setCompForm({ ...compForm, name: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none text-xs"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold uppercase focus:border-blue-500 outline-none text-xs"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase text-slate-300 block mb-1">
+                <label className="text-xs font-bold uppercase text-slate-700 block mb-1">
                   Jenis Kompetisi
                 </label>
                 <select
                   value={compForm.type}
                   onChange={(e) => setCompForm({ ...compForm, type: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold focus:border-sky-400 outline-none text-xs cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold focus:border-blue-500 outline-none text-xs cursor-pointer"
                 >
                   <option value="Turnamen">Turnamen (Knockout / Group + Playoff)</option>
                   <option value="Liga">Liga (Regular League)</option>
@@ -403,7 +403,7 @@ export default function AdminCompetitionsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase text-slate-300 block mb-1">
+                <label className="text-xs font-bold uppercase text-slate-700 block mb-1">
                   Musim Terkait
                 </label>
                 <select
@@ -417,7 +417,7 @@ export default function AdminCompetitionsPage() {
                       seasonId: sObj?.id || '',
                     });
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold focus:border-sky-400 outline-none text-xs cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold focus:border-blue-500 outline-none text-xs cursor-pointer"
                 >
                   {seasons.map((s) => (
                     <option key={s.id} value={s.name}>
@@ -433,25 +433,25 @@ export default function AdminCompetitionsPage() {
                   id="isPrimary"
                   checked={compForm.isPrimary}
                   onChange={(e) => setCompForm({ ...compForm, isPrimary: e.target.checked })}
-                  className="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer"
+                  className="rounded border-slate-300 text-blue-600 focus:ring-0 cursor-pointer"
                 />
-                <label htmlFor="isPrimary" className="text-xs font-bold text-slate-300 cursor-pointer">
+                <label htmlFor="isPrimary" className="text-xs font-bold text-slate-700 cursor-pointer">
                   Kompetisi Utama Musim Ini
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold uppercase hover:bg-slate-700 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold uppercase hover:bg-slate-200 border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 rounded-xl white-blue-btn font-extrabold uppercase text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
+                  className="px-4 py-2 rounded-xl blue-gradient-bg text-white font-extrabold uppercase text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
                 >
                   {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   {editingComp ? 'Simpan Perubahan' : 'Buat Kompetisi'}

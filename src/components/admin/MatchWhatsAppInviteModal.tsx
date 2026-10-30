@@ -110,18 +110,18 @@ export default function MatchWhatsAppInviteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-      <div className="w-full max-w-4xl glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-5 shadow-2xl my-4 max-h-[92vh] overflow-y-auto">
+      <div className="w-full max-w-4xl glass-panel bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-5 shadow-2xl my-4 max-h-[92vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
               <i className="fa-brands fa-whatsapp text-lg" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black uppercase text-white tracking-wide">
+              <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wide">
                 Undangan WhatsApp Pemain
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium">
+              <p className="text-[11px] text-slate-600 font-medium">
                 {data?.match
                   ? `vs ${data.match.opponentName} • ${data.match.competition} (${data.match.isHome ? 'Home' : 'Away'})`
                   : 'Memuat data pertandingan...'}
@@ -131,36 +131,36 @@ export default function MatchWhatsAppInviteModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-white hover:bg-red-500 transition-colors cursor-pointer border border-slate-200"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
-            <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-            <p className="text-xs font-bold">Menyiapkan daftar undangan pemain...</p>
+          <div className="py-16 text-center text-slate-500 flex flex-col items-center justify-center gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            <p className="text-xs font-bold text-slate-700">Menyiapkan daftar undangan pemain...</p>
           </div>
         ) : (
           <>
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Skuad</span>
-                <span className="text-lg font-black font-mono text-white">{data?.totalPlayers || 0}</span>
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+                <span className="text-[10px] font-bold text-slate-600 uppercase block">Total Skuad</span>
+                <span className="text-lg font-black font-mono text-slate-900">{data?.totalPlayers || 0}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-center">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase block">Konfirmasi Ikut</span>
-                <span className="text-lg font-black font-mono text-emerald-300">{data?.confirmedCount || 0}</span>
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Konfirmasi Ikut</span>
+                <span className="text-lg font-black font-mono text-emerald-800">{data?.confirmedCount || 0}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-center">
-                <span className="text-[10px] font-bold text-amber-400 uppercase block">Menunggu Respon</span>
-                <span className="text-lg font-black font-mono text-amber-300">{data?.invitedCount || 0}</span>
+              <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+                <span className="text-[10px] font-bold text-amber-700 uppercase block">Menunggu Respon</span>
+                <span className="text-lg font-black font-mono text-amber-800">{data?.invitedCount || 0}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-center">
-                <span className="text-[10px] font-bold text-rose-400 uppercase block">Tidak Bisa</span>
-                <span className="text-lg font-black font-mono text-rose-300">{data?.declinedCount || 0}</span>
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-center">
+                <span className="text-[10px] font-bold text-rose-700 uppercase block">Tidak Bisa</span>
+                <span className="text-lg font-black font-mono text-rose-800">{data?.declinedCount || 0}</span>
               </div>
             </div>
 
@@ -169,27 +169,27 @@ export default function MatchWhatsAppInviteModal({
               <div
                 className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
                   alertMsg.type === 'success'
-                    ? 'bg-emerald-950/80 border border-emerald-500/60 text-emerald-200'
-                    : 'bg-rose-950/80 border border-rose-500/60 text-rose-200'
+                    ? 'bg-emerald-50 border border-emerald-300 text-emerald-800'
+                    : 'bg-rose-50 border border-rose-300 text-rose-800'
                 }`}
               >
                 {alertMsg.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                 ) : (
-                  <XCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <XCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 )}
                 <span>{alertMsg.text}</span>
               </div>
             )}
 
             {/* Gateway Action / Explanation Banner */}
-            <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="space-y-0.5">
-                <span className="font-bold text-sky-300 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-bold text-blue-700 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   {data?.hasWhatsAppToken ? 'WhatsApp Gateway Terhubung' : 'Kirim Langsung / Manual 1-Klik'}
                 </span>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-600">
                   {data?.hasWhatsAppToken
                     ? 'Token WhatsApp terdeteksi. Anda dapat mengirim otomatis ke semua nomor pemain sekaligus atau klik tombol WA per pemain.'
                     : 'Klik tombol WA di samping setiap pemain untuk langsung membuka chat WhatsApp dengan pesan undangan & link siap kirim.'}
@@ -219,7 +219,7 @@ export default function MatchWhatsAppInviteModal({
                   placeholder="Cari nama pemain / nomor HP..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs outline-none focus:border-sky-400"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -232,8 +232,8 @@ export default function MatchWhatsAppInviteModal({
                     onClick={() => setFilter(st)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors shrink-0 ${
                       filter === st
-                        ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20'
-                        : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-500/20'
+                        : 'bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200'
                     }`}
                   >
                     {st === 'ALL'
@@ -249,7 +249,7 @@ export default function MatchWhatsAppInviteModal({
             </div>
 
             {/* Players Table / List */}
-            <div className="rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60 divide-y divide-slate-800/80">
+            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white divide-y divide-slate-100 shadow-xs">
               {filteredPlayers.length === 0 ? (
                 <div className="py-10 text-center text-xs text-slate-500">
                   Tidak ada pemain yang cocok dengan filter.
@@ -263,11 +263,11 @@ export default function MatchWhatsAppInviteModal({
                   return (
                     <div
                       key={p.id}
-                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors"
+                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
                     >
                       {/* Player Avatar & Details */}
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700 shrink-0 bg-slate-800">
+                        <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
                             src={p.photoUrl || '/playertemplate.webp'}
                             alt={p.name}
@@ -276,23 +276,23 @@ export default function MatchWhatsAppInviteModal({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-xs sm:text-sm uppercase truncate">
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm uppercase truncate">
                               {p.name}
                             </span>
-                            <span className="text-[10px] font-mono font-bold text-sky-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
+                            <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                               #{p.number}
                             </span>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">
+                            <span className="text-[9px] font-bold text-slate-600 uppercase">
                               {p.position}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-600">
                             {p.phone ? (
-                              <span className="font-mono text-emerald-400 flex items-center gap-1">
+                              <span className="font-mono text-emerald-700 flex items-center gap-1 font-semibold">
                                 <Phone className="w-2.5 h-2.5" /> {p.phone}
                               </span>
                             ) : (
-                              <span className="text-rose-400 italic">No HP belum diisi</span>
+                              <span className="text-rose-600 italic">No HP belum diisi</span>
                             )}
                           </div>
                         </div>
@@ -303,18 +303,18 @@ export default function MatchWhatsAppInviteModal({
                         {/* Status Badge */}
                         <div className="mr-1">
                           {isConfirmed ? (
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black uppercase flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-black uppercase flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" /> Ikut
                             </span>
                           ) : isDeclined ? (
                             <span
-                              className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[10px] font-black uppercase flex items-center gap-1"
+                              className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black uppercase flex items-center gap-1"
                               title={p.declineReason ? `Alasan: ${p.declineReason}` : undefined}
                             >
                               <XCircle className="w-3 h-3" /> Tidak
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold uppercase flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-300 text-[10px] font-bold uppercase flex items-center gap-1">
                               <Clock className="w-3 h-3" /> Menunggu
                             </span>
                           )}
@@ -325,7 +325,7 @@ export default function MatchWhatsAppInviteModal({
                           type="button"
                           onClick={() => handleCopy(p.inviteUrl, p.id)}
                           title="Salin tautan konfirmasi pemain"
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200"
                         >
                           <Copy className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">{isCopied ? 'Tersalin!' : 'Link'}</span>
@@ -344,7 +344,7 @@ export default function MatchWhatsAppInviteModal({
                           </a>
                         ) : (
                           <span
-                            className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-600 font-bold text-xs uppercase cursor-not-allowed"
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs uppercase cursor-not-allowed border border-slate-200"
                             title="Nomor WhatsApp pemain belum diisi"
                           >
                             No WA Kosong
@@ -360,14 +360,14 @@ export default function MatchWhatsAppInviteModal({
         )}
 
         {/* Footer */}
-        <div className="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
-          <span className="text-slate-500 text-[11px]">
+        <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs">
+          <span className="text-slate-600 text-[11px]">
             Tautan konfirmasi otomatis memperbarui daftar <strong>SQUAD LIST</strong> di halaman pertandingan.
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase transition-colors cursor-pointer border border-slate-200"
           >
             Tutup
           </button>

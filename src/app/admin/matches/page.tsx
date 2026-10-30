@@ -365,7 +365,7 @@ export default function AdminMatchesPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span>
             <span className="sm:hidden">Dashboard</span>
@@ -374,8 +374,8 @@ export default function AdminMatchesPage() {
 
         <div className="flex items-center gap-2">
           {/* Active Season Badge (controlled from Dashboard) */}
-          <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sky-300 text-xs font-bold uppercase font-mono flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-blue-700 text-xs font-bold uppercase font-mono flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Musim {selectedSeason}
           </span>
 
@@ -388,12 +388,12 @@ export default function AdminMatchesPage() {
         </div>
       </div>
 
-      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
-          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
+      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3 sm:pb-4">
+          <h1 className="text-base sm:text-xl font-black uppercase text-blue-700 blue-gradient-text">
             Manajemen Pertandingan ({filteredMatches.length} Laga)
           </h1>
-          <span className="px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-[10px] font-bold uppercase font-mono">
+          <span className="px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold uppercase font-mono">
             Musim {selectedSeason}
           </span>
         </div>
@@ -408,12 +408,12 @@ export default function AdminMatchesPage() {
               return (
                 <div
                   key={m.id}
-                  className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md"
+                  className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-3 shadow-xs"
                 >
                   {/* Top Meta Row */}
-                  <div className="flex items-center justify-between text-[11px] border-b border-slate-800/80 pb-2">
+                  <div className="flex items-center justify-between text-[11px] border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-slate-300">
+                      <span className="font-bold text-slate-800">
                         {new Date(m.matchDate).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'short',
@@ -423,29 +423,29 @@ export default function AdminMatchesPage() {
                           timeZone: WIB_TIMEZONE,
                         })}
                       </span>
-                      <span className="px-2 py-0.2 rounded-full bg-blue-950 text-sky-300 border border-sky-400/30 font-bold uppercase text-[9px]">
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold uppercase text-[9px]">
                         {m.competition || 'FRIENDLY'} {m.stage ? `• ${m.stage}` : ''}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold uppercase text-[9px]">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold uppercase text-[9px] border border-slate-200">
                         {m.isHome ? 'Home' : 'Away'}
                       </span>
                       {dynamicStatus === 'live' ? (
-                        <span className="px-2 py-0.5 rounded-md bg-red-600/30 text-red-400 border border-red-500/50 text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-md bg-red-600/10 text-red-600 border border-red-500/30 text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" /> LIVE
                         </span>
                       ) : dynamicStatus === 'score_pending' ? (
-                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 border border-amber-500/40 text-[9px] font-black uppercase">
                           Skor Pending
                         </span>
                       ) : dynamicStatus === 'finished' ? (
-                        <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-400 font-mono font-black text-[11px]">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono font-black text-[11px]">
                           {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : 'Selesai'}
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 text-[9px] font-bold uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-bold uppercase">
                           Mendatang
                         </span>
                       )}
@@ -454,10 +454,10 @@ export default function AdminMatchesPage() {
 
                   {/* Opponent Info Row */}
                   <div className="flex items-center gap-3">
-                    <img src={m.opponentLogo} alt={m.opponentName} className="w-10 h-10 object-contain drop-shadow" />
+                    <img src={m.opponentLogo} alt={m.opponentName} className="w-10 h-10 object-contain drop-shadow-sm" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-black text-white uppercase truncate">{m.opponentName}</h3>
-                      <p className="text-[11px] text-slate-400 truncate">{m.venue || 'Stadion Gelora Samudra, Jakarta'}</p>
+                      <h3 className="text-sm font-black text-slate-900 uppercase truncate">{m.opponentName}</h3>
+                      <p className="text-[11px] text-slate-600 truncate">{m.venue || 'Stadion Gelora Samudra, Jakarta'}</p>
                     </div>
                   </div>
 
@@ -465,14 +465,14 @@ export default function AdminMatchesPage() {
                   <div className="flex items-center gap-2 pt-1">
                     <Link
                       href={`/admin/matches/${m.id}/lineup`}
-                      className="flex-1 py-2 px-3 rounded-xl bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[11px] flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 px-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[11px] flex items-center justify-center gap-1.5"
                     >
                       <Settings2 className="w-3.5 h-3.5" /> Match Options
                     </Link>
                     {Boolean(m.attendances && m.attendances.length > 0) && (
                       <button
                         onClick={() => setBroadcastMatchId(m.id)}
-                        className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-500/40"
+                        className="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300"
                         title="Undangan WhatsApp Skuad"
                       >
                         <i className="fa-brands fa-whatsapp text-sm" />
@@ -480,14 +480,14 @@ export default function AdminMatchesPage() {
                     )}
                     <button
                       onClick={() => openEditModal(m)}
-                      className="p-2 rounded-xl bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                      className="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200"
                       title="Edit Pertandingan"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(m.id)}
-                      className="p-2 rounded-xl bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                      className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors border border-red-200"
                       title="Hapus Pertandingan"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -501,8 +501,8 @@ export default function AdminMatchesPage() {
 
         {/* ── DESKTOP MATCHES TABLE ── */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-200">
-            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-800">
+            <thead className="bg-slate-100 text-blue-700 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="p-3">Tanggal Laga</th>
                 <th className="p-3">Musim / Kompetisi</th>
@@ -513,12 +513,12 @@ export default function AdminMatchesPage() {
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {filteredMatches.map((m) => {
                 const dynamicStatus = getDynamicMatchStatus(m);
                 return (
-                  <tr key={m.id} className="hover:bg-slate-800/40">
-                    <td className="p-3 font-bold text-white whitespace-nowrap">
+                  <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 font-bold text-slate-900 whitespace-nowrap">
                       {new Date(m.matchDate).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'short',
@@ -531,56 +531,56 @@ export default function AdminMatchesPage() {
                     <td className="p-3">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-[10px] text-slate-400">
+                          <span className="font-mono font-bold text-[10px] text-slate-600">
                             {m.seasonName || '2026'}
                           </span>
-                          <span className="px-2 py-0.5 rounded bg-blue-950/80 text-sky-300 border border-sky-400/30 text-[10px] font-black uppercase">
+                          <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-black uppercase">
                             {m.competition || 'FRIENDLY'}
                           </span>
                         </div>
                         {m.stage && (
-                          <span className="text-[10px] font-semibold text-slate-400 block">
+                          <span className="text-[10px] font-semibold text-slate-600 block">
                             {m.stage}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="p-3 flex items-center gap-3">
-                      <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow" />
-                      <span className="font-bold text-white uppercase">{m.opponentName}</span>
+                      <img src={m.opponentLogo} alt={m.opponentName} className="w-9 h-9 object-contain drop-shadow-sm" />
+                      <span className="font-bold text-slate-900 uppercase">{m.opponentName}</span>
                     </td>
                     <td className="p-3 text-center whitespace-nowrap">
                       {dynamicStatus === 'live' ? (
-                        <span className="px-2.5 py-1 rounded bg-red-600/30 text-red-400 border border-red-500/50 text-[10px] font-black uppercase tracking-wider animate-pulse inline-flex items-center gap-1.5">
+                        <span className="px-2.5 py-1 rounded bg-red-600/10 text-red-600 border border-red-500/30 text-[10px] font-black uppercase tracking-wider animate-pulse inline-flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
                         </span>
                       ) : dynamicStatus === 'score_pending' ? (
-                        <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider inline-block">
+                        <span className="px-2.5 py-1 rounded bg-amber-500/15 text-amber-700 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider inline-block">
                           SKOR BELUM DIINPUT
                         </span>
                       ) : dynamicStatus === 'finished' ? (
-                        <span className="font-mono font-black text-sky-400 text-sm">
+                        <span className="font-mono font-black text-blue-700 text-sm">
                           {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} - ${m.awayScore}` : '—'}
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold uppercase">
+                        <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold uppercase">
                           Mendatang
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-slate-300">{m.venue || '—'}</td>
-                    <td className="p-3">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
+                    <td className="p-3 text-slate-700">{m.venue || '—'}</td>
+                    <td className="p-3 text-slate-700 font-medium">{m.isHome ? 'Kandang (Home)' : 'Tandang (Away)'}</td>
                     <td className="p-3 text-right space-x-2 whitespace-nowrap">
                       <Link
                         href={`/admin/matches/${m.id}/lineup`}
-                        className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-sky-300 border border-sky-400/40 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
                       >
                         <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
                       {Boolean(m.attendances && m.attendances.length > 0) && (
                         <button
                           onClick={() => setBroadcastMatchId(m.id)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
                           title="Undangan WhatsApp Skuad"
                         >
                           <i className="fa-brands fa-whatsapp text-xs" /> Undangan WA
@@ -588,14 +588,14 @@ export default function AdminMatchesPage() {
                       )}
                       <button
                         onClick={() => openEditModal(m)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors"
+                        className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200"
                         title="Edit Pertandingan"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(m.id)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors border border-red-200"
                         title="Hapus Pertandingan"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -612,14 +612,14 @@ export default function AdminMatchesPage() {
       {/* Modal Add / Edit Match */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-xl glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base sm:text-lg font-black uppercase text-sky-400">
+          <div className="w-full max-w-xl glass-panel bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-base sm:text-lg font-black uppercase text-blue-700">
                 {editingMatch ? 'Edit Pertandingan' : 'Tambah Pertandingan Baru'}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-white hover:bg-red-500 transition-colors cursor-pointer border border-slate-200"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -627,14 +627,14 @@ export default function AdminMatchesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* DIRECT OPPONENT LOGO UPLOAD SECTION */}
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                <label className="font-bold text-sky-300 uppercase block">Logo Tim Lawan (Direct Upload)</label>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <label className="font-bold text-blue-700 uppercase block">Logo Tim Lawan (Direct Upload)</label>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 flex items-center justify-center shrink-0">
                     <img
                       src={formData.opponentLogo || '/defaultteam.webp'}
                       alt="Logo Lawan"
-                      className="w-14 h-14 object-contain drop-shadow-xl"
+                      className="w-14 h-14 object-contain drop-shadow-md"
                     />
                   </div>
 
@@ -650,7 +650,7 @@ export default function AdminMatchesPage() {
                         className="hidden"
                       />
                     </label>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-600">
                       Unggah file logo lawan (.png/.jpg).
                     </p>
                   </div>
@@ -660,38 +660,38 @@ export default function AdminMatchesPage() {
               {/* Opponent & Match Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Nama Tim Lawan</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Nama Tim Lawan</label>
                   <input
                     type="text"
                     required
                     value={formData.opponentName}
                     onChange={(e) => setFormData({ ...formData, opponentName: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                     placeholder="Masukan Tim Lawan"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Waktu Pertandingan</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Waktu Pertandingan</label>
                   <input
                     type="datetime-local"
                     required
                     value={formData.matchDate}
                     onChange={(e) => setFormData({ ...formData, matchDate: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
               </div>
 
               {/* KOMPETISI SELECTOR */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-bold text-amber-300 uppercase block">
+                  <label className="font-bold text-amber-700 uppercase block">
                     Kompetisi
                   </label>
                   <Link
                     href="/admin/competitions"
                     target="_blank"
-                    className="text-[10px] text-sky-400 hover:underline"
+                    className="text-[10px] text-blue-600 font-bold hover:underline"
                   >
                     + Atur Kompetisi
                   </Link>
@@ -711,7 +711,7 @@ export default function AdminMatchesPage() {
                         : (formData.stage?.toLowerCase().startsWith('matchday') ? 'Group Stage' : formData.stage),
                     });
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold uppercase focus:border-sky-400 outline-none"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold uppercase focus:border-blue-500 outline-none"
                 >
                   {formCompetitions.map((c) => (
                     <option key={c.id} value={c.name}>
@@ -726,7 +726,7 @@ export default function AdminMatchesPage() {
 
               {/* STAGE / BABAK / MATCHDAY INPUT WITH SUGGESTIONS */}
               <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1">
+                <label className="font-bold text-slate-700 uppercase block mb-1">
                   Stage / Babak / Matchday
                 </label>
                 <input
@@ -735,11 +735,11 @@ export default function AdminMatchesPage() {
                   value={formData.stage}
                   onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
                   placeholder="Contoh: Matchday 20, Group Stage, PlayOff, Final"
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none font-semibold"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none font-semibold"
                 />
                 {/* Fast chips */}
                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                  <span className="text-[10px] text-slate-400">Pilihan cepat:</span>
+                  <span className="text-[10px] text-slate-600">Pilihan cepat:</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -748,8 +748,8 @@ export default function AdminMatchesPage() {
                     }}
                     className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
                       formData.stage?.toLowerCase().startsWith('matchday')
-                        ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20'
-                        : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                        ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-500/20'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                     }`}
                   >
                     Matchday
@@ -761,8 +761,8 @@ export default function AdminMatchesPage() {
                       onClick={() => setFormData({ ...formData, stage: chip })}
                       className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
                         formData.stage === chip
-                          ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20'
-                          : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                          ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-500/20'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                       }`}
                     >
                       {chip}
@@ -772,30 +772,30 @@ export default function AdminMatchesPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1">Lapangan / Stadion (Venue)</label>
+                <label className="font-bold text-slate-700 uppercase block mb-1">Lapangan / Stadion (Venue)</label>
                 <input
                   type="text"
                   required
                   value={formData.venue}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   placeholder="Masukkan lokasi / nama stadion..."
                 />
               </div>
 
               {/* HOME / AWAY TOGGLE SWITCHER (SEPERTI NAVIGASI SUMMARY & LINEUP) */}
               <div>
-                <label className="font-bold text-slate-200 uppercase block mb-1.5 text-xs">
+                <label className="font-bold text-slate-700 uppercase block mb-1.5 text-xs">
                   Status Pertandingan
                 </label>
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 shadow-inner">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200 shadow-inner">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, isHome: true })}
                     className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                       formData.isHome
                         ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/30 scale-[1.02]'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                        : 'text-slate-600 hover:text-blue-700 hover:bg-white'
                     }`}
                   >
                     <Shield className="w-4 h-4 text-sky-300" />
@@ -808,7 +808,7 @@ export default function AdminMatchesPage() {
                     className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                       !formData.isHome
                         ? 'blue-gradient-bg text-white shadow-lg shadow-sky-500/30 scale-[1.02]'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                        : 'text-slate-600 hover:text-blue-700 hover:bg-white'
                     }`}
                   >
                     <Plane className="w-4 h-4 text-sky-300" />
@@ -820,37 +820,37 @@ export default function AdminMatchesPage() {
 
               {/* WhatsApp Broadcast Checkbox (Tampil saat tambah pertandingan baru) */}
               {!editingMatch && (
-                <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex items-start gap-3 transition-colors">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-start gap-3 transition-colors">
                   <input
                     type="checkbox"
                     id="sendWhatsAppInvite"
                     checked={formData.sendWhatsAppInvite}
                     onChange={(e) => setFormData({ ...formData, sendWhatsAppInvite: e.target.checked })}
-                    className="mt-1 w-4 h-4 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-white border-slate-300 cursor-pointer"
                   />
                   <label htmlFor="sendWhatsAppInvite" className="cursor-pointer select-none">
-                    <span className="font-bold text-emerald-400 uppercase text-xs flex items-center gap-1.5">
+                    <span className="font-bold text-emerald-800 uppercase text-xs flex items-center gap-1.5">
                       <i className="fa-brands fa-whatsapp text-sm" /> Kirim Undangan WhatsApp ke Skuad Aktif
                     </span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5 leading-relaxed">
+                    <span className="text-[11px] text-slate-600 block mt-0.5 leading-relaxed">
                       Otomatis siapkan rincian pertandingan dan tautan konfirmasi kehadiran via WhatsApp untuk seluruh pemain aktif di musim {formData.seasonName}. Pemain yang memilih IKUT akan otomatis masuk ke daftar <strong>SQUAD LIST</strong>.
                     </span>
                   </label>
                 </div>
               )}
 
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold uppercase"
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold uppercase hover:bg-slate-200 border border-slate-200"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow"
+                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow cursor-pointer"
                 >
                   <Save className="w-4 h-4 text-blue-600" /> Simpan Pertandingan
                 </button>

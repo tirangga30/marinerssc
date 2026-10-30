@@ -351,56 +351,56 @@ export default function MainPosterAdminPage() {
       )}
 
       {/* Top Banner */}
-      <div className="glass-panel p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-sky-400/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <div className="bg-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="space-y-1 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-            <Layers className="w-3.5 h-3.5 text-sky-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+            <Layers className="w-3.5 h-3.5 text-blue-600" />
             Hero Banner Beranda Web
           </div>
-          <h1 className="text-xl sm:text-3xl font-black uppercase text-white tracking-tight flex items-center justify-center sm:justify-start gap-2">
+          <h1 className="text-xl sm:text-3xl font-black uppercase text-slate-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <span>MAIN POSTER (SLIDE)</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-bold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold">
               {activePosters.length}/5 Aktif
             </span>
           </h1>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600">
             Unggah hingga 5 poster beranda dengan fitur crop 16:9 presisi. Poster aktif otomatis berputar bergantian tiap {slideInterval} detik.
           </p>
         </div>
 
         <Link
           href="/admin/dashboard"
-          className="px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer"
+          className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
         </Link>
       </div>
 
       {/* ── PENGATURAN DURASI SLIDE (3 - 10 DETIK) ── */}
-      <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-sky-400/30 shadow-xl space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl blue-gradient-bg flex items-center justify-center text-white shadow shrink-0">
               <Timer className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-xs sm:text-sm font-black uppercase text-white tracking-wide flex items-center gap-2">
+              <h2 className="text-xs sm:text-sm font-black uppercase text-slate-900 tracking-wide flex items-center gap-2">
                 <span>Pengaturan Durasi Slide Poster</span>
                 {savingInterval && (
-                  <span className="text-[10px] text-sky-400 font-normal flex items-center gap-1">
+                  <span className="text-[10px] text-blue-600 font-normal flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin" /> Menyimpan...
                   </span>
                 )}
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Pilih interval waktu pergantian otomatis antar poster aktif di halaman beranda (3 – 10 detik).
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Durasi Aktif:</span>
-            <span className="px-3 py-1 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-400/40 font-mono font-black text-xs shadow-inner">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Durasi Aktif:</span>
+            <span className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-mono font-black text-xs">
               {slideInterval} Detik
             </span>
           </div>
@@ -415,10 +415,10 @@ export default function MainPosterAdminPage() {
                 type="button"
                 onClick={() => handleUpdateInterval(sec)}
                 disabled={savingInterval}
-                className={`py-2 px-1 rounded-xl text-xs font-black uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 border shadow ${
+                className={`py-2 px-1 rounded-xl text-xs font-black uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 border shadow-xs ${
                   slideInterval === sec
-                    ? 'blue-gradient-bg text-white border-sky-300 shadow-sky-500/30 scale-[1.03]'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800 hover:border-sky-400/40'
+                    ? 'blue-gradient-bg text-white border-blue-600 shadow-md scale-[1.03]'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-blue-300'
                 }`}
               >
                 <span>{sec}s</span>
@@ -431,7 +431,7 @@ export default function MainPosterAdminPage() {
 
           {/* Range Slider for Fine Adjustment */}
           <div className="pt-1 flex items-center gap-3">
-            <span className="text-[10px] font-bold text-slate-400 shrink-0">3 Detik (Cepat)</span>
+            <span className="text-[10px] font-bold text-slate-500 shrink-0">3 Detik (Cepat)</span>
             <input
               type="range"
               min={3}
@@ -439,37 +439,37 @@ export default function MainPosterAdminPage() {
               step={1}
               value={slideInterval}
               onChange={(e) => handleUpdateInterval(parseInt(e.target.value, 10))}
-              className="w-full accent-sky-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+              className="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
             />
-            <span className="text-[10px] font-bold text-slate-400 shrink-0">10 Detik (Santai)</span>
+            <span className="text-[10px] font-bold text-slate-500 shrink-0">10 Detik (Santai)</span>
           </div>
         </div>
       </div>
 
       {/* ── PENGATURAN TEKS & TOMBOL OVERLAY HERO (DEFAULT NONAKTIF) ── */}
-      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl blue-gradient-bg flex items-center justify-center text-white shadow shrink-0">
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-xs sm:text-sm font-black uppercase text-white tracking-wide flex items-center gap-2">
+              <h2 className="text-xs sm:text-sm font-black uppercase text-slate-900 tracking-wide flex items-center gap-2">
                 <span>Teks &amp; Navigasi Overlay di Atas Poster</span>
                 {savingOverlay && (
-                  <span className="text-[10px] text-sky-400 font-normal flex items-center gap-1">
+                  <span className="text-[10px] text-blue-600 font-normal flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin" /> Menyimpan...
                   </span>
                 )}
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Atur tulisan SOCCER CLUB, slogan, dan tombol LIHAT TIM di atas poster, atau nonaktifkan agar poster tampil bersih 100% full gambar.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 self-start sm:self-auto">
-            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${showHeroOverlay ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${showHeroOverlay ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
               {showHeroOverlay ? 'Aktif (Teks Ditampilkan)' : 'Nonaktif (Poster Bersih - Default)'}
             </span>
 
@@ -480,7 +480,7 @@ export default function MainPosterAdminPage() {
                 setShowHeroOverlay(nextVal);
                 handleSaveOverlaySettings(nextVal);
               }}
-              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showHeroOverlay ? 'bg-emerald-500' : 'bg-slate-700'}`}
+              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showHeroOverlay ? 'bg-emerald-500' : 'bg-slate-300'}`}
               title={showHeroOverlay ? 'Klik untuk Menonaktifkan Teks' : 'Klik untuk Mengaktifkan Teks'}
             >
               <span
@@ -494,7 +494,7 @@ export default function MainPosterAdminPage() {
         {showHeroOverlay ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1 animate-fadeIn">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-700 block">
                 Tagline Atas
               </label>
               <input
@@ -502,13 +502,13 @@ export default function MainPosterAdminPage() {
                 value={heroTagline}
                 onChange={(e) => setHeroTagline(e.target.value)}
                 placeholder="SOCCER CLUB"
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden uppercase"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-bold text-xs outline-hidden uppercase"
               />
               <span className="text-[9px] text-slate-500 block">Contoh: SOCCER CLUB</span>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-700 block">
                 Slogan / Subtitle
               </label>
               <input
@@ -516,13 +516,13 @@ export default function MainPosterAdminPage() {
                 value={heroSubtitle}
                 onChange={(e) => setHeroSubtitle(e.target.value)}
                 placeholder="Lebih dari sekadar sepak bola."
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-bold text-xs outline-hidden"
               />
               <span className="text-[9px] text-slate-500 block">Contoh: Lebih dari sekadar sepak bola.</span>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-700 block">
                 Teks Tombol Aksi (CTA)
               </label>
               <input
@@ -530,7 +530,7 @@ export default function MainPosterAdminPage() {
                 value={heroCtaText}
                 onChange={(e) => setHeroCtaText(e.target.value)}
                 placeholder="LIHAT TIM"
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-xs outline-hidden uppercase"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-bold text-xs outline-hidden uppercase"
               />
               <span className="text-[9px] text-slate-500 block">Contoh: LIHAT TIM / SQUAD</span>
             </div>
@@ -548,15 +548,15 @@ export default function MainPosterAdminPage() {
             </div>
           </div>
         ) : (
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
-            <span className="text-emerald-400 font-bold">✓ Mode Poster Bersih Aktif:</span>
+          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-[11px] text-slate-700 flex items-center gap-2">
+            <span className="text-emerald-700 font-bold">✓ Mode Poster Bersih Aktif:</span>
             <span>Gambar poster beranda akan tampil 100% full tanpa tertutup teks judul, slogan, maupun tombol aksi.</span>
           </div>
         )}
       </div>
 
       {/* ── LIVE PREVIEW CAROUSEL ── */}
-      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-3 shadow-xl">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-sky-300">
             <Play className="w-3.5 h-3.5 text-emerald-400" />
@@ -652,17 +652,17 @@ export default function MainPosterAdminPage() {
 
       {/* ── 5 POSTER SLOTS GRID WITH INTEGRATED CROPPER & HOVER CONTROLS ── */}
       <div className="space-y-4">
-        <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-sm sm:text-base font-black uppercase text-white flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-sky-400" />
+            <h2 className="text-sm sm:text-base font-black uppercase text-slate-900 flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-blue-600" />
               Pengaturan 5 Slot Poster
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Unggah, crop rasio 16:9, ganti gambar, atau atur headline caption per slot poster.
             </p>
           </div>
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-400 font-bold border border-slate-700">
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200">
             {posters.filter((p) => p.imageUrl).length}/5 Terisi
           </span>
         </div>
@@ -676,7 +676,7 @@ export default function MainPosterAdminPage() {
             return (
               <div
                 key={slotOrder}
-                className="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-sky-400/40 space-y-3 transition-all relative overflow-hidden flex flex-col justify-between"
+                className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-300 shadow-sm space-y-3 transition-all relative overflow-hidden flex flex-col justify-between"
               >
                 {/* Hidden File Input for this slot */}
                 <input
@@ -690,13 +690,13 @@ export default function MainPosterAdminPage() {
                 />
 
                 {/* Slot Card Header */}
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg blue-gradient-bg text-white text-xs font-black flex items-center justify-center shadow">
+                    <span className="w-6 h-6 rounded-lg blue-gradient-bg text-white text-xs font-black flex items-center justify-center shadow-xs">
                       {slotOrder}
                     </span>
-                    <h3 className="text-xs font-black uppercase text-white">
-                      Slot {slotOrder} {slotOrder === 1 && <span className="text-[10px] text-sky-300 font-normal">(Utama)</span>}
+                    <h3 className="text-xs font-black uppercase text-slate-900">
+                      Slot {slotOrder} {slotOrder === 1 && <span className="text-[10px] text-blue-700 font-normal">(Utama)</span>}
                     </h3>
                   </div>
 
@@ -706,8 +706,8 @@ export default function MainPosterAdminPage() {
                       onClick={() => handleToggleActive(slotPoster)}
                       className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all ${
                         slotPoster.isActive
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}
                     >
                       {slotPoster.isActive ? 'Aktif' : 'Nonaktif'}
@@ -722,14 +722,14 @@ export default function MainPosterAdminPage() {
                       fileInputRefs.current[slotIndex]?.click();
                     }
                   }}
-                  className={`relative aspect-video rounded-xl overflow-hidden bg-slate-950 border ${
-                    slotPoster?.imageUrl ? 'border-sky-500/40' : 'border-dashed border-slate-700 hover:border-sky-400/60 cursor-pointer'
+                  className={`relative aspect-video rounded-xl overflow-hidden bg-slate-50 border ${
+                    slotPoster?.imageUrl ? 'border-blue-400' : 'border-dashed border-slate-300 hover:border-blue-500 cursor-pointer'
                   } flex items-center justify-center transition-all group`}
                 >
                   {isUploading ? (
                     <div className="text-center p-3 space-y-1.5">
-                      <Loader2 className="w-7 h-7 animate-spin mx-auto text-sky-400" />
-                      <span className="text-[10px] text-sky-300 font-bold block">Memproses &amp; Mengunggah...</span>
+                      <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600" />
+                      <span className="text-[10px] text-blue-700 font-bold block">Memproses &amp; Mengunggah...</span>
                     </div>
                   ) : slotPoster?.imageUrl ? (
                     <>
@@ -744,7 +744,7 @@ export default function MainPosterAdminPage() {
                       />
 
                       {/* Hover Action Bar (Crop Ulang, Ganti Foto, Edit Detail, Hapus) */}
-                      <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                      <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
                         {/* Crop Ulang */}
                         <button
                           type="button"
@@ -752,7 +752,7 @@ export default function MainPosterAdminPage() {
                             e.stopPropagation();
                             handleOpenCropperForExisting(slotPoster);
                           }}
-                          className="p-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-all shadow-lg cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
+                          className="p-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
                           title="Crop Ulang (Rasio 16:9)"
                         >
                           <Crop className="w-3.5 h-3.5" />
@@ -766,7 +766,7 @@ export default function MainPosterAdminPage() {
                             e.stopPropagation();
                             fileInputRefs.current[slotIndex]?.click();
                           }}
-                          className="p-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-all shadow-lg cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
+                          className="p-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-all shadow-md cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
                           title="Ganti Foto"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
@@ -783,7 +783,7 @@ export default function MainPosterAdminPage() {
                               linkUrl: slotPoster.linkUrl || '',
                             });
                           }}
-                          className="p-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-all shadow-lg cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
+                          className="p-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md cursor-pointer hover:scale-110 active:scale-95 flex items-center gap-1 text-[10px] font-bold uppercase"
                           title="Atur URL / Link Tujuan"
                         >
                           <LinkIcon className="w-3.5 h-3.5" />
@@ -797,7 +797,7 @@ export default function MainPosterAdminPage() {
                             e.stopPropagation();
                             handleDeletePoster(slotPoster.id, slotOrder);
                           }}
-                          className="p-2 rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all shadow-lg cursor-pointer hover:scale-110 active:scale-95"
+                          className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md cursor-pointer hover:scale-110 active:scale-95"
                           title="Hapus Poster"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -806,45 +806,45 @@ export default function MainPosterAdminPage() {
 
                       {/* Bottom Banner Tag if Link exists */}
                       {slotPoster.linkUrl && (
-                        <div className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-slate-950/85 backdrop-blur-xs text-[10px] text-sky-300 font-mono font-medium truncate flex items-center gap-1 border border-sky-400/30">
-                          <LinkIcon className="w-2.5 h-2.5 text-sky-400 shrink-0" />
+                        <div className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-slate-900/85 backdrop-blur-xs text-[10px] text-blue-200 font-mono font-medium truncate flex items-center gap-1 border border-blue-400/30">
+                          <LinkIcon className="w-2.5 h-2.5 text-blue-400 shrink-0" />
                           <span className="truncate">{slotPoster.linkUrl}</span>
                         </div>
                       )}
                     </>
                   ) : (
                     <div className="text-center p-4 space-y-1.5">
-                      <Upload className="w-6 h-6 mx-auto text-slate-500 group-hover:text-sky-400 transition-colors" />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-sky-300 block">
+                      <Upload className="w-6 h-6 mx-auto text-slate-400 group-hover:text-blue-600 transition-colors" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 group-hover:text-blue-700 block">
                         + Unggah Poster Slot {slotOrder}
                       </span>
-                      <span className="text-[9px] text-slate-500 block">
+                      <span className="text-[9px] text-slate-400 block">
                         Klik untuk pilih foto &amp; crop 16:9
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Dedicated Action Buttons Under Box (Exact same pattern as Article Photo Upload) */}
+                {/* Dedicated Action Buttons Under Box */}
                 {slotPoster?.imageUrl ? (
-                  <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-800/80">
+                  <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={() => handleOpenCropperForExisting(slotPoster)}
-                      className="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow group"
+                      className="py-1.5 px-1 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 border border-slate-200 group"
                       title="Crop Ulang (Rasio 16:9)"
                     >
-                      <Crop className="w-3 h-3 text-sky-400 group-hover:text-white" />
+                      <Crop className="w-3 h-3 text-blue-600 group-hover:text-blue-700" />
                       <span>Crop</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => fileInputRefs.current[slotIndex]?.click()}
-                      className="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow group"
+                      className="py-1.5 px-1 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 border border-slate-200 group"
                       title="Ganti Foto Poster"
                     >
-                      <RefreshCw className="w-3 h-3 text-emerald-400 group-hover:text-white" />
+                      <RefreshCw className="w-3 h-3 text-emerald-600 group-hover:text-emerald-700" />
                       <span>Ganti</span>
                     </button>
 
@@ -856,32 +856,32 @@ export default function MainPosterAdminPage() {
                           linkUrl: slotPoster.linkUrl || '',
                         });
                       }}
-                      className="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow group"
+                      className="py-1.5 px-1 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 border border-slate-200 group"
                       title="Atur Link Tujuan Poster"
                     >
-                      <LinkIcon className={`w-3 h-3 ${slotPoster.linkUrl ? 'text-sky-400' : 'text-slate-400'} group-hover:text-white`} />
+                      <LinkIcon className={`w-3 h-3 ${slotPoster.linkUrl ? 'text-blue-600' : 'text-slate-400'} group-hover:text-blue-700`} />
                       <span>{slotPoster.linkUrl ? 'Link (Aktif)' : 'Link'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleDeletePoster(slotPoster.id, slotOrder)}
-                      className="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow group"
+                      className="py-1.5 px-1 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 border border-slate-200 group"
                       title="Hapus Poster Ini"
                     >
-                      <Trash2 className="w-3 h-3 text-red-400 group-hover:text-white" />
+                      <Trash2 className="w-3 h-3 text-rose-600 group-hover:text-rose-700" />
                       <span>Hapus</span>
                     </button>
                   </div>
                 ) : (
-                  <div className="pt-2 border-t border-slate-800/80">
+                  <div className="pt-2 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={() => fileInputRefs.current[slotIndex]?.click()}
                       disabled={isUploading}
-                      className="w-full py-2 rounded-xl bg-slate-800/90 hover:bg-sky-600 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700/80 hover:border-sky-500 shadow"
+                      className="w-full py-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200 hover:border-blue-300 shadow-xs"
                     >
-                      <Upload className="w-3.5 h-3.5 text-sky-400" />
+                      <Upload className="w-3.5 h-3.5 text-blue-600" />
                       <span>Pilih Foto Slot {slotOrder}</span>
                     </button>
                   </div>
@@ -908,21 +908,21 @@ export default function MainPosterAdminPage() {
 
       {/* ── MODAL: ATUR LINK TUJUAN POSTER ── */}
       {editingPoster && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/40 max-w-md w-full space-y-5 animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 max-w-md w-full space-y-5 animate-fadeIn shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-lg blue-gradient-bg text-white text-xs font-black flex items-center justify-center">
                   {editingPoster.order}
                 </span>
-                <h3 className="text-base font-black uppercase text-white">
+                <h3 className="text-base font-black uppercase text-slate-900">
                   Atur Link Poster Slot {editingPoster.order}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingPoster(null)}
-                className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center cursor-pointer transition-colors"
               >
                 ✕
               </button>
@@ -930,8 +930,8 @@ export default function MainPosterAdminPage() {
 
             <form onSubmit={handleSaveMetadata} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <LinkIcon className="w-3.5 h-3.5 text-sky-400" />
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <LinkIcon className="w-3.5 h-3.5 text-blue-600" />
                   URL / Link Tujuan Poster
                 </label>
                 <input
@@ -939,19 +939,19 @@ export default function MainPosterAdminPage() {
                   value={metaFormData.linkUrl}
                   onChange={(e) => setMetaFormData({ linkUrl: e.target.value })}
                   placeholder="Misal: /matches, /articles/judul-berita, atau https://instagram.com/..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs outline-hidden focus:border-sky-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs outline-hidden focus:border-blue-500 font-mono font-medium"
                   autoFocus
                 />
-                <p className="text-[10px] text-slate-400 leading-relaxed">
+                <p className="text-[10px] text-slate-500 leading-relaxed">
                   Ketika pengunjung beranda mengeklik poster ini, halaman akan langsung diarahkan ke URL tujuan di atas. Kosongkan jika poster tidak memerlukan link.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingPoster(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-bold uppercase cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold uppercase cursor-pointer border border-slate-200"
                 >
                   Batal
                 </button>

@@ -306,21 +306,21 @@ export default function AdminArticlesPage() {
       <div className="flex items-center justify-between gap-2">
         <Link
           href="/admin/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-300 hover:text-sky-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 hover:text-blue-700 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Dashboard Admin</span><span className="sm:hidden">Dashboard</span>
         </Link>
         <button
           onClick={openAddModal}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
+          className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl blue-gradient-bg text-white font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5 text-blue-600" /> Tulis Artikel
+          <Plus className="w-3.5 h-3.5 text-white" /> Tulis Artikel
         </button>
       </div>
 
-      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
-          <h1 className="text-base sm:text-xl font-black uppercase text-white blue-gradient-text">
+      <div className="bg-white p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4">
+          <h1 className="text-base sm:text-xl font-black uppercase text-slate-900">
             Manajemen Berita & Artikel ({articles.length})
           </h1>
         </div>
@@ -337,32 +337,32 @@ export default function AdminArticlesPage() {
               return (
                 <div
                   key={art.id}
-                  className={`p-3 rounded-2xl bg-slate-900/80 border flex items-center gap-3 shadow-md transition-all ${
-                    art.isHidden ? 'border-amber-500/30 opacity-75' : 'border-slate-800'
+                  className={`p-3 rounded-2xl bg-white border flex items-center gap-3 shadow-sm transition-all ${
+                    art.isHidden ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200'
                   }`}
                 >
                   {/* Thumbnail 4:5 */}
-                  <div className="relative w-12 aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
+                  <div className="relative w-12 aspect-[4/5] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-xs">
                     <img src={mainThumb} alt={art.title} className="w-full h-full object-cover" />
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200">
                         {art.category}
                       </span>
                       {art.isHidden && (
-                        <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-amber-50 text-amber-700 border border-amber-300 flex items-center gap-1">
                           <EyeOff className="w-2.5 h-2.5" /> Tersembunyi
                         </span>
                       )}
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-500">
                         {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: WIB_TIMEZONE })}
                       </span>
                     </div>
-                    <h3 className="text-xs font-bold text-white line-clamp-2 leading-snug">{art.title}</h3>
-                    <p className="text-[10px] text-slate-400 font-semibold">{photos.length} Foto</p>
+                    <h3 className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">{art.title}</h3>
+                    <p className="text-[10px] text-slate-500 font-medium">{photos.length} Foto</p>
                   </div>
 
                   {/* Actions */}
@@ -372,29 +372,29 @@ export default function AdminArticlesPage() {
                       disabled={togglingHideId === art.id}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                         art.isHidden
-                          ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40'
-                          : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200'
                       }`}
                       title={art.isHidden ? 'Tampilkan Artikel (Unhide)' : 'Sembunyikan Artikel (Hide)'}
                     >
                       {togglingHideId === art.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
                       ) : art.isHidden ? (
-                        <EyeOff className="w-3.5 h-3.5 text-amber-300" />
+                        <EyeOff className="w-3.5 h-3.5 text-amber-700" />
                       ) : (
                         <Eye className="w-3.5 h-3.5" />
                       )}
                     </button>
                     <button
                       onClick={() => openEditModal(art)}
-                      className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer"
                       title="Edit Artikel"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(art.id)}
-                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
                       title="Hapus Artikel"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -408,8 +408,8 @@ export default function AdminArticlesPage() {
 
         {/* ── DESKTOP ARTICLES TABLE (Hidden on mobile) ── */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-200">
-            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-800">
+            <thead className="bg-slate-100 text-blue-700 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="p-3">Tanggal Terbit</th>
                 <th className="p-3">Judul Artikel</th>
@@ -418,7 +418,7 @@ export default function AdminArticlesPage() {
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {articles.map((art) => {
                 const photos = getArticlePhotos(art);
                 const mainThumb = getMainThumbnail(art.thumbnail);
@@ -427,33 +427,33 @@ export default function AdminArticlesPage() {
                   <tr
                     key={art.id}
                     className={`transition-colors ${
-                      art.isHidden ? 'bg-slate-950/40 hover:bg-slate-900/50 opacity-75' : 'hover:bg-slate-800/40'
+                      art.isHidden ? 'bg-amber-50/20 hover:bg-amber-50/40' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <td className="p-3 font-bold text-slate-300">
+                    <td className="p-3 font-bold text-slate-700">
                       {new Date(art.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: WIB_TIMEZONE })}
                     </td>
                     <td className="p-3 flex items-center gap-3">
-                      <img src={mainThumb} alt={art.title} className="w-8 aspect-[4/5] rounded-lg object-cover border border-sky-400/30 shadow-sm" />
-                      <span className="font-bold text-white">{art.title}</span>
+                      <img src={mainThumb} alt={art.title} className="w-8 aspect-[4/5] rounded-lg object-cover border border-slate-200 shadow-xs" />
+                      <span className="font-bold text-slate-900">{art.title}</span>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1.5">
                         {photos.slice(0, 5).map((p, idx) => (
-                          <img key={idx} src={p} alt={`p-${idx}`} className="w-6 h-7 rounded object-cover border border-slate-700 shadow-xs" />
+                          <img key={idx} src={p} alt={`p-${idx}`} className="w-6 h-7 rounded object-cover border border-slate-200 shadow-xs" />
                         ))}
-                        <span className="text-[10px] text-slate-400 font-bold ml-1">
+                        <span className="text-[10px] text-slate-500 font-bold ml-1">
                           ({photos.length} Foto)
                         </span>
                       </div>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-sky-500/10 text-sky-400 border border-sky-400/20">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200">
                           {art.category}
                         </span>
                         {art.isHidden && (
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-50 text-amber-700 border border-amber-300 flex items-center gap-1">
                             <EyeOff className="w-3 h-3" /> Tersembunyi
                           </span>
                         )}
@@ -465,29 +465,29 @@ export default function AdminArticlesPage() {
                         disabled={togglingHideId === art.id}
                         className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                           art.isHidden
-                            ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40'
-                            : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                            ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200'
                         }`}
                         title={art.isHidden ? 'Tampilkan Artikel (Unhide)' : 'Sembunyikan Artikel (Hide)'}
                       >
                         {togglingHideId === art.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                          <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
                         ) : art.isHidden ? (
-                          <EyeOff className="w-4 h-4 text-amber-300" />
+                          <EyeOff className="w-4 h-4 text-amber-700" />
                         ) : (
                           <Eye className="w-4 h-4" />
                         )}
                       </button>
                       <button
                         onClick={() => openEditModal(art)}
-                        className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer"
                         title="Edit Artikel"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(art.id)}
-                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
                         title="Hapus Artikel"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -510,15 +510,15 @@ export default function AdminArticlesPage() {
 
       {/* MODAL FORM (ADD / EDIT) */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-3xl glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
-              <h2 className="text-base sm:text-lg font-black uppercase text-white tracking-wide">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-3xl bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4">
+              <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wide">
                 {editingArticle ? 'Edit Berita / Artikel' : 'Tulis Berita / Artikel Baru'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -526,8 +526,8 @@ export default function AdminArticlesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div className="space-y-1.5 sm:space-y-2">
-                <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> Judul Berita
+                <label className="font-bold text-slate-700 uppercase text-xs flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-blue-600" /> Judul Berita
                 </label>
                 <input
                   type="text"
@@ -535,19 +535,19 @@ export default function AdminArticlesPage() {
                   placeholder="Contoh: Kemenangan Dramatis di Laga Pamungkas"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-hidden focus:border-blue-500 transition-colors font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5" /> Kategori Berita
+                  <label className="font-bold text-slate-700 uppercase text-xs flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5 text-blue-600" /> Kategori Berita
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-hidden focus:border-blue-500 transition-colors font-medium cursor-pointer"
                   >
                     <option value="Kabar Tim">Kabar Tim</option>
                     <option value="Hasil Pertandingan">Hasil Pertandingan</option>
@@ -558,31 +558,31 @@ export default function AdminArticlesPage() {
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                  <label className="font-bold text-sky-300 uppercase text-xs flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5" /> Tanggal Terbit
+                  <label className="font-bold text-slate-700 uppercase text-xs flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" /> Tanggal Terbit
                   </label>
                   <input
                     type="date"
                     required
                     value={formData.publishedAt}
                     onChange={(e) => setFormData({ ...formData, publishedAt: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-hidden focus:border-blue-500 transition-colors font-medium"
                   />
                 </div>
               </div>
 
               {/* 5 PHOTO SLOTS WITH INTEGRATED CROPPER */}
-              <div className="space-y-3 p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <div className="space-y-3 p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="font-bold text-sky-300 uppercase block text-xs">
+                    <label className="font-bold text-slate-800 uppercase block text-xs">
                       Foto Berita (Maks 5 Foto - Rasio 4:5)
                     </label>
-                    <span className="text-[10px] text-slate-400 font-normal">
+                    <span className="text-[10px] text-slate-500 font-normal">
                       Setiap foto dapat dipotong (crop 4:5) sebelum diunggah.
                     </span>
                   </div>
-                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-sky-400 font-bold">
+                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold">
                     {formData.photos.filter(Boolean).length}/5
                   </span>
                 </div>
@@ -599,28 +599,28 @@ export default function AdminArticlesPage() {
                               fileInputRefs.current[idx]?.click();
                             }
                           }}
-                          className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-950 border ${
-                            photoUrl ? 'border-sky-500/40' : 'border-dashed border-slate-700 hover:border-sky-400/60 cursor-pointer'
+                          className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-white border ${
+                            photoUrl ? 'border-blue-400 shadow-xs' : 'border-dashed border-slate-300 hover:border-blue-500 cursor-pointer'
                           } flex items-center justify-center transition-all group`}
                         >
                           {uploadingIndex === idx ? (
                             <div className="text-center p-2 space-y-1.5">
-                              <Loader2 className="w-6 h-6 animate-spin mx-auto text-sky-400" />
-                              <span className="text-[9px] text-sky-300 font-bold block">Mengunggah...</span>
+                              <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+                              <span className="text-[9px] text-blue-700 font-bold block">Mengunggah...</span>
                             </div>
                           ) : photoUrl ? (
                             <>
                               <img src={photoUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
                               
                               {/* Hover quick overlay */}
-                              <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleOpenCropperForExisting(idx);
                                   }}
-                                  className="p-1.5 rounded-lg bg-sky-600 text-white hover:bg-sky-500 transition-colors shadow cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow cursor-pointer"
                                   title="Crop Ulang"
                                 >
                                   <Crop className="w-3.5 h-3.5" />
@@ -650,15 +650,15 @@ export default function AdminArticlesPage() {
                               </div>
 
                               {idx === 0 && (
-                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-black text-[8px] uppercase tracking-wide pointer-events-none">
+                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-blue-600 text-white font-black text-[8px] uppercase tracking-wide pointer-events-none">
                                   Utama
                                 </span>
                               )}
                             </>
                           ) : (
                             <div className="text-center p-2 space-y-1">
-                              <Upload className="w-5 h-5 mx-auto text-slate-500 group-hover:text-sky-400 transition-colors" />
-                              <span className="text-[10px] text-slate-400 font-bold block group-hover:text-white transition-colors">
+                              <Upload className="w-5 h-5 mx-auto text-slate-400 group-hover:text-blue-600 transition-colors" />
+                              <span className="text-[10px] text-slate-600 font-bold block group-hover:text-blue-600 transition-colors">
                                 {idx === 0 ? '+ Foto 1 (Utama)' : `+ Foto ${idx + 1}`}
                               </span>
                             </div>
@@ -671,7 +671,7 @@ export default function AdminArticlesPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenCropperForExisting(idx)}
-                              className="py-1 rounded bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5"
+                              className="py-1 rounded bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5 border border-slate-200"
                               title="Crop Ulang"
                             >
                               <Crop className="w-2.5 h-2.5" /> Crop
@@ -679,7 +679,7 @@ export default function AdminArticlesPage() {
                             <button
                               type="button"
                               onClick={() => fileInputRefs.current[idx]?.click()}
-                              className="py-1 rounded bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5"
+                              className="py-1 rounded bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5 border border-slate-200"
                               title="Ganti Foto"
                             >
                               <RefreshCw className="w-2.5 h-2.5" /> Ganti
@@ -687,7 +687,7 @@ export default function AdminArticlesPage() {
                             <button
                               type="button"
                               onClick={() => removePhotoSlot(idx)}
-                              className="py-1 rounded bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5"
+                              className="py-1 rounded bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5 border border-slate-200"
                               title="Hapus Foto"
                             >
                               <Trash2 className="w-2.5 h-2.5" /> Hapus
@@ -698,7 +698,7 @@ export default function AdminArticlesPage() {
                             type="button"
                             onClick={() => fileInputRefs.current[idx]?.click()}
                             disabled={uploadingIndex !== null}
-                            className="w-full py-1 rounded bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-[10px] font-bold transition-colors cursor-pointer block text-center"
+                            className="w-full py-1 rounded bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[10px] font-bold transition-colors cursor-pointer block text-center border border-slate-200"
                           >
                             Pilih Foto
                           </button>
@@ -722,7 +722,7 @@ export default function AdminArticlesPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="font-bold text-sky-300 uppercase text-xs">
+                <label className="font-bold text-slate-700 uppercase text-xs">
                   Isi Konten Berita
                 </label>
                 <textarea
@@ -731,22 +731,22 @@ export default function AdminArticlesPage() {
                   placeholder="Tuliskan isi berita lengkap di sini..."
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-hidden focus:border-sky-400 transition-colors leading-relaxed"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-hidden focus:border-blue-500 transition-colors leading-relaxed font-medium"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white font-bold text-xs transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={uploadingIndex !== null}
-                  className="px-6 py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-xs shadow-lg transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl blue-gradient-bg text-white font-extrabold uppercase text-xs shadow-lg transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {editingArticle ? 'Perbarui Artikel' : 'Terbitkan Artikel'}
                 </button>

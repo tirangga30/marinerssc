@@ -308,31 +308,31 @@ export default function TeamManagementPage() {
   if (!isUnlocked) {
     return (
       <div className="max-w-md mx-auto px-4 py-12 sm:py-20 animate-fadeIn">
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/40 shadow-2xl shadow-slate-950 text-center space-y-6 relative overflow-hidden backdrop-blur-2xl">
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xl text-center space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Logo / Shield Icon */}
-          <div className="relative mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 shadow-xl shadow-amber-500/20 border border-white/20">
-            <Lock className="w-9 h-9 text-slate-950" />
-            <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full bg-sky-500 text-white text-[9px] font-black uppercase tracking-wider shadow">
+          <div className="relative mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-xl shadow-amber-500/20 border border-white/20">
+            <Lock className="w-9 h-9 text-white" />
+            <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider shadow">
               PIN
             </span>
           </div>
 
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
-              <Shield className="w-3 h-3 text-amber-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold uppercase tracking-wider">
+              <Shield className="w-3 h-3 text-amber-600" />
               Area Khusus Pengelola
             </div>
-            <h1 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black uppercase text-slate-900 tracking-tight">
               Team Management
             </h1>
           </div>
 
           {pinError && (
-            <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold flex items-center justify-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{pinError}</span>
             </div>
           )}
@@ -351,12 +351,12 @@ export default function TeamManagementPage() {
                 }}
                 placeholder="Masukkan PIN"
                 autoFocus
-                className="w-full py-3.5 px-4 text-center text-xl font-mono tracking-[0.3em] rounded-2xl bg-slate-950/80 border border-sky-400/40 focus:border-sky-400 text-white outline-hidden shadow-inner transition-all placeholder:text-xs placeholder:tracking-normal placeholder-slate-500"
+                className="w-full py-3.5 px-4 text-center text-xl font-mono tracking-[0.3em] rounded-2xl bg-slate-50 border border-slate-300 focus:border-blue-500 text-slate-900 outline-hidden shadow-inner transition-all placeholder:text-xs placeholder:tracking-normal placeholder-slate-400 font-bold"
               />
               <button
                 type="button"
                 onClick={() => setShowPin(!showPin)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1.5 transition-colors cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1.5 transition-colors cursor-pointer"
                 title={showPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
               >
                 {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -366,16 +366,16 @@ export default function TeamManagementPage() {
             <button
               type="submit"
               disabled={pinLoading || !pinInput}
-              className="w-full max-w-xs mx-auto py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+              className="w-full max-w-xs mx-auto py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs uppercase tracking-widest shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
             >
               {pinLoading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Membuka...
                 </>
               ) : (
                 <>
-                  <KeyRound className="w-4 h-4 text-slate-950" />
+                  <KeyRound className="w-4 h-4 text-white" />
                   Buka Portal
                 </>
               )}
@@ -393,9 +393,9 @@ export default function TeamManagementPage() {
                   window.location.href = '/admin/dashboard';
                 }
               }}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 hover:border-sky-400/50 text-xs font-bold uppercase transition-all cursor-pointer shadow-md active:scale-95"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-sm active:scale-95"
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-sky-400" />
+              <ArrowLeft className="w-3.5 h-3.5 text-blue-600" />
               <span>Kembali ke Dashboard</span>
             </button>
           </div>
@@ -429,17 +429,17 @@ export default function TeamManagementPage() {
       )}
 
       {/* Top Banner */}
-      <div className="glass-panel p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-sky-400/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl relative overflow-hidden">
+      <div className="bg-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm relative overflow-hidden">
         <div className="space-y-1 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-            <Unlock className="w-3.5 h-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+            <Unlock className="w-3.5 h-3.5 text-amber-600" />
             Portal Team Management · Akses Terbuka
           </div>
-          <h1 className="text-xl sm:text-3xl font-black uppercase text-white tracking-tight flex items-center justify-center sm:justify-start gap-2">
+          <h1 className="text-xl sm:text-3xl font-black uppercase text-slate-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <span>TEAM MANAGEMENT</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           </h1>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600">
             Kelola logo klub, nama tim, wallpaper login &amp; panel admin, pengguna admin, serta keamanan PIN.
           </p>
         </div>
@@ -447,7 +447,7 @@ export default function TeamManagementPage() {
         <div className="flex items-center gap-2 flex-wrap justify-center">
           <button
             onClick={handleLockPortal}
-            className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
           >
             <Lock className="w-3.5 h-3.5" /> Kunci Portal
           </button>
@@ -455,16 +455,16 @@ export default function TeamManagementPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 glass-panel rounded-2xl overflow-x-auto border border-sky-400/20 max-w-full">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-white rounded-2xl overflow-x-auto border border-slate-200 shadow-sm max-w-full">
         <button
           onClick={() => setActiveTab('identity')}
           className={`flex-1 min-w-[120px] py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'identity'
               ? 'blue-gradient-bg text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <Shield className="w-3.5 h-3.5 text-sky-300" />
+          <Shield className="w-3.5 h-3.5 text-blue-600" />
           <span>Identitas Tim</span>
         </button>
 
@@ -473,10 +473,10 @@ export default function TeamManagementPage() {
           className={`flex-1 min-w-[120px] py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'wallpapers'
               ? 'blue-gradient-bg text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <ImageIcon className="w-3.5 h-3.5 text-sky-300" />
+          <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
           <span>Wallpaper &amp; Tema</span>
         </button>
 
@@ -485,10 +485,10 @@ export default function TeamManagementPage() {
           className={`flex-1 min-w-[120px] py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'users'
               ? 'blue-gradient-bg text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <Users className="w-3.5 h-3.5 text-sky-300" />
+          <Users className="w-3.5 h-3.5 text-blue-600" />
           <span>Kelola Pengguna ({users.length})</span>
         </button>
 
@@ -496,8 +496,8 @@ export default function TeamManagementPage() {
           onClick={() => setActiveTab('security')}
           className={`flex-1 min-w-[120px] py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'security'
-              ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'bg-amber-500 text-white font-black shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <KeyRound className="w-3.5 h-3.5" />
@@ -509,13 +509,13 @@ export default function TeamManagementPage() {
           TAB 1: IDENTITAS TIM (LOGO & NAMA TIM)
          ══════════════════════════════════════════════════════════ */}
       {activeTab === 'identity' && (
-        <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/20 space-y-6">
-          <div className="border-b border-slate-800 pb-4">
-            <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-              <Shield className="w-5 h-5 text-sky-400" />
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
               Identitas Klub Sepak Bola
             </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Ubah logo dan nama resmi klub. Logo yang diunggah otomatis tersinkronisasi ke navbar, kartu pertandingan, dan seluruh halaman web.
             </p>
           </div>
@@ -523,25 +523,25 @@ export default function TeamManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
             {/* Box Logo */}
             <div className="space-y-4">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
                 Logo Resmi Tim ({teamName || 'TEAM'})
               </label>
 
-              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-                <div className="w-28 h-28 rounded-2xl bg-[#09111e] border-2 border-sky-400/40 flex items-center justify-center p-3 shadow-xl relative group">
+              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-28 h-28 rounded-2xl bg-white border border-slate-200 flex items-center justify-center p-3 shadow-md relative group">
                   <img
                     src={teamLogo}
                     alt={teamName}
-                    className="w-full h-full object-contain drop-shadow-2xl transition-transform group-hover:scale-110 duration-300"
+                    className="w-full h-full object-contain drop-shadow-md transition-transform group-hover:scale-110 duration-300"
                   />
                 </div>
 
                 <div className="space-y-2 text-center sm:text-left flex-1">
-                  <span className="text-[11px] text-slate-400 block font-medium">
+                  <span className="text-[11px] text-slate-500 block font-medium">
                     Logo Resmi Klub
                   </span>
                   <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-                    <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5">
+                    <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5 shadow-sm">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Unggah Logo Baru</span>
                       <input
@@ -558,12 +558,12 @@ export default function TeamManagementPage() {
                     <button
                       type="button"
                       onClick={() => setTeamLogo('/defaultteam.webp')}
-                      className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-xs"
                     >
                       Kembalikan Logo Sistem
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-500">
                     Disarankan format WebP / PNG transparan resolusi minimal 512x512.
                   </p>
                 </div>
@@ -572,13 +572,13 @@ export default function TeamManagementPage() {
 
             {/* Box Nama Tim & Istilah Klub */}
             <div className="space-y-4">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
                 Nama Resmi Tim &amp; Istilah Klub
               </label>
 
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-4">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
                     Nama Tim
                   </label>
                   <input
@@ -586,25 +586,25 @@ export default function TeamManagementPage() {
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                     placeholder="TEAM"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-bold text-sm outline-hidden transition-all tracking-wide"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-bold text-sm outline-hidden transition-all tracking-wide"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
                     Istilah Klub (Dropdown)
                   </label>
                   <select
                     value={clubType}
                     onChange={(e) => setClubType(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-sky-400 text-white font-black text-sm outline-hidden transition-all uppercase tracking-wider cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-black text-sm outline-hidden transition-all uppercase tracking-wider cursor-pointer"
                   >
                     <option value="SOCCER CLUB">SOCCER CLUB</option>
                     <option value="FOOTBALL CLUB">FOOTBALL CLUB</option>
                   </select>
                 </div>
 
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   Label nama tim dan istilah klub ini ditampilkan pada header, footer, scorecard, dan banner laga.
                 </p>
               </div>
@@ -612,30 +612,30 @@ export default function TeamManagementPage() {
 
             {/* Box Foto Template Pemain (Pemain Tanpa Wajah) */}
             <div className="md:col-span-2 space-y-4">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
                 Foto Template Pemain (Pemain Tanpa Wajah)
               </label>
 
-              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-                <div className="w-24 h-28 rounded-2xl bg-[#09111e] border-2 border-sky-400/40 flex items-end justify-center p-2 shadow-xl relative group overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-24 h-28 rounded-2xl bg-white border border-slate-200 flex items-end justify-center p-2 shadow-md relative group overflow-hidden">
                   <img
                     src={playerDefaultPhoto}
                     alt="Player Template Preview"
-                    className="w-full h-full object-contain object-bottom drop-shadow-lg transition-transform group-hover:scale-105 duration-300"
+                    className="w-full h-full object-contain object-bottom drop-shadow-md transition-transform group-hover:scale-105 duration-300"
                   />
                 </div>
 
                 <div className="space-y-2 text-center sm:text-left flex-1">
                   <div className="flex items-center gap-2 justify-center sm:justify-start">
-                    <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
                       Foto Template Silhouette Tim
                     </span>
-                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                       Rasio 4:5 Vertikal
                     </span>
                   </div>
                   <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-                    <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5">
+                    <label className="px-3.5 py-2 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center gap-1.5 shadow-sm">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Ganti Template Foto</span>
                       <input
@@ -652,12 +652,12 @@ export default function TeamManagementPage() {
                     <button
                       type="button"
                       onClick={() => setPlayerDefaultPhoto('/playertemplate.webp')}
-                      className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-xs"
                     >
                       Kembalikan Template Sistem
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-500">
                     Foto silhouette/jersey default ini akan otomatis digunakan pada profil pemain tim yang belum memiliki foto wajah sendiri.
                   </p>
                 </div>
@@ -665,17 +665,17 @@ export default function TeamManagementPage() {
             </div>
 
             {/* Box Fitur Komunitas */}
-            <div className="md:col-span-2 p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="md:col-span-2 p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
                     Fitur Soccer Community di Web Publik
                   </span>
-                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${isCommunityEnabled ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${isCommunityEnabled ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                     {isCommunityEnabled ? 'Aktif (Tampil di Web)' : 'Nonaktif (Disembunyikan)'}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   Jika dinonaktifkan, seluruh elemen Soccer Community (tombol join, fun match, tab komunitas) akan disembunyikan dari pengunjung publik.
                 </p>
               </div>
@@ -683,7 +683,7 @@ export default function TeamManagementPage() {
               <button
                 type="button"
                 onClick={() => setIsCommunityEnabled(!isCommunityEnabled)}
-                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isCommunityEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isCommunityEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
                 title={isCommunityEnabled ? 'Klik untuk Menonaktifkan' : 'Klik untuk Mengaktifkan'}
               >
                 <span
@@ -694,11 +694,11 @@ export default function TeamManagementPage() {
           </div>
 
           {/* Action Save */}
-          <div className="pt-4 border-t border-slate-800 flex justify-end">
+          <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button
               onClick={handleSaveSettings}
               disabled={savingSettings}
-              className="px-6 py-3 rounded-xl blue-gradient-bg text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-sky-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 rounded-xl blue-gradient-bg text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {savingSettings ? 'Menyimpan...' : 'Simpan Identitas Tim'}
@@ -711,13 +711,13 @@ export default function TeamManagementPage() {
           TAB 2: TAMPILAN & WALLPAPER
          ══════════════════════════════════════════════════════════ */}
       {activeTab === 'wallpapers' && (
-        <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/20 space-y-6">
-          <div className="border-b border-slate-800 pb-4">
-            <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-sky-400" />
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-blue-600" />
               Wallpaper Login &amp; Panel Admin
             </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Atur gambar latar belakang untuk halaman login pengelola dan dashboard panel admin.
             </p>
           </div>
@@ -725,30 +725,30 @@ export default function TeamManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             
             {/* 1. Wallpaper Halaman Login */}
-            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
                   Wallpaper Halaman Login
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">16:9 Lanskap</span>
+                <span className="text-[10px] text-slate-500 font-mono">16:9 Lanskap</span>
               </div>
 
               {/* Preview Box */}
-              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-800 group shadow-lg">
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-100">
                 <img
                   src={loginWallpaper}
                   alt="Login Wallpaper Preview"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="px-3 py-1 rounded-full bg-slate-950/90 text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
+                  <span className="px-3 py-1 rounded-full bg-white text-slate-900 text-[10px] font-bold uppercase tracking-wider shadow">
                     Pratinjau Login
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <label className="flex-1 py-2 px-3 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-1.5">
+                <label className="flex-1 py-2 px-3 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
                   <Upload className="w-3.5 h-3.5" />
                   <span>Ganti Wallpaper</span>
                   <input
@@ -765,7 +765,7 @@ export default function TeamManagementPage() {
                 <button
                   type="button"
                   onClick={() => setLoginWallpaper('/NYCOMP.webp')}
-                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
+                  className="py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-xs"
                 >
                   Kembalikan Template Sistem
                 </button>
@@ -773,30 +773,30 @@ export default function TeamManagementPage() {
             </div>
 
             {/* 2. Wallpaper Panel Admin Dashboard */}
-            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
                   Wallpaper Panel Admin
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">16:9 Lanskap</span>
+                <span className="text-[10px] text-slate-500 font-mono">16:9 Lanskap</span>
               </div>
 
               {/* Preview Box */}
-              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-800 group shadow-lg">
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-100">
                 <img
                   src={adminWallpaper}
                   alt="Admin Panel Wallpaper Preview"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="px-3 py-1 rounded-full bg-slate-950/90 text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
+                  <span className="px-3 py-1 rounded-full bg-white text-slate-900 text-[10px] font-bold uppercase tracking-wider shadow">
                     Pratinjau Admin Panel
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <label className="flex-1 py-2 px-3 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-1.5">
+                <label className="flex-1 py-2 px-3 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
                   <Upload className="w-3.5 h-3.5" />
                   <span>Ganti Wallpaper</span>
                   <input
@@ -813,7 +813,7 @@ export default function TeamManagementPage() {
                 <button
                   type="button"
                   onClick={() => setAdminWallpaper('/stadium_hero2.png')}
-                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold uppercase transition-all cursor-pointer"
+                  className="py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer shadow-xs"
                 >
                   Kembalikan Template Sistem
                 </button>
@@ -821,30 +821,30 @@ export default function TeamManagementPage() {
             </div>
 
             {/* 3. Latar Box Pemain (Player Card Background) */}
-            <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-300 block">
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-700 block">
                     Latar Box Pemain (Player Card Background)
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500">
                     Gambar latar ini digunakan pada kartu profil pemain di halaman daftar pemain, beranda, dan detail pemain.
                   </span>
                 </div>
-                <span className="text-[10px] text-sky-400 font-bold self-start sm:self-auto">Template Sistem</span>
+                <span className="text-[10px] text-blue-700 font-bold self-start sm:self-auto">Template Sistem</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                 {/* Preview Box */}
-                <div className="sm:col-span-5 relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-800 group shadow-lg">
+                <div className="sm:col-span-5 relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-100">
                   <img
                     src={playerCardBg || '/bgprofil2.jpeg'}
                     alt="Player Card Background Preview"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {/* Sample silhouette/overlay to visualize player card */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#060b14]/90 via-transparent to-transparent flex items-end p-3">
-                    <span className="px-2.5 py-0.5 rounded-full bg-sky-500/80 text-white text-[9px] font-bold uppercase tracking-wider">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-3">
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider">
                       Pratinjau Box Pemain
                     </span>
                   </div>
@@ -852,11 +852,11 @@ export default function TeamManagementPage() {
 
                 {/* Upload & Reset Controls */}
                 <div className="sm:col-span-7 space-y-2.5">
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     Unggah gambar khusus (misal foto stadion atau grafis klub) untuk menjadi latar belakang kartu seluruh pemain. Anda dapat mengembalikan ke template sistem kapan saja.
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <label className="py-2.5 px-4 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <label className="py-2.5 px-4 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-2 shadow-sm">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Ganti Latar Box</span>
                       <input
@@ -873,7 +873,7 @@ export default function TeamManagementPage() {
                     <button
                       type="button"
                       onClick={() => setPlayerCardBg('/bgprofil2.jpeg')}
-                      className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5"
+                      className="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                     >
                       <span>Jadikan Template Sistem</span>
                     </button>
@@ -885,11 +885,11 @@ export default function TeamManagementPage() {
           </div>
 
           {/* Action Save */}
-          <div className="pt-4 border-t border-slate-800 flex justify-end">
+          <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button
               onClick={handleSaveSettings}
               disabled={savingSettings}
-              className="px-6 py-3 rounded-xl blue-gradient-bg text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-sky-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 rounded-xl blue-gradient-bg text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {savingSettings ? 'Menyimpan...' : 'Simpan Wallpaper'}
@@ -902,14 +902,14 @@ export default function TeamManagementPage() {
           TAB 3: KELOLA PENGGUNA (ADMIN USERS)
          ══════════════════════════════════════════════════════════ */}
       {activeTab === 'users' && (
-        <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/20 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-sky-400" />
+              <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
                 Daftar Akun Pengelola Admin
               </h2>
-              <p className="text-xs text-slate-300 mt-0.5">
+              <p className="text-xs text-slate-600 mt-0.5">
                 Kelola akun admin untuk login ke portal klub. Anda dapat menambah, mengedit, atau mengganti kata sandi admin.
               </p>
             </div>
@@ -920,7 +920,7 @@ export default function TeamManagementPage() {
                 setUserFormData({ name: '', email: '', password: '' });
                 setShowAddUserModal(true);
               }}
-              className="px-4 py-2.5 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-xl blue-gradient-bg text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <UserPlus className="w-4 h-4" />
               <span>Tambah Admin Baru</span>
@@ -929,8 +929,8 @@ export default function TeamManagementPage() {
 
           {/* User List Table */}
           {loadingUsers ? (
-            <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+            <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
               Memuat data pengguna...
             </div>
           ) : users.length === 0 ? (
@@ -942,20 +942,20 @@ export default function TeamManagementPage() {
               {users.map((u) => (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-sky-400/30 transition-all flex-wrap"
+                  className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition-all flex-wrap"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white font-black text-sm uppercase shadow">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-sm uppercase shadow-xs">
                       {u.name ? u.name.charAt(0) : 'A'}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white uppercase">{u.name}</h4>
-                        <span className="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9px] font-black uppercase">
+                        <h4 className="text-sm font-bold text-slate-900 uppercase">{u.name}</h4>
+                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-black uppercase">
                           ADMIN
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 font-mono">{u.email}</p>
+                      <p className="text-xs text-slate-500 font-mono">{u.email}</p>
                     </div>
                   </div>
 
@@ -966,7 +966,7 @@ export default function TeamManagementPage() {
                         setUserFormData({ name: u.name, email: u.email, password: '' });
                         setShowAddUserModal(true);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 border border-slate-700 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                     >
                       <Edit3 className="w-3.5 h-3.5" /> Edit
                     </button>
@@ -974,7 +974,7 @@ export default function TeamManagementPage() {
                     {users.length > 1 && (
                       <button
                         onClick={() => handleDeleteUser(u.id, u.name)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                       >
                         <Trash2 className="w-3.5 h-3.5" /> Hapus
                       </button>
@@ -991,20 +991,20 @@ export default function TeamManagementPage() {
           TAB 4: KEAMANAN & PIN KHUSUS
          ══════════════════════════════════════════════════════════ */}
       {activeTab === 'security' && (
-        <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-amber-500/30 space-y-6 bg-amber-950/5">
-          <div className="border-b border-slate-800 pb-4">
-            <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-amber-400" />
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-amber-200 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-amber-600" />
               Pengaturan PIN Keamanan Portal
             </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               PIN ini digunakan untuk mengunci dan membuka portal Team Management ini agar tidak sembarang orang bisa mengakses pengaturan inti klub.
             </p>
           </div>
 
           <form onSubmit={handleChangePin} className="max-w-md space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 PIN Lama
               </label>
               <input
@@ -1013,13 +1013,13 @@ export default function TeamManagementPage() {
                 value={currentPin}
                 onChange={(e) => setCurrentPin(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="Masukkan PIN saat ini (default: 1234)"
-                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-400 text-white font-mono text-sm outline-hidden transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:border-amber-500 text-slate-900 font-mono text-sm outline-hidden transition-all"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 PIN Baru (4-8 Digit Angka)
               </label>
               <input
@@ -1028,13 +1028,13 @@ export default function TeamManagementPage() {
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="PIN Baru"
-                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-400 text-white font-mono text-sm outline-hidden transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:border-amber-500 text-slate-900 font-mono text-sm outline-hidden transition-all"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 Konfirmasi PIN Baru
               </label>
               <input
@@ -1043,7 +1043,7 @@ export default function TeamManagementPage() {
                 value={confirmPin}
                 onChange={(e) => setConfirmPin(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="Ketik ulang PIN Baru"
-                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-400 text-white font-mono text-sm outline-hidden transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:border-amber-500 text-slate-900 font-mono text-sm outline-hidden transition-all"
                 required
               />
             </div>
@@ -1051,9 +1051,9 @@ export default function TeamManagementPage() {
             <button
               type="submit"
               disabled={pinChangeLoading}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <KeyRound className="w-4 h-4 text-slate-950" />
+              <KeyRound className="w-4 h-4 text-white" />
               {pinChangeLoading ? 'Menyimpan...' : 'Perbarui PIN Keamanan'}
             </button>
           </form>
@@ -1062,16 +1062,16 @@ export default function TeamManagementPage() {
 
       {/* ── MODAL: TAMBAH / EDIT USER ADMIN ── */}
       {showAddUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/40 max-w-md w-full space-y-5 animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-black uppercase text-white flex items-center gap-2">
-                <Users className="w-4 h-4 text-sky-400" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 max-w-md w-full space-y-5 animate-fadeIn shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black uppercase text-slate-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-600" />
                 {editingUser ? 'Edit Pengguna Admin' : 'Tambah Admin Baru'}
               </h3>
               <button
                 onClick={() => setShowAddUserModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
               >
                 ✕
               </button>
@@ -1079,7 +1079,7 @@ export default function TeamManagementPage() {
 
             <form onSubmit={handleSaveUser} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
                   Nama Pengguna
                 </label>
                 <input
@@ -1088,12 +1088,12 @@ export default function TeamManagementPage() {
                   onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
                   placeholder="Misal: Coach Tirangga / Admin 1"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs outline-hidden focus:border-sky-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs outline-hidden focus:border-blue-500 font-medium"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
                   Email (Untuk Login)
                 </label>
                 <input
@@ -1102,12 +1102,12 @@ export default function TeamManagementPage() {
                   onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
                   placeholder="admin@marinersfc.com"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs outline-hidden focus:border-sky-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs outline-hidden focus:border-blue-500 font-medium font-mono"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
                   {editingUser ? 'Kata Sandi Baru (Kosongkan jika tidak diubah)' : 'Kata Sandi'}
                 </label>
                 <div className="relative">
@@ -1117,23 +1117,23 @@ export default function TeamManagementPage() {
                     onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
                     placeholder={editingUser ? '•••••••• (Tetap)' : 'Minimal 6 karakter'}
                     required={!editingUser}
-                    className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs outline-hidden focus:border-sky-400"
+                    className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs outline-hidden focus:border-blue-500 font-medium"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddUserModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-bold uppercase"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>

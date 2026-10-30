@@ -657,19 +657,19 @@ export default function AdminPlayersPage() {
         </div>
       </div>
 
-      <div className="glass-panel p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6">
+      <div className="glass-panel bg-white p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6">
         {/* Navigation Tabs Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 sm:pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3 sm:pb-4">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setActiveTab('season_squad')}
               className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'season_squad'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
-                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                  : 'bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 border border-slate-200'
               }`}
             >
-              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <Trophy className="w-3.5 h-3.5 text-amber-500" />
               Skuad Musim {selectedSeason} ({seasonSquadPlayers.length})
             </button>
 
@@ -678,7 +678,7 @@ export default function AdminPlayersPage() {
               className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'guests'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-1 ring-sky-300'
-                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                  : 'bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 border border-slate-200'
               }`}
             >
               Pemain Loan ({guestPlayers.length})
@@ -687,7 +687,7 @@ export default function AdminPlayersPage() {
 
           {/* Beranda Count */}
           <div className="flex items-center gap-2 justify-between sm:justify-end">
-            <span className="text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
+            <span className="text-[10px] sm:text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-300">
               ★ Beranda: {featuredCount}/6
             </span>
           </div>
@@ -697,7 +697,7 @@ export default function AdminPlayersPage() {
         <div className="block md:hidden space-y-2.5">
           {displayedList.length === 0 ? (
             <div className="text-center py-8 space-y-2">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 {activeTab === 'season_squad'
                   ? `Belum ada pemain di skuad Musim ${selectedSeason}.`
                   : 'Belum ada pemain terdaftar.'}
@@ -709,7 +709,7 @@ export default function AdminPlayersPage() {
                     setSelectedPlayerIdsForPull([]);
                     setShowPullModal(true);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-bold uppercase cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-300 text-xs font-bold uppercase cursor-pointer hover:bg-amber-100"
                 >
                   <UserPlus className="w-3.5 h-3.5 inline mr-1" /> Tarik Pemain Sekarang
                 </button>
@@ -724,10 +724,10 @@ export default function AdminPlayersPage() {
               return (
                 <div
                   key={player.id}
-                  className="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center gap-2.5 shadow-sm"
+                  className="p-2.5 sm:p-3 rounded-xl bg-white border border-slate-200 flex items-center gap-2.5 shadow-xs"
                 >
                   {/* 4:5 Photo Avatar */}
-                  <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-950 border border-sky-400/30 shrink-0 shadow">
+                  <div className="relative w-11 aspect-[4/5] rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-xs">
                     <img
                       src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : defaultPlayerPhoto}
                       alt={player.name}
@@ -738,21 +738,21 @@ export default function AdminPlayersPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono font-black text-sky-400 text-xs">#{player.number}</span>
-                      <span className="font-bold text-white text-xs truncate max-w-[120px]">{player.name}</span>
+                      <span className="font-mono font-black text-blue-700 text-xs">#{player.number}</span>
+                      <span className="font-bold text-slate-900 text-xs truncate max-w-[120px]">{player.name}</span>
                       {player.isCaptain && (
-                        <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] font-black uppercase">
+                        <span className="px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[8px] font-black uppercase">
                           👑
                         </span>
                       )}
                       {player.isGuest && (
-                        <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase">
+                        <span className="px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[8px] uppercase font-bold">
                           Loan
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap">
-                      <span className="font-bold text-sky-300">{normalizePos(player.position)}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-600 flex-wrap">
+                      <span className="font-bold text-blue-700">{normalizePos(player.position)}</span>
                       <span>•</span>
                       <span>
                         {player.goals}G {player.assists}A
@@ -762,7 +762,7 @@ export default function AdminPlayersPage() {
                       {player.phone && (
                         <>
                           <span>•</span>
-                          <span className="text-emerald-400 font-mono text-[9px]" title={`Nomor WhatsApp: ${player.phone}`}>
+                          <span className="text-emerald-700 font-mono text-[9px] font-semibold" title={`Nomor WhatsApp: ${player.phone}`}>
                             WA: {player.phone}
                           </span>
                         </>
@@ -778,7 +778,7 @@ export default function AdminPlayersPage() {
                       <button
                         onClick={() => handleReleasePlayer(player)}
                         title={`Lepas dari Skuad Musim ${selectedSeason}`}
-                        className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-100 text-amber-700 hover:bg-amber-100 transition-colors border border-slate-200 cursor-pointer"
                       >
                         <UserMinus className="w-3.5 h-3.5" />
                       </button>
@@ -791,23 +791,23 @@ export default function AdminPlayersPage() {
                         title={isPlayerFeaturedInSeason(player) ? 'Hapus dari Beranda' : 'Tampilkan di Beranda'}
                         className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
                           isPlayerFeaturedInSeason(player)
-                            ? 'bg-amber-500/20 border-amber-400/60 text-amber-400'
-                            : 'bg-slate-800 border-slate-700 text-slate-500'
+                            ? 'bg-amber-50 border-amber-400 text-amber-600 shadow-xs'
+                            : 'bg-slate-100 border-slate-200 text-slate-400'
                         }`}
                       >
-                        <Star className={`w-3.5 h-3.5 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-400' : ''}`} />
+                        <Star className={`w-3.5 h-3.5 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-500 text-amber-500' : ''}`} />
                       </button>
                     )}
                     <button
                       onClick={() => openEditModal(player)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200 cursor-pointer"
                       title="Edit Pemain"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(player.id)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors border border-rose-200 cursor-pointer"
                       title="Hapus Pemain"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -821,8 +821,8 @@ export default function AdminPlayersPage() {
 
         {/* ── DESKTOP PLAYERS TABLE ── */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-200">
-            <thead className="bg-slate-900/90 text-sky-400 font-bold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-800">
+            <thead className="bg-slate-100 text-blue-700 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="p-3">No</th>
                 <th className="p-3">Pemain</th>
@@ -834,7 +834,7 @@ export default function AdminPlayersPage() {
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {displayedList.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-slate-500">
@@ -846,41 +846,41 @@ export default function AdminPlayersPage() {
               ) : (
                 displayedList.map((player) => {
                   return (
-                    <tr key={player.id} className="hover:bg-slate-800/40">
-                      <td className="p-3 font-mono font-bold text-sky-400">#{player.number}</td>
+                    <tr key={player.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3 font-mono font-bold text-blue-700">#{player.number}</td>
                       <td className="p-3 flex items-center gap-3">
                         <img
                           src={(player.photoUrl && player.photoUrl !== '/playertemplate.webp') ? player.photoUrl : defaultPlayerPhoto}
                           alt={player.name}
-                          className="w-10 h-10 rounded-xl object-cover border border-sky-400/40 shadow-sm"
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs"
                         />
                         <div>
-                          <span className="font-bold text-white">{player.name}</span>
+                          <span className="font-bold text-slate-900">{player.name}</span>
                           {player.isCaptain && (
-                            <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-black uppercase">
+                            <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[9px] font-black uppercase">
                               👑 Kapten
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="p-3 font-bold text-sky-300">
+                      <td className="p-3 font-bold text-slate-700">
                         {normalizePos(player.position)}
                         {player.isGuest && (
-                          <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] uppercase tracking-wider border border-amber-500/30">
+                          <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[8px] uppercase tracking-wider border border-amber-300 font-bold">
                             Loan
                           </span>
                         )}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-slate-700 font-medium">
                         {player.goals} Gol / {player.assists} Assist
                       </td>
-                      <td className="p-3">{player.appearances}</td>
+                      <td className="p-3 text-slate-700 font-medium">{player.appearances}</td>
                       <td className="p-3">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             player.status === 'Active'
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-red-500/20 text-red-300'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border border-rose-200'
                           }`}
                         >
                           {player.status}
@@ -902,16 +902,16 @@ export default function AdminPlayersPage() {
                             }
                             className={`p-2 rounded-xl border transition-all cursor-pointer ${
                               isPlayerFeaturedInSeason(player)
-                                ? 'bg-amber-500/20 border-amber-400/60 text-amber-400 shadow-md shadow-amber-500/20 scale-110'
+                                ? 'bg-amber-50 border-amber-300 text-amber-600 shadow-xs scale-105'
                                 : isLimitReached
-                                ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 cursor-not-allowed opacity-40'
-                                : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/40'
+                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-40'
+                                : 'bg-slate-100 border-slate-200 text-slate-400 hover:text-amber-500 hover:border-amber-300'
                             }`}
                           >
-                            <Star className={`w-4 h-4 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-400 text-amber-400' : ''}`} />
+                            <Star className={`w-4 h-4 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-500 text-amber-500' : ''}`} />
                           </button>
                         ) : (
-                          <span className="text-slate-600 text-xs">-</span>
+                          <span className="text-slate-400 text-xs">-</span>
                         )}
                       </td>
 
@@ -920,7 +920,7 @@ export default function AdminPlayersPage() {
                         {activeTab === 'season_squad' && (
                           <button
                             onClick={() => handleReleasePlayer(player)}
-                            className="p-1.5 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-100 text-amber-700 hover:bg-amber-100 transition-colors border border-slate-200 cursor-pointer"
                             title={`Lepas dari Skuad Musim ${selectedSeason}`}
                           >
                             <UserMinus className="w-4 h-4" />
@@ -940,21 +940,21 @@ export default function AdminPlayersPage() {
                               }
                             }}
                             title="Promosikan ke Skuad Utama"
-                            className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-colors border border-amber-500/30 cursor-pointer"
+                            className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors border border-amber-300 cursor-pointer"
                           >
                             <Star className="w-4 h-4" />
                           </button>
                         )}
                         <button
                           onClick={() => openEditModal(player)}
-                          className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:bg-sky-400 hover:text-slate-950 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200 cursor-pointer"
                           title="Edit Pemain"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(player.id)}
-                          className="p-1.5 rounded-lg bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors border border-rose-200 cursor-pointer"
                           title="Hapus Pemain"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -972,20 +972,20 @@ export default function AdminPlayersPage() {
       {/* ── MODAL TARIK PEMAIN KE SKUAD MUSIM ── */}
       {showPullModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-xl glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-400/40 space-y-4 shadow-2xl bg-slate-950 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-xl glass-panel bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <h2 className="text-base sm:text-lg font-black uppercase text-white flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-amber-400" />
+                <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-amber-500" />
                   Tarik Pemain ke Skuad Musim {selectedSeason}
                 </h2>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-600">
                   Pilih pemain dari database klub untuk dimasukkan ke skuad Musim {selectedSeason}.
                 </p>
               </div>
               <button
                 onClick={() => setShowPullModal(false)}
-                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl bg-slate-100 text-slate-600 hover:text-white hover:bg-red-500 transition-colors cursor-pointer border border-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -999,7 +999,7 @@ export default function AdminPlayersPage() {
                 value={pullSearch}
                 onChange={(e) => setPullSearch(e.target.value)}
                 placeholder="Cari pemain berdasarkan nama atau nomor..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-sky-400 outline-none"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:border-blue-500 outline-none"
               />
             </div>
 
@@ -1019,8 +1019,8 @@ export default function AdminPlayersPage() {
                       key={p.id}
                       className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${
                         isChecked
-                          ? 'bg-sky-500/15 border-sky-400 text-white'
-                          : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                          ? 'bg-blue-50 border-blue-400 text-slate-900'
+                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-800'
                       }`}
                     >
                       <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
@@ -1039,16 +1039,16 @@ export default function AdminPlayersPage() {
                         <img
                           src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerPhoto}
                           alt={p.name}
-                          className="w-8 h-8 rounded-lg object-cover border border-slate-700 shrink-0"
+                          className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
                         />
                         <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
-                          <span className="font-mono font-bold text-sky-400 text-xs">#{p.number}</span>
-                          <span className="font-bold text-white text-xs">{p.name}</span>
-                          <span className="text-[10px] text-slate-400 uppercase">
+                          <span className="font-mono font-bold text-blue-700 text-xs">#{p.number}</span>
+                          <span className="font-bold text-slate-900 text-xs">{p.name}</span>
+                          <span className="text-[10px] text-slate-600 uppercase">
                             ({normalizePos(p.position)})
                           </span>
                           {p.seasons && p.seasons.length > 0 && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/15 text-sky-300 font-bold border border-sky-400/20">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">
                               Musim {p.seasons.map((s) => s.name).join(', ')}
                             </span>
                           )}
@@ -1059,7 +1059,7 @@ export default function AdminPlayersPage() {
                         type="button"
                         onClick={() => handlePullPlayer(p.id)}
                         disabled={pulling}
-                        className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500 hover:text-slate-950 font-bold text-[10px] uppercase transition-all cursor-pointer shrink-0"
+                        className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 font-bold text-[10px] uppercase transition-all cursor-pointer shrink-0"
                       >
                         + Tarik
                       </button>
@@ -1074,15 +1074,15 @@ export default function AdminPlayersPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between border-t border-slate-800 pt-3">
-              <span className="text-xs text-slate-400">
-                Terpilih: <b className="text-white">{selectedPlayerIdsForPull.length}</b> pemain
+            <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+              <span className="text-xs text-slate-600">
+                Terpilih: <b className="text-blue-700">{selectedPlayerIdsForPull.length}</b> pemain
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowPullModal(false)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold uppercase hover:bg-slate-700 transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold uppercase hover:bg-slate-200 transition-colors border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
@@ -1090,7 +1090,7 @@ export default function AdminPlayersPage() {
                   type="button"
                   disabled={selectedPlayerIdsForPull.length === 0 || pulling}
                   onClick={handleBatchPull}
-                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-black uppercase transition-all shadow cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-black uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
                   {pulling && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Tarik ke Skuad Musim {selectedSeason}
@@ -1104,22 +1104,22 @@ export default function AdminPlayersPage() {
       {/* Modal Add / Edit Player */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-2xl glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-sky-400/30 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-base sm:text-xl font-black uppercase text-white tracking-wide">
+          <div className="w-full max-w-2xl glass-panel bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h2 className="text-base sm:text-xl font-black uppercase text-slate-900 tracking-wide">
                 {editingPlayer ? 'Edit Pemain' : 'Tambah Pemain Baru'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer">
+              <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-white hover:bg-red-500 transition-colors cursor-pointer border border-slate-200">
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
               {!editingPlayer && availableToPullPlayers.length > 0 && (
-                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-amber-300">Pemain pernah terdaftar di musim sebelumnya?</p>
-                    <p className="text-[11px] text-amber-200/70">
+                    <p className="text-xs font-bold text-amber-800">Pemain pernah terdaftar di musim sebelumnya?</p>
+                    <p className="text-[11px] text-amber-700/80">
                       Tarik data pemain dari musim lain secara otomatis tanpa perlu input manual ulang.
                     </p>
                   </div>
@@ -1131,19 +1131,19 @@ export default function AdminPlayersPage() {
                       setSelectedPlayerIdsForPull([]);
                       setShowPullModal(true);
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase transition-colors shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase transition-colors shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
                   >
                     <UserPlus className="w-3.5 h-3.5" /> Tarik Pemain ({availableToPullPlayers.length})
                   </button>
                 </div>
               )}
               {!editingPlayer && guestPlayers.length > 0 && (
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                  <label className="font-bold text-amber-400 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>
-                  <p className="text-xs text-amber-200/60 mb-2">Pilih pemain loan untuk dipromosikan ke skuad utama secara permanen.</p>
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+                  <label className="font-bold text-amber-800 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>
+                  <p className="text-xs text-amber-700/80 mb-2">Pilih pemain loan untuk dipromosikan ke skuad utama secara permanen.</p>
                   <select 
                     onChange={(e) => handleSelectGuest(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-amber-400 outline-none text-sm"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-amber-500 outline-none text-sm"
                   >
                     <option value="">-- Buat Baru (Bukan dari Loan) --</option>
                     {guestPlayers.map(g => (
@@ -1220,33 +1220,33 @@ export default function AdminPlayersPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Nama Lengkap</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Nama Lengkap</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1 flex items-center justify-between">
+                  <label className="font-bold text-slate-700 uppercase block mb-1 flex items-center justify-between">
                     <span>Nomor WhatsApp / HP</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold normal-case">Untuk Notifikasi Jadwal WA</span>
+                    <span className="text-[10px] text-emerald-600 font-semibold normal-case">Untuk Notifikasi Jadwal WA</span>
                   </label>
                   <input
                     type="tel"
                     placeholder="Contoh: 081234567890"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">
+                  <label className="font-bold text-slate-700 uppercase block mb-1">
                     Nomor Punggung{' '}
                     {selectedSeason && (
-                      <span className="text-xs text-sky-400 font-semibold normal-case">
+                      <span className="text-xs text-blue-700 font-semibold normal-case">
                         (Musim {selectedSeason})
                       </span>
                     )}
@@ -1256,18 +1256,18 @@ export default function AdminPlayersPage() {
                     required
                     value={formData.number}
                     onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-500 mt-1">
                     Nomor punggung dipisah per musim. Nomor yang sama dapat digunakan di musim berbeda.
                   </p>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Posisi Utama</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Posisi Utama</label>
                   <select
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   >
                     <option value="GOALKEEPER">GOALKEEPER</option>
                     <option value="DEFENDER">DEFENDER</option>
@@ -1276,45 +1276,45 @@ export default function AdminPlayersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Kewarganegaraan</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Kewarganegaraan</label>
                   <input
                     type="text"
                     value={formData.nationality}
                     onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Tanggal Lahir</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Tanggal Lahir</label>
                   <input
                     type="date"
                     value={formData.birthDate}
                     onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Tinggi (cm)</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Tinggi (cm)</label>
                   <input
                     type="number"
                     value={formData.heightCm}
                     onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-200 uppercase block mb-1">Berat (kg)</label>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Berat (kg)</label>
                   <input
                     type="number"
                     value={formData.weightKg}
                     onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-sky-400 outline-none"
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
                 </div>
               </div>
 
               <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-400">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-700">
                   <input
                     type="checkbox"
                     checked={formData.isCaptain}
@@ -1325,18 +1325,18 @@ export default function AdminPlayersPage() {
                 </label>
               </div>
 
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold uppercase"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow"
+                  className="px-6 py-2 rounded-xl white-blue-btn font-extrabold uppercase flex items-center gap-2 shadow cursor-pointer"
                 >
                   <Save className="w-4 h-4 text-blue-600" /> Simpan Pemain
                 </button>

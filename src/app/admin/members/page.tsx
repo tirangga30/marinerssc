@@ -510,16 +510,16 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
       
       {/* Top Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-400/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="space-y-1 text-center sm:text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] sm:text-xs font-black uppercase tracking-widest">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] sm:text-xs font-black uppercase tracking-widest">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             Panel Soccer Community & Member
           </div>
-          <h1 className="text-xl sm:text-3xl font-black uppercase text-white tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-black uppercase text-slate-900 tracking-tight">
             Kelola Member & Fun Match
           </h1>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600">
             Database keanggotaan, verifikasi pembayaran, ID login member, dan jadwal fun match komunitas.
           </p>
         </div>
@@ -528,14 +528,14 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold uppercase white-blue-btn text-xs shadow-lg shadow-sky-500/20"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold uppercase blue-gradient-bg text-white text-xs shadow-md"
           >
-            <UserPlus className="w-4 h-4 text-blue-600" />
+            <UserPlus className="w-4 h-4 text-white" />
             + Tambah Member Manual
           </button>
           <button
             onClick={() => setFunMatchModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold uppercase bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs shadow-lg shadow-amber-500/20"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold uppercase bg-amber-500 hover:bg-amber-600 text-white text-xs shadow-md"
           >
             <Calendar className="w-4 h-4" />
             + Jadwal Fun Match
@@ -547,33 +547,33 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
       {alertMsg && (
         <div className={`p-4 rounded-2xl flex items-center justify-between text-xs font-bold border ${
           alertMsg.type === 'success'
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-            : 'bg-red-500/10 border-red-500/30 text-red-400'
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+            : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
           <div className="flex items-center gap-2">
             {alertMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
             <span>{alertMsg.text}</span>
           </div>
-          <button onClick={() => setAlertMsg(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setAlertMsg(null)} className="text-slate-400 hover:text-slate-700">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Main Tabs (Data Member vs Fun Match) */}
-      <div className="flex gap-2 p-1.5 glass-panel rounded-2xl max-w-md border border-slate-800">
+      <div className="flex gap-2 p-1.5 bg-white rounded-2xl max-w-md border border-slate-200 shadow-sm">
         <button
           onClick={() => setActiveTab('MEMBERS')}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase transition-all flex items-center justify-center gap-2 ${
             activeTab === 'MEMBERS'
-              ? 'blue-gradient-bg text-white shadow-lg'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'blue-gradient-bg text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <Users className="w-4 h-4" />
           <span>Data Member ({members.length})</span>
           {pendingMembersCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-mono text-[10px] font-black flex items-center justify-center animate-pulse">
+            <span className="w-5 h-5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-black flex items-center justify-center animate-pulse">
               {pendingMembersCount}
             </span>
           )}
@@ -583,8 +583,8 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
           onClick={() => setActiveTab('FUN_MATCHES')}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase transition-all flex items-center justify-center gap-2 ${
             activeTab === 'FUN_MATCHES'
-              ? 'blue-gradient-bg text-white shadow-lg'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'blue-gradient-bg text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -599,7 +599,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
         <div className="space-y-4 animate-fadeIn">
           
           {/* Filters & Search */}
-          <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
             <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -607,7 +607,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 placeholder="Cari nama, ID, WA, asal..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-hidden focus:border-sky-400"
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-hidden focus:border-blue-500 font-medium"
               />
             </form>
 
@@ -615,7 +615,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white font-bold focus:outline-hidden"
+                className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-bold focus:outline-hidden cursor-pointer"
               >
                 <option value="ALL">Semua Status</option>
                 <option value="PENDING">⏳ Perlu Verifikasi Pembayaran ({pendingMembersCount})</option>
@@ -626,7 +626,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
               <select
                 value={tierFilter}
                 onChange={(e) => setTierFilter(e.target.value)}
-                className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white font-bold focus:outline-hidden"
+                className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 font-bold focus:outline-hidden cursor-pointer"
               >
                 <option value="ALL">Semua Paket</option>
                 <option value="FAN">Paket FAN</option>
@@ -637,18 +637,18 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
           </div>
 
           {/* Members Table */}
-          <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             {loading ? (
-              <div className="py-16 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
+              <div className="py-16 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                 Memuat data member komunitas...
               </div>
             ) : members.length === 0 ? (
-              <div className="py-16 text-center text-slate-400 text-xs space-y-2">
+              <div className="py-16 text-center text-slate-500 text-xs space-y-2">
                 <p>Tidak ada data member yang sesuai filter.</p>
                 <button
                   onClick={openAddModal}
-                  className="px-4 py-2 rounded-xl bg-sky-600 text-white font-bold text-xs"
+                  className="px-4 py-2 rounded-xl blue-gradient-bg text-white font-bold text-xs"
                 >
                   Tambah Member Pertama
                 </button>
@@ -656,7 +656,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950/80 border-b border-slate-800 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  <thead className="bg-slate-100 border-b border-slate-200 text-[10px] font-black uppercase text-blue-700 tracking-wider">
                     <tr>
                       <th className="p-3 sm:p-4">Member & Profil</th>
                       <th className="p-3 sm:p-4">ID & Kata Sandi Login</th>
@@ -667,14 +667,14 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                       <th className="p-3 sm:p-4 text-right">Aksi Admin</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100">
                     {members.map((m) => {
                       const isPendingPayment = m.status === 'PENDING' || m.paymentStatus === 'PENDING';
                       return (
                         <tr
                           key={m.id}
-                          className={`hover:bg-slate-800/30 transition-colors ${
-                            isPendingPayment ? 'bg-amber-950/20' : ''
+                          className={`hover:bg-slate-50 transition-colors ${
+                            isPendingPayment ? 'bg-amber-50/40' : ''
                           }`}
                         >
                           
@@ -684,24 +684,24 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                               <img
                                 src={m.photoUrl || '/playertemplate.webp'}
                                 alt={m.fullName}
-                                className="w-10 h-10 rounded-full object-cover bg-slate-950 border border-slate-700 shrink-0"
+                                className="w-10 h-10 rounded-full object-cover bg-slate-100 border border-slate-200 shrink-0"
                               />
                               <div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono font-black text-xs">
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-mono font-black text-xs">
                                     #{m.jerseyNumber}
                                   </span>
-                                  <span className="font-black text-white text-xs sm:text-sm">
+                                  <span className="font-black text-slate-900 text-xs sm:text-sm">
                                     {m.fullName}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
-                                  <span className="font-bold text-sky-400">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                                  <span className="font-bold text-blue-700">
                                     {getFullPositionName(m.position)}
                                   </span>
                                   {m.nickname && <span>• &ldquo;{m.nickname}&rdquo;</span>}
                                   {m.isPermanent && (
-                                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase text-[8px]">
+                                    <span className="px-1.5 py-0.2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold uppercase text-[8px]">
                                       Skuad Utama
                                     </span>
                                   )}
@@ -714,12 +714,12 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                           <td className="p-3 sm:p-4">
                             <div className="flex items-center justify-between gap-3">
                               <div className="space-y-1">
-                                <div className="flex items-center gap-1 font-mono font-bold text-sky-300">
-                                  <Key className="w-3 h-3 text-sky-400" />
+                                <div className="flex items-center gap-1 font-mono font-bold text-blue-700">
+                                  <Key className="w-3 h-3 text-blue-600" />
                                   <span>{m.memberCode}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <span className="font-mono text-[11px] text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                                  <span className="font-mono text-[11px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold">
                                     {showPassword[m.id] ? m.password : '••••••••'}
                                   </span>
                                   <button
@@ -727,7 +727,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                                     onClick={() =>
                                       setShowPassword((prev) => ({ ...prev, [m.id]: !prev[m.id] }))
                                     }
-                                    className="text-slate-400 hover:text-white p-1"
+                                    className="text-slate-400 hover:text-slate-700 p-1"
                                     title="Lihat / Sembunyikan Password"
                                   >
                                     {showPassword[m.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -739,7 +739,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                               <button
                                 type="button"
                                 onClick={() => handleSendWhatsAppAccount(m)}
-                                className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1 text-[10px] font-bold shrink-0 shadow-sm"
+                                className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-all flex items-center gap-1 text-[10px] font-bold shrink-0 shadow-xs"
                                 title="Kirim ID & Password ke WhatsApp Member"
                               >
                                 <MessageCircle className="w-4 h-4" />
@@ -753,10 +753,10 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                             <div className="space-y-1.5">
                               <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
                                 m.tier === 'ELITE'
-                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
                                   : m.tier === 'PRO'
-                                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
-                                  : 'bg-slate-800 text-slate-300'
+                                  ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                                  : 'bg-slate-100 text-slate-700 border border-slate-200'
                               }`}>
                                 {m.tier}
                               </span>
@@ -766,14 +766,14 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                                 <div>
                                   <button
                                     onClick={() => setPreviewProof({ url: m.paymentProof!, memberName: m.fullName })}
-                                    className="flex items-center gap-1 px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 text-[10px] font-bold"
+                                    className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold"
                                   >
-                                    <ImageIcon className="w-3 h-3 text-emerald-400" />
+                                    <ImageIcon className="w-3 h-3 text-emerald-600" />
                                     <span>Lihat Bukti Bayar</span>
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-[10px] text-slate-500 block italic">Tanpa bukti</span>
+                                <span className="text-[10px] text-slate-400 block italic">Tanpa bukti</span>
                               )}
                             </div>
                           </td>
@@ -782,7 +782,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                           <td className="p-3 sm:p-4">
                             <div className="space-y-1">
                               {m.isPermanent ? (
-                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-[10px] whitespace-nowrap inline-block">
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[10px] whitespace-nowrap inline-block">
                                   Permanen
                                 </span>
                               ) : m.expiresAt ? (
@@ -790,7 +790,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                                   const diff = new Date(m.expiresAt).getTime() - Date.now();
                                   if (diff <= 0) {
                                     return (
-                                      <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 font-bold text-[10px] whitespace-nowrap flex items-center gap-1 w-fit">
+                                      <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold text-[10px] whitespace-nowrap flex items-center gap-1 w-fit">
                                         <Clock className="w-3 h-3" /> Expired
                                       </span>
                                     );
@@ -800,25 +800,25 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                                   return (
                                     <div className="space-y-0.5">
                                       <span className={`px-2 py-0.5 rounded-full font-mono font-bold text-[10px] whitespace-nowrap flex items-center gap-1 w-fit ${
-                                        days > 7 ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30' : 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                                        days > 7 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
                                       }`}>
-                                        <Clock className="w-3 h-3 text-sky-400" />
+                                        <Clock className="w-3 h-3 text-blue-600" />
                                         <span>{days}h {hours}j lagi</span>
                                       </span>
-                                      <span className="text-[9px] text-slate-400 block">
+                                      <span className="text-[9px] text-slate-500 block">
                                         s.d {new Date(m.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                       </span>
                                     </div>
                                   );
                                 })()
                               ) : (
-                                <span className="text-[10px] text-slate-500">-</span>
+                                <span className="text-[10px] text-slate-400">-</span>
                               )}
 
                               {/* Tanggal Bergabung */}
-                              <div className="text-[10px] text-slate-400 flex items-center gap-1 pt-0.5">
-                                <span className="text-slate-500">Gabung:</span>
-                                <span className="font-semibold text-slate-300">
+                              <div className="text-[10px] text-slate-500 flex items-center gap-1 pt-0.5">
+                                <span>Gabung:</span>
+                                <span className="font-semibold text-slate-800">
                                   {new Date(m.joinedAt || m.createdAt).toLocaleDateString('id-ID', {
                                     day: 'numeric',
                                     month: 'short',
@@ -830,26 +830,26 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                           </td>
 
                           {/* Contact & Origin */}
-                          <td className="p-3 sm:p-4 text-slate-300">
+                          <td className="p-3 sm:p-4 text-slate-700">
                             <div className="space-y-0.5">
-                              <p className="font-semibold text-white">{m.phone}</p>
-                              <p className="text-[10px] text-slate-400">📍 {m.origin}</p>
+                              <p className="font-semibold text-slate-900 font-mono">{m.phone}</p>
+                              <p className="text-[10px] text-slate-500">📍 {m.origin}</p>
                             </div>
                           </td>
 
                           {/* Status Badge */}
                           <td className="p-3 sm:p-4">
                             {isPendingPayment ? (
-                              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
-                                <Clock className="w-3 h-3 animate-spin" /> Verifikasi Bayar
+                              <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
+                                <Clock className="w-3 h-3 animate-spin text-amber-600" /> Verifikasi Bayar
                               </span>
                             ) : m.status === 'ACTIVE' ? (
-                              <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
-                                <CheckCircle2 className="w-3 h-3" /> Aktif
+                              <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Aktif
                               </span>
                             ) : (
-                              <span className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
-                                <XCircle className="w-3 h-3" /> Nonaktif
+                              <span className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-extrabold uppercase text-[10px] flex items-center gap-1 w-fit">
+                                <XCircle className="w-3 h-3 text-slate-400" /> Nonaktif
                               </span>
                             )}
                           </td>
@@ -938,31 +938,31 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
          ═════════════════════════════════════════════════════════════ */}
       {activeTab === 'FUN_MATCHES' && (
         <div className="space-y-4 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div>
-              <h2 className="text-sm sm:text-base font-black uppercase text-white">
+              <h2 className="text-sm sm:text-base font-black uppercase text-slate-900">
                 Daftar Pertandingan Fun Match Komunitas ({funMatches.length})
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Kelola jadwal, edit informasi laga, atur pembagian tim A/B, serta input skor & pencetak gol.
               </p>
             </div>
             <button
               onClick={openCreateFunMatchModal}
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black uppercase text-xs flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-slate-950" />
+              <Plus className="w-4 h-4 text-white" />
               <span>+ Buat Jadwal Baru</span>
             </button>
           </div>
 
           {funMatches.length === 0 ? (
-            <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center space-y-3">
-              <Calendar className="w-10 h-10 text-slate-500 mx-auto" />
-              <h3 className="text-sm font-bold text-white uppercase">Belum ada pertandingan fun match</h3>
+            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3 shadow-sm">
+              <Calendar className="w-10 h-10 text-slate-400 mx-auto" />
+              <h3 className="text-sm font-bold text-slate-800 uppercase">Belum ada pertandingan fun match</h3>
               <button
                 onClick={openCreateFunMatchModal}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer shadow-sm"
               >
                 Buat Jadwal Fun Match Baru
               </button>
@@ -972,89 +972,89 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
               {funMatches.map((fm) => (
                 <div
                   key={fm.id}
-                  className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-sky-500/40 transition-all space-y-4 shadow-lg"
+                  className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all space-y-4 shadow-sm"
                 >
-                  <div className="flex items-start justify-between border-b border-slate-800 pb-3 gap-2">
+                  <div className="flex items-start justify-between border-b border-slate-100 pb-3 gap-2">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 block">
                         FUN MATCH KOMUNITAS
                       </span>
-                      <h3 className="text-base font-black uppercase text-white mt-0.5">
+                      <h3 className="text-base font-black uppercase text-slate-900 mt-0.5">
                         {fm.title}
                       </h3>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
                         fm.status === 'finished'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : fm.status === 'live'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
-                          : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+                          ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse'
+                          : 'bg-blue-50 text-blue-800 border border-blue-200'
                       }`}>
                         {fm.status}
                       </span>
                       <button
                         onClick={() => openEditFunMatchModal(fm)}
                         title="Edit Data Pertandingan"
-                        className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/30 text-sky-300 hover:text-white transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 transition-colors cursor-pointer"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteFunMatch(fm.id, fm.title)}
                         title="Hapus Pertandingan"
-                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-white transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-center py-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between text-center py-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div className="flex-1">
-                      <span className="text-xs font-black uppercase text-sky-300">{fm.teamAName}</span>
+                      <span className="text-xs font-black uppercase text-blue-800">{fm.teamAName}</span>
                     </div>
-                    <div className="px-4 py-1 rounded-lg bg-slate-900 font-mono font-black text-base text-white border border-slate-700">
+                    <div className="px-4 py-1 rounded-lg bg-white font-mono font-black text-base text-slate-900 border border-slate-300 shadow-xs">
                       {fm.teamAScore ?? 0} : {fm.teamBScore ?? 0}
                     </div>
                     <div className="flex-1">
-                      <span className="text-xs font-black uppercase text-amber-300">{fm.teamBName}</span>
+                      <span className="text-xs font-black uppercase text-amber-800">{fm.teamBName}</span>
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 space-y-1">
+                  <div className="text-[11px] text-slate-600 space-y-1">
                     <p className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-sky-400" />
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
                       <span>{formatWibDate(fm.matchDate)} • {formatWibTime(fm.matchDate)}</span>
                     </p>
                     <p className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                      <MapPin className="w-3.5 h-3.5 text-amber-600" />
                       <span>{fm.venue}</span>
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/community/matches/${fm.id}`}
                         target="_blank"
-                        className="text-xs font-bold text-slate-400 hover:text-white"
+                        className="text-xs font-bold text-slate-500 hover:text-blue-700"
                       >
                         Lihat Publik ↗
                       </Link>
                       <button
                         onClick={() => openEditFunMatchModal(fm)}
-                        className="text-xs font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1 cursor-pointer"
                       >
                         <Edit className="w-3 h-3" /> Edit Data
                       </button>
                     </div>
                     <Link
                       href={`/admin/members/fun-match/${fm.id}`}
-                      className="px-4 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs flex items-center gap-1.5 shadow cursor-pointer"
+                      className="px-4 py-2 rounded-xl font-extrabold uppercase blue-gradient-bg text-white text-xs flex items-center gap-1.5 shadow cursor-pointer"
                     >
                       <span>Match Option (Lineup & Skor)</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
+                      <ChevronRight className="w-3.5 h-3.5 text-white" />
                     </Link>
                   </div>
                 </div>
@@ -1066,18 +1066,18 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
       {/* ─── MODAL 1: PREVIEW BUKTI BAYAR ─── */}
       {previewProof && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-sky-400/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-black uppercase text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-black uppercase text-slate-900">
                 Bukti Pembayaran: {previewProof.memberName}
               </h3>
-              <button onClick={() => setPreviewProof(null)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setPreviewProof(null)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="w-full aspect-[4/5] sm:aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+            <div className="w-full aspect-[4/5] sm:aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center">
               <img
                 src={previewProof.url}
                 alt="Bukti Transfer"
@@ -1090,13 +1090,13 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 href={previewProof.url}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs flex items-center gap-1"
               >
                 <ExternalLink className="w-3.5 h-3.5" /> Buka Ukuran Penuh
               </a>
               <button
                 onClick={() => setPreviewProof(null)}
-                className="px-5 py-2 rounded-xl font-bold uppercase white-blue-btn text-xs"
+                className="px-5 py-2 rounded-xl font-bold uppercase blue-gradient-bg text-white text-xs"
               >
                 Tutup
               </button>
@@ -1107,13 +1107,13 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
       {/* ─── MODAL 2: ADD / EDIT MEMBER ─── */}
       {memberModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fadeIn">
-          <div className="relative w-full max-w-xl bg-slate-900 border border-sky-400/40 rounded-3xl shadow-2xl p-6 space-y-4 my-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-black uppercase text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+          <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-4 my-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black uppercase text-slate-900">
                 {editingMember ? `Edit Member: ${editingMember.fullName}` : 'Tambah Member Baru'}
               </h3>
-              <button onClick={() => setMemberModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setMemberModalOpen(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1121,17 +1121,17 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
             <form onSubmit={handleSaveMember} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
               
               {/* Foto Profil Member Upload */}
-              <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-950 border border-slate-800">
+              <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-200">
                 <img
                   src={formPhotoUrl || '/defaultplayer.png'}
                   alt="Preview"
-                  className="w-16 h-16 rounded-full object-cover border-2 border-sky-400/60 bg-slate-900 shrink-0"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-blue-400 bg-white shrink-0 shadow-xs"
                 />
                 <div className="space-y-1.5 flex-1">
-                  <label className="block text-xs font-bold text-slate-300">
+                  <label className="block text-xs font-bold text-slate-700">
                     Foto Profil Member
                   </label>
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-300 text-xs font-bold cursor-pointer transition-colors">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-bold cursor-pointer transition-colors">
                     {uploadingPhoto ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
@@ -1150,7 +1150,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                     <button
                       type="button"
                       onClick={() => setFormPhotoUrl('')}
-                      className="text-[10px] text-red-400 hover:text-red-300 ml-2"
+                      className="text-[10px] text-rose-600 hover:text-rose-700 ml-2 font-bold"
                     >
                       Hapus Foto
                     </button>
@@ -1160,54 +1160,54 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nama Lengkap *</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nama Lengkap *</label>
                   <input
                     type="text"
                     required
                     value={formFullName}
                     onChange={(e) => setFormFullName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nama Panggilan</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nama Panggilan</label>
                   <input
                     type="text"
                     value={formNickname}
                     onChange={(e) => setFormNickname(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nomor WhatsApp *</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nomor WhatsApp *</label>
                   <input
                     type="tel"
                     required
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Asal Domisili *</label>
+                  <label className="block text-slate-700 font-bold mb-1">Asal Domisili *</label>
                   <input
                     type="text"
                     required
                     value={formOrigin}
                     onChange={(e) => setFormOrigin(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Posisi Utama</label>
+                  <label className="block text-slate-700 font-bold mb-1">Posisi Utama</label>
                   <select
                     value={formPosition}
                     onChange={(e) => setFormPosition(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold cursor-pointer"
                   >
                     <option value="GK">Goalkeeper (Kiper)</option>
                     <option value="DF">Defender (Bek)</option>
@@ -1217,11 +1217,11 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Posisi Alternatif</label>
+                  <label className="block text-slate-700 font-bold mb-1">Posisi Alternatif</label>
                   <select
                     value={formAltPosition}
                     onChange={(e) => setFormAltPosition(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold cursor-pointer"
                   >
                     <option value="">Tidak Ada / Fleksibel</option>
                     <option value="GK">Goalkeeper (Kiper)</option>
@@ -1232,23 +1232,23 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nomor Punggung (1-99)</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nomor Punggung (1-99)</label>
                   <input
                     type="number"
                     min="1"
                     max="99"
                     value={formJerseyNumber}
                     onChange={(e) => setFormJerseyNumber(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono font-bold text-center"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono font-bold text-center"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Paket Membership</label>
+                  <label className="block text-slate-700 font-bold mb-1">Paket Membership</label>
                   <select
                     value={formTier}
                     onChange={(e) => setFormTier(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold cursor-pointer"
                   >
                     <option value="FAN">FAN (Rp 15k / match)</option>
                     <option value="PRO">PRO (Rp 49k / bulan)</option>
@@ -1257,11 +1257,11 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Status Keanggotaan</label>
+                  <label className="block text-slate-700 font-bold mb-1">Status Keanggotaan</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold cursor-pointer"
                   >
                     <option value="ACTIVE">Aktif (ACTIVE)</option>
                     <option value="PENDING">Menunggu Verifikasi (PENDING)</option>
@@ -1271,28 +1271,28 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
               </div>
 
               <div>
-                <label className="block text-slate-400 font-bold mb-1 text-xs">Kata Sandi Login Member</label>
+                <label className="block text-slate-700 font-bold mb-1 text-xs">Kata Sandi Login Member</label>
                 <input
                   type="text"
                   placeholder="Kosongkan untuk otomatis dibuatkan"
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs font-mono font-semibold"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setMemberModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={savingMember}
-                  className="px-6 py-2 rounded-xl font-extrabold uppercase white-blue-btn text-xs disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl font-extrabold uppercase blue-gradient-bg text-white text-xs disabled:opacity-50 cursor-pointer shadow-md"
                 >
                   {savingMember ? 'Menyimpan...' : 'Simpan Data'}
                 </button>
@@ -1304,32 +1304,32 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
       {/* ─── MODAL 3: TARIK KE SKUAD UTAMA ─── */}
       {promoteModalOpen && promotingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-md bg-slate-900 border border-amber-400/40 rounded-3xl shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-amber-400" />
-                <h3 className="text-sm font-black uppercase text-white">
+                <Crown className="w-5 h-5 text-amber-500" />
+                <h3 className="text-sm font-black uppercase text-slate-900">
                   Tarik ke Skuad Utama
                 </h3>
               </div>
-              <button onClick={() => setPromoteModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setPromoteModalOpen(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 text-xs space-y-2">
-              <p className="text-slate-200">
-                Pemain <strong className="text-amber-300">{promotingMember.fullName}</strong> akan dipromosikan menjadi pemain resmi <strong>Skuad Utama {currentTeamName}</strong>.
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs space-y-2">
+              <p className="text-slate-800">
+                Pemain <strong className="text-amber-800 font-bold">{promotingMember.fullName}</strong> akan dipromosikan menjadi pemain resmi <strong>Skuad Utama {currentTeamName}</strong>.
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-600">
                 Anda dapat menyesuaikan nomor punggung skuad utama berikut:
               </p>
             </div>
 
             <form onSubmit={handlePromoteToSquad} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Nomor Punggung Skuad Utama
                 </label>
                 <input
@@ -1338,22 +1338,22 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                   max="99"
                   value={promoteJerseyNumber}
                   onChange={(e) => setPromoteJerseyNumber(parseInt(e.target.value) || 1)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-amber-400/50 text-amber-400 font-mono font-black text-center text-lg"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-amber-400 text-amber-800 font-mono font-black text-center text-lg"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setPromoteModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={promotingLoading}
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase text-xs shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black uppercase text-xs shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {promotingLoading ? 'Memproses...' : 'Konfirmasi Tarik Pemain'}
                 </button>
@@ -1365,10 +1365,10 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
       {/* ─── MODAL 4: JADWAL FUN MATCH ─── */}
       {funMatchModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-amber-400/40 rounded-3xl shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-black uppercase text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black uppercase text-slate-900">
                 {editingFunMatch ? 'Edit Data Fun Match Komunitas' : 'Buat Jadwal Fun Match Komunitas'}
               </h3>
               <button
@@ -1376,7 +1376,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                   setFunMatchModalOpen(false);
                   setEditingFunMatch(null);
                 }}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1384,77 +1384,77 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
 
             <form onSubmit={handleSaveFunMatch} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-400 font-bold mb-1">Judul Laga *</label>
+                <label className="block text-slate-700 font-bold mb-1">Judul Laga *</label>
                 <input
                   type="text"
                   required
                   value={matchTitle}
                   onChange={(e) => setMatchTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-bold mb-1">Tanggal &amp; Waktu (WIB) *</label>
+                <label className="block text-slate-700 font-bold mb-1">Tanggal &amp; Waktu (WIB) *</label>
                 <input
                   type="datetime-local"
                   required
                   value={matchDate}
                   onChange={(e) => setMatchDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-bold mb-1">Lokasi / Venue *</label>
+                <label className="block text-slate-700 font-bold mb-1">Lokasi / Venue *</label>
                 <input
                   type="text"
                   required
                   value={matchVenue}
                   onChange={(e) => setMatchVenue(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nama Tim A</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nama Tim A</label>
                   <input
                     type="text"
                     value={teamAName}
                     onChange={(e) => setTeamAName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sky-300 font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-blue-700 font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Nama Tim B</label>
+                  <label className="block text-slate-700 font-bold mb-1">Nama Tim B</label>
                   <input
                     type="text"
                     value={teamBName}
                     onChange={(e) => setTeamBName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-amber-700 font-bold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Durasi Pertandingan (Menit)</label>
+                  <label className="block text-slate-700 font-bold mb-1">Durasi Pertandingan (Menit)</label>
                   <input
                     type="number"
                     min="30"
                     max="120"
                     value={matchDuration}
                     onChange={(e) => setMatchDuration(parseInt(e.target.value) || 60)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 font-bold mb-1">Status Pertandingan</label>
+                  <label className="block text-slate-700 font-bold mb-1">Status Pertandingan</label>
                   <select
                     value={matchStatus}
                     onChange={(e) => setMatchStatus(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold cursor-pointer"
                   >
                     <option value="scheduled">Terjadwal (Scheduled)</option>
                     <option value="live">Sedang Berlangsung (Live)</option>
@@ -1463,21 +1463,21 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setFunMatchModalOpen(false);
                     setEditingFunMatch(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={savingFunMatch}
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase shadow disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black uppercase shadow disabled:opacity-50 cursor-pointer"
                 >
                   {savingFunMatch ? 'Menyimpan...' : editingFunMatch ? 'Simpan Perubahan' : 'Jadwalkan Fun Match'}
                 </button>
