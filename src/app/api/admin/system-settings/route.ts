@@ -28,6 +28,9 @@ export async function GET() {
       heroTagline: setting?.heroTagline || 'SOCCER CLUB',
       heroSubtitle: setting?.heroSubtitle || 'Lebih dari sekadar sepak bola.',
       heroCtaText: setting?.heroCtaText || 'LIHAT TIM',
+      whatsappMode: setting?.whatsappMode || 'disabled',
+      whatsappToken: setting?.whatsappToken || '',
+      whatsappConnectedPhone: setting?.whatsappConnectedPhone || '',
     });
   } catch (err: any) {
     console.error('Error fetching system settings:', err);
@@ -45,6 +48,9 @@ export async function GET() {
       heroTagline: 'SOCCER CLUB',
       heroSubtitle: 'Lebih dari sekadar sepak bola.',
       heroCtaText: 'LIHAT TIM',
+      whatsappMode: 'disabled',
+      whatsappToken: '',
+      whatsappConnectedPhone: '',
     });
   }
 }
@@ -67,6 +73,7 @@ export async function PUT(req: Request) {
       teamName, teamLogo, clubType, playerDefaultPhoto, loginWallpaper, adminWallpaper,
       playerCardBg, isCommunityEnabled, showHeroOverlay,
       heroTagline, heroSubtitle, heroCtaText,
+      whatsappMode, whatsappToken,
       currentPin, newPin
     } = body;
 
@@ -143,6 +150,15 @@ export async function PUT(req: Request) {
       updateData.adminWallpaper = adminWallpaper.trim() || '/stadium.webp';
     }
 
+    if (whatsappMode !== undefined && typeof whatsappMode === 'string') {
+      const cleanMode = whatsappMode.trim().toLowerCase();
+      updateData.whatsappMode = cleanMode === 'scan' ? 'scan' : 'disabled';
+    }
+
+    if (whatsappToken !== undefined && typeof whatsappToken === 'string') {
+      updateData.whatsappToken = whatsappToken.trim();
+    }
+
     // Changing Security PIN
     if (newPin) {
       const cleanNewPin = String(newPin).trim();
@@ -176,6 +192,8 @@ export async function PUT(req: Request) {
         heroTagline: updateData.heroTagline || 'SOCCER CLUB',
         heroSubtitle: updateData.heroSubtitle || 'Lebih dari sekadar sepak bola.',
         heroCtaText: updateData.heroCtaText || 'LIHAT TIM',
+        whatsappMode: updateData.whatsappMode || 'disabled',
+        whatsappToken: updateData.whatsappToken || null,
       },
     });
 
@@ -203,6 +221,9 @@ export async function PUT(req: Request) {
         heroTagline: updated.heroTagline,
         heroSubtitle: updated.heroSubtitle,
         heroCtaText: updated.heroCtaText,
+        whatsappMode: updated.whatsappMode,
+        whatsappToken: updated.whatsappToken,
+        whatsappConnectedPhone: updated.whatsappConnectedPhone,
       },
     });
   } catch (err: any) {

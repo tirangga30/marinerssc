@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import {
   Shield, Lock, Unlock, KeyRound, ArrowLeft, Save, Upload,
   Users, Image as ImageIcon, Sparkles, Check, AlertCircle,
-  Eye, EyeOff, UserPlus, Trash2, Edit3, RefreshCw
+  Eye, EyeOff, UserPlus, Trash2, Edit3, RefreshCw,
+  QrCode, Smartphone, Radio, ExternalLink, XCircle
 } from 'lucide-react';
 
 export default function TeamManagementPage() {
@@ -20,7 +21,7 @@ export default function TeamManagementPage() {
   const [showPin, setShowPin] = useState(false);
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'identity' | 'wallpapers' | 'users' | 'security'>('identity');
+  const [activeTab, setActiveTab] = useState<'identity' | 'wallpapers' | 'whatsapp' | 'users' | 'security'>('identity');
 
   // Notification Toast
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -35,6 +36,19 @@ export default function TeamManagementPage() {
   const [playerCardBg, setPlayerCardBg] = useState('/bgprofil2.webp');
   const [isCommunityEnabled, setIsCommunityEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
+
+  // WhatsApp Integration State (2 Pilihan: Tanpa WA vs Scan QR)
+  const [whatsappMode, setWhatsappMode] = useState<'disabled' | 'scan'>('disabled');
+  const [whatsappToken, setWhatsappToken] = useState('');
+  const [whatsappStatus, setWhatsappStatus] = useState<string>('disconnected');
+  const [whatsappDevice, setWhatsappDevice] = useState<string | null>(null);
+  const [checkingGateway, setCheckingGateway] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [showWaToken, setShowWaToken] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [savingWaSettings, setSavingWaSettings] = useState(false);
 
   // Users State
   const [users, setUsers] = useState<any[]>([]);
@@ -70,6 +84,24 @@ export default function TeamManagementPage() {
       .catch(() => setIsUnlocked(false));
   }, []);
 
+  const checkWhatsAppGateway = async () => {
+    setCheckingGateway(true);
+    try {
+      const res = await fetch('/api/admin/whatsapp-gateway');
+      const data = await res.json();
+      if (res.ok && data) {
+        setWhatsappStatus(data.status || 'disconnected');
+        setWhatsappDevice(data.device || null);
+        if (data.rawToken) setWhatsappToken(data.rawToken);
+        if (data.mode) setWhatsappMode(data.mode === 'scan' ? 'scan' : 'disabled');
+      }
+    } catch (err) {
+      console.error('Error checking WA gateway:', err);
+    } finally {
+      setCheckingGateway(false);
+    }
+  };
+
   const loadSettings = () => {
     fetch('/api/admin/system-settings')
       .then((res) => res.json())
@@ -83,9 +115,114 @@ export default function TeamManagementPage() {
           if (data.adminWallpaper) setAdminWallpaper(data.adminWallpaper);
           if (data.playerCardBg) setPlayerCardBg(data.playerCardBg);
           if (data.isCommunityEnabled !== undefined) setIsCommunityEnabled(Boolean(data.isCommunityEnabled));
+          if (data.whatsappMode) setWhatsappMode(data.whatsappMode === 'scan' ? 'scan' : 'disabled');
+          if (data.whatsappToken) setWhatsappToken(data.whatsappToken);
+          if (data.whatsappConnectedPhone) setWhatsappDevice(data.whatsappConnectedPhone);
         }
       })
-      .catch((err) => console.error('Error loading settings:', err));
+      .catch((err) => console.error('Error loading settings:', err))
+      .finally(() => {
+        checkWhatsAppGateway();
+      });
+  };
+
+  // Auto-poll WhatsApp device status when QR Code modal is open
+  useEffect(() => {
+    if (!showQrModal) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin/whatsapp-gateway');
+        const data = await res.json();
+        if (res.ok && data.status === 'connected') {
+          setWhatsappStatus('connected');
+          setWhatsappDevice(data.device || null);
+          setShowQrModal(false);
+          showToast('success', 'WhatsApp Nomor Baru Berhasil Terhubung!');
+        }
+      } catch {}
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [showQrModal]);
+
+  const handleSaveWhatsAppSettings = async (targetMode?: 'disabled' | 'scan', targetToken?: string) => {
+    const modeToSave = targetMode !== undefined ? targetMode : whatsappMode;
+    const tokenToSave = targetToken !== undefined ? targetToken : whatsappToken;
+
+    setSavingWaSettings(true);
+    try {
+      const res = await fetch('/api/admin/system-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          whatsappMode: modeToSave,
+          whatsappToken: tokenToSave,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showToast('error', data.error || 'Gagal menyimpan pengaturan WhatsApp');
+      } else {
+        showToast('success', 'Pengaturan WhatsApp berhasil disimpan!');
+        checkWhatsAppGateway();
+      }
+    } catch {
+      showToast('error', 'Terjadi kesalahan jaringan saat menyimpan WhatsApp');
+    } finally {
+      setSavingWaSettings(false);
+    }
+  };
+
+  const handleOpenQrModal = async () => {
+    if (!whatsappToken.trim()) {
+      showToast('error', 'Masukkan Token WhatsApp terlebih dahulu');
+      return;
+    }
+    setQrLoading(true);
+    setShowQrModal(true);
+    setQrUrl(null);
+    try {
+      const res = await fetch('/api/admin/whatsapp-gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'qr', token: whatsappToken }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setQrUrl(data.url);
+      } else {
+        showToast('error', data.error || data.message || 'Gagal memuat QR Code. Pastikan Token valid.');
+      }
+    } catch {
+      showToast('error', 'Terjadi kesalahan jaringan saat meminta QR Code');
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
+  const handleDisconnectDevice = async () => {
+    if (!confirm('Putuskan koneksi nomor lama agar Anda dapat memindai (scan) nomor baru?')) return;
+    setDisconnecting(true);
+    try {
+      const res = await fetch('/api/admin/whatsapp-gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect', token: whatsappToken }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('success', 'Nomor lama berhasil diputuskan. Silakan scan nomor baru!');
+        setWhatsappStatus('disconnected');
+        setWhatsappDevice(null);
+        handleOpenQrModal();
+      } else {
+        showToast('error', data.error || 'Gagal memutuskan nomor');
+      }
+    } catch {
+      showToast('error', 'Terjadi kesalahan jaringan saat memutus koneksi');
+    } finally {
+      setDisconnecting(false);
+    }
   };
 
   const loadUsers = () => {
@@ -478,6 +615,26 @@ export default function TeamManagementPage() {
         >
           <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
           <span>Wallpaper &amp; Tema</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('whatsapp')}
+          className={`flex-1 min-w-[120px] py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            activeTab === 'whatsapp'
+              ? 'bg-emerald-600 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <i className="fa-brands fa-whatsapp text-sm" />
+          <span>Integrasi WA</span>
+          {whatsappMode === 'scan' && (
+            <span
+              className={`w-2 h-2 rounded-full ${
+                whatsappStatus === 'connected' ? 'bg-emerald-300 animate-pulse' : 'bg-amber-300'
+              }`}
+              title={whatsappStatus === 'connected' ? 'Terhubung' : 'Belum Terhubung'}
+            />
+          )}
         </button>
 
         <button
@@ -894,6 +1051,340 @@ export default function TeamManagementPage() {
               <Save className="w-4 h-4" />
               {savingSettings ? 'Menyimpan...' : 'Simpan Wallpaper'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          TAB: INTEGRASI WHATSAPP (HANYA 2 PILIHAN)
+         ══════════════════════════════════════════════════════════ */}
+      {activeTab === 'whatsapp' && (
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-base sm:text-lg font-black uppercase text-slate-900 flex items-center gap-2">
+                  <i className="fa-brands fa-whatsapp text-emerald-600 text-xl" />
+                  Pengaturan Integrasi WhatsApp
+                </h2>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Pilih metode operasional WhatsApp untuk undangan dan notifikasi tim. Tersedia 2 pilihan:
+                </p>
+              </div>
+
+              {whatsappMode === 'scan' && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={checkWhatsAppGateway}
+                    disabled={checkingGateway}
+                    className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${checkingGateway ? 'animate-spin' : ''}`} />
+                    <span>Cek Status</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── 2 PILIHAN UTAMA (CARD SELECTOR) ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            
+            {/* PILIHAN 1: TANPA WA */}
+            <div
+              onClick={() => {
+                setWhatsappMode('disabled');
+                handleSaveWhatsAppSettings('disabled', whatsappToken);
+              }}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                whatsappMode === 'disabled'
+                  ? 'border-blue-600 bg-blue-50/40 shadow-md ring-2 ring-blue-500/20'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-lg">
+                    <XCircle className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                      whatsappMode === 'disabled'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {whatsappMode === 'disabled' ? 'AKTIF (PILIHAN 1)' : 'PILIHAN 1'}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-sm sm:text-base font-black uppercase text-slate-900">
+                    1. Tanpa WA (Nonaktif)
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Sistem WhatsApp otomatis dinonaktifkan. Pengurus tim dapat membagikan link pertandingan atau menyusun skuad secara manual tanpa mengirim pesan WhatsApp otomatis.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold">
+                <span className={whatsappMode === 'disabled' ? 'text-blue-700 font-extrabold' : 'text-slate-500'}>
+                  {whatsappMode === 'disabled' ? '✓ Mode Tanpa WA Aktif' : 'Klik untuk Pilih Mode Ini'}
+                </span>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    whatsappMode === 'disabled' ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300'
+                  }`}
+                >
+                  {whatsappMode === 'disabled' && <Check className="w-3 h-3 text-white" />}
+                </div>
+              </div>
+            </div>
+
+            {/* PILIHAN 2: YANG SCAN KEMARIN (WHATSAPP GATEWAY SCAN QR) */}
+            <div
+              onClick={() => {
+                setWhatsappMode('scan');
+                handleSaveWhatsAppSettings('scan', whatsappToken);
+              }}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                whatsappMode === 'scan'
+                  ? 'border-emerald-600 bg-emerald-50/40 shadow-md ring-2 ring-emerald-500/20'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                    <i className="fa-brands fa-whatsapp text-2xl" />
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                      whatsappMode === 'scan'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {whatsappMode === 'scan' ? 'AKTIF (PILIHAN 2)' : 'PILIHAN 2'}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-sm sm:text-base font-black uppercase text-slate-900 flex items-center gap-1.5">
+                    <span>2. Yang Scan Kemarin</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 uppercase font-black">
+                      Gateway QR
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Kirim undangan pertandingan langsung ke WhatsApp seluruh pemain menggunakan nomor WhatsApp baru Anda. Scan QR WhatsApp Web sekali saja langsung dari panel admin.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold">
+                <span className={whatsappMode === 'scan' ? 'text-emerald-700 font-extrabold' : 'text-slate-500'}>
+                  {whatsappMode === 'scan' ? '✓ Mode Scan QR Aktif' : 'Klik untuk Pilih Mode Ini'}
+                </span>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    whatsappMode === 'scan' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300'
+                  }`}
+                >
+                  {whatsappMode === 'scan' && <Check className="w-3 h-3 text-white" />}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ── KELOLA PERANGKAT & SCAN QR (HANYA MUNCUL JIKA PILIHAN 2 AKTIF) ── */}
+          {whatsappMode === 'scan' && (
+            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-5 animate-fadeIn">
+              <div className="border-b border-slate-200 pb-3 flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 flex items-center gap-2">
+                    <QrCode className="w-4 h-4 text-emerald-600" />
+                    Konfigurasi &amp; Tautkan Nomor WhatsApp Baru
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Masukkan token gateway Fonnte, lalu klik tombol scan QR di bawah untuk menautkan nomor baru Anda.
+                  </p>
+                </div>
+
+                {/* Status Badge */}
+                <div className="flex items-center gap-2">
+                  {whatsappStatus === 'connected' ? (
+                    <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black uppercase flex items-center gap-1.5 shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      TERHUBUNG {whatsappDevice ? `(${whatsappDevice})` : ''}
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-xs font-black uppercase flex items-center gap-1.5 shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      BELUM TERHUBUNG / DISCONNECTED
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Form Input Token Fonnte */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                  Token WhatsApp Gateway (Fonnte API Token)
+                </label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type={showWaToken ? 'text' : 'password'}
+                      value={whatsappToken}
+                      onChange={(e) => setWhatsappToken(e.target.value)}
+                      placeholder="Masukkan Token Fonnte Anda..."
+                      className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs font-mono font-medium outline-hidden focus:border-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowWaToken(!showWaToken)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    >
+                      {showWaToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSaveWhatsAppSettings('scan', whatsappToken)}
+                    disabled={savingWaSettings || !whatsappToken.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{savingWaSettings ? 'Menyimpan...' : 'Simpan Token'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <span>Belum punya token? Dapatkan gratis di</span>
+                  <a
+                    href="https://fonnte.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5"
+                  >
+                    fonnte.com <ExternalLink className="w-3 h-3" />
+                  </a>
+                </p>
+              </div>
+
+              {/* Action Buttons: Scan QR Baru & Putuskan Nomor */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleOpenQrModal}
+                  disabled={!whatsappToken.trim() || qrLoading}
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-emerald-600/25 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <QrCode className="w-4 h-4 text-white" />
+                  <span>{whatsappStatus === 'connected' ? 'Scan Ulang QR (Ganti Nomor)' : 'Scan QR Code Nomor Baru Sekarang'}</span>
+                </button>
+
+                {whatsappStatus === 'connected' && (
+                  <button
+                    type="button"
+                    onClick={handleDisconnectDevice}
+                    disabled={disconnecting}
+                    className="w-full sm:w-auto px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-600" />
+                    <span>{disconnecting ? 'Memutuskan...' : 'Putuskan Nomor Lama'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+
+      {/* ── MODAL: SCAN QR CODE WHATSAPP GATEWAY ── */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 max-w-md w-full space-y-5 animate-scaleIn shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black uppercase text-slate-900 flex items-center gap-2">
+                <i className="fa-brands fa-whatsapp text-emerald-600 text-lg" />
+                Scan QR Code Nomor Baru
+              </h3>
+              <button
+                onClick={() => setShowQrModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              {qrLoading ? (
+                <div className="py-14 text-center space-y-3">
+                  <div className="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                    Membuat Kode QR WhatsApp...
+                  </p>
+                </div>
+              ) : qrUrl ? (
+                <div className="space-y-3 text-center">
+                  <div className="p-3 bg-white rounded-2xl border-2 border-slate-300 shadow-inner inline-block">
+                    <img
+                      src={qrUrl}
+                      alt="WhatsApp Gateway QR Code"
+                      className="w-56 h-56 sm:w-64 sm:h-64 object-contain mx-auto"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-700 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Menunggu Anda memindai QR Code di HP...
+                  </div>
+                </div>
+              ) : (
+                <div className="py-10 text-center space-y-3">
+                  <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
+                  <p className="text-xs text-slate-600">
+                    Gagal memuat QR Code. Pastikan Token Fonnte terisi dan valid.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleOpenQrModal}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold uppercase cursor-pointer"
+                  >
+                    Coba Lagi
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Petunjuk Scan */}
+            <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1.5 text-slate-700 text-xs">
+              <p className="font-extrabold text-blue-900 uppercase text-[11px]">
+                📱 Langkah Scan di WhatsApp HP Baru:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed text-slate-600">
+                <li>Buka aplikasi WhatsApp di HP Anda.</li>
+                <li>Buka <strong>Menu (titik tiga)</strong> atau <strong>Setelan</strong>.</li>
+                <li>Pilih <strong>Perangkat Tertaut &gt; Tautkan Perangkat</strong>.</li>
+                <li>Arahkan kamera HP ke gambar QR Code di atas.</li>
+              </ol>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowQrModal(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase border border-slate-200 cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -187,16 +187,18 @@ export default function MatchWhatsAppInviteModal({
               <div className="space-y-0.5">
                 <span className="font-bold text-blue-700 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  {data?.hasWhatsAppToken ? 'WhatsApp Gateway Terhubung' : 'Kirim Langsung / Manual 1-Klik'}
+                  {data?.whatsappMode === 'scan' && data?.hasWhatsAppToken
+                    ? 'WhatsApp Gateway (Scan QR) Terhubung'
+                    : 'Mode Tanpa WA / Manual'}
                 </span>
                 <p className="text-[11px] text-slate-600">
-                  {data?.hasWhatsAppToken
-                    ? 'Token WhatsApp terdeteksi. Anda dapat mengirim otomatis ke semua nomor pemain sekaligus atau klik tombol WA per pemain.'
-                    : 'Klik tombol WA di samping setiap pemain untuk langsung membuka chat WhatsApp dengan pesan undangan & link siap kirim.'}
+                  {data?.whatsappMode === 'scan' && data?.hasWhatsAppToken
+                    ? 'Token WhatsApp aktif. Anda dapat mengirim otomatis ke semua pemain sekaligus atau klik tombol WA per pemain.'
+                    : 'Kirim link konfirmasi per pemain via WhatsApp web manual dengan mengeklik tombol WA di samping setiap nama.'}
                 </p>
               </div>
 
-              {data?.hasWhatsAppToken && (
+              {data?.whatsappMode === 'scan' && data?.hasWhatsAppToken && (
                 <button
                   type="button"
                   disabled={dispatching}

@@ -179,6 +179,8 @@ export async function GET(
         seasonName: match.seasonName,
       },
       hasWhatsAppToken: Boolean(systemSetting?.whatsappToken),
+      whatsappMode: systemSetting?.whatsappMode || 'disabled',
+      isInviteAllowed: (match as any).sendWhatsAppInvite !== false,
       totalPlayers: playerInvites.length,
       totalWithPhone: playerInvites.filter((p) => Boolean(p.cleanPhone)).length,
       confirmedCount: playerInvites.filter((p) => p.status === 'CONFIRMED').length,
@@ -277,8 +279,10 @@ export async function POST(
     let gatewaySentCount = 0;
     let gatewayFailedCount = 0;
     const token = systemSetting?.whatsappToken?.trim();
+    const isScanMode = (systemSetting?.whatsappMode || 'disabled') === 'scan';
+    const isInviteAllowed = (match as any).sendWhatsAppInvite !== false;
 
-    if (autoSendWhatsApp && token) {
+    if (autoSendWhatsApp && token && isScanMode && isInviteAllowed) {
       const sendPromises = players
         .filter((p) => cleanIndonesianPhone(p.phone).length >= 10)
         .map(async (p) => {

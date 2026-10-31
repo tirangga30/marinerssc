@@ -78,6 +78,7 @@ export async function POST(req: Request) {
         awayScore: data.awayScore !== undefined && data.awayScore !== null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
         formation: data.formation || 'Belum Tersedia',
         summary: data.summary || '',
+        sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : true,
       },
     });
 

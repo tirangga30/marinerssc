@@ -18,7 +18,7 @@ import {
   Shield,
   Plane,
 } from 'lucide-react';
-import { formatDateForInput, WIB_TIMEZONE } from '@/lib/date';
+import { formatDateForInput, formatWibDate, formatWibTime, WIB_TIMEZONE } from '@/lib/date';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
 import MatchWhatsAppInviteModal from '@/components/admin/MatchWhatsAppInviteModal';
 
@@ -39,6 +39,7 @@ interface FootballMatch {
   awayScore: number | null;
   formation: string;
   summary: string | null;
+  sendWhatsAppInvite?: boolean;
   attendances?: Array<{ id: string; status: string }>;
 }
 
@@ -243,7 +244,7 @@ export default function AdminMatchesPage() {
       venue: m.venue || '',
       isHome: m.isHome,
       summary: m.summary || '',
-      sendWhatsAppInvite: false,
+      sendWhatsAppInvite: m.sendWhatsAppInvite !== false,
     });
     setShowModal(true);
   };
@@ -414,14 +415,14 @@ export default function AdminMatchesPage() {
                   <div className="flex items-center justify-between text-[11px] border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-slate-800">
-                        {new Date(m.matchDate).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          timeZone: WIB_TIMEZONE,
-                        })}
+                        {m.matchDate ? (
+                          <>
+                            <span>{formatWibDate(m.matchDate, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span className="text-slate-500 font-mono text-[10px] ml-1.5">{formatWibTime(m.matchDate)}</span>
+                          </>
+                        ) : (
+                          '—'
+                        )}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold uppercase text-[9px]">
                         {m.competition || 'FRIENDLY'} {m.stage ? `• ${m.stage}` : ''}
@@ -469,7 +470,7 @@ export default function AdminMatchesPage() {
                     >
                       <Settings2 className="w-3.5 h-3.5" /> Match Options
                     </Link>
-                    {Boolean(m.attendances && m.attendances.length > 0) && (
+                    {m.sendWhatsAppInvite !== false && Boolean(m.attendances && m.attendances.length > 0) && (
                       <button
                         onClick={() => setBroadcastMatchId(m.id)}
                         className="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300"
@@ -519,15 +520,19 @@ export default function AdminMatchesPage() {
                 return (
                   <tr key={m.id} className="hover:bg-slate-50 transition-colors">
                     <td className="p-3 font-bold text-slate-900 whitespace-nowrap">
-                      {m.matchDate && !isNaN(new Date(m.matchDate).getTime()) ? (
-                        new Date(m.matchDate).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          timeZone: WIB_TIMEZONE,
-                        })
+                      {m.matchDate ? (
+                        <div>
+                          <span className="block text-slate-900 font-bold">
+                            {formatWibDate(m.matchDate, {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          <span className="text-[11px] font-mono text-slate-500 font-semibold block">
+                            {formatWibTime(m.matchDate)}
+                          </span>
+                        </div>
                       ) : (
                         <span className="text-slate-400 font-normal">—</span>
                       )}
@@ -583,10 +588,10 @@ export default function AdminMatchesPage() {
                       >
                         <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
-                      {Boolean(m.attendances && m.attendances.length > 0) && (
+                      {m.sendWhatsAppInvite !== false && Boolean(m.attendances && m.attendances.length > 0) && (
                         <button
                           onClick={() => setBroadcastMatchId(m.id)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1 cursor-pointer"
                           title="Undangan WhatsApp Skuad"
                         >
                           <i className="fa-brands fa-whatsapp text-xs" /> Undangan WA

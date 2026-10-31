@@ -112,6 +112,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         duration: data.duration !== undefined ? parseInt(data.duration) : 60,
         extraTime: data.extraTime !== undefined ? parseInt(data.extraTime) : 0,
         isLiveEnabled: data.isLiveEnabled !== undefined ? Boolean(data.isLiveEnabled) : undefined,
+        sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : undefined,
         summary: data.summary,
       },
     });
