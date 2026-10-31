@@ -1257,7 +1257,7 @@ export default function TeamManagementPage() {
                     type="button"
                     onClick={() => handleSaveWhatsAppSettings('scan', whatsappToken)}
                     disabled={savingWaSettings || !whatsappToken.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
+                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>{savingWaSettings ? 'Menyimpan...' : 'Simpan Token'}</span>

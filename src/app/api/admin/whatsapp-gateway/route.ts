@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
+import { ensureDbColumns } from '@/lib/dbMigrations';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,8 @@ export async function GET() {
   }
 
   try {
+    await ensureDbColumns().catch(() => null);
+
     const setting = await (prisma as any).systemSetting.findUnique({
       where: { id: 'default' },
     });
@@ -91,6 +94,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureDbColumns().catch(() => null);
+
     const body = await req.json();
     const { action, token: customToken } = body;
 
@@ -165,3 +170,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+

@@ -5,11 +5,14 @@ import path from 'path';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { ensureDbColumns } from '@/lib/dbMigrations';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    await ensureDbColumns().catch(() => null);
+
     const setting = await (prisma as any).systemSetting.findUnique({
       where: { id: 'default' },
     });
@@ -68,6 +71,8 @@ export async function PUT(req: Request) {
   }
 
   try {
+    await ensureDbColumns().catch(() => null);
+
     const body = await req.json();
     const {
       teamName, teamLogo, clubType, playerDefaultPhoto, loginWallpaper, adminWallpaper,
@@ -228,6 +233,6 @@ export async function PUT(req: Request) {
     });
   } catch (err: any) {
     console.error('Error updating system settings:', err);
-    return NextResponse.json({ error: 'Gagal memperbarui pengaturan tim' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Gagal memperbarui pengaturan tim' }, { status: 500 });
   }
 }
