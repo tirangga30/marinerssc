@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Award, Flame, Shield, Activity } from 'lucide-react';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const formatPosition = (pos: string) => {
   const p = (pos || '').toUpperCase();

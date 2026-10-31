@@ -6,7 +6,8 @@ import { unstable_cache } from 'next/cache';
 import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const getCachedPlayersData = unstable_cache(
   async () => {

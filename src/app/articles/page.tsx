@@ -5,7 +5,8 @@ import { unstable_cache } from 'next/cache';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { getMainThumbnail } from '@/lib/articles';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const getCachedArticles = unstable_cache(
   async () => {

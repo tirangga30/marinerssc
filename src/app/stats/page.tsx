@@ -5,7 +5,8 @@ import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { Trophy, Award, Flame, Shield, Activity, Users, BarChart3 } from 'lucide-react';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const getCachedStatsData = unstable_cache(
   async () => {
