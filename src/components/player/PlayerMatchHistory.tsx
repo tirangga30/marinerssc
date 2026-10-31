@@ -65,9 +65,9 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
           <>
             {/* ── Table Header ── */}
             <div
-              className="grid px-3 sm:px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center"
+              className="grid px-3 sm:px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center gap-2 sm:gap-3"
               style={{
-                gridTemplateColumns: '52px 1fr auto',
+                gridTemplateColumns: '64px 1fr auto',
                 background: '#f8fafc',
                 borderBottom: '1px solid #e2e8f0',
                 color: '#64748b',
@@ -120,20 +120,20 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold uppercase truncate flex-1 text-blue-600">
-                          {displayTeamName.toUpperCase()}
+                        <span className="text-xs font-bold uppercase tracking-wide truncate flex-1 text-blue-600">
+                          {String(displayTeamName || 'TEAM').toUpperCase()}
                         </span>
                       </div>
                     )
                   : () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img
-                          src={match.opponentLogo}
-                          alt={match.opponentName}
+                          src={match.opponentLogo || '/defaultteam.webp'}
+                          alt={match.opponentName || 'OPPONENT'}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold uppercase truncate flex-1 text-slate-800">
-                          {match.opponentName?.toUpperCase()}
+                        <span className="text-xs font-semibold uppercase tracking-wide truncate flex-1 text-slate-800">
+                          {String(match.opponentName || 'OPPONENT').toUpperCase()}
                         </span>
                       </div>
                     );
@@ -142,12 +142,12 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                   ? () => (
                       <div className="flex items-center gap-1.5 min-w-0">
                         <img
-                          src={match.opponentLogo}
-                          alt={match.opponentName}
+                          src={match.opponentLogo || '/defaultteam.webp'}
+                          alt={match.opponentName || 'OPPONENT'}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-semibold uppercase truncate flex-1 text-slate-800">
-                          {match.opponentName?.toUpperCase()}
+                        <span className="text-xs font-semibold uppercase tracking-wide truncate flex-1 text-slate-800">
+                          {String(match.opponentName || 'OPPONENT').toUpperCase()}
                         </span>
                       </div>
                     )
@@ -158,8 +158,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
                           alt={displayTeamName}
                           className="w-4 h-4 object-contain shrink-0"
                         />
-                        <span className="text-xs font-bold uppercase truncate flex-1 text-blue-600">
-                          {displayTeamName.toUpperCase()}
+                        <span className="text-xs font-bold uppercase tracking-wide truncate flex-1 text-blue-600">
+                          {String(displayTeamName || 'TEAM').toUpperCase()}
                         </span>
                       </div>
                     );
@@ -306,9 +306,9 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
 
                     <Link
                       href={`/matches/${match.id}`}
-                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer"
+                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer gap-2 sm:gap-3"
                       style={{
-                        gridTemplateColumns: '52px 1fr auto',
+                        gridTemplateColumns: '64px 1fr auto',
                         borderTop: isNewCompGroup ? 'none' : rowBorder,
                       }}
                     >

@@ -4,39 +4,54 @@ let migrationRan = false;
 
 export async function ensureDbColumns() {
   if (migrationRan) return;
-  try {
-    await prisma.$executeRawUnsafe(`
-      DO $$ 
-      BEGIN 
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'SystemSetting' AND column_name = 'whatsappMode') THEN
-          ALTER TABLE "SystemSetting" ADD COLUMN "whatsappMode" TEXT DEFAULT 'disabled';
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'SystemSetting' AND column_name = 'whatsappConnectedPhone') THEN
-          ALTER TABLE "SystemSetting" ADD COLUMN "whatsappConnectedPhone" TEXT;
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'SystemSetting' AND column_name = 'whatsappToken') THEN
-          ALTER TABLE "SystemSetting" ADD COLUMN "whatsappToken" TEXT;
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'FootballMatch' AND column_name = 'sendWhatsAppInvite') THEN
-          ALTER TABLE "FootballMatch" ADD COLUMN "sendWhatsAppInvite" BOOLEAN DEFAULT true;
-        END IF;
-      END $$;
-    `);
-    migrationRan = true;
-  } catch (pgErr) {
-    try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "SystemSetting" ADD COLUMN "whatsappMode" TEXT DEFAULT 'disabled'`);
-    } catch {}
-    try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "SystemSetting" ADD COLUMN "whatsappConnectedPhone" TEXT`);
-    } catch {}
-    try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "SystemSetting" ADD COLUMN "whatsappToken" TEXT`);
-    } catch {}
-    try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "FootballMatch" ADD COLUMN "sendWhatsAppInvite" BOOLEAN DEFAULT 1`);
-    } catch {}
-    migrationRan = true;
-  }
-}
 
+  const dbUrl = process.env.DATABASE_URL || '';
+  const isPostgres = dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://') || Boolean(process.env.VERCEL);
+
+  if (isPostgres) {
+    const pgMigrations = [
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappMode" TEXT DEFAULT 'disabled'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappConnectedPhone" TEXT`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappToken" TEXT`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "adminWallpaper" TEXT DEFAULT '/stadium.webp'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "playerCardBg" TEXT DEFAULT '/bgprofil2.webp'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "showHeroOverlay" BOOLEAN DEFAULT false`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "heroTagline" TEXT DEFAULT 'SOCCER CLUB'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "heroSubtitle" TEXT DEFAULT 'Lebih dari sekadar sepak bola.'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "heroCtaText" TEXT DEFAULT 'LIHAT TIM'`,
+      `ALTER TABLE "FootballMatch" ADD COLUMN IF NOT EXISTS "sendWhatsAppInvite" BOOLEAN DEFAULT true`,
+    ];
+
+    for (const sql of pgMigrations) {
+      try {
+        await prisma.$executeRawUnsafe(sql);
+      } catch (e) {
+        console.warn(`[dbMigration PG warning] ${sql}:`, e);
+      }
+    }
+  } else {
+    // SQLite: ADD COLUMN without IF NOT EXISTS (ignore error if column already exists)
+    const sqliteMigrations = [
+      `ALTER TABLE "SystemSetting" ADD COLUMN "whatsappMode" TEXT DEFAULT 'disabled'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "whatsappConnectedPhone" TEXT`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "whatsappToken" TEXT`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "adminWallpaper" TEXT DEFAULT '/stadium.webp'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "playerCardBg" TEXT DEFAULT '/bgprofil2.webp'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "showHeroOverlay" BOOLEAN DEFAULT 0`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "heroTagline" TEXT DEFAULT 'SOCCER CLUB'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "heroSubtitle" TEXT DEFAULT 'Lebih dari sekadar sepak bola.'`,
+      `ALTER TABLE "SystemSetting" ADD COLUMN "heroCtaText" TEXT DEFAULT 'LIHAT TIM'`,
+      `ALTER TABLE "FootballMatch" ADD COLUMN "sendWhatsAppInvite" BOOLEAN DEFAULT 1`,
+    ];
+
+    for (const sql of sqliteMigrations) {
+      try {
+        await prisma.$executeRawUnsafe(sql);
+      } catch {
+        // Expected when column already exists in SQLite
+      }
+    }
+  }
+
+  migrationRan = true;
+}

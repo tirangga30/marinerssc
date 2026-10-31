@@ -199,6 +199,7 @@ export async function PUT(req: Request) {
         heroCtaText: updateData.heroCtaText || 'LIHAT TIM',
         whatsappMode: updateData.whatsappMode || 'disabled',
         whatsappToken: updateData.whatsappToken || null,
+        whatsappConnectedPhone: updateData.whatsappConnectedPhone || null,
       },
     });
 
