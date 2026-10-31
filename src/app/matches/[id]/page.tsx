@@ -152,7 +152,7 @@ export default async function MatchDetailPage({
           </div>
 
           {/* Center Score / Status (Sejajar dengan Logo & Nama Tim) */}
-          <div className="flex items-center justify-center px-1 sm:px-3">
+          <div className="flex flex-col items-center justify-center min-w-0 px-1 sm:px-3 py-0.5">
             {status === 'live' ? (
               <LiveScoreDisplay
                 targetDate={match.matchDate}
@@ -162,16 +162,39 @@ export default async function MatchDetailPage({
                 isLiveEnabled={match.isLiveEnabled !== false}
               />
             ) : status === 'finished' ? (
-              <div className="text-2xl sm:text-5xl md:text-6xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center">
-                {match.homeScore ?? 0} : {match.awayScore ?? 0}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center">
-                <p className="text-[9px] sm:text-xs text-blue-600 font-bold uppercase mb-0.5">Mendatang</p>
-                <div className="inline-block px-3 sm:px-6 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 text-base sm:text-3xl font-black border border-blue-200 leading-none">
-                  VS
+              <>
+                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] sm:text-xs font-black uppercase text-emerald-600 tracking-wider">
+                    FULL TIME
+                  </span>
                 </div>
-              </div>
+                <div className="text-2xl sm:text-5xl md:text-6xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center my-0.5 sm:my-1">
+                  {match.homeScore ?? 0} : {match.awayScore ?? 0}
+                </div>
+                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                  <p className="text-[8px] sm:text-[11px] text-slate-500 font-medium truncate text-center">
+                    {match.venue || '—'}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0">
+                  <span className="text-[9px] sm:text-xs text-blue-600 font-bold uppercase">
+                    Mendatang
+                  </span>
+                </div>
+                <div className="flex items-center justify-center my-0.5 sm:my-1">
+                  <div className="inline-block px-3 sm:px-6 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 text-base sm:text-3xl font-black border border-blue-200 leading-none">
+                    VS
+                  </div>
+                </div>
+                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                  <p className="text-[8px] sm:text-[11px] text-slate-500 font-medium truncate text-center">
+                    {match.venue || '—'}
+                  </p>
+                </div>
+              </>
             )}
           </div>
 

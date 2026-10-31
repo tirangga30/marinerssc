@@ -141,7 +141,7 @@ function MatchCard({
         </div>
 
         {/* Score / VS Badge (Sejajar dengan Logo & Nama) */}
-        <div className="flex flex-col items-center justify-center px-1">
+        <div className="flex flex-col items-center justify-center min-w-0 px-1 py-0.5">
           {status === 'live' ? (
             <LiveScoreDisplay
               targetDate={match.matchDate}
@@ -154,22 +154,54 @@ function MatchCard({
             />
           ) : status === 'score_pending' ? (
             <>
-              <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase mb-0.5">FULL TIME</span>
-              <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-sm sm:text-2xl border border-blue-200 leading-none">
-                VS
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                <span className="text-[9px] sm:text-[11px] font-bold uppercase text-slate-500">
+                  FULL TIME
+                </span>
+              </div>
+              <div className="flex items-center justify-center my-0.5 sm:my-1">
+                <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 leading-none">
+                  VS
+                </div>
+              </div>
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
+                  {match.venue || '—'}
+                </p>
               </div>
             </>
           ) : status === 'finished' ? (
-            <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center">
-              {match.homeScore ?? 0} : {match.awayScore ?? 0}
-            </div>
+            <>
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                <span className="text-[9px] sm:text-[11px] font-black uppercase text-emerald-600 tracking-wider">
+                  FULL TIME
+                </span>
+              </div>
+              <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center my-0.5 sm:my-1">
+                {match.homeScore ?? 0} : {match.awayScore ?? 0}
+              </div>
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
+                  {match.venue || '—'}
+                </p>
+              </div>
+            </>
           ) : (
             <>
-              <span className="text-[9px] sm:text-[11px] text-slate-500 font-medium mb-0.5">
-                {formatWibTime(match.matchDate)}
-              </span>
-              <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-sm sm:text-2xl border border-blue-200 leading-none">
-                VS
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                <span className="text-[9px] sm:text-[11px] text-slate-600 font-bold">
+                  {formatWibTime(match.matchDate)}
+                </span>
+              </div>
+              <div className="flex items-center justify-center my-0.5 sm:my-1">
+                <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 leading-none">
+                  VS
+                </div>
+              </div>
+              <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
+                  {match.venue || '—'}
+                </p>
               </div>
             </>
           )}

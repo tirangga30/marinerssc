@@ -762,7 +762,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       </div>
 
                       {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
-                      <div className="px-1 flex items-center justify-center">
+                      <div className="flex flex-col items-center justify-center min-w-0 px-1 py-0.5">
                         {currentFeaturedStatus === 'live' ? (
                           <LiveScoreDisplay
                             targetDate={currentNextMatch.matchDate}
@@ -774,22 +774,57 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             status={currentFeaturedStatus}
                           />
                         ) : currentFeaturedStatus === 'score_pending' ? (
-                          <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs">
-                            VS
-                          </div>
-                        ) : currentFeaturedStatus === 'finished' ? (
-                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest drop-shadow-xs flex items-center justify-center leading-none">
-                            {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center">
-                            <p className="text-[9px] sm:text-[11px] text-slate-600 font-bold mb-0.5">
-                              {formatWibTime(currentNextMatch.matchDate)}
-                            </p>
-                            <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs shadow-xs">
-                              VS
+                          <>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                              <span className="text-[9px] sm:text-[11px] font-bold uppercase text-slate-500">
+                                FULL TIME
+                              </span>
                             </div>
-                          </div>
+                            <div className="flex items-center justify-center my-0.5 sm:my-1">
+                              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs">
+                                VS
+                              </div>
+                            </div>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
+                                {currentNextMatch.venue || '—'}
+                              </p>
+                            </div>
+                          </>
+                        ) : currentFeaturedStatus === 'finished' ? (
+                          <>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                              <span className="text-[9px] sm:text-[11px] font-black uppercase text-emerald-600 tracking-wider">
+                                FULL TIME
+                              </span>
+                            </div>
+                            <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest drop-shadow-xs flex items-center justify-center leading-none my-0.5 sm:my-1">
+                              {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
+                            </div>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
+                                {currentNextMatch.venue || '—'}
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                              <span className="text-[9px] sm:text-[11px] text-slate-600 font-bold">
+                                {formatWibTime(currentNextMatch.matchDate)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-center my-0.5 sm:my-1">
+                              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs shadow-xs">
+                                VS
+                              </div>
+                            </div>
+                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
+                                {currentNextMatch.venue || '—'}
+                              </p>
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -885,9 +920,19 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         </div>
 
                         {/* Score / VS Badge — Sejajar dengan Logo & Nama */}
-                        <div className="px-1 flex items-center justify-center">
-                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none">
+                        <div className="flex flex-col items-center justify-center min-w-0 px-1 py-0.5">
+                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
+                            <span className="text-[9px] sm:text-[11px] font-black uppercase text-emerald-600 tracking-wider">
+                              FULL TIME
+                            </span>
+                          </div>
+                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none my-0.5 sm:my-1 flex items-center justify-center">
                             {m.homeScore} : {m.awayScore}
+                          </div>
+                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
+                            <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
+                              {m.venue || '—'}
+                            </p>
                           </div>
                         </div>
 
