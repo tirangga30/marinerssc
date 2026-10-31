@@ -110,6 +110,38 @@ export default async function MatchDetailPage({
     })),
   };
 
+  // Query Head-to-Head (H2H) matches against the exact same opponent name
+  let h2hMatches: any[] = [];
+  try {
+    const rawMatches = await prisma.footballMatch.findMany({
+      where: {
+        id: { not: match.id },
+      },
+      orderBy: { matchDate: 'desc' },
+      select: {
+        id: true,
+        opponentName: true,
+        opponentLogo: true,
+        matchDate: true,
+        competition: true,
+        stage: true,
+        seasonName: true,
+        venue: true,
+        isHome: true,
+        status: true,
+        homeScore: true,
+        awayScore: true,
+      },
+    });
+
+    const cleanOpponent = (match.opponentName || '').trim().toLowerCase();
+    h2hMatches = rawMatches.filter(
+      (m) => (m.opponentName || '').trim().toLowerCase() === cleanOpponent
+    );
+  } catch (h2hErr) {
+    console.warn('Error fetching H2H matches:', h2hErr);
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
@@ -234,9 +266,9 @@ export default async function MatchDetailPage({
         />
       </React.Suspense>
 
-      {/* Match Content Tabs (Summary & Timeline / Lineup & Formasi) */}
+      {/* Match Content Tabs (Summary & Timeline / Lineup & Formasi / H2H) */}
       <React.Suspense fallback={null}>
-        <MatchTabs match={resolvedMatch} />
+        <MatchTabs match={resolvedMatch} h2hMatches={h2hMatches} />
       </React.Suspense>
 
     </div>
