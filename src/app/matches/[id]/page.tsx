@@ -135,14 +135,14 @@ export default async function MatchDetailPage({
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-6 items-center text-center max-w-4xl mx-auto">
+        <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center text-center max-w-4xl mx-auto">
 
           {/* Home Team (Nama di sisi luar kiri mendekat ke logo di tengah) */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
-            <h2 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 text-right truncate flex-1">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
+            <h2 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 text-right truncate flex-1">
               {(match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h2>
-            <div className="shrink-0 w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <div className="shrink-0 w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
               <img
                 src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
                 alt={match.isHome ? teamName : match.opponentName}
@@ -152,7 +152,7 @@ export default async function MatchDetailPage({
           </div>
 
           {/* Center Score / Status (Sejajar dengan Logo & Nama Tim) */}
-          <div className="flex flex-col items-center justify-center min-w-0 px-1 sm:px-3 py-0.5">
+          <div className="flex flex-col items-center justify-center min-w-[80px] sm:min-w-[130px] px-1 sm:px-3 py-0.5">
             {status === 'live' ? (
               <LiveScoreDisplay
                 targetDate={match.matchDate}
@@ -199,15 +199,15 @@ export default async function MatchDetailPage({
           </div>
 
           {/* Away Team (Logo di tengah, Nama di sisi luar kanan mendekat ke logo) */}
-          <div className="flex items-center justify-start gap-1.5 sm:gap-3.5 min-w-0">
-            <div className="shrink-0 w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center">
+          <div className="flex items-center justify-start gap-1.5 sm:gap-3 min-w-0">
+            <div className="shrink-0 w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
               <img
                 src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
                 alt={!match.isHome ? teamName : match.opponentName}
                 className="w-full h-full object-contain drop-shadow-md"
               />
             </div>
-            <h2 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 text-left truncate flex-1">
+            <h2 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 text-left truncate flex-1">
               {(!match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h2>
           </div>

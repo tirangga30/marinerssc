@@ -124,11 +124,11 @@ function MatchCard({
       </div>
 
       {/* Main Scoreboard Content */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-6 items-center text-center">
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center text-center">
         {/* Home Team (Nama di sisi luar, Logo mendekat ke tengah) */}
-        <div className="flex items-center justify-end gap-1.5 sm:gap-3.5 min-w-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
           <div className="text-right min-w-0 flex-1">
-            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+            <h4 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
               {(match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h4>
           </div>
@@ -136,13 +136,13 @@ function MatchCard({
             <img
               src={match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
               alt={match.isHome ? teamName : match.opponentName}
-              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+              className="w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         </div>
 
         {/* Score / VS Badge (Sejajar dengan Logo & Nama) */}
-        <div className="flex flex-col items-center justify-center min-w-0 px-1 py-0.5">
+        <div className="flex flex-col items-center justify-center min-w-[76px] sm:min-w-[120px] px-1 py-0.5">
           {status === 'live' ? (
             <LiveScoreDisplay
               targetDate={match.matchDate}
@@ -209,16 +209,16 @@ function MatchCard({
         </div>
 
         {/* Away Team (Logo mendekat ke tengah, Nama di sisi luar) */}
-        <div className="flex items-center justify-start gap-1.5 sm:gap-3.5 min-w-0">
+        <div className="flex items-center justify-start gap-1.5 sm:gap-3 min-w-0">
           <div className="shrink-0 flex items-center justify-center">
             <img
               src={!match.isHome ? teamLogo : (match.opponentLogo || '/defaultteam.webp')}
               alt={!match.isHome ? teamName : match.opponentName}
-              className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+              className="w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="text-left min-w-0 flex-1">
-            <h4 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+            <h4 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
               {(!match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h4>
           </div>
