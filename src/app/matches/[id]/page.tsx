@@ -287,7 +287,7 @@ export default async function MatchDetailPage({
             day: 'numeric',
             month: 'short',
             year: 'numeric',
-          })} • ${formatWibTime(match.matchDate)} WIB`}
+          })} • ${formatWibTime(match.matchDate)}`}
           venueText={match.venue}
           initialAttendances={resolvedMatch.attendances}
         />
