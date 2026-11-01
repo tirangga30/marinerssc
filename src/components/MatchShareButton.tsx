@@ -78,7 +78,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
         `🔥 ${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}`,
         `🏆 ${match.stage || match.competition || 'Friendly Match'}`,
         `📅 ${formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`,
-        `⏰ ${formatWibTime(match.matchDate)} WIB`,
+        `⏰ ${formatWibTime(match.matchDate)}`,
         `📍 ${match.venue || '—'}`,
         ``,
         `Lihat detail pertandingan dan susunan pemain:`,

@@ -5,8 +5,7 @@ import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
-import { Trophy, Calendar, Clock } from 'lucide-react';
-import MatchShareButton from '@/components/MatchShareButton';
+import { Trophy, Calendar } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -93,37 +92,30 @@ function MatchCard({
     >
       {/* Top Bar Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {status === 'live' ? (
-            <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-300 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
-            </span>
-          ) : result ? (
-            <span
-              className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border"
-              style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
-            >
-              {result}
-            </span>
-          ) : null}
+        {status === 'live' ? (
+          <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-300 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+          </span>
+        ) : result ? (
+          <span
+            className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border"
+            style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
+          >
+            {result}
+          </span>
+        ) : (
+          <div />
+        )}
+        <span className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-[9px] sm:text-xs font-medium text-slate-500">
+            {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
           {displayStage && (
             <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
               {displayStage}
             </span>
           )}
-        </div>
-
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <span className="text-[9px] sm:text-xs font-medium text-slate-500">
-            {formatWibDate(match.matchDate, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-          </span>
-          <span className="text-[9px] sm:text-xs font-semibold text-slate-600 flex items-center gap-1">
-            <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-            {formatWibTime(match.matchDate)} WIB
-          </span>
-          {/* Navigasi Share di Ujung Kanan Atas Box Sebelah Kanan Jam */}
-          <MatchShareButton match={match} teamName={teamName} />
-        </div>
+        </span>
       </div>
 
       {/* Main Scoreboard Content */}

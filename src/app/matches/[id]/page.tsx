@@ -11,6 +11,7 @@ import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
+import MatchShareButton from '@/components/MatchShareButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -180,14 +181,17 @@ export default async function MatchDetailPage({
               {matchLabel}
             </span>
           )}
-          <span className="text-slate-500">
-            {formatWibDate(match.matchDate, {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            })} • {formatWibTime(match.matchDate)}
-          </span>
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <span className="text-slate-500">
+              {formatWibDate(match.matchDate, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })} • {formatWibTime(match.matchDate)}
+            </span>
+            <MatchShareButton match={resolvedMatch} teamName={teamName} />
+          </div>
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center text-center max-w-4xl mx-auto">
