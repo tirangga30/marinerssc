@@ -9,57 +9,6 @@ import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const getCachedPlayersData = unstable_cache(
-  async () => {
-    try {
-      const [seasons, allPlayers, systemSetting] = await Promise.all([
-        prisma.season.findMany({
-          orderBy: { year: 'desc' },
-          select: { id: true, name: true, year: true, isCurrent: true },
-        }),
-        prisma.player.findMany({
-          where: {
-            isGuest: false,
-            OR: [
-              { member: null },
-              { member: { isPermanent: true } },
-            ],
-          },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            number: true,
-            position: true,
-            photoUrl: true,
-            hidePhoto: true,
-            isCaptain: true,
-            seasonData: true,
-            member: { select: { id: true } },
-            seasons: { select: { id: true, name: true } },
-          },
-          orderBy: { number: 'asc' },
-        }),
-        (prisma as any).systemSetting.findUnique({
-          where: { id: 'default' },
-          select: { playerCardBg: true, playerDefaultPhoto: true },
-        }).catch(() => null),
-      ]);
-      return {
-        seasons,
-        allPlayers,
-        playerCardBg: systemSetting?.playerCardBg || '/bgprofil2.webp',
-        playerDefaultPhoto: systemSetting?.playerDefaultPhoto || '/playertemplate.webp',
-      };
-    } catch (e) {
-      console.warn('Database unreachable in getCachedPlayersData, fallback to empty arrays:', e);
-      return { seasons: [], allPlayers: [], playerCardBg: '/bgprofil2.webp', playerDefaultPhoto: '/playertemplate.webp' };
-    }
-  },
-  ['mariners-players-page-cache'],
-  { revalidate: 3600, tags: ['players', 'seasons'] }
-);
-
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {
   GOALKEEPER: 'GOALKEEPER',
@@ -107,28 +56,115 @@ export default async function PlayersPage({
   const cookieSeason = cookieStore.get('public_season')?.value;
   const cookieAdminSeason = cookieStore.get('admin_season')?.value;
 
-  const { seasons, allPlayers, playerCardBg, playerDefaultPhoto } = await getCachedPlayersData();
+  // Direct dynamic database query for fresh live squad data
+  let seasons: any[] = [];
+  let allPlayers: any[] = [];
+  let playerCardBg = '/bgprofil2.webp';
+  let playerDefaultPhoto = '/playertemplate.webp';
+
+  try {
+    const [seasonsData, playersData, settingData] = await Promise.all([
+      prisma.season.findMany({
+        orderBy: { year: 'desc' },
+        select: { id: true, name: true, year: true, isCurrent: true },
+      }).catch(() => []),
+      prisma.player.findMany({
+        where: {
+          isGuest: false,
+          OR: [
+            { member: null },
+            { member: { isPermanent: true } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          number: true,
+          position: true,
+          photoUrl: true,
+          hidePhoto: true,
+          isCaptain: true,
+          seasonData: true,
+          member: { select: { id: true } },
+          seasons: { select: { id: true, name: true } },
+        },
+        orderBy: { number: 'asc' },
+      }).catch(async () => {
+        // Safe fallback without member join if member relation throws
+        return prisma.player.findMany({
+          where: { isGuest: false },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            number: true,
+            position: true,
+            photoUrl: true,
+            hidePhoto: true,
+            isCaptain: true,
+            seasonData: true,
+            seasons: { select: { id: true, name: true } },
+          },
+          orderBy: { number: 'asc' },
+        }).catch(() => []);
+      }),
+      (prisma as any).systemSetting.findUnique({
+        where: { id: 'default' },
+        select: { playerCardBg: true, playerDefaultPhoto: true },
+      }).catch(() => null),
+    ]);
+
+    seasons = seasonsData || [];
+    allPlayers = playersData || [];
+    if (settingData?.playerCardBg) playerCardBg = settingData.playerCardBg;
+    if (settingData?.playerDefaultPhoto) playerDefaultPhoto = settingData.playerDefaultPhoto;
+  } catch (err) {
+    console.warn('Error fetching players page data:', err);
+  }
 
   const validNames = new Set(seasons.map((s) => s.name));
-  const currentDbSeason = seasons.find((s) => s.isCurrent)?.name;
-  const defaultSeason = currentDbSeason || seasons[0]?.name || '2026';
+  const currentDbSeason = seasons.find((s) => Boolean(s.isCurrent))?.name;
+  const defaultSeason = currentDbSeason || (seasons.length > 0 ? seasons[0].name : '');
 
   let selectedSeason = defaultSeason;
   if (params.season && validNames.has(params.season)) {
     selectedSeason = params.season;
+  } else if (cookieSeason && validNames.has(cookieSeason)) {
+    selectedSeason = cookieSeason;
   } else if (cookieAdminSeason && validNames.has(cookieAdminSeason)) {
     selectedSeason = cookieAdminSeason;
   } else if (currentDbSeason && validNames.has(currentDbSeason)) {
     selectedSeason = currentDbSeason;
-  } else if (cookieSeason && validNames.has(cookieSeason)) {
-    selectedSeason = cookieSeason;
+  } else if (seasons.length > 0) {
+    selectedSeason = seasons[0].name;
   }
 
   const posFilter = (params.pos || 'all').toLowerCase();
 
-  const seasonFiltered = allPlayers.filter((p: any) =>
-    Array.isArray(p.seasons) && p.seasons.some((s: any) => s.name === selectedSeason)
-  );
+  // Filter players for selected season:
+  let seasonFiltered = allPlayers;
+
+  if (selectedSeason) {
+    const matched = allPlayers.filter((p: any) => {
+      // 1. Explicitly enrolled in this season
+      if (Array.isArray(p.seasons) && p.seasons.length > 0) {
+        return p.seasons.some((s: any) => s.name === selectedSeason);
+      }
+      // 2. Unassigned players: if they haven't been enrolled in any specific season,
+      // include them in the default active season so they are not lost!
+      return selectedSeason === defaultSeason;
+    });
+
+    if (matched.length > 0) {
+      seasonFiltered = matched;
+    } else if (allPlayers.length > 0) {
+      // Fallback: if no players matched this season filter, but club has players,
+      // display all players so the squad portal is never empty!
+      seasonFiltered = allPlayers;
+    }
+  }
+
   const players = seasonFiltered.map((p) => resolvePlayerForSeason(p, selectedSeason));
 
   const posTabs = [
@@ -176,7 +212,9 @@ export default async function PlayersPage({
         <div className="glass-panel p-12 rounded-2xl border border-slate-200 bg-white text-center space-y-3 shadow-sm">
           <Users className="w-10 h-10 text-slate-400 mx-auto" />
           <p className="text-sm font-bold text-slate-500">
-            Belum ada pemain yang terdaftar di skuad Musim {selectedSeason}.
+            {selectedSeason
+              ? `Belum ada pemain yang terdaftar di skuad Musim ${selectedSeason}.`
+              : 'Belum ada pemain yang terdaftar di skuad.'}
           </p>
         </div>
       )}

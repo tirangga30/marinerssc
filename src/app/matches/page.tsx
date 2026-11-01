@@ -281,7 +281,7 @@ export default async function MatchesPage({
   const displayTeamName = systemSetting?.teamName || 'TEAM';
   const displayTeamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
-  const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const defaultSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '');
   const filter = params.filter || 'all';
   const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
 

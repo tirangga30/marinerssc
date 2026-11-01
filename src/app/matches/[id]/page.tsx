@@ -90,8 +90,8 @@ export default async function MatchDetailPage({
   const matchLabel = match.stage || (isFriendly ? 'Friendly Match' : match.competition || 'Pertandingan');
   const status = getDynamicMatchStatus(match);
 
-  // Target season: prioritize searchParams if explicitly passed, otherwise match's seasonName, then cookieSeason, fallback '2026'
-  const targetSeason = sParams?.season || match.seasonName || cookieSeason || '2026';
+  // Target season: prioritize searchParams if explicitly passed, otherwise match's seasonName, then cookieSeason
+  const targetSeason = sParams?.season || match.seasonName || cookieSeason || '';
 
   const resolvedMatch = {
     ...match,

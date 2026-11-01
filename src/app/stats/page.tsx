@@ -96,7 +96,7 @@ export default async function StatsPage({
 
   const { seasons, allMatches, allPlayersRaw, playerDefaultPhoto } = await getCachedStatsData();
 
-  const defaultSeason = seasons.find((s) => s.isCurrent)?.name || seasons[0]?.name || '2026';
+  const defaultSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '');
   const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
   const activeTab = (params.tab || 'all').toLowerCase();
 

@@ -344,7 +344,7 @@ export default async function HomePage() {
     }
   });
 
-  const activeSeason = seasons.find((s: any) => Boolean(s.isCurrent))?.name || seasons[0]?.name || '2026';
+  const activeSeason = seasons.find((s: any) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0]?.name : '');
 
   const mainSquadData = {
     nextMatch,
