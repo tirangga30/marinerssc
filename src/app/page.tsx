@@ -2,8 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/db';
 import HomeClientView from '@/components/HomeClientView';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' | 'score_pending' {
   if (!m) return 'scheduled';
