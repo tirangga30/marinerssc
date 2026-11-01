@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         nickname: nickname?.trim() || null,
         origin: origin.trim(),
         phone: phone.trim(),
-        photoUrl: photoUrl || '/defaultplayer.png',
+        photoUrl: photoUrl || '/defaultplayer.webp',
         position: position.toUpperCase(),
         altPosition: altPosition ? altPosition.toUpperCase() : null,
         jerseyNumber: finalJerseyNum,

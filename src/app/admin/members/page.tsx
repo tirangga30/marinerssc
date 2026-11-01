@@ -1123,7 +1123,7 @@ Selamat bergabung bersama keluarga besar ${currentTeamName}! 🔥⚽`;
               {/* Foto Profil Member Upload */}
               <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-200">
                 <img
-                  src={formPhotoUrl || '/defaultplayer.png'}
+                  src={formPhotoUrl || '/defaultplayer.webp'}
                   alt="Preview"
                   className="w-16 h-16 rounded-full object-cover border-2 border-blue-400 bg-white shrink-0 shadow-xs"
                 />

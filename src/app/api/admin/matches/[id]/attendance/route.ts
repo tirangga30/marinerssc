@@ -118,7 +118,7 @@ export async function POST(
     }
 
     if (action === 'ADD_GUEST_PLAYER') {
-      const { name, position = 'FW', number = 0, photoUrl = '/defaultplayer.png' } = body;
+      const { name, position = 'FW', number = 0, photoUrl = '/defaultplayer.webp' } = body;
       if (!name) return NextResponse.json({ error: 'Nama pemain tamu wajib diisi' }, { status: 400 });
 
       // Create guest player in Player table

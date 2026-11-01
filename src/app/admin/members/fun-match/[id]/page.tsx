@@ -569,7 +569,7 @@ export default function AdminFunMatchOptionPage({
               >
                 <div className="flex items-center gap-2.5">
                   <img
-                    src={p.member?.photoUrl || '/defaultplayer.png'}
+                    src={p.member?.photoUrl || '/defaultplayer.webp'}
                     alt={p.playerName}
                     className="w-10 h-10 rounded-xl object-cover bg-slate-900 border border-slate-700 shrink-0"
                   />
@@ -659,7 +659,7 @@ export default function AdminFunMatchOptionPage({
                   <div className="flex items-center gap-2.5">
                     <span className="text-slate-500 font-mono text-xs w-4">{idx + 1}</span>
                     <img
-                      src={p.member?.photoUrl || '/defaultplayer.png'}
+                      src={p.member?.photoUrl || '/defaultplayer.webp'}
                       alt=""
                       className="w-8 h-8 rounded-lg object-cover bg-slate-900 border border-slate-700"
                     />
@@ -714,7 +714,7 @@ export default function AdminFunMatchOptionPage({
                   <div className="flex items-center gap-2.5">
                     <span className="text-slate-500 font-mono text-xs w-4">{idx + 1}</span>
                     <img
-                      src={p.member?.photoUrl || '/defaultplayer.png'}
+                      src={p.member?.photoUrl || '/defaultplayer.webp'}
                       alt=""
                       className="w-8 h-8 rounded-lg object-cover bg-slate-900 border border-slate-700"
                     />

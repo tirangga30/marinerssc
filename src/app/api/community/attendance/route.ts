@@ -96,7 +96,7 @@ export async function POST(req: Request) {
                   if (pos === 'MF' || pos === 'MIDFIELDER') return 'MIDFIELDER';
                   return 'FORWARD';
                 })(),
-                photoUrl: mem.photoUrl || '/defaultplayer.png',
+                photoUrl: mem.photoUrl || '/defaultplayer.webp',
                 isGuest: false,
                 bio: `Member Soccer Community (${mem.tier})`,
               },

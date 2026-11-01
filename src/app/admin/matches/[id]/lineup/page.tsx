@@ -1305,7 +1305,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                   <GripVertical className="w-3 h-3 text-emerald-600 shrink-0" />
                                 )}
                                 <img
-                                  src={m.photoUrl || '/defaultplayer.png'}
+                                  src={m.photoUrl || '/defaultplayer.webp'}
                                   alt={m.fullName}
                                   className="w-7 h-7 rounded-full object-cover bg-slate-100 border border-slate-200 shrink-0"
                                 />

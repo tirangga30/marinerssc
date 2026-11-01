@@ -75,7 +75,7 @@ export async function GET(req: Request) {
                     if (pos === 'MF' || pos === 'MIDFIELDER') return 'MIDFIELDER';
                     return 'FORWARD';
                   })(),
-                  photoUrl: att.member.photoUrl || '/defaultplayer.png',
+                  photoUrl: att.member.photoUrl || '/defaultplayer.webp',
                   isGuest: false,
                   bio: `Member Soccer Community (${att.member.tier})`,
                 },

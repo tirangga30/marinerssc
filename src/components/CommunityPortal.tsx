@@ -708,7 +708,7 @@ export default function CommunityPortal({
                           className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90"
                         >
                           <img
-                            src={p.member?.photoUrl || '/defaultplayer.png'}
+                            src={p.member?.photoUrl || '/defaultplayer.webp'}
                             alt={p.playerName}
                             className="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-700 shrink-0"
                           />
@@ -900,7 +900,7 @@ export default function CommunityPortal({
                           className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90"
                         >
                           <img
-                            src={p.member?.photoUrl || '/defaultplayer.png'}
+                            src={p.member?.photoUrl || '/defaultplayer.webp'}
                             alt={p.playerName}
                             className="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-700 shrink-0"
                           />

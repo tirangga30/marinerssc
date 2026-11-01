@@ -85,3 +85,4 @@ export function getActiveCloudProvider(): 'vercel-blob' | 'cloudinary' | 'none' 
   if (isCloudinaryConfigured) return 'cloudinary';
   return 'none';
 }
+
