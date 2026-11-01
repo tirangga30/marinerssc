@@ -261,9 +261,9 @@ export default async function CommunityPlayerProfilePage({
           {/* STATS PANEL (Single Combined Wide Box - Clean & Uniform) */}
           <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] rounded-2xl sm:rounded-3xl border border-amber-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
             {[
+              { label: 'MAIN', value: totalAppearances },
               { label: 'GOL', value: totalGoals },
               { label: 'ASSIST', value: totalAssists },
-              { label: 'MAIN', value: totalAppearances },
               { label: 'KUNING', value: totalYellowCards },
               { label: 'MERAH', value: totalRedCards },
             ].map((s) => (

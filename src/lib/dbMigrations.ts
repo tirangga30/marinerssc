@@ -10,6 +10,29 @@ export async function ensureDbColumns() {
 
   if (isPostgres) {
     const pgMigrations = [
+      `CREATE TABLE IF NOT EXISTS "SystemSetting" (
+        "id" TEXT PRIMARY KEY DEFAULT 'default',
+        "teamName" TEXT DEFAULT 'TEAM',
+        "teamLogo" TEXT DEFAULT '/defaultteam.webp',
+        "clubType" TEXT DEFAULT 'SOCCER CLUB',
+        "playerDefaultPhoto" TEXT DEFAULT '/playertemplate.webp',
+        "loginWallpaper" TEXT DEFAULT '/NYCOMP.webp',
+        "adminWallpaper" TEXT DEFAULT '/stadium_hero2.png',
+        "posterInterval" INTEGER DEFAULT 5,
+        "securityPin" TEXT DEFAULT '1234',
+        "isCommunityEnabled" BOOLEAN DEFAULT true,
+        "playerCardBg" TEXT DEFAULT '/bgprofil2.jpeg',
+        "showHeroOverlay" BOOLEAN DEFAULT false,
+        "heroTagline" TEXT DEFAULT 'SOCCER CLUB',
+        "heroSubtitle" TEXT DEFAULT 'Lebih dari sekadar sepak bola.',
+        "heroCtaText" TEXT DEFAULT 'LIHAT TIM',
+        "whatsappMode" TEXT DEFAULT 'disabled',
+        "whatsappToken" TEXT,
+        "whatsappConnectedPhone" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `INSERT INTO "SystemSetting" ("id", "teamName", "securityPin") VALUES ('default', 'TEAM', '1234') ON CONFLICT ("id") DO NOTHING`,
       `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappMode" TEXT DEFAULT 'disabled'`,
       `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappConnectedPhone" TEXT`,
       `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "whatsappToken" TEXT`,

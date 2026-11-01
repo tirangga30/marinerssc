@@ -444,9 +444,9 @@ export default function CommunityPortal({
             </div>
             <div className="grid grid-cols-5 divide-x divide-slate-800/80 bg-gradient-to-b from-[#18130a] via-[#090b14] to-[#060b14] rounded-2xl sm:rounded-3xl border border-amber-400/20 shadow-2xl overflow-hidden py-4 sm:py-5">
               {[
+                { label: 'MAIN', value: member.totalAppearances ?? member.funAppearances ?? 0 },
                 { label: 'GOL', value: member.totalGoals ?? member.goals ?? 0 },
                 { label: 'ASSIST', value: member.totalAssists ?? member.assists ?? 0 },
-                { label: 'MAIN', value: member.totalAppearances ?? member.funAppearances ?? 0 },
                 { label: 'KUNING', value: member.totalYellowCards ?? member.yellowCards ?? 0 },
                 { label: 'MERAH', value: member.totalRedCards ?? member.redCards ?? 0 },
               ].map((s) => (

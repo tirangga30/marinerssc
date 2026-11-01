@@ -387,9 +387,9 @@ export default async function PlayerDetailPage({
         <div className="py-3 px-2 sm:px-4 bg-white">
           <div className="grid grid-cols-5 divide-x divide-slate-100 text-center items-center">
             {[
+              { label: 'MAIN', value: totalAppearances },
               { label: 'GOL', value: totalGoals },
               { label: 'ASSIST', value: totalAssists },
-              { label: 'MAIN', value: totalAppearances },
               { label: 'KUNING', value: totalYellowCards },
               { label: 'MERAH', value: totalRedCards },
             ].map((s) => (
@@ -490,9 +490,9 @@ export default async function PlayerDetailPage({
           {/* STATS PANEL (Single Combined Wide Box - Clean & Uniform) */}
           <div className="grid grid-cols-5 divide-x divide-slate-100 bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm overflow-hidden py-4 sm:py-5">
             {[
+              { label: 'MAIN', value: totalAppearances },
               { label: 'GOL', value: totalGoals },
               { label: 'ASSIST', value: totalAssists },
-              { label: 'MAIN', value: totalAppearances },
               { label: 'KUNING', value: totalYellowCards },
               { label: 'MERAH', value: totalRedCards },
             ].map((s) => (

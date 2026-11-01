@@ -10,7 +10,7 @@ import {
   Shield,
   Play,
 } from 'lucide-react';
-import { formatWibDate, formatWibTime } from '@/lib/date';
+import { formatWibDate, formatWibTime, parseWibDate } from '@/lib/date';
 
 const BallIcon = ({ size = 16 }: { size?: number }) => (
   <i className="fa-regular fa-futbol text-amber-400 shrink-0 inline-block align-middle" style={{ fontSize: `${size}px` }} />
@@ -88,6 +88,7 @@ interface MatchTabsProps {
     status: string;
     homeScore: number | null;
     awayScore: number | null;
+    isCurrent?: boolean;
   }>;
 }
 
@@ -806,172 +807,143 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {hasH2H && activeTab === 'h2h' && (
         <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-          {/* Box Rekor Pertemuan Langsung: Kotak Memanjang Menampilkan M M S K */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 block">
-                Rekor Pertemuan
-              </span>
-              <h3 className="text-sm sm:text-base font-black uppercase text-slate-900">
-                {(teamName || 'TEAM').toUpperCase()} vs {match.opponentName.toUpperCase()}
-              </h3>
+          {/* Table Riwayat Pertandingan — IDENTIK DENGAN RIWAYAT PERTANDINGAN PEMAIN DI PROFIL */}
+          <div className="rounded-2xl overflow-hidden shadow-xs border border-slate-200 bg-white">
+            {/* Table Header */}
+            <div
+              className="grid px-3 sm:px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider items-center gap-2 sm:gap-3"
+              style={{
+                gridTemplateColumns: '64px 1fr auto',
+                background: '#f8fafc',
+                borderBottom: '1px solid #e2e8f0',
+                color: '#64748b',
+              }}
+            >
+              <span>Tanggal</span>
+              <span>Pertandingan</span>
+              <span className="text-right pr-1">Skor</span>
             </div>
 
-            {/* Horizontal Form Badges M M S K */}
-            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+            {/* Rows */}
+            <div className="divide-y divide-slate-100">
               {h2hMatches.map((hMatch) => {
-                const hasScore = hMatch.homeScore !== null && hMatch.awayScore !== null;
-                const ourScore = hMatch.isHome ? (hMatch.homeScore ?? 0) : (hMatch.awayScore ?? 0);
-                const oppScore = hMatch.isHome ? (hMatch.awayScore ?? 0) : (hMatch.homeScore ?? 0);
-                const isWin = hasScore && ourScore > oppScore;
-                const isLoss = hasScore && ourScore < oppScore;
-                const char = !hasScore ? '-' : isWin ? 'M' : isLoss ? 'K' : 'S';
-                const bg = !hasScore
-                  ? 'bg-slate-200 text-slate-600'
-                  : isWin
-                  ? 'bg-emerald-600 text-white'
-                  : isLoss
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-amber-500 text-white';
+                const isCurrent = Boolean(hMatch.isCurrent || hMatch.id === match.id);
+                const matchD = parseWibDate(hMatch.matchDate);
+                const dateStr = !isNaN(matchD.getTime())
+                  ? matchD.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }).replace('/', '.')
+                  : '—';
+
+                const our = hMatch.isHome ? hMatch.homeScore : hMatch.awayScore;
+                const opp = hMatch.isHome ? hMatch.awayScore : hMatch.homeScore;
+                const hasScore = our !== null && opp !== null && our !== undefined && opp !== undefined;
+
+                let result: 'M' | 'K' | 'S' | null = null;
+                let resultBg = '#94a3b8';
+                if (hasScore) {
+                  if (our > opp) {
+                    result = 'M';
+                    resultBg = '#16a34a';
+                  } else if (our < opp) {
+                    result = 'K';
+                    resultBg = '#dc2626';
+                  } else {
+                    result = 'S';
+                    resultBg = '#d97706';
+                  }
+                }
+
+                const homeName = (hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName).toUpperCase();
+                const homeLogo = hMatch.isHome ? (teamLogo || '/defaultteam.webp') : (hMatch.opponentLogo || '/defaultteam.webp');
+                const awayName = (!hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName).toUpperCase();
+                const awayLogo = !hMatch.isHome ? (teamLogo || '/defaultteam.webp') : (hMatch.opponentLogo || '/defaultteam.webp');
+
+                const rowContent = (
+                  <>
+                    {/* Tanggal */}
+                    <span className={`text-[11px] sm:text-xs font-bold font-mono ${isCurrent ? 'text-blue-700 font-black' : 'text-slate-600'}`}>
+                      {dateStr}
+                    </span>
+
+                    {/* Pertandingan */}
+                    <div className="flex flex-col gap-0.5 min-w-0 pr-1 sm:pr-2">
+                      {/* Tim Atas (Kandang / Home) */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <img
+                          src={homeLogo}
+                          alt={homeName}
+                          className="w-4 h-4 object-contain shrink-0"
+                        />
+                        <span className={`text-xs font-bold uppercase tracking-wide truncate flex-1 ${hMatch.isHome ? 'text-blue-600' : 'text-slate-800'}`}>
+                          {homeName}
+                        </span>
+                      </div>
+
+                      {/* Tim Bawah (Tandang / Away) */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <img
+                          src={awayLogo}
+                          alt={awayName}
+                          className="w-4 h-4 object-contain shrink-0"
+                        />
+                        <span className={`text-xs font-bold uppercase tracking-wide truncate flex-1 ${!hMatch.isHome ? 'text-blue-600' : 'text-slate-800'}`}>
+                          {awayName}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Skor & Badge Hasil */}
+                    <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0 pl-1">
+                      <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                        <span style={{ color: hMatch.isHome ? '#2563eb' : '#0f172a' }}>
+                          {hMatch.homeScore ?? '—'}
+                        </span>
+                        <span style={{ color: hMatch.isHome ? '#0f172a' : '#2563eb' }}>
+                          {hMatch.awayScore ?? '—'}
+                        </span>
+                      </div>
+
+                      {result ? (
+                        <span
+                          className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-2xs"
+                          style={{ background: resultBg }}
+                        >
+                          {result}
+                        </span>
+                      ) : (
+                        <span className="w-5 text-center text-slate-400 font-mono text-xs">—</span>
+                      )}
+                    </div>
+                  </>
+                );
+
+                if (isCurrent) {
+                  return (
+                    <div
+                      key={hMatch.id}
+                      onClick={() => alert('pertandingan ini telah terbuka')}
+                      role="button"
+                      tabIndex={0}
+                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 items-center cursor-pointer gap-2 sm:gap-3 bg-sky-50/80 hover:bg-sky-100/90 transition-colors border-l-4 border-l-blue-600 select-none"
+                      style={{ gridTemplateColumns: '64px 1fr auto' }}
+                      title="Klik: pertandingan ini telah terbuka"
+                    >
+                      {rowContent}
+                    </div>
+                  );
+                }
 
                 return (
-                  <span
+                  <Link
                     key={hMatch.id}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl ${bg} font-black text-xs sm:text-sm flex items-center justify-center shadow-xs shrink-0 select-none`}
-                    title={`${formatWibDate(hMatch.matchDate)}: ${hMatch.homeScore ?? 0} - ${hMatch.awayScore ?? 0} (${char === 'M' ? 'Menang' : char === 'K' ? 'Kalah' : char === 'S' ? 'Seri' : 'Belum selesai'})`}
+                    href={`/matches/${hMatch.id}`}
+                    className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer gap-2 sm:gap-3"
+                    style={{ gridTemplateColumns: '64px 1fr auto' }}
                   >
-                    {char}
-                  </span>
+                    {rowContent}
+                  </Link>
                 );
               })}
             </div>
-          </div>
-
-          {/* List of Previous Matches — IDENTIK 100% DENGAN RIWAYAT /MATCHES */}
-          <div className="space-y-3">
-            {h2hMatches.map((hMatch) => {
-              const status = hMatch.status === 'finished' ? 'finished' : 'scheduled';
-              const our = hMatch.isHome ? (hMatch.homeScore ?? 0) : (hMatch.awayScore ?? 0);
-              const their = hMatch.isHome ? (hMatch.awayScore ?? 0) : (hMatch.homeScore ?? 0);
-              const result = status === 'finished' && hMatch.homeScore !== null && hMatch.awayScore !== null
-                ? (our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW')
-                : null;
-              const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
-              const resultBg = result === 'WIN' ? 'rgba(22,163,74,0.15)' : result === 'LOSE' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)';
-              const isFriendly = (hMatch.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
-              const displayStage = hMatch.stage || (isFriendly ? 'Friendly Match' : hMatch.competition);
-
-              return (
-                <Link
-                  key={hMatch.id}
-                  href={`/matches/${hMatch.id}`}
-                  className="block group bg-white p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-                >
-                  {/* Top Bar Header */}
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
-                    {result ? (
-                      <span
-                        className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border"
-                        style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
-                      >
-                        {result}
-                      </span>
-                    ) : (
-                      <div />
-                    )}
-                    <span className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-[9px] sm:text-xs font-medium text-slate-500">
-                        {formatWibDate(hMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                      {status === 'finished' && (
-                        <span className="text-[9px] sm:text-xs font-black uppercase px-2 py-0.5 sm:py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          FULL TIME
-                        </span>
-                      )}
-                      {displayStage && (
-                        <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
-                          {displayStage}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Main Scoreboard Content */}
-                  <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center text-center">
-                    {/* Home Team (Nama di sisi luar, Logo mendekat ke tengah) */}
-                    <div className="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
-                      <div className="text-right min-w-0 flex-1">
-                        <h4 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                          {(hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName).toUpperCase()}
-                        </h4>
-                      </div>
-                      <div className="shrink-0 flex items-center justify-center">
-                        <img
-                          src={hMatch.isHome ? (teamLogo || '/defaultteam.webp') : (hMatch.opponentLogo || '/defaultteam.webp')}
-                          alt={hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName}
-                          className="w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Score / VS Badge (Sejajar dengan Logo & Nama) */}
-                    <div className="flex flex-col items-center justify-center min-w-[76px] sm:min-w-[120px] px-1 py-0.5">
-                      {status === 'finished' ? (
-                        <>
-                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
-                            <span className="text-[9px] sm:text-[11px] font-black uppercase text-emerald-600 tracking-wider">
-                              FULL TIME
-                            </span>
-                          </div>
-                          <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center my-0.5 sm:my-1">
-                            {hMatch.homeScore ?? 0} : {hMatch.awayScore ?? 0}
-                          </div>
-                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                            <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
-                              {hMatch.venue || '—'}
-                            </p>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0">
-                            <span className="text-[9px] sm:text-[11px] text-slate-600 font-bold">
-                              {formatWibTime(hMatch.matchDate)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-center my-0.5 sm:my-1">
-                            <div className="inline-block px-3 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 leading-none">
-                              VS
-                            </div>
-                          </div>
-                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                            <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
-                              {hMatch.venue || '—'}
-                            </p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Away Team (Logo mendekat ke tengah, Nama di sisi luar) */}
-                    <div className="flex items-center justify-start gap-1.5 sm:gap-3 min-w-0">
-                      <div className="shrink-0 flex items-center justify-center">
-                        <img
-                          src={!hMatch.isHome ? (teamLogo || '/defaultteam.webp') : (hMatch.opponentLogo || '/defaultteam.webp')}
-                          alt={!hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName}
-                          className="w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="text-left min-w-0 flex-1">
-                        <h4 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                          {(!hMatch.isHome ? (teamName || 'TEAM') : hMatch.opponentName).toUpperCase()}
-                        </h4>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
           </div>
         </div>
       )}

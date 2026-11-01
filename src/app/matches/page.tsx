@@ -110,11 +110,6 @@ function MatchCard({
           <span className="text-[9px] sm:text-xs font-medium text-slate-500">
             {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
-          {status === 'finished' && (
-            <span className="text-[9px] sm:text-xs font-black uppercase px-2 py-0.5 sm:py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              FULL TIME
-            </span>
-          )}
           {displayStage && (
             <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
               {displayStage}

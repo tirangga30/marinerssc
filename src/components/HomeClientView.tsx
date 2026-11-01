@@ -865,9 +865,19 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               .slice(0, 3);
             return (
               <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-                <div className="mb-3 sm:mb-5 flex items-center gap-2">
-                  <span className="w-1.5 h-5 rounded-full bg-blue-600 inline-block" />
-                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">3 Pertandingan Terakhir</h2>
+                <div className="mb-2.5 sm:mb-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-4 sm:h-5 rounded-full bg-blue-600 inline-block" />
+                    <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-900">
+                      3 Pertandingan Terakhir
+                    </h2>
+                  </div>
+                  <Link
+                    href={`/matches?filter=finished${selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : ''}`}
+                    className="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 hover:text-blue-800 flex items-center gap-0.5"
+                  >
+                    Semua Pertandingan <ArrowRight className="w-3 h-3" />
+                  </Link>
                 </div>
                 <div className="space-y-2">
                   {last3.map((m: any) => (

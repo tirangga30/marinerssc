@@ -135,9 +135,32 @@ export default async function MatchDetailPage({
     });
 
     const cleanOpponent = (match.opponentName || '').trim().toLowerCase();
-    h2hMatches = rawMatches.filter(
+    const otherMatches = rawMatches.filter(
       (m) => (m.opponentName || '').trim().toLowerCase() === cleanOpponent
     );
+
+    // If there is match history against this opponent, include this current match
+    if (otherMatches.length > 0) {
+      const currentMatchItem = {
+        id: match.id,
+        opponentName: match.opponentName,
+        opponentLogo: match.opponentLogo,
+        matchDate: match.matchDate,
+        competition: match.competition,
+        stage: match.stage,
+        seasonName: match.seasonName,
+        venue: match.venue,
+        isHome: match.isHome,
+        status: match.status,
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+        isCurrent: true,
+      };
+
+      h2hMatches = [currentMatchItem, ...otherMatches].sort(
+        (a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime()
+      );
+    }
   } catch (h2hErr) {
     console.warn('Error fetching H2H matches:', h2hErr);
   }
