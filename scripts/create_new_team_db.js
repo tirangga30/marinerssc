@@ -56,7 +56,7 @@ async function main() {
     await client.query(
       `INSERT INTO "SystemSetting" ("id", "teamName", "teamLogo", "clubType", "playerDefaultPhoto", "loginWallpaper", "adminWallpaper", "posterInterval", "securityPin", "isCommunityEnabled", "playerCardBg", "showHeroOverlay", "heroTagline", "heroSubtitle", "heroCtaText", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())`,
-      ['default', 'TEAM', '/defaultteam.webp', 'SOCCER CLUB', '/playertemplate.webp', '/NYCOMP.webp', '/stadium_hero2.png', 7, '1234', true, '/bgprofil2.jpeg', false, 'SOCCER CLUB', 'Lebih dari sekadar sepak bola.', 'LIHAT TIM']
+      ['default', 'TEAM', '/defaultteam.webp', 'SOCCER CLUB', '/playertemplate.webp', '/stadium_hero2.webp', '/stadium_hero2.webp', 7, '1234', true, '/bgprofil2.webp', false, 'SOCCER CLUB', 'Lebih dari sekadar sepak bola.', 'LIHAT TIM']
     );
     console.log('✅ Pengaturan Identitas Tim default dibuat (PIN: 1234)');
   }
@@ -80,7 +80,7 @@ async function main() {
     await client.query(
       `INSERT INTO "HeroPoster" ("id", "imageUrl", "title", "subtitle", "order", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-      [posterId, '/NYCOMP.webp', 'OFFICIAL CLUB', 'Official Club Community & Squad', 0, true]
+      [posterId, '/stadium_hero2.webp', 'OFFICIAL CLUB', 'Official Club Community & Squad', 0, true]
     );
     console.log('✅ Poster slide beranda default dibuat');
   }
