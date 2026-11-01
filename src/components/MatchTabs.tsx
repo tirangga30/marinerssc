@@ -237,17 +237,21 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
         setActiveTab('summary');
       } else if (showLineupTab) {
         setActiveTab('lineup');
+      } else if (hasH2H) {
+        setActiveTab('h2h');
       }
     } else {
       if (isInvite) {
         setActiveTab('squad');
       } else if (showLineupTab) {
         setActiveTab('lineup');
-      } else {
+      } else if (showSquadTab) {
         setActiveTab('squad');
+      } else if (hasH2H) {
+        setActiveTab('h2h');
       }
     }
-  }, [hasKickedOff, showSummaryTab, showLineupTab, isInvite]);
+  }, [hasKickedOff, showSummaryTab, showLineupTab, showSquadTab, hasH2H, isInvite]);
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -335,7 +339,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
           <button
             onClick={() => setActiveTab('squad')}
             className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'squad' || (!showLineupTab && !showSummaryTab && activeTab !== 'h2h')
+              activeTab === 'squad'
                 ? 'border-blue-600 text-blue-600 font-black'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
@@ -729,7 +733,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: SQUAD LIST                             */}
       {/* ═══════════════════════════════════════════════════ */}
-      {showSquadTab && (activeTab === 'squad' || (!showLineupTab && !showSummaryTab)) && (
+      {showSquadTab && activeTab === 'squad' && (
         <div className="max-w-3xl mx-auto animate-fadeIn">
           {/* Squad List Box (Identik dengan Box Starting) */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
