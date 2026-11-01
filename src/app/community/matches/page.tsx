@@ -7,7 +7,7 @@ import MatchTimer from '@/components/MatchTimer';
 import { Calendar, Sparkles, MapPin, Clock, ArrowRight, Shield } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 const getCachedFunMatches = unstable_cache(
   async () => {

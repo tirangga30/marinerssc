@@ -7,7 +7,7 @@ import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {

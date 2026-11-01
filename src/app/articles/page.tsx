@@ -6,7 +6,7 @@ import { ArrowRight, Calendar } from 'lucide-react';
 import { getMainThumbnail } from '@/lib/articles';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 const getCachedArticles = unstable_cache(
   async () => {

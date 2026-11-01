@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { Award, Flame, Shield, Activity } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 const formatPosition = (pos: string) => {
   const p = (pos || '').toUpperCase();

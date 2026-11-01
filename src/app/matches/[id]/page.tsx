@@ -14,6 +14,7 @@ import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import MatchShareButton from '@/components/MatchShareButton';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 function getDynamicMatchStatus(m: any): 'scheduled' | 'live' | 'finished' {
   if (!m) return 'scheduled';

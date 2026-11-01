@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { Sparkles, Users, ArrowRight, Shield, Award } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 const positionOrder = ['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD'];
 const positionLabels: Record<string, string> = {
