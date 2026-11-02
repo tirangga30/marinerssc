@@ -123,7 +123,7 @@ export default async function PlayerDetailPage({
     console.error('Database error in PlayerDetailPage:', error);
   }
 
-  if (!player || (player.isGuest && (!player.seasons || player.seasons.length === 0))) notFound();
+  if (!player || player.isGuest) notFound();
 
   const primarySeason = currentSeasonObj?.name || latestSeasonObj?.name || '2027';
 

@@ -30,6 +30,7 @@ export async function GET(
     const allPlayers = await prisma.player.findMany({
       where: {
         NOT: { id: 'unknown-player' },
+        isGuest: false,
       },
       orderBy: [{ number: 'asc' }, { name: 'asc' }],
       select: {

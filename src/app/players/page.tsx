@@ -71,10 +71,7 @@ export default async function PlayersPage({
       prisma.player.findMany({
         where: {
           NOT: { id: 'unknown-player' },
-          OR: [
-            { isGuest: false },
-            { seasons: { some: {} } },
-          ],
+          isGuest: false,
           AND: [
             {
               OR: [
@@ -103,10 +100,7 @@ export default async function PlayersPage({
         return prisma.player.findMany({
           where: {
             NOT: { id: 'unknown-player' },
-            OR: [
-              { isGuest: false },
-              { seasons: { some: {} } },
-            ],
+            isGuest: false,
           },
           select: {
             id: true,
