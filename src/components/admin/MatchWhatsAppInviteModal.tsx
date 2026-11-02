@@ -47,6 +47,7 @@ export default function MatchWhatsAppInviteModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetchData = async () => {
     setLoading(true);
@@ -55,6 +56,11 @@ export default function MatchWhatsAppInviteModal({
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Gagal mengambil data');
       setData(json);
+      // Inisialisasi pilihan: default pilih pemain yang memiliki nomor HP
+      const validPhoneIds = (json.players || [])
+        .filter((p: any) => p.phone && p.phone.trim() !== '')
+        .map((p: any) => p.id);
+      setSelectedIds(new Set(validPhoneIds));
     } catch (err: any) {
       console.error(err);
       setAlertMsg({ type: 'error', text: err.message || 'Gagal memuat data undangan' });
@@ -73,15 +79,31 @@ export default function MatchWhatsAppInviteModal({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleAutoDispatchAll = async () => {
-    if (!confirm('Kirim pesan undangan WhatsApp otomatis ke seluruh nomor pemain sekarang?')) return;
+  const toggleSelectPlayer = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleAutoDispatchSelected = async () => {
+    if (selectedIds.size === 0) {
+      alert('Pilih minimal 1 pemain untuk mengirim pesan undangan.');
+      return;
+    }
+    if (!confirm(`Kirim pesan undangan WhatsApp otomatis ke ${selectedIds.size} pemain terpilih sekarang?`)) return;
     setDispatching(true);
     setAlertMsg(null);
     try {
       const res = await fetch(`/api/admin/matches/${matchId}/broadcast-invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autoSendWhatsApp: true }),
+        body: JSON.stringify({
+          autoSendWhatsApp: true,
+          playerIds: Array.from(selectedIds),
+        }),
       });
       const resJson = await res.json();
       if (!res.ok) throw new Error(resJson.error || 'Gagal mengirim otomatis');
@@ -107,6 +129,22 @@ export default function MatchWhatsAppInviteModal({
     }
     return true;
   });
+
+  const isAllFilteredSelected =
+    filteredPlayers.length > 0 &&
+    filteredPlayers.every((p) => selectedIds.has(p.id));
+
+  const toggleSelectAllFiltered = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (isAllFilteredSelected) {
+        filteredPlayers.forEach((p) => next.delete(p.id));
+      } else {
+        filteredPlayers.forEach((p) => next.add(p.id));
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
@@ -201,12 +239,16 @@ export default function MatchWhatsAppInviteModal({
               {data?.whatsappMode === 'scan' && data?.hasWhatsAppToken && (
                 <button
                   type="button"
-                  disabled={dispatching}
-                  onClick={handleAutoDispatchAll}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase text-xs flex items-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-emerald-600/30"
+                  disabled={dispatching || selectedIds.size === 0}
+                  onClick={handleAutoDispatchSelected}
+                  className={`px-4 py-2 rounded-xl font-black uppercase text-xs flex items-center gap-2 shrink-0 cursor-pointer shadow-lg transition-all ${
+                    selectedIds.size === 0
+                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                  }`}
                 >
                   {dispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  {dispatching ? 'Mengirim...' : 'Kirim Otomatis ke Semua'}
+                  {dispatching ? 'Mengirim...' : `Kirim ke ${selectedIds.size} Pemain Terpilih`}
                 </button>
               )}
             </div>
@@ -250,6 +292,33 @@ export default function MatchWhatsAppInviteModal({
               </div>
             </div>
 
+            {/* Selection Toolbar */}
+            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+              <label className="flex items-center gap-2.5 cursor-pointer font-bold text-slate-700 select-none">
+                <input
+                  type="checkbox"
+                  checked={isAllFilteredSelected}
+                  onChange={toggleSelectAllFiltered}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                />
+                <span>Pilih Semua ({filteredPlayers.length} pemain tampil)</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                  {selectedIds.size} dipilih
+                </span>
+                {selectedIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-[11px] font-bold text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
+                  >
+                    Batal Pilih
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Players Table / List */}
             <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white divide-y divide-slate-100 shadow-xs">
               {filteredPlayers.length === 0 ? (
@@ -261,14 +330,23 @@ export default function MatchWhatsAppInviteModal({
                   const isConfirmed = p.status === 'CONFIRMED';
                   const isDeclined = p.status === 'DECLINED';
                   const isCopied = copiedId === p.id;
+                  const isSelected = selectedIds.has(p.id);
 
                   return (
                     <div
                       key={p.id}
-                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
+                      className={`p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
+                        isSelected ? 'bg-blue-50/50 hover:bg-blue-50/80' : 'hover:bg-slate-50'
+                      }`}
                     >
-                      {/* Player Avatar & Details */}
+                      {/* Checkbox + Player Avatar & Details */}
                       <div className="flex items-center gap-3 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectPlayer(p.id)}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 shrink-0 cursor-pointer"
+                        />
                         <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                           <img
                             src={p.photoUrl || '/playertemplate.webp'}

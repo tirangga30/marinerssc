@@ -199,11 +199,8 @@ export default function TacticalPitch({
 
               const m = e.minute || 0;
               if (e.type === 'sub') {
-                if (lineup.isStarter) {
-                  evts.push({ id: e.id || `subout-${idx}`, type: 'sub_out', minute: m });
-                } else {
-                  evts.push({ id: e.id || `subin-${idx}`, type: 'sub_in', minute: m });
-                }
+                if (isPlayer) evts.push({ id: `${e.id || idx}-subin`, type: 'sub_in', minute: m });
+                if (isAssist) evts.push({ id: `${e.id || idx}-subout`, type: 'sub_out', minute: m });
               } else if (e.type === 'goal' || e.type === 'own_goal' || e.type === 'penalty') {
                 if (isPlayer) evts.push({ id: e.id || `evt-${idx}`, type: e.type, minute: m });
                 if (isAssist) evts.push({ id: e.id || `ast-${idx}`, type: 'assist', minute: m });

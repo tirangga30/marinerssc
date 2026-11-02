@@ -148,7 +148,9 @@ export default function PlayerMatchHistory({
   ).sort((a, b) => b.localeCompare(a));
 
   const seasonTabs = seasonList.length > 0 ? [...seasonList, 'SEMUA'] : [];
-  const activeSeason = seasonTabs.includes(selectedSeason) ? selectedSeason : 'SEMUA';
+  const activeSeason = selectedSeasonProp !== undefined
+    ? selectedSeasonProp
+    : (seasonTabs.includes(internalSeason) ? internalSeason : (seasonTabs[0] || 'SEMUA'));
 
   // Filter berdasarkan musim pilihan
   const filteredMatches = activeSeason === 'SEMUA'

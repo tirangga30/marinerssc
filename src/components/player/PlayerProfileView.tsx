@@ -217,21 +217,27 @@ export default function PlayerProfileView({
     .map((s: any) => s.year?.toString() || s.name?.match(/\d{4}/)?.[0] || s.name)
     .filter(Boolean);
 
-  const seasonList = Array.from(new Set([...matchSeasons, ...enrolledSeasons])).sort((a, b) =>
+  // Tentukan tahun aktif default / musim utama (e.g. 2027)
+  const cleanActiveYear = activeSeasonName?.match(/\d{4}/)?.[0] || activeSeasonName || '2027';
+
+  // Pastikan musim utama selalu ada dalam daftar musim
+  const seasonsSet = new Set([...matchSeasons, ...enrolledSeasons]);
+  if (cleanActiveYear) {
+    seasonsSet.add(cleanActiveYear);
+  }
+  const seasonList = Array.from(seasonsSet).sort((a, b) =>
     b.localeCompare(a)
   );
 
+  // Posisi SEMUA tetap ada di ujung kanan
   const seasonTabs = seasonList.length > 0 ? [...seasonList, 'SEMUA'] : ['SEMUA'];
 
-  // Tentukan tahun aktif default (e.g. 2027)
-  const cleanActiveYear = activeSeasonName?.match(/\d{4}/)?.[0] || activeSeasonName || '2027';
-
-  // Default season: prioritas parameter URL jika valid, lalu tahun aktif (jika ada di seasonTabs pemain), lalu musim terbaru pemain, lalu 'SEMUA'
+  // Default season: yang pertama ditampilkan harus musim utama (atau parameter URL jika diberikan)
   const getDefaultSeason = () => {
     if (initialSeason && seasonTabs.includes(initialSeason)) {
       return initialSeason;
     }
-    if (seasonList.includes(cleanActiveYear)) {
+    if (cleanActiveYear && seasonTabs.includes(cleanActiveYear)) {
       return cleanActiveYear;
     }
     if (seasonList.length > 0) {

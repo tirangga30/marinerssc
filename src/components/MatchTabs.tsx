@@ -232,26 +232,18 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
   const isInvite = Boolean(searchParams?.get('p') || searchParams?.get('player'));
 
   React.useEffect(() => {
-    if (hasKickedOff) {
-      if (showSummaryTab) {
-        setActiveTab('summary');
-      } else if (showLineupTab) {
-        setActiveTab('lineup');
-      } else if (hasH2H) {
-        setActiveTab('h2h');
-      }
-    } else {
-      if (isInvite) {
-        setActiveTab('squad');
-      } else if (showLineupTab) {
-        setActiveTab('lineup');
-      } else if (showSquadTab) {
-        setActiveTab('squad');
-      } else if (hasH2H) {
-        setActiveTab('h2h');
-      }
+    if (isInvite) {
+      setActiveTab('squad');
+    } else if (showLineupTab) {
+      setActiveTab('lineup');
+    } else if (showSummaryTab) {
+      setActiveTab('summary');
+    } else if (showSquadTab) {
+      setActiveTab('squad');
+    } else if (hasH2H) {
+      setActiveTab('h2h');
     }
-  }, [hasKickedOff, showSummaryTab, showLineupTab, showSquadTab, hasH2H, isInvite]);
+  }, [showLineupTab, showSummaryTab, showSquadTab, hasH2H, isInvite]);
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -309,19 +301,6 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
       {/* TAB NAVIGATION: SUMMARY & LINE UP / SQUAD LIST      */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
-        {showSummaryTab && (
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'summary'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Ringkasan
-          </button>
-        )}
-
         {showLineupTab && (
           <button
             onClick={() => setActiveTab('lineup')}
@@ -332,6 +311,19 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
             }`}
           >
             Line Up
+          </button>
+        )}
+
+        {showSummaryTab && (
+          <button
+            onClick={() => setActiveTab('summary')}
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+              activeTab === 'summary'
+                ? 'border-blue-600 text-blue-600 font-black'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Ringkasan
           </button>
         )}
 
