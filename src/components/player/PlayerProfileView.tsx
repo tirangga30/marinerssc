@@ -255,8 +255,8 @@ export default function PlayerProfileView({
     } catch {}
   };
 
-  // Resolusi data nomor punggung & foto pemain untuk musim yang sedang dipilih
-  const resolvedPlayer = resolvePlayerForSeason(player, selectedSeason);
+  // Resolusi data nomor punggung & foto pemain untuk musim utama aktif
+  const resolvedPlayer = resolvePlayerForSeason(player, activeSeasonName);
 
   // Hitung statistik pemain dinamis untuk musim yang sedang dipilih
   const currentStats = computePlayerStats(player, activeMatches, selectedSeason);
@@ -324,34 +324,9 @@ export default function PlayerProfileView({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/* SEASON NAVIGATION TABS (Navbar Underline Style)     */}
+      {/* MOBILE PROFILE HEADER (Edge-to-Edge Full Bleed)     */}
       {/* ═══════════════════════════════════════════════════ */}
-      {seasonTabs.length > 1 && (
-        <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
-          {seasonTabs.map((s) => {
-            const isActive = selectedSeason === s;
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => handleSeasonChange(s)}
-                className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'border-blue-600 text-blue-600 font-black'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
-                }`}
-              >
-                {s === 'SEMUA' ? 'SEMUA' : (s.toUpperCase().startsWith('MUSIM') ? s.toUpperCase() : `MUSIM ${s}`)}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* MOBILE PROFILE HEADER                               */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <div className="block md:hidden -mx-3 bg-white border-b border-slate-200 overflow-hidden rounded-2xl shadow-sm">
+      <div className="block md:hidden -mx-3 -mt-6 bg-white border-b border-slate-200 overflow-hidden">
         {/* Top 4:3 Stadium Hero Box */}
         <div className="group relative w-full aspect-[4/3] overflow-hidden bg-slate-950 select-none">
           {/* Background Stadium Photo */}
@@ -613,14 +588,38 @@ export default function PlayerProfileView({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/* LAST MATCHES                                        */}
+      {/* LAST MATCHES & SEASON NAVIGATION                     */}
       {/* ═══════════════════════════════════════════════════ */}
-      <PlayerMatchHistory
-        matches={matchesForHistory}
-        player={player}
-        selectedSeason={selectedSeason}
-        hideSeasonTabs={true}
-      />
+      <div className="space-y-3 sm:space-y-4">
+        {seasonTabs.length > 1 && (
+          <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
+            {seasonTabs.map((s) => {
+              const isActive = selectedSeason === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => handleSeasonChange(s)}
+                  className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 cursor-pointer ${
+                    isActive
+                      ? 'border-blue-600 text-blue-600 font-black'
+                      : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+                  }`}
+                >
+                  {s === 'SEMUA' ? 'SEMUA' : (s.toUpperCase().startsWith('MUSIM') ? s.toUpperCase() : `MUSIM ${s}`)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <PlayerMatchHistory
+          matches={matchesForHistory}
+          player={player}
+          selectedSeason={selectedSeason}
+          hideSeasonTabs={true}
+        />
+      </div>
     </div>
   );
 }
