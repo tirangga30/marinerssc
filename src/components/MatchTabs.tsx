@@ -301,19 +301,6 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
       {/* TAB NAVIGATION: SUMMARY & LINE UP / SQUAD LIST      */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
-        {showLineupTab && (
-          <button
-            onClick={() => setActiveTab('lineup')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'lineup'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Line Up
-          </button>
-        )}
-
         {showSummaryTab && (
           <button
             onClick={() => setActiveTab('summary')}
@@ -324,6 +311,19 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
             }`}
           >
             Ringkasan
+          </button>
+        )}
+
+        {showLineupTab && (
+          <button
+            onClick={() => setActiveTab('lineup')}
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+              activeTab === 'lineup'
+                ? 'border-blue-600 text-blue-600 font-black'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Line Up
           </button>
         )}
 

@@ -147,7 +147,7 @@ export default function PlayerMatchHistory({
     )
   ).sort((a, b) => b.localeCompare(a));
 
-  const seasonTabs = seasonList.length > 0 ? [...seasonList, 'SEMUA'] : [];
+  const seasonTabs = seasonList.length > 0 ? ['SEMUA', ...seasonList] : [];
   const activeSeason = selectedSeasonProp !== undefined
     ? selectedSeasonProp
     : (seasonTabs.includes(internalSeason) ? internalSeason : (seasonTabs[0] || 'SEMUA'));

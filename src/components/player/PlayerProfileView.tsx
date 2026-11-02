@@ -229,8 +229,8 @@ export default function PlayerProfileView({
     b.localeCompare(a)
   );
 
-  // Posisi SEMUA tetap ada di ujung kanan
-  const seasonTabs = seasonList.length > 0 ? [...seasonList, 'SEMUA'] : ['SEMUA'];
+  // Posisi SEMUA di kiri, yang pertama ditampilkan tetap musim utama
+  const seasonTabs = seasonList.length > 0 ? ['SEMUA', ...seasonList] : ['SEMUA'];
 
   // Default season: yang pertama ditampilkan harus musim utama (atau parameter URL jika diberikan)
   const getDefaultSeason = () => {
