@@ -36,14 +36,26 @@ interface PlayerMatchHistoryProps {
     events?: any[];
     assistedEvents?: any[];
   };
+  selectedSeason?: string;
+  onSelectSeason?: (season: string) => void;
+  hideSeasonTabs?: boolean;
 }
 
-export default function PlayerMatchHistory({ matches, player }: PlayerMatchHistoryProps) {
+export default function PlayerMatchHistory({
+  matches,
+  player,
+  selectedSeason: selectedSeasonProp,
+  onSelectSeason,
+  hideSeasonTabs = false,
+}: PlayerMatchHistoryProps) {
   const { teamName, teamLogo } = useSystemSetting();
   const displayTeamName = (teamName || 'TEAM').toUpperCase();
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
   const [visibleCount, setVisibleCount] = useState(10);
-  const [selectedSeason, setSelectedSeason] = useState<string>('SEMUA');
+  const [internalSeason, setInternalSeason] = useState<string>('SEMUA');
+
+  const selectedSeason = selectedSeasonProp !== undefined ? selectedSeasonProp : internalSeason;
+  const setSelectedSeason = onSelectSeason || setInternalSeason;
 
   // Cek apakah pemain sudah pernah mencatatkan menit bermain di lapangan (starter atau pemain pengganti)
   const hasPlayedOnPitch = matches.some((m: any) => {
@@ -143,7 +155,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
     ? eligibleMatches
     : eligibleMatches.filter((m: any) => {
         const s = m.seasonName || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
-        return s === activeSeason || s.includes(activeSeason);
+        const yr = m.seasonName?.match(/\d{4}/)?.[0] || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+        return s === activeSeason || s.includes(activeSeason) || yr === activeSeason;
       });
 
   const displayedMatches = filteredMatches.slice(0, visibleCount);
@@ -157,8 +170,8 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
         <h2 className="text-base sm:text-lg font-black text-slate-900">Last Matches</h2>
 
-        {/* ── Season Navigation Tabs (contoh: 2027, 2025, SEMUA) ── */}
-        {seasonTabs.length > 1 && (
+        {/* ── Season Navigation Tabs (hanya tampil jika tidak di-handle oleh parent) ── */}
+        {!hideSeasonTabs && seasonTabs.length > 1 && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             {seasonTabs.map((s) => (
               <button
