@@ -558,8 +558,10 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
-                              className="fa-solid fa-right-left text-[9px] shrink-0 text-red-500"
-                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
+                                sub.type === 'sub_in' ? 'text-emerald-500' : 'text-red-500'
+                              }`}
+                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan (Keluar)'}
                             />
                           ))}
                         </span>
@@ -662,8 +664,10 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
-                              className="fa-solid fa-right-left text-[9px] shrink-0 text-red-500"
-                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
+                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
+                                sub.type === 'sub_in' ? 'text-emerald-500' : 'text-red-500'
+                              }`}
+                              title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan (Keluar)'}
                             />
                           ))}
                         </span>

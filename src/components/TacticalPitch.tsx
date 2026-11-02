@@ -271,10 +271,10 @@ export default function TacticalPitch({
                     {subEvents.map((e) => (
                       <span key={e.id} className="inline-flex items-center justify-center">
                         {e.type === 'sub_in' && (
-                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
+                          <i className="fa-solid fa-right-left text-emerald-400 text-[7px] sm:text-[9px] shrink-0" title="Masuk sebagai Pengganti" />
                         )}
                         {e.type === 'sub_out' && (
-                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Digantikan" />
+                          <i className="fa-solid fa-right-left text-red-500 text-[7px] sm:text-[9px] shrink-0" title="Digantikan (Keluar)" />
                         )}
                       </span>
                     ))}
