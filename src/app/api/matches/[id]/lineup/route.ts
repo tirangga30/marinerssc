@@ -67,11 +67,35 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Insert new events
     if (Array.isArray(events) && events.length > 0) {
+      const hasUnknown = events.some(
+        (e: any) => e.playerId === 'unknown' || e.playerId === 'unknown-player' || e.assistPlayerId === 'unknown' || e.assistPlayerId === 'unknown-player'
+      );
+      if (hasUnknown) {
+        await prisma.player.upsert({
+          where: { id: 'unknown-player' },
+          update: { isGuest: true, hidePhoto: true },
+          create: {
+            id: 'unknown-player',
+            name: 'Tidak Diketahui',
+            slug: 'tidak-diketahui',
+            number: 0,
+            position: 'FORWARD',
+            photoUrl: '/playertemplate.webp',
+            bio: 'Pemain Tidak Diketahui',
+            isGuest: true,
+            hidePhoto: true,
+            status: 'Inactive',
+          },
+        });
+      }
+
       await prisma.matchEvent.createMany({
         data: events.map((e: any) => ({
           matchId,
-          playerId: e.playerId,
-          assistPlayerId: e.assistPlayerId || null,
+          playerId: (e.playerId === 'unknown' || e.playerId === 'unknown-player') ? 'unknown-player' : e.playerId,
+          assistPlayerId: (e.assistPlayerId === 'unknown' || e.assistPlayerId === 'unknown-player')
+            ? 'unknown-player'
+            : (e.assistPlayerId || null),
           type: e.type,
           minute: parseIntDef(e.minute, 0),
           description: e.description || '',

@@ -70,10 +70,18 @@ export default async function PlayersPage({
       }).catch(() => []),
       prisma.player.findMany({
         where: {
-          isGuest: false,
+          NOT: { id: 'unknown-player' },
           OR: [
-            { member: null },
-            { member: { isPermanent: true } },
+            { isGuest: false },
+            { seasons: { some: {} } },
+          ],
+          AND: [
+            {
+              OR: [
+                { member: null },
+                { member: { isPermanent: true } },
+              ],
+            },
           ],
         },
         select: {
@@ -93,7 +101,13 @@ export default async function PlayersPage({
       }).catch(async () => {
         // Safe fallback without member join if member relation throws
         return prisma.player.findMany({
-          where: { isGuest: false },
+          where: {
+            NOT: { id: 'unknown-player' },
+            OR: [
+              { isGuest: false },
+              { seasons: { some: {} } },
+            ],
+          },
           select: {
             id: true,
             name: true,

@@ -28,7 +28,9 @@ export async function GET(
     }
 
     const allPlayers = await prisma.player.findMany({
-      where: { isGuest: false },
+      where: {
+        NOT: { id: 'unknown-player' },
+      },
       orderBy: [{ number: 'asc' }, { name: 'asc' }],
       select: {
         id: true,
@@ -69,9 +71,17 @@ export async function POST(
       return NextResponse.json({ error: 'Data playerIds tidak valid' }, { status: 400 });
     }
 
+    // If any loan/guest players are enrolled into the official season squad, promote them (isGuest: false)
+    if (playerIds.length > 0) {
+      await prisma.player.updateMany({
+        where: { id: { in: playerIds }, isGuest: true },
+        data: { isGuest: false },
+      });
+    }
+
     // Validate that no two enrolled players share the same jersey number in this season
     const playersToEnroll = await prisma.player.findMany({
-      where: { id: { in: playerIds }, isGuest: false },
+      where: { id: { in: playerIds } },
       select: { id: true, name: true, number: true },
     });
 

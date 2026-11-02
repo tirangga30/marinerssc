@@ -221,6 +221,13 @@ export default function AdminPlayersPage() {
       ? seasonSquadPlayers
       : guestPlayers;
 
+  const isBirthdayToday = (bDate?: string | Date | null) => {
+    if (!bDate) return false;
+    const b = new Date(bDate);
+    const today = new Date();
+    return b.getUTCDate() === today.getDate() && b.getUTCMonth() === today.getMonth();
+  };
+
   // Single Player Pull to Season
   const handlePullPlayer = async (playerId: string) => {
     if (!currentSeasonObj) return;
@@ -745,6 +752,11 @@ export default function AdminPlayersPage() {
                           👑
                         </span>
                       )}
+                      {isBirthdayToday(player.birthDate) && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[8px] font-black uppercase inline-flex items-center gap-1" title="Ulang tahun hari ini!">
+                          🎂 Ultah!
+                        </span>
+                      )}
                       {player.isGuest && (
                         <span className="px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[8px] uppercase font-bold">
                           Loan
@@ -859,6 +871,11 @@ export default function AdminPlayersPage() {
                           {player.isCaptain && (
                             <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[9px] font-black uppercase">
                               👑 Kapten
+                            </span>
+                          )}
+                          {isBirthdayToday(player.birthDate) && (
+                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[9px] font-black uppercase" title="Ulang tahun hari ini!">
+                              🎂 Ultah Hari Ini!
                             </span>
                           )}
                         </div>

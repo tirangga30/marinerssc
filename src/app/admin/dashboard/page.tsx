@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { Users, Calendar, Newspaper, Activity, LogOut, ArrowRight, Shield, Sparkles, Trophy, Lock, Layers } from 'lucide-react';
 import DashboardSeasonSelector from '@/components/admin/DashboardSeasonSelector';
+import BirthdayAlertBanner from '@/components/admin/BirthdayAlertBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,7 @@ export default async function AdminDashboardPage({
   let winRate = 75;
 
   try {
-    totalAllPlayers = await prisma.player.count({ where: { isGuest: false } });
+    totalAllPlayers = await prisma.player.count({ where: { isGuest: false, NOT: { id: 'unknown-player' } } });
     memberCount = await prisma.member.count({ where: { status: 'ACTIVE' } });
     funMatchCount = await prisma.funMatch.count();
     articleCount = await prisma.article.count();
@@ -96,6 +97,66 @@ export default async function AdminDashboardPage({
     }
   } catch (e) {
     console.error('Error fetching admin dashboard stats:', e);
+  }
+
+  // ── Birthday Detection for Today & Upcoming ──
+  const birthdayPlayersToday: any[] = [];
+  const upcomingBirthdayPlayers: any[] = [];
+
+  try {
+    const playersWithBday = await prisma.player.findMany({
+      where: {
+        birthDate: { not: null },
+        NOT: { id: 'unknown-player' },
+      },
+      select: {
+        id: true,
+        name: true,
+        number: true,
+        position: true,
+        birthDate: true,
+        photoUrl: true,
+        phone: true,
+      },
+    });
+
+    const nowWib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const currentMonth = nowWib.getMonth();
+    const currentDay = nowWib.getDate();
+    const currentYear = nowWib.getFullYear();
+
+    playersWithBday.forEach((p) => {
+      if (!p.birthDate) return;
+      const bDate = new Date(p.birthDate);
+      const bDay = bDate.getUTCDate();
+      const bMonth = bDate.getUTCMonth();
+
+      if (bDay === currentDay && bMonth === currentMonth) {
+        birthdayPlayersToday.push({
+          ...p,
+          birthDate: p.birthDate.toISOString(),
+        });
+      } else {
+        let nextBday = new Date(currentYear, bMonth, bDay);
+        if (nextBday < nowWib) {
+          nextBday = new Date(currentYear + 1, bMonth, bDay);
+        }
+        const diffMs = nextBday.getTime() - nowWib.getTime();
+        const daysUntil = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (daysUntil <= 14) {
+          upcomingBirthdayPlayers.push({
+            ...p,
+            birthDate: p.birthDate.toISOString(),
+            daysUntil,
+            formattedDate: bDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+          });
+        }
+      }
+    });
+
+    upcomingBirthdayPlayers.sort((a, b) => a.daysUntil - b.daysUntil);
+  } catch (err) {
+    console.error('Error checking birthdays:', err);
   }
 
   return (
@@ -125,6 +186,13 @@ export default async function AdminDashboardPage({
           </button>
         </form>
       </div>
+
+      {/* ── BIRTHDAY ALERT BANNER & WHATSAPP GROUP GREETING ── */}
+      <BirthdayAlertBanner
+        birthdayPlayers={birthdayPlayersToday}
+        upcomingPlayers={upcomingBirthdayPlayers}
+        teamName={systemSetting?.teamName || 'TIM'}
+      />
 
       {/* ── PROMINENT SEASON SELECTOR ON DASHBOARD ── */}
       <DashboardSeasonSelector seasons={seasons} selectedSeason={activeSeasonName} />

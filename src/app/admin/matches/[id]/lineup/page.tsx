@@ -781,7 +781,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     finally { setSaving(false); }
   };
 
-  const getPlayerById = (id: string) => players.find((p) => p.id === id);
+  const getPlayerById = (id?: string) => {
+    if (!id || id === 'unknown' || id === 'unknown-player') {
+      return { id: 'unknown-player', name: 'Tidak Diketahui', number: 0, position: '-' } as any;
+    }
+    return players.find((p) => p.id === id);
+  };
   const starterCount = starters.length;
   const pitchedIds = new Set(starters.map((s) => s.playerId));
   const benchSet = new Set(benchPlayerIds);
@@ -1625,6 +1630,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                     >
                       <option value="">-- Pilih Pemain --</option>
+                      {(newEvent.type === 'goal' || newEvent.type === 'penalty' || newEvent.type === 'own_goal') && (
+                        <option value="unknown-player">Tidak Diketahui</option>
+                      )}
                       {matchPlayers.map((p) => (
                         <option key={p.id} value={p.id}>{p.number}. {p.name} ({p.position})</option>
                       ))}
@@ -1641,6 +1649,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                       className="w-full p-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:border-blue-500 outline-none"
                     >
                       <option value="">-- Tidak ada assist --</option>
+                      <option value="unknown-player">Tidak Diketahui</option>
                       {matchPlayers.filter(p => p.id !== newEvent.playerId).map((p) => (
                         <option key={p.id} value={p.id}>{p.number}. {p.name}</option>
                       ))}

@@ -40,25 +40,99 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
   const displayTeamName = (teamName || 'TEAM').toUpperCase();
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
   const [visibleCount, setVisibleCount] = useState(10);
+  const [selectedSeason, setSelectedSeason] = useState<string>('SEMUA');
 
-  const displayedMatches = matches.slice(0, visibleCount);
-  const hasMore = visibleCount < matches.length;
-  const remainingCount = matches.length - visibleCount;
+  // Cari pertandingan pertama kali pemain ini masuk dalam lineup (debut/join)
+  const playedMatches = matches.filter((m: any) =>
+    (m.lineups || []).some((l: any) => l.playerId === player.id)
+  );
+  const hasPlayed = playedMatches.length > 0;
+  const firstPlayedDateMs = hasPlayed
+    ? Math.min(...playedMatches.map((m: any) => new Date(m.matchDate).getTime()))
+    : null;
+
+  // Hanya tampilkan riwayat laga sejak tanggal pertama kali pemain main/masuk skuad laga
+  const eligibleMatches = hasPlayed && firstPlayedDateMs !== null
+    ? matches.filter((m: any) => {
+        const mDateMs = new Date(m.matchDate).getTime();
+        return !isNaN(mDateMs) && mDateMs >= firstPlayedDateMs;
+      })
+    : [];
+
+  // Ambil daftar musim unik yang tersedia
+  const seasonList = Array.from(
+    new Set(
+      matches
+        .map((m: any) => m.seasonName || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : ''))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => b.localeCompare(a));
+
+  const seasonTabs = [...seasonList, 'SEMUA'];
+
+  // Filter berdasarkan musim pilihan
+  const filteredMatches = selectedSeason === 'SEMUA'
+    ? eligibleMatches
+    : eligibleMatches.filter((m: any) => {
+        const s = m.seasonName || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+        return s === selectedSeason || s.includes(selectedSeason);
+      });
+
+  const displayedMatches = filteredMatches.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredMatches.length;
+  const remainingCount = filteredMatches.length - visibleCount;
 
   const panelBg = { background: '#ffffff', border: '1px solid #e2e8f0' };
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
         <h2 className="text-base sm:text-lg font-black text-slate-900">Last Matches</h2>
+
+        {/* ── Season Navigation Tabs (contoh: 2027, 2025, SEMUA) ── */}
+        {hasPlayed && seasonTabs.length > 1 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            {seasonTabs.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setSelectedSeason(s);
+                  setVisibleCount(10);
+                }}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  selectedSeason === s
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60'
+                }`}
+              >
+                {s === 'SEMUA' ? 'SEMUA' : `Musim ${s}`}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl overflow-hidden shadow-sm" style={panelBg}>
-        {matches.length === 0 ? (
-          <div className="py-14 text-center space-y-2">
+        {!hasPlayed ? (
+          <div className="py-12 px-4 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-600 shadow-xs">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div className="max-w-md mx-auto space-y-1">
+              <p className="text-sm font-bold text-slate-900">
+                Belum Melakoni Pertandingan Debut
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Pemain ini telah resmi masuk dan terdaftar di skuad klub, namun belum melakoni penampilan perdana di lapangan.
+              </p>
+            </div>
+          </div>
+        ) : filteredMatches.length === 0 ? (
+          <div className="py-12 text-center space-y-2">
             <Shield className="w-9 h-9 mx-auto text-slate-300" />
             <p className="text-sm font-semibold text-slate-500">
-              Belum ada riwayat pertandingan
+              Tidak ada catatan pertandingan di {selectedSeason === 'SEMUA' ? 'seluruh musim' : `Musim ${selectedSeason}`}
             </p>
           </div>
         ) : (
@@ -431,17 +505,17 @@ export default function PlayerMatchHistory({ matches, player }: PlayerMatchHisto
             </div>
 
             {/* ── Navigation Bar ── */}
-            {matches.length > 10 && (
+            {filteredMatches.length > 10 && (
               <div className="py-3 px-4 flex items-center justify-between border-t border-slate-100 bg-slate-50 text-xs text-slate-500">
                 <span className="text-[11px] sm:text-xs">
                   {hasMore ? (
                     <>
                       Menampilkan <strong className="text-slate-900 font-mono">{displayedMatches.length}</strong> dari{' '}
-                      <strong className="text-slate-900 font-mono">{matches.length}</strong> riwayat pertandingan
+                      <strong className="text-slate-900 font-mono">{filteredMatches.length}</strong> riwayat pertandingan
                     </>
                   ) : (
                     <>
-                      Menampilkan seluruh <strong className="text-slate-900 font-mono">{matches.length}</strong> riwayat pertandingan
+                      Menampilkan seluruh <strong className="text-slate-900 font-mono">{filteredMatches.length}</strong> riwayat pertandingan
                     </>
                   )}
                 </span>

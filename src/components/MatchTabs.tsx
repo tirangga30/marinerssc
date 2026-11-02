@@ -470,15 +470,15 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                         </div>
                       ) : (
                         <div className="text-xs sm:text-sm font-bold text-slate-900">
-                          {event.player?.name}
+                          {event.player?.name || 'Tidak Diketahui'}
                         </div>
                       )}
 
-                      {!event.isSystem && event.type !== 'sub' && event.assistPlayer && (
+                      {!event.isSystem && event.type !== 'sub' && (event.assistPlayer || event.assistPlayerId === 'unknown-player') && (
                         <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1">
                           <span className="w-3.5 h-3.5 rounded-full bg-amber-100 border border-amber-300 text-amber-700 font-mono font-black text-[9px] inline-flex items-center justify-center">A</span>
                           <span>Assist:</span>
-                          <span className="font-semibold text-slate-700">{event.assistPlayer.name}</span>
+                          <span className="font-semibold text-slate-700">{event.assistPlayer?.name || 'Tidak Diketahui'}</span>
                         </div>
                       )}
 
@@ -558,9 +558,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
-                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.type === 'sub_in' ? 'text-emerald-600' : 'text-red-500'
-                              }`}
+                              className="fa-solid fa-right-left text-[9px] shrink-0 text-red-500"
                               title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
                           ))}
@@ -664,9 +662,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                           {subEvts.map((sub) => (
                             <i
                               key={sub.id}
-                              className={`fa-solid fa-right-left text-[9px] shrink-0 ${
-                                sub.type === 'sub_in' ? 'text-emerald-600' : 'text-red-500'
-                              }`}
+                              className="fa-solid fa-right-left text-[9px] shrink-0 text-red-500"
                               title={sub.type === 'sub_in' ? 'Masuk sebagai Pengganti' : 'Digantikan'}
                             />
                           ))}
@@ -830,12 +826,27 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
             {/* Rows */}
             <div className="divide-y divide-slate-100">
-              {h2hMatches.map((hMatch) => {
+              {h2hMatches.map((hMatch, idx) => {
                 const isCurrent = Boolean(hMatch.isCurrent || hMatch.id === match.id);
                 const matchD = parseWibDate(hMatch.matchDate);
                 const dateStr = !isNaN(matchD.getTime())
                   ? matchD.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }).replace('/', '.')
                   : '—';
+
+                const matchComp = (hMatch.competition || 'FRIENDLY').toUpperCase();
+                const prevMatch = idx > 0 ? h2hMatches[idx - 1] : null;
+                const prevComp = prevMatch ? (prevMatch.competition || 'FRIENDLY').toUpperCase() : null;
+                const prevSeason = prevMatch ? (prevMatch.seasonName || '') : '';
+                const currentSeason = hMatch.seasonName || '';
+
+                const isNewCompGroup =
+                  idx === 0 ||
+                  matchComp !== prevComp ||
+                  currentSeason !== prevSeason;
+
+                const seasonYear = hMatch.seasonName
+                  ? (hMatch.seasonName.match(/\d{4}/)?.[0] || hMatch.seasonName)
+                  : (hMatch.matchDate ? new Date(hMatch.matchDate).getFullYear().toString() : '');
 
                 const our = hMatch.isHome ? hMatch.homeScore : hMatch.awayScore;
                 const opp = hMatch.isHome ? hMatch.awayScore : hMatch.homeScore;
@@ -920,31 +931,51 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                   </>
                 );
 
-                if (isCurrent) {
-                  return (
-                    <div
-                      key={hMatch.id}
-                      onClick={() => alert('pertandingan ini telah terbuka')}
-                      role="button"
-                      tabIndex={0}
-                      className="grid px-3 sm:px-4 py-2.5 sm:py-3 items-center cursor-pointer gap-2 sm:gap-3 bg-sky-50/80 hover:bg-sky-100/90 transition-colors border-l-4 border-l-blue-600 select-none"
-                      style={{ gridTemplateColumns: '64px 1fr auto' }}
-                      title="Klik: pertandingan ini telah terbuka"
-                    >
-                      {rowContent}
-                    </div>
-                  );
-                }
-
                 return (
-                  <Link
-                    key={hMatch.id}
-                    href={`/matches/${hMatch.id}`}
-                    className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer gap-2 sm:gap-3"
-                    style={{ gridTemplateColumns: '64px 1fr auto' }}
-                  >
-                    {rowContent}
-                  </Link>
+                  <React.Fragment key={hMatch.id || idx}>
+                    {isNewCompGroup && (
+                      <div
+                        className="px-4 py-2 flex items-center justify-between text-[11px] font-black uppercase tracking-wider"
+                        style={{
+                          background: '#eff6ff',
+                          borderTop: idx === 0 ? 'none' : '1px solid #e2e8f0',
+                          borderBottom: '1px solid #dbeafe',
+                          color: '#1d4ed8',
+                        }}
+                      >
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <i className="fa-solid fa-trophy text-amber-500 text-xs" />
+                          <span>{hMatch.competition || 'FRIENDLY'}</span>
+                          {seasonYear && (
+                            <span className="text-slate-500 font-mono text-[10px] font-bold">
+                              {seasonYear}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {isCurrent ? (
+                      <div
+                        onClick={() => alert('pertandingan ini telah terbuka')}
+                        role="button"
+                        tabIndex={0}
+                        className="grid px-3 sm:px-4 py-2.5 sm:py-3 items-center cursor-pointer gap-2 sm:gap-3 bg-sky-50/80 hover:bg-sky-100/90 transition-colors border-l-4 border-l-blue-600 select-none"
+                        style={{ gridTemplateColumns: '64px 1fr auto' }}
+                        title="Klik: pertandingan ini telah terbuka"
+                      >
+                        {rowContent}
+                      </div>
+                    ) : (
+                      <Link
+                        href={`/matches/${hMatch.id}`}
+                        className="grid px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50 transition-colors items-center cursor-pointer gap-2 sm:gap-3"
+                        style={{ gridTemplateColumns: '64px 1fr auto' }}
+                      >
+                        {rowContent}
+                      </Link>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>

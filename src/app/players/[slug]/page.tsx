@@ -172,7 +172,7 @@ export default async function PlayerDetailPage({
     console.error('Database error in PlayerDetailPage:', error);
   }
 
-  if (!player || player.isGuest) notFound();
+  if (!player || (player.isGuest && (!player.seasons || player.seasons.length === 0))) notFound();
 
   const primarySeason = currentSeasonObj?.name || latestSeasonObj?.name || '2027';
   const resolvedPlayer = resolvePlayerForSeason(player, primarySeason);
@@ -236,6 +236,12 @@ export default async function PlayerDetailPage({
       })
     : '—';
 
+  const nowWib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+  const isBirthdayToday = player.birthDate ? (
+    new Date(player.birthDate).getUTCDate() === nowWib.getDate() &&
+    new Date(player.birthDate).getUTCMonth() === nowWib.getMonth()
+  ) : false;
+
   const nationalityValue =
     player.nationality && player.nationality.trim() !== '' && player.nationality !== '-'
       ? player.nationality
@@ -250,6 +256,33 @@ export default async function PlayerDetailPage({
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
+
+      {/* Birthday Banner if Today is Player's Birthday */}
+      {isBirthdayToday && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-blue-500/15 border border-amber-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl sm:text-3xl shrink-0">🎂</span>
+            <div>
+              <p className="text-xs sm:text-sm font-black text-slate-900 uppercase">
+                Hari ini {player.name} berulang tahun! 🎉
+              </p>
+              <p className="text-[11px] sm:text-xs text-slate-600">
+                Keluarga besar klub mengucapkan selamat ulang tahun, panjang umur, dan semakin berprestasi!
+              </p>
+            </div>
+          </div>
+          <a
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+              `🎂 Selamat Ulang Tahun untuk ${player.name} (#${player.number})! 🎉⚽ Semoga panjang umur, sehat selalu, dan makin sukses bersama tim! 🥳🔥`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase transition-all shadow-xs shrink-0 inline-flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>Kirim Ucapan ke Grup WA</span>
+          </a>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/* MOBILE PROFILE HEADER (Edge-to-Edge Full Bleed)     */}
