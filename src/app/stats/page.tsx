@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { Trophy, Award, Flame, Shield, Activity, Users, BarChart3 } from 'lucide-react';
+import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -31,6 +32,7 @@ const getCachedStatsData = unstable_cache(
             number: true,
             position: true,
             photoUrl: true,
+            seasonData: true,
             goals: true,
             assists: true,
             appearances: true,
@@ -96,7 +98,8 @@ export default async function StatsPage({
 
   const { seasons, allMatches, allPlayersRaw, playerDefaultPhoto } = await getCachedStatsData();
 
-  const defaultSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '');
+  const mainSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '2027');
+  const defaultSeason = mainSeason;
   const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
   const activeTab = (params.tab || 'all').toLowerCase();
 
@@ -137,13 +140,25 @@ export default async function StatsPage({
   const totalPoints = (totalWins * 3) + (totalDraws * 1);
 
   // 2. Filter Players for Season
-  const rawPlayers = allPlayersRaw.filter((p: any) =>
-    Array.isArray(p.seasons) && p.seasons.some((s: any) => s.name === selectedSeason)
-  );
+  const rawPlayers = selectedSeason && selectedSeason !== 'all'
+    ? allPlayersRaw.filter((p: any) => {
+        if (Array.isArray(p.seasons) && p.seasons.length > 0) {
+          return p.seasons.some((s: any) => s.name === selectedSeason);
+        }
+        return selectedSeason === defaultSeason;
+      })
+    : allPlayersRaw;
+
+  const effectivePlayers = rawPlayers.length > 0 ? rawPlayers : allPlayersRaw;
 
   const nowMs = new Date().getTime();
 
-  const allPlayers = rawPlayers.map((p) => {
+  const allPlayers = effectivePlayers.map((rawP) => {
+    // Resolve player photo & number for target season, falling back to main season (isCurrent)
+    const p = resolvePlayerForSeason(
+      resolvePlayerForSeason(rawP, mainSeason),
+      selectedSeason && selectedSeason !== 'all' ? selectedSeason : mainSeason
+    );
     const activeLineups = (p.lineups || []).filter((l: any) => {
       if (!l.match) return false;
       const m = l.match;
