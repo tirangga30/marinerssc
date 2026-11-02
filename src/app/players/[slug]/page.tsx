@@ -99,6 +99,7 @@ export default async function PlayerDetailPage({
       where: { slug },
       include: {
         member: true,
+        seasons: { select: { id: true, name: true, year: true } },
         events: {
           select: {
             id: true,
@@ -188,9 +189,13 @@ export default async function PlayerDetailPage({
     return !isNaN(matchStartMs) && nowMs >= matchStartMs;
   });
 
-  // If player is a MEMBER (member yang ikut tim utama), only show matches where they were in the lineup!
-  // If player is PEMAIN INTI (bukan member), show all team matches (with "Tidak masuk skuad" if not in lineup).
-  const displayedMatches = member
+  // For registered squad players (or players with season enrollment), provide activeMatches
+  // so PlayerMatchHistory can filter matches since joining.
+  // For pure one-off guest players without season enrollment, only pass matches where they were in the lineup.
+  const hasSquadEnrollment = Array.isArray(player.seasons) && player.seasons.length > 0;
+  const isPureGuest = player.isGuest && !hasSquadEnrollment;
+
+  const displayedMatches = isPureGuest
     ? activeMatches.filter((m: any) => (m.lineups || []).some((l: any) => l.playerId === player.id))
     : activeMatches;
 
