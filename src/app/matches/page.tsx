@@ -266,7 +266,7 @@ function MatchListGroupedByCompetition({
           <React.Fragment key={m.id}>
             {isNewComp && (
               <div className="flex items-center gap-2 pt-4 pb-2 border-b border-slate-200 mt-4 first:mt-0">
-                <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
                 <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                   <span>{m.competition || 'FRIENDLY'}</span>
                   {m.seasonName && (

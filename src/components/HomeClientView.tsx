@@ -654,7 +654,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
                   {/* Ujung Kiri: Kompetisi, Tahun Musim, dan Stage/Babak/Matchday */}
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
-                    <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
                     <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-slate-900 group-hover:text-blue-600 transition-colors">
                       {currentNextMatch?.competition || 'FRIENDLY'}
                     </span>
@@ -846,7 +846,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
                             {/* UJUNG KIRI: KOMPETISI, TAHUN MUSIM, DAN STAGE/BABAK/MATCHDAY */}
                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
-                              <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
+                              <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
                               <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider">
                                 {compName}
                               </span>

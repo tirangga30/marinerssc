@@ -460,7 +460,7 @@ export default function PlayerMatchHistory({
                         }}
                       >
                         <div className="flex items-center gap-1.5 sm:gap-2">
-                          <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
                           <span className="text-slate-900 font-black">{match.competition || 'FRIENDLY'}</span>
                           {seasonYear && (
                             <span className="text-slate-500 font-mono text-[10px] font-bold">

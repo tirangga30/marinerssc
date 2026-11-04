@@ -195,7 +195,7 @@ export default async function MatchDetailPage({
         <div className="flex items-center justify-between border-b border-slate-400/80 pb-3 text-[10px] sm:text-xs font-bold uppercase">
           {/* Ujung Kiri: Kompetisi, Tahun, dan Stage */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
-            <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
             <span className="text-[10px] sm:text-sm font-black uppercase text-slate-900 tracking-wider">
               {(match.competition || 'FRIENDLY').toUpperCase()}
             </span>
