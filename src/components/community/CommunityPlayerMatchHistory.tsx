@@ -109,6 +109,10 @@ export default function CommunityPlayerMatchHistory({
                   }
                 }
 
+                const hasScore = isFunMatch
+                  ? funMatch.teamAScore !== null && funMatch.teamBScore !== null
+                  : footballMatch?.homeScore !== null && footballMatch?.awayScore !== null;
+
                 const resultBg =
                   result === 'W'
                     ? '#16a34a'
@@ -240,27 +244,29 @@ export default function CommunityPlayerMatchHistory({
 
                     {/* Scores & Result */}
                     <div className="flex items-center justify-end gap-2.5 shrink-0">
-                      <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                        {isFunMatch ? (
-                          <>
-                            <span style={{ color: isTeamA ? '#38bdf8' : '#f1f5f9' }}>
-                              {funMatch.teamAScore ?? '—'}
-                            </span>
-                            <span style={{ color: isTeamB ? '#f59e0b' : '#94a3b8' }}>
-                              {funMatch.teamBScore ?? '—'}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span style={{ color: '#38bdf8' }}>
-                              {footballMatch.homeScore ?? '—'}
-                            </span>
-                            <span style={{ color: '#f1f5f9' }}>
-                              {footballMatch.awayScore ?? '—'}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      {hasScore && (
+                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                          {isFunMatch ? (
+                            <>
+                              <span style={{ color: isTeamA ? '#38bdf8' : '#f1f5f9' }}>
+                                {funMatch.teamAScore}
+                              </span>
+                              <span style={{ color: isTeamB ? '#f59e0b' : '#94a3b8' }}>
+                                {funMatch.teamBScore}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ color: '#38bdf8' }}>
+                                {footballMatch.homeScore}
+                              </span>
+                              <span style={{ color: '#f1f5f9' }}>
+                                {footballMatch.awayScore}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
 
                       {result ? (
                         <span
@@ -270,7 +276,13 @@ export default function CommunityPlayerMatchHistory({
                           {result}
                         </span>
                       ) : (
-                        <span style={{ color: '#334155' }}>—</span>
+                        <span
+                          className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                          style={{ background: '#64748b' }}
+                          title="Belum Dimainkan"
+                        >
+                          ?
+                        </span>
                       )}
                     </div>
                   </Link>

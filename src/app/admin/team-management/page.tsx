@@ -7,7 +7,8 @@ import {
   Shield, Lock, Unlock, KeyRound, ArrowLeft, Save, Upload,
   Users, Image as ImageIcon, Sparkles, Check, AlertCircle,
   Eye, EyeOff, UserPlus, Trash2, Edit3, RefreshCw,
-  QrCode, Smartphone, Radio, ExternalLink, XCircle
+  QrCode, Smartphone, Radio, ExternalLink, XCircle,
+  Cake, Send, Clock
 } from 'lucide-react';
 
 export default function TeamManagementPage() {
@@ -49,6 +50,14 @@ export default function TeamManagementPage() {
   const [showWaToken, setShowWaToken] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [savingWaSettings, setSavingWaSettings] = useState(false);
+
+  // WhatsApp Birthday Auto-Greeting State
+  const [whatsappBirthdayEnabled, setWhatsappBirthdayEnabled] = useState(true);
+  const [whatsappBirthdayGroupId, setWhatsappBirthdayGroupId] = useState('');
+  const [whatsappBirthdayGroupName, setWhatsappBirthdayGroupName] = useState('');
+  const [whatsappGroups, setWhatsappGroups] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const [testingBirthday, setTestingBirthday] = useState(false);
 
   // Users State
   const [users, setUsers] = useState<any[]>([]);
@@ -118,6 +127,9 @@ export default function TeamManagementPage() {
           if (data.whatsappMode) setWhatsappMode(data.whatsappMode === 'scan' ? 'scan' : 'disabled');
           if (data.whatsappToken) setWhatsappToken(data.whatsappToken);
           if (data.whatsappConnectedPhone) setWhatsappDevice(data.whatsappConnectedPhone);
+          if (data.whatsappBirthdayEnabled !== undefined) setWhatsappBirthdayEnabled(Boolean(data.whatsappBirthdayEnabled));
+          if (data.whatsappBirthdayGroupId !== undefined) setWhatsappBirthdayGroupId(data.whatsappBirthdayGroupId || '');
+          if (data.whatsappBirthdayGroupName !== undefined) setWhatsappBirthdayGroupName(data.whatsappBirthdayGroupName || '');
         }
       })
       .catch((err) => console.error('Error loading settings:', err))
@@ -144,9 +156,16 @@ export default function TeamManagementPage() {
     return () => clearInterval(interval);
   }, [showQrModal]);
 
-  const handleSaveWhatsAppSettings = async (targetMode?: 'disabled' | 'scan', targetToken?: string) => {
+  const handleSaveWhatsAppSettings = async (
+    targetMode?: 'disabled' | 'scan',
+    targetToken?: string,
+    overrideBirthday?: { enabled?: boolean; groupId?: string; groupName?: string }
+  ) => {
     const modeToSave = targetMode !== undefined ? targetMode : whatsappMode;
     const tokenToSave = targetToken !== undefined ? targetToken : whatsappToken;
+    const bdayEnabled = overrideBirthday?.enabled !== undefined ? overrideBirthday.enabled : whatsappBirthdayEnabled;
+    const bdayGroupId = overrideBirthday?.groupId !== undefined ? overrideBirthday.groupId : whatsappBirthdayGroupId;
+    const bdayGroupName = overrideBirthday?.groupName !== undefined ? overrideBirthday.groupName : whatsappBirthdayGroupName;
 
     setSavingWaSettings(true);
     try {
@@ -156,6 +175,9 @@ export default function TeamManagementPage() {
         body: JSON.stringify({
           whatsappMode: modeToSave,
           whatsappToken: tokenToSave,
+          whatsappBirthdayEnabled: bdayEnabled,
+          whatsappBirthdayGroupId: bdayGroupId,
+          whatsappBirthdayGroupName: bdayGroupName,
         }),
       });
 
@@ -170,6 +192,67 @@ export default function TeamManagementPage() {
       showToast('error', 'Terjadi kesalahan jaringan saat menyimpan WhatsApp');
     } finally {
       setSavingWaSettings(false);
+    }
+  };
+
+  const handleFetchWhatsAppGroups = async () => {
+    if (!whatsappToken.trim()) {
+      showToast('error', 'Token WhatsApp wajib diisi');
+      return;
+    }
+    setLoadingGroups(true);
+    try {
+      const res = await fetch('/api/admin/whatsapp-gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get-groups', token: whatsappToken }),
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.groups) && data.groups.length > 0) {
+        setWhatsappGroups(data.groups);
+        showToast('success', `Berhasil menemukan ${data.groups.length} grup WhatsApp!`);
+      } else {
+        showToast('error', data.error || 'Tidak ada grup ditemukan atau WhatsApp belum terhubung');
+      }
+    } catch {
+      showToast('error', 'Gagal mengambil daftar grup WhatsApp');
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
+  const handleTestBirthdaySend = async () => {
+    if (!whatsappToken.trim()) {
+      showToast('error', 'Token WhatsApp Gateway belum diisi');
+      return;
+    }
+    if (!whatsappBirthdayGroupId.trim()) {
+      showToast('error', 'Target Grup WhatsApp belum dipilih atau diisi');
+      return;
+    }
+
+    setTestingBirthday(true);
+    try {
+      const res = await fetch('/api/cron/birthday', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test: true,
+          targetGroupId: whatsappBirthdayGroupId.trim(),
+          playerName: 'Contoh Pemain',
+          age: 24,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('success', 'Pesan tes ucapan ulang tahun berhasil dikirim ke grup!');
+      } else {
+        showToast('error', data.error || data.message || 'Gagal mengirim pesan tes ke grup');
+      }
+    } catch {
+      showToast('error', 'Gagal menghubungi server untuk tes pengiriman');
+    } finally {
+      setTestingBirthday(false);
     }
   };
 
@@ -1299,6 +1382,150 @@ export default function TeamManagementPage() {
                     <Trash2 className="w-4 h-4 text-rose-600" />
                     <span>{disconnecting ? 'Memutuskan...' : 'Putuskan Nomor Lama'}</span>
                   </button>
+                )}
+              </div>
+
+              {/* ── SEKSI BARU: PESAN OTOMATIS ULANG TAHUN KE GRUP WA (00:00 WIB) ── */}
+              <div className="mt-8 pt-6 border-t-2 border-slate-100 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-black uppercase text-slate-900 flex items-center gap-2">
+                      <Cake className="w-4 h-4 text-amber-500" />
+                      Ucapan Ulang Tahun Otomatis ke Grup WA (00:00 WIB)
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Kirim pesan ucapan selamat ulang tahun secara otomatis ke grup WhatsApp tim setiap jam 00:00 WIB (tengah malam).
+                    </p>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <div className="flex items-center gap-2">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={whatsappBirthdayEnabled}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setWhatsappBirthdayEnabled(val);
+                          handleSaveWhatsAppSettings(whatsappMode, whatsappToken, { enabled: val });
+                        }}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      <span className="ml-2 text-xs font-bold uppercase text-slate-700">
+                        {whatsappBirthdayEnabled ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {whatsappBirthdayEnabled && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-4">
+                    {/* Target Grup WhatsApp */}
+                    <div className="space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                          Target Grup WhatsApp (Group ID / JID)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleFetchWhatsAppGroups}
+                          disabled={loadingGroups || !whatsappToken.trim()}
+                          className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-white border border-emerald-300 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all self-start sm:self-auto"
+                        >
+                          <RefreshCw className={`w-3 h-3 text-emerald-600 ${loadingGroups ? 'animate-spin' : ''}`} />
+                          <span>{loadingGroups ? 'Mencari Grup...' : 'Pilih dari Grup WA yang Diikuti'}</span>
+                        </button>
+                      </div>
+
+                      {/* Dropdown pilihan grup jika ada */}
+                      {whatsappGroups.length > 0 && (
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-500 uppercase">Pilih Grup dari Hasil Scan:</label>
+                          <select
+                            value={whatsappBirthdayGroupId}
+                            onChange={(e) => {
+                              const selected = whatsappGroups.find((g) => g.id === e.target.value);
+                              setWhatsappBirthdayGroupId(e.target.value);
+                              if (selected) setWhatsappBirthdayGroupName(selected.name);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs font-medium outline-hidden focus:border-emerald-500 cursor-pointer"
+                          >
+                            <option value="">-- Pilih Grup WhatsApp --</option>
+                            {whatsappGroups.map((g) => (
+                              <option key={g.id} value={g.id}>
+                                {g.name} ({g.id})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Manual Input Group ID */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={whatsappBirthdayGroupId}
+                            onChange={(e) => setWhatsappBirthdayGroupId(e.target.value)}
+                            placeholder="Contoh: 120363023456789012@g.us atau ID grup Fonnte"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs font-mono font-medium outline-hidden focus:border-emerald-500"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSaveWhatsAppSettings(whatsappMode, whatsappToken, { groupId: whatsappBirthdayGroupId, groupName: whatsappBirthdayGroupName })}
+                          disabled={savingWaSettings || !whatsappBirthdayGroupId.trim()}
+                          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-xs"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Simpan Target Grup</span>
+                        </button>
+                      </div>
+
+                      <p className="text-[11px] text-slate-500">
+                        ID grup biasanya berformat <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono text-slate-700">...@g.us</code>. Anda bisa klik <strong>&quot;Pilih dari Grup WA yang Diikuti&quot;</strong> agar otomatis terisi.
+                      </p>
+                    </div>
+
+                    {/* Pratinjau Pesan yang Akan Dikirim */}
+                    <div className="space-y-1.5 pt-2 border-t border-amber-200/60">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-amber-500" />
+                        Pratinjau Format Pesan Otomatis:
+                      </label>
+                      <div className="p-3.5 rounded-xl bg-white border border-amber-200 text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed shadow-2xs">
+{`🎂 HBD *[Nama Pemain]* 🎉⚽
+
+Hari ini, [Nama Pemain] Genap berusia [Usia] tahun! 🥳🔥
+
+Semoga panjang umur, sehat selalu, murah rezeki, makin gacor di lapangan, dan terus membawa kemenangan bagi tim! 
+
+Yuk beri ucapan dan doa terbaik buat [Nama Pemain] di grup ini! 👏🎂
+
+*${teamName || 'MARS'}*`}
+                      </div>
+                    </div>
+
+                    {/* Tombol Test Kirim Sekarang */}
+                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-xl border border-amber-200">
+                      <div className="flex items-center gap-2 text-xs text-slate-600">
+                        <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Jadwal Aktif: <strong>00:00 WIB Setiap Hari</strong> (Otomatis via Vercel Cron).</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleTestBirthdaySend}
+                        disabled={testingBirthday || !whatsappBirthdayGroupId.trim() || !whatsappToken.trim()}
+                        className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+                      >
+                        <Send className={`w-3.5 h-3.5 ${testingBirthday ? 'animate-bounce' : ''}`} />
+                        <span>{testingBirthday ? 'Mengirim Tes...' : 'Tes Kirim ke Grup Sekarang'}</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

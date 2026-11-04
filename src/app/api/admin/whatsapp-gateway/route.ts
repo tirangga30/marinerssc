@@ -165,6 +165,41 @@ export async function POST(req: Request) {
       });
     }
 
+    if (action === 'get-groups') {
+      try {
+        const fRes = await fetch('https://api.fonnte.com/get-whatsapp-group', {
+          method: 'POST',
+          headers: {
+            Authorization: token,
+          },
+          cache: 'no-store',
+        });
+
+        const fData = await fRes.json().catch(() => null);
+
+        let groups: Array<{ id: string; name: string }> = [];
+        if (Array.isArray(fData?.data)) {
+          groups = fData.data.map((g: any) => ({
+            id: String(g.id || g.jid || ''),
+            name: String(g.name || g.subject || g.id || 'Grup WhatsApp'),
+          }));
+        } else if (Array.isArray(fData)) {
+          groups = fData.map((g: any) => ({
+            id: String(g.id || g.jid || ''),
+            name: String(g.name || g.subject || g.id || 'Grup WhatsApp'),
+          }));
+        }
+
+        return NextResponse.json({
+          success: true,
+          groups,
+          raw: fData,
+        });
+      } catch (e: any) {
+        return NextResponse.json({ error: e.message || 'Gagal mengambil daftar grup' }, { status: 500 });
+      }
+    }
+
     return NextResponse.json({ error: 'Aksi tidak dikenal' }, { status: 400 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

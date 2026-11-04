@@ -561,14 +561,16 @@ export default function PlayerMatchHistory({
 
                       {/* Vertically Stacked Scores directly to the left of Result Badge */}
                       <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0 pl-1">
-                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                          <span style={{ color: match.isHome ? '#2563eb' : '#0f172a' }}>
-                            {match.homeScore ?? '—'}
-                          </span>
-                          <span style={{ color: match.isHome ? '#0f172a' : '#2563eb' }}>
-                            {match.awayScore ?? '—'}
-                          </span>
-                        </div>
+                        {match.homeScore !== null && match.awayScore !== null && match.homeScore !== undefined && match.awayScore !== undefined && (
+                          <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                            <span style={{ color: match.isHome ? '#2563eb' : '#0f172a' }}>
+                              {match.homeScore}
+                            </span>
+                            <span style={{ color: match.isHome ? '#0f172a' : '#2563eb' }}>
+                              {match.awayScore}
+                            </span>
+                          </div>
+                        )}
 
                         {result ? (
                           <span
@@ -578,7 +580,13 @@ export default function PlayerMatchHistory({
                             {result}
                           </span>
                         ) : (
-                          <span className="w-5 text-center text-slate-400 font-mono text-xs">—</span>
+                          <span
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                            style={{ background: '#94a3b8' }}
+                            title="Belum Dimainkan"
+                          >
+                            ?
+                          </span>
                         )}
                       </div>
                     </Link>

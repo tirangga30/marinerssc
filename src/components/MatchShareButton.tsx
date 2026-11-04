@@ -47,42 +47,58 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
     let title = '';
     let textLines: string[] = [];
 
+    const stageLabel = (match.stage || match.competition || '').trim();
+    const stageHeader = stageLabel ? ` ${stageLabel}` : '';
+    const dateStr = formatWibDate(match.matchDate, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const timeStr = formatWibTime(match.matchDate);
+    const venueStr = match.venue || 'Menyusul';
+
     if (isFinished && hasScore) {
       title = `Hasil Pertandingan: ${homeTeam} ${match.homeScore} - ${match.awayScore} ${awayTeam}`;
       textLines = [
-        `⚽ HASIL PERTANDINGAN`,
-        `🔥 ${homeTeam.toUpperCase()} ${match.homeScore} - ${match.awayScore} ${awayTeam.toUpperCase()}`,
-        `🏆 ${match.stage || match.competition || 'Friendly Match'}`,
-        `📅 ${formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`,
-        `📍 ${match.venue || '—'}`,
+        `*HASIL PERTANDINGAN*${stageHeader}`,
+        `*${homeTeam.toUpperCase()} ${match.homeScore} - ${match.awayScore} ${awayTeam.toUpperCase()}*`,
         ``,
-        `Lihat detail pertandingan dan statistik selengkapnya:`,
+        `*Waktu*: ${dateStr}`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Cek ringkasan gol, assist, statistik dan lainnya di sini:`,
         shareUrl,
+        ``,
+        `*MARS*`,
       ];
     } else if (isLive) {
       title = `LIVE: ${homeTeam} ${match.homeScore ?? 0} - ${match.awayScore ?? 0} ${awayTeam}`;
       textLines = [
-        `🔴 PERTANDINGAN SEDANG BERLANGSUNG`,
-        `🔥 ${homeTeam.toUpperCase()} ${match.homeScore ?? 0} - ${match.awayScore ?? 0} ${awayTeam.toUpperCase()}`,
-        `🏆 ${match.stage || match.competition || 'Friendly Match'}`,
-        `📅 ${formatWibDate(match.matchDate)}`,
-        `📍 ${match.venue || '—'}`,
+        `*PERTANDINGAN SEDANG BERLANGSUNG*${stageHeader}`,
+        `*${homeTeam.toUpperCase()} ${match.homeScore ?? 0} - ${match.awayScore ?? 0} ${awayTeam.toUpperCase()}*`,
         ``,
-        `Pantau jalannya pertandingan & live timeline:`,
+        `*Waktu*: ${dateStr}`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Pantau live score, jalannya pertandingan dan lainnya di sini:`,
         shareUrl,
+        ``,
+        `*MARS*`,
       ];
     } else {
       title = `Jadwal Pertandingan: ${homeTeam} vs ${awayTeam}`;
       textLines = [
-        `⚽ JADWAL PERTANDINGAN`,
-        `🔥 ${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}`,
-        `🏆 ${match.stage || match.competition || 'Friendly Match'}`,
-        `📅 ${formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`,
-        `⏰ ${formatWibTime(match.matchDate)}`,
-        `📍 ${match.venue || '—'}`,
+        `*JADWAL PERTANDINGAN*${stageHeader}`,
+        `*${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}*`,
         ``,
-        `Lihat detail pertandingan dan susunan pemain:`,
+        `*Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Cek info laga, susunan pemain dan lainnya di sini:`,
         shareUrl,
+        ``,
+        `*MARS*`,
       ];
     }
 

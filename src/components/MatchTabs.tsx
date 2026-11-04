@@ -223,16 +223,18 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
   // "ringkasan jangan muncul jika belum kickoff."
   // "list squad mana? itu tetap ada walaupun line up udah keluar, kecuali udah kickoff maka hilang"
+  // "JIKA BELUM MELAKUKAN INVITE PEMAIN TAPI JADWAL UDAH DIBUAT, MAKA NAVIGASI SQUAD LIST JANGAN DULU DITAMPILKAN"
+  const searchParams = useSearchParams();
+  const isInvite = Boolean(searchParams?.get('p') || searchParams?.get('player'));
+  const hasInvitedPlayers = localAttendances.length > 0 || isInvite;
+
   const hasKickedOff = isStarted;
   const showSummaryTab = hasLineup && hasKickedOff;
   const showLineupTab = hasLineup;
-  const showSquadTab = !hasKickedOff;
-
-  const searchParams = useSearchParams();
-  const isInvite = Boolean(searchParams?.get('p') || searchParams?.get('player'));
+  const showSquadTab = !hasKickedOff && hasInvitedPlayers;
 
   React.useEffect(() => {
-    if (isInvite) {
+    if (isInvite && showSquadTab) {
       setActiveTab('squad');
     } else if (showLineupTab) {
       setActiveTab('lineup');
@@ -300,59 +302,76 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB NAVIGATION: SUMMARY & LINE UP / SQUAD LIST      */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
-        {showSummaryTab && (
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'summary'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Ringkasan
-          </button>
-        )}
+      {(showSummaryTab || showLineupTab || showSquadTab || hasH2H) ? (
+        <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
+          {showSummaryTab && (
+            <button
+              onClick={() => setActiveTab('summary')}
+              className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+                activeTab === 'summary'
+                  ? 'border-blue-600 text-blue-600 font-black'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Ringkasan
+            </button>
+          )}
 
-        {showLineupTab && (
-          <button
-            onClick={() => setActiveTab('lineup')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'lineup'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Line Up
-          </button>
-        )}
+          {showLineupTab && (
+            <button
+              onClick={() => setActiveTab('lineup')}
+              className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+                activeTab === 'lineup'
+                  ? 'border-blue-600 text-blue-600 font-black'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Line Up
+            </button>
+          )}
 
-        {showSquadTab && (
-          <button
-            onClick={() => setActiveTab('squad')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'squad'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            Squad List
-          </button>
-        )}
+          {showSquadTab && (
+            <button
+              onClick={() => setActiveTab('squad')}
+              className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+                activeTab === 'squad'
+                  ? 'border-blue-600 text-blue-600 font-black'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Squad List
+            </button>
+          )}
 
-        {hasH2H && (
-          <button
-            onClick={() => setActiveTab('h2h')}
-            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
-              activeTab === 'h2h'
-                ? 'border-blue-600 text-blue-600 font-black'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            H2H
-          </button>
-        )}
-      </div>
+          {hasH2H && (
+            <button
+              onClick={() => setActiveTab('h2h')}
+              className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
+                activeTab === 'h2h'
+                  ? 'border-blue-600 text-blue-600 font-black'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              H2H
+            </button>
+          )}
+        </div>
+      ) : null}
+
+      {/* Fallback jika jadwal dibuat tapi pemain belum di-invite & lineup belum rilis */}
+      {!showSummaryTab && !showLineupTab && !showSquadTab && !hasH2H && (
+        <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 text-center space-y-2 py-10 shadow-xs max-w-xl mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
+            📋
+          </div>
+          <h4 className="text-sm sm:text-base font-black uppercase text-slate-900">
+            Daftar Skuad Belum Dirilis
+          </h4>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            Jadwal pertandingan sudah dibuat. Daftar skuad dan susunan pemain akan ditampilkan di sini setelah undangan pemain dikirimkan.
+          </p>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/* TAB CONTENT: SUMMARY & TIMELINE                    */}
@@ -904,14 +923,16 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
                     {/* Skor & Badge Hasil */}
                     <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0 pl-1">
-                      <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
-                        <span style={{ color: hMatch.isHome ? '#2563eb' : '#0f172a' }}>
-                          {hMatch.homeScore ?? '—'}
-                        </span>
-                        <span style={{ color: hMatch.isHome ? '#0f172a' : '#2563eb' }}>
-                          {hMatch.awayScore ?? '—'}
-                        </span>
-                      </div>
+                      {hasScore && (
+                        <div className="flex flex-col text-right justify-center gap-0.5 font-mono font-black text-xs sm:text-sm leading-tight">
+                          <span style={{ color: hMatch.isHome ? '#2563eb' : '#0f172a' }}>
+                            {hMatch.homeScore}
+                          </span>
+                          <span style={{ color: hMatch.isHome ? '#0f172a' : '#2563eb' }}>
+                            {hMatch.awayScore}
+                          </span>
+                        </div>
+                      )}
 
                       {result ? (
                         <span
@@ -921,7 +942,13 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                           {result}
                         </span>
                       ) : (
-                        <span className="w-5 text-center text-slate-400 font-mono text-xs">—</span>
+                        <span
+                          className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-2xs"
+                          style={{ background: '#94a3b8' }}
+                          title="Belum Dimainkan"
+                        >
+                          ?
+                        </span>
                       )}
                     </div>
                   </>

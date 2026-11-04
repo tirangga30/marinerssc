@@ -34,6 +34,9 @@ export async function GET() {
       whatsappMode: setting?.whatsappMode || 'disabled',
       whatsappToken: setting?.whatsappToken || '',
       whatsappConnectedPhone: setting?.whatsappConnectedPhone || '',
+      whatsappBirthdayEnabled: setting ? setting.whatsappBirthdayEnabled !== false : true,
+      whatsappBirthdayGroupId: setting?.whatsappBirthdayGroupId || '',
+      whatsappBirthdayGroupName: setting?.whatsappBirthdayGroupName || '',
     });
   } catch (err: any) {
     console.error('Error fetching system settings:', err);
@@ -54,6 +57,9 @@ export async function GET() {
       whatsappMode: 'disabled',
       whatsappToken: '',
       whatsappConnectedPhone: '',
+      whatsappBirthdayEnabled: true,
+      whatsappBirthdayGroupId: '',
+      whatsappBirthdayGroupName: '',
     });
   }
 }
@@ -79,6 +85,7 @@ export async function PUT(req: Request) {
       playerCardBg, isCommunityEnabled, showHeroOverlay,
       heroTagline, heroSubtitle, heroCtaText,
       whatsappMode, whatsappToken,
+      whatsappBirthdayEnabled, whatsappBirthdayGroupId, whatsappBirthdayGroupName,
       currentPin, newPin
     } = body;
 
@@ -162,6 +169,18 @@ export async function PUT(req: Request) {
 
     if (whatsappToken !== undefined && typeof whatsappToken === 'string') {
       updateData.whatsappToken = whatsappToken.trim();
+    }
+
+    if (whatsappBirthdayEnabled !== undefined) {
+      updateData.whatsappBirthdayEnabled = Boolean(whatsappBirthdayEnabled);
+    }
+
+    if (whatsappBirthdayGroupId !== undefined && typeof whatsappBirthdayGroupId === 'string') {
+      updateData.whatsappBirthdayGroupId = whatsappBirthdayGroupId.trim();
+    }
+
+    if (whatsappBirthdayGroupName !== undefined && typeof whatsappBirthdayGroupName === 'string') {
+      updateData.whatsappBirthdayGroupName = whatsappBirthdayGroupName.trim();
     }
 
     // Changing Security PIN

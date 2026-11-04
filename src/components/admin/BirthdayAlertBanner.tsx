@@ -43,10 +43,10 @@ export default function BirthdayAlertBanner({
 
   const getBirthdayMessage = (p: BirthdayPlayer) => {
     const age = calculateAge(p.birthDate);
-    const ageStr = age ? ` yang ke-${age}` : '';
-    const club = (teamName || 'TIM').toUpperCase();
+    const ageText = age ? `Genap berusia ${age} tahun! 🥳🔥` : `merayakan hari ulang tahunnya! 🥳🔥`;
+    const club = teamName || 'MARS';
 
-    return `🎂 KELUARGA BESAR ${club} MENGUCAPKAN:\n\n🎉 Selamat Ulang Tahun untuk ${p.name} (#${p.number})${ageStr}! ⚽🥳\n\nSemoga panjang umur, sehat selalu, dilancarkan rezekinya, makin gacor di lapangan, dan terus membawa kejayaan bagi tim! 🎂🔥\n\n#HappyBirthday #${club.replace(/[^a-zA-Z0-9]/g, '')} #Family`;
+    return `🎂 HBD *${p.name}* 🎉⚽\n\nHari ini, ${p.name} ${ageText}\n\nSemoga panjang umur, sehat selalu, murah rezeki, makin gacor di lapangan, dan terus membawa kemenangan bagi tim! \n\nYuk beri ucapan dan doa terbaik buat ${p.name} di grup ini! 👏🎂\n\n*${club}*`;
   };
 
   const handleCopy = (p: BirthdayPlayer) => {

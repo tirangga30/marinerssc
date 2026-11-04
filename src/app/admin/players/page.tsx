@@ -17,6 +17,8 @@ import {
   Users,
   UserPlus,
   UserMinus,
+  UserCheck,
+  UserX,
   Check,
   Search,
 } from 'lucide-react';
@@ -428,6 +430,31 @@ export default function AdminPlayersPage() {
       }
     } catch {
       alert('Terjadi kesalahan saat mengubah status pemain bintang');
+    }
+  };
+
+  const handleToggleStatus = async (player: Player) => {
+    const isCurrentlyActive = player.status === 'Active';
+    const newStatus = isCurrentlyActive ? 'Inactive' : 'Active';
+    const actionLabel = isCurrentlyActive ? 'menonaktifkan' : 'mengaktifkan';
+
+    try {
+      const res = await fetch(`/api/players/${player.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (res.ok) {
+        setPlayers((prev) =>
+          prev.map((p) => (p.id === player.id ? { ...p, status: newStatus } : p))
+        );
+      } else {
+        const errData = await res.json().catch(() => null);
+        alert(errData?.error || `Gagal ${actionLabel} pemain.`);
+      }
+    } catch {
+      alert(`Terjadi kesalahan saat ${actionLabel} pemain.`);
     }
   };
 
@@ -893,15 +920,25 @@ export default function AdminPlayersPage() {
                       </td>
                       <td className="p-3 text-slate-700 font-medium">{player.appearances}</td>
                       <td className="p-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(player)}
+                          title={
                             player.status === 'Active'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                              ? `Klik untuk Nonaktifkan (${player.name})`
+                              : `Klik untuk Aktifkan (${player.name})`
+                          }
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                            player.status === 'Active'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
+                              : player.status === 'Injured'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
+                              : 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
                           }`}
                         >
-                          {player.status}
-                        </span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${player.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          {player.status === 'Active' ? 'Active' : player.status || 'Inactive'}
+                        </button>
                       </td>
 
                       {/* TOMBOL BINTANG BERANDA */}
@@ -933,6 +970,28 @@ export default function AdminPlayersPage() {
                       </td>
 
                       <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
+                        {/* NONAKTIFKAN / AKTIFKAN PEMAIN */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(player)}
+                          title={
+                            player.status === 'Active'
+                              ? `Nonaktifkan ${player.name} (Data Tetap Tersimpan)`
+                              : `Aktifkan ${player.name}`
+                          }
+                          className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                            player.status === 'Active'
+                              ? 'bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 border-slate-200'
+                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border-emerald-300'
+                          }`}
+                        >
+                          {player.status === 'Active' ? (
+                            <UserX className="w-4 h-4" />
+                          ) : (
+                            <UserCheck className="w-4 h-4" />
+                          )}
+                        </button>
+
                         {/* LEPAS PEMAIN DARI MUSIM INI */}
                         {activeTab === 'season_squad' && (
                           <button
@@ -1327,6 +1386,18 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Status Pemain</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none font-bold"
+                  >
+                    <option value="Active">Active (Aktif)</option>
+                    <option value="Inactive">Inactive (Nonaktif)</option>
+                    <option value="Injured">Injured (Cedera)</option>
+                  </select>
                 </div>
               </div>
 

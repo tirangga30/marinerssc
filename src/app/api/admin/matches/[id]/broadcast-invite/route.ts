@@ -21,7 +21,6 @@ function buildInviteMessage({
   opponentName,
   competition,
   stage,
-  isHome,
   matchDate,
   venue,
   inviteUrl,
@@ -29,9 +28,9 @@ function buildInviteMessage({
   playerName: string;
   teamName: string;
   opponentName: string;
-  competition: string;
+  competition?: string;
   stage?: string | null;
-  isHome: boolean;
+  isHome?: boolean;
   matchDate: Date;
   venue?: string | null;
   inviteUrl: string;
@@ -43,30 +42,24 @@ function buildInviteMessage({
     year: 'numeric',
   });
   const timeStr = formatWibTime(matchDate);
-  const homeAway = isHome ? 'Kandang (Home)' : 'Tandang (Away)';
-  const compLabel = stage ? `${competition} - ${stage}` : competition;
+  const displayTeam = teamName || 'MARS FC';
+  const stageLabel = (stage || competition || '').trim();
+  const header = stageLabel ? `*MARS CALLING!* ${stageLabel}` : '*MARS CALLING!*';
 
-  return `Halo *${playerName}*,
+  return `${header}
+Halo *${playerName}*,
 
-Anda dipanggil bertanding membela *${teamName}*! ⚽🔥
+Anda dipanggil masuk dalam daftar skuad *${displayTeam}* untuk laga berikut:
 
-📋 *DETAIL PERTANDINGAN*:
 ⚔️ *Lawan*: ${opponentName}
-🏆 *Kompetisi*: ${compLabel}
-🏠 *Status*: ${homeAway}
-📅 *Waktu*: ${dateStr}
-⏰ *Kickoff*: ${timeStr} WIB
-📍 *Lokasi*: ${venue || 'Menyusul'}
+📅 *Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)
+🏟️ *Tempat*: ${venue || 'Menyusul'}
 
-Mohon konfirmasi kesiapan dan kehadiran Anda untuk laga ini melalui tautan resmi di bawah:
-👉 ${inviteUrl}
+Langsung konfirmasi satu klik di sini ya:
+${inviteUrl}
 
-Pilihan kehadiran di web:
-✅ IKUT BERTANDING
-❌ TIDAK BISA IKUT
-
-Terima kasih atas komitmen dan semangat juangnya! 🔵⚪
-*${teamName} Management*`;
+Ditunggu konfirmasinya secepatnya!
+*MARS*`;
 }
 
 export async function GET(
