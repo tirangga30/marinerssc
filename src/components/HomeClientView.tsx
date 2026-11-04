@@ -654,15 +654,9 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
                   {/* Ujung Kiri: Kompetisi, Tahun Musim, dan Stage/Babak/Matchday */}
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
-                    {currentFeaturedStatus === 'live' ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-red-50/90 text-red-600 border border-red-200 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5 backdrop-blur-xs shrink-0">
-                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" /> LIVE
-                      </span>
-                    ) : (
-                      <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-slate-900 group-hover:text-blue-600 transition-colors">
-                        {currentNextMatch?.competition || 'FRIENDLY'}
-                      </span>
-                    )}
+                    <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-slate-900 group-hover:text-blue-600 transition-colors">
+                      {currentNextMatch?.competition || 'FRIENDLY'}
+                    </span>
                     <span className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
                       {currentNextMatch?.seasonName ? (currentNextMatch.seasonName.replace(/[^0-9]/g, '') || currentNextMatch.seasonName) : (selectedSeason || '')}
                     </span>
@@ -676,12 +670,14 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                     )}
                   </div>
 
-                  {/* Ujung Kanan: Tanggal Pertandingan */}
-                  {currentNextMatch && (
-                    <span className="text-[9px] sm:text-xs font-medium text-slate-600 shrink-0">
-                      {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  )}
+                  {/* Ujung Kanan: Status */}
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    {currentFeaturedStatus === 'live' && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5 shadow-sm">
+                        <span className="w-2 h-2 rounded-full bg-white animate-ping" /> LIVE
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {currentNextMatch ? (
@@ -773,25 +769,24 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
 
                     </div>
 
-                    {/* Jam di Upcoming (Posisi di Atas Timer) */}
-                    {currentFeaturedStatus === 'scheduled' && (
-                      <div className="flex items-center justify-center pt-2 sm:pt-3 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-slate-700 bg-slate-100/90 px-3 py-1 rounded-full border border-slate-200 shadow-xs">
-                          <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                          <span>{formatWibTime(currentNextMatch.matchDate)}</span>
+                    {/* Row: Waktu di Ujung Kiri, Lokasi di Ujung Kanan (Persis seperti box 3 pertandingan terakhir, Posisi di Atas Timer) */}
+                    <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-400/80 text-[9px] sm:text-xs text-slate-500">
+                      {/* Ujung kiri: Hari, Tanggal, Bulan, Tahun, Jam */}
+                      <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
+                        <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span>
+                          {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })} • {formatWibTime(currentNextMatch.matchDate)}
                         </span>
-                      </div>
-                    )}
+                      </span>
+
+                      {/* Ujung kanan: Lokasi */}
+                      <span className="font-medium text-slate-500 flex items-center gap-1 max-w-[45%] sm:max-w-[60%] truncate justify-end">
+                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{currentNextMatch.venue || '—'}</span>
+                      </span>
+                    </div>
 
                     <MatchTimer targetDate={currentNextMatch.matchDate} status={currentFeaturedStatus} duration={currentNextMatch.duration} isLiveEnabled={currentNextMatch.isLiveEnabled !== false} />
-                    {currentNextMatch.venue && (
-                      <div className="flex items-center justify-end pt-2 text-[9px] sm:text-xs text-slate-500 font-medium">
-                        <span className="flex items-center gap-1 max-w-[65%] truncate justify-end">
-                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                          <span className="truncate">{currentNextMatch.venue}</span>
-                        </span>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="text-center py-6 text-xs text-slate-500">
