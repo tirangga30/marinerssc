@@ -720,9 +720,9 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                               </span>
                             </div>
                             <div className="flex items-center justify-center my-0.5 sm:my-1">
-                              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs">
+                              <span className="text-xl sm:text-4xl font-black font-mono text-slate-400 tracking-wider">
                                 VS
-                              </div>
+                              </span>
                             </div>
                             <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                           </>
@@ -742,9 +742,9 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <>
                             <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                             <div className="flex items-center justify-center my-0.5 sm:my-1">
-                              <div className="inline-block px-2.5 sm:px-5 py-0.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-50/90 text-blue-600 font-black text-xs sm:text-2xl border border-blue-200 backdrop-blur-xs shadow-xs">
+                              <span className="text-xl sm:text-4xl font-black font-mono text-slate-400 tracking-wider">
                                 VS
-                              </div>
+                              </span>
                             </div>
                             <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                           </>
@@ -786,7 +786,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       </span>
                     </div>
 
-                    <MatchTimer targetDate={currentNextMatch.matchDate} status={currentFeaturedStatus} duration={currentNextMatch.duration} isLiveEnabled={currentNextMatch.isLiveEnabled !== false} />
+                    <MatchTimer targetDate={currentNextMatch.matchDate} status={currentFeaturedStatus} duration={currentNextMatch.duration} isLiveEnabled={currentNextMatch.isLiveEnabled !== false} noBorder={true} />
                   </>
                 ) : (
                   <div className="text-center py-6 text-xs text-slate-500">

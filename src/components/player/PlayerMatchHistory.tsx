@@ -453,15 +453,14 @@ export default function PlayerMatchHistory({
                       <div
                         className="px-4 py-2 flex items-center justify-between text-[11px] font-black uppercase tracking-wider"
                         style={{
-                          background: '#eff6ff',
+                          background: '#f8fafc',
                           borderTop: idx === 0 ? 'none' : '1px solid #e2e8f0',
-                          borderBottom: '1px solid #dbeafe',
-                          color: '#1d4ed8',
+                          borderBottom: '1px solid #e2e8f0',
+                          color: '#0f172a',
                         }}
                       >
                         <div className="flex items-center gap-1.5 sm:gap-2">
-                          <i className="fa-solid fa-trophy text-amber-500 text-xs" />
-                          <span>{match.competition || 'FRIENDLY'}</span>
+                          <span className="text-slate-900 font-black">{match.competition || 'FRIENDLY'}</span>
                           {seasonYear && (
                             <span className="text-slate-500 font-mono text-[10px] font-bold">
                               {seasonYear}

@@ -8,9 +8,10 @@ interface MatchTimerProps {
   status: string;
   duration?: number;
   isLiveEnabled?: boolean;
+  noBorder?: boolean;
 }
 
-export default function MatchTimer({ targetDate, status, duration = 90, isLiveEnabled = true }: MatchTimerProps) {
+export default function MatchTimer({ targetDate, status, duration = 90, isLiveEnabled = true, noBorder = false }: MatchTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -62,7 +63,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
 
   if (status === 'finished' || timeLeft.isPast) {
     return (
-      <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+      <div className={`${noBorder ? 'mt-2 sm:mt-3' : 'mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80'} flex flex-col sm:flex-row items-center justify-center gap-2 text-center`}>
         <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
           <CheckCircle2 className="w-3.5 h-3.5" /> Pertandingan Selesai (Full Time)
         </span>
@@ -71,7 +72,7 @@ export default function MatchTimer({ targetDate, status, duration = 90, isLiveEn
   }
 
   return (
-    <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80 text-center">
+    <div className={`${noBorder ? 'mt-2 sm:mt-3' : 'mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-400/80'} text-center`}>
       <div className="flex items-center justify-center gap-1.5 sm:gap-3">
         {/* Days */}
         <div className="flex flex-col items-center">

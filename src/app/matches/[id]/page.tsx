@@ -7,7 +7,7 @@ import MatchTabs from '@/components/MatchTabs';
 import MatchTimer from '@/components/MatchTimer';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import MatchAttendanceConfirm from '@/components/MatchAttendanceConfirm';
-import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, Trophy, ArrowLeft, Clock } from 'lucide-react';
 
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
@@ -90,8 +90,16 @@ export default async function MatchDetailPage({
   const teamLogo = systemSetting?.teamLogo || '/defaultteam.webp';
 
   const isFriendly = (match.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY';
-  const matchLabel = match.stage || (isFriendly ? 'Friendly Match' : match.competition || 'Pertandingan');
   const status = getDynamicMatchStatus(match);
+  const our = match.isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+  const their = match.isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
+  const result = status === 'finished' && match.homeScore !== null && match.awayScore !== null
+    ? (our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW')
+    : null;
+  const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
+  const resultBg = result === 'WIN' ? 'rgba(22,163,74,0.1)' : result === 'LOSE' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)';
+  const displayStage = match.stage || (isFriendly ? `Matchday ${match.matchday || 1}` : null);
+  const seasonYear = match.seasonName ? (match.seasonName.replace(/[^0-9]/g, '') || match.seasonName) : '';
 
   // Target season: prioritize searchParams if explicitly passed, otherwise match's seasonName, then cookieSeason
   const targetSeason = sParams?.season || match.seasonName || cookieSeason || '';
@@ -173,33 +181,49 @@ export default async function MatchDetailPage({
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
       {/* Main Score Board Header - NO BOX AROUND LOGOS */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm text-center space-y-4 relative overflow-hidden">
+      <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md text-center space-y-4 relative overflow-hidden">
+        {/* Top Bar Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 text-[10px] sm:text-xs font-bold uppercase">
-          {status === 'live' ? (
-            <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-300 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE
+          {/* Ujung Kiri: Kompetisi, Tahun, dan Stage */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+            <span className="text-[10px] sm:text-sm font-black uppercase text-slate-900 tracking-wider">
+              {(match.competition || 'FRIENDLY').toUpperCase()}
             </span>
-          ) : (
-            <span className="text-blue-600 font-bold">
-              {matchLabel}
-            </span>
-          )}
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            <span className="text-slate-500">
-              {formatWibDate(match.matchDate, {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })} • {formatWibTime(match.matchDate)}
-            </span>
+            {seasonYear && (
+              <span className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
+                {seasonYear}
+              </span>
+            )}
+            {displayStage && (
+              <>
+                <span className="text-slate-300 font-normal select-none">|</span>
+                <span className="text-[10px] sm:text-sm font-bold text-slate-700 uppercase tracking-wider">
+                  {displayStage}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Ujung Kanan: Status Hasil / Live & Share Button */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {status === 'live' ? (
+              <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" /> LIVE
+              </span>
+            ) : result ? (
+              <span
+                className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border font-mono"
+                style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
+              >
+                {result}
+              </span>
+            ) : null}
             <MatchShareButton match={resolvedMatch} teamName={teamName} />
           </div>
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center text-center max-w-4xl mx-auto">
-
-          {/* Home Team (Nama di sisi luar kiri mendekat ke logo di tengah) */}
+          {/* Home Team */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
             <h2 className="text-xs sm:text-base md:text-lg font-black uppercase text-slate-900 text-right truncate flex-1">
               {(match.isHome ? teamName : match.opponentName).toUpperCase()}
@@ -233,34 +257,26 @@ export default async function MatchDetailPage({
                 <div className="text-2xl sm:text-5xl md:text-6xl font-black font-mono blue-gradient-text tracking-widest leading-none flex items-center justify-center my-0.5 sm:my-1">
                   {match.homeScore ?? 0} : {match.awayScore ?? 0}
                 </div>
-                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                  <p className="text-[8px] sm:text-[11px] text-slate-500 font-medium truncate text-center">
-                    {match.venue || '—'}
-                  </p>
-                </div>
+                <div className="h-5 sm:h-6 shrink-0" aria-hidden="true" />
               </>
             ) : (
               <>
                 <div className="h-5 sm:h-6 flex items-center justify-center shrink-0">
-                  <span className="text-[9px] sm:text-xs text-blue-600 font-bold uppercase">
+                  <span className="text-[10px] sm:text-xs text-blue-600 font-bold uppercase tracking-wider">
                     Mendatang
                   </span>
                 </div>
                 <div className="flex items-center justify-center my-0.5 sm:my-1">
-                  <div className="inline-block px-3 sm:px-6 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 text-base sm:text-3xl font-black border border-blue-200 leading-none">
+                  <span className="text-2xl sm:text-5xl md:text-6xl font-black font-mono text-slate-400 tracking-widest leading-none">
                     VS
-                  </div>
+                  </span>
                 </div>
-                <div className="h-5 sm:h-6 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                  <p className="text-[8px] sm:text-[11px] text-slate-500 font-medium truncate text-center">
-                    {match.venue || '—'}
-                  </p>
-                </div>
+                <div className="h-5 sm:h-6 shrink-0" aria-hidden="true" />
               </>
             )}
           </div>
 
-          {/* Away Team (Logo di tengah, Nama di sisi luar kanan mendekat ke logo) */}
+          {/* Away Team */}
           <div className="flex items-center justify-start gap-1.5 sm:gap-3 min-w-0">
             <div className="shrink-0 w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
               <img
@@ -273,9 +289,24 @@ export default async function MatchDetailPage({
               {(!match.isHome ? teamName : match.opponentName).toUpperCase()}
             </h2>
           </div>
-
         </div>
 
+        {/* Footer Row: Waktu di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
+        <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-3 sm:mt-4 border-t border-slate-100 text-[9px] sm:text-xs text-slate-500">
+          {/* Ujung kiri bawah: Hari, Tanggal, Bulan, Tahun, Jam */}
+          <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
+            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span>
+              {formatWibDate(match.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })} • {formatWibTime(match.matchDate)}
+            </span>
+          </span>
+
+          {/* Ujung kanan bawah: Lokasi */}
+          <span className="font-medium text-slate-500 flex items-center gap-1 max-w-[45%] sm:max-w-[60%] truncate justify-end">
+            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="truncate">{match.venue || '—'}</span>
+          </span>
+        </div>
       </div>
 
       {/* Match Attendance Confirmation Banner for Players (?p=...) */}
