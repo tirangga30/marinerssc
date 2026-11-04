@@ -128,7 +128,6 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
       : null) ||
     defaultActiveSeason;
   const [selectedSeason, setSelectedSeason] = useState(initialSeason);
-  const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
   // Live Posters state with real-time sync
   const [livePosters, setLivePosters] = useState<any[]>(heroPosters || []);
@@ -330,6 +329,20 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
     .filter((m: any) => m.computedStatus === 'finished')
     .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
 
+  // 3 Pertandingan Terakhir: prioritaskan laga musim aktif, jika kurang dari 3 gabungkan dengan riwayat laga sebelumnya
+  const allFinishedMatches = allMatches
+    .filter((m: any) => m.computedStatus === 'finished')
+    .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
+
+  const last3Matches = (() => {
+    if (currentFinishedMatches.length >= 3) {
+      return currentFinishedMatches.slice(0, 3);
+    }
+    const currentIds = new Set(currentFinishedMatches.map((m: any) => m.id));
+    const previousFinished = allFinishedMatches.filter((m: any) => !currentIds.has(m.id));
+    return [...currentFinishedMatches, ...previousFinished].slice(0, 3);
+  })();
+
   let currentWins = 0;
   let currentDraws = 0;
   let currentLosses = 0;
@@ -519,63 +532,9 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
             currentPosterIndex === 0 ? 'opacity-100 pointer-events-none' : 'opacity-0 pointer-events-none'
           }`}
         >
-          {/* Top Row: Interactive Season Selector Dropdown */}
+          {/* Top Row: Community Mode Badge */}
           <div className="flex items-center justify-between">
-            {clubMode === 'main' && seasons && seasons.length > 0 ? (
-              <div className={`relative inline-block z-30 ${currentPosterIndex === 0 ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    if (currentPosterIndex !== 0) return;
-                    e.stopPropagation();
-                    setShowSeasonDropdown((prev) => !prev);
-                  }}
-                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/95 hover:bg-white text-blue-700 border border-blue-300/80 shadow-md text-[9px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95"
-                >
-                  <Sparkles className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-blue-600 shrink-0" />
-                  <span className="text-blue-700 font-black">Musim {selectedSeason}</span>
-                  <ChevronDown
-                    className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-blue-600 transition-transform duration-200 shrink-0 ${
-                      showSeasonDropdown ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {showSeasonDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-48 rounded-2xl bg-white border border-slate-200 shadow-2xl p-1.5 z-50 animate-fade-in text-left">
-                    <div className="px-3 py-1.5 text-[9px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-100">
-                      Pilih Musim Tim Utama
-                    </div>
-                    <div className="space-y-1 mt-1 max-h-48 overflow-y-auto">
-                      {seasons.map((s: any) => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSeason(s.name);
-                            setClientPublicSeason(s.name);
-                            setShowSeasonDropdown(false);
-                            window.location.reload();
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-between transition-colors cursor-pointer ${
-                            selectedSeason === s.name
-                              ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                              : 'text-slate-800 hover:text-blue-600 hover:bg-slate-50'
-                          }`}
-                        >
-                          <span>Musim {s.name}</span>
-                          {s.isCurrent && (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200 font-black">
-                              Aktif
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
+            {clubMode === 'community' && (
               <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/95 border border-amber-300/80 text-amber-700 text-[9px] sm:text-xs font-black uppercase tracking-wider shadow-md">
                 <Sparkles className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-amber-600 shrink-0" />
                 <span className="text-amber-700 font-black">Soccer Community</span>
@@ -858,10 +817,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
           </section>
 
           {/* 3 PERTANDINGAN TERAKHIR */}
-          {currentFinishedMatches.length > 0 && (() => {
-            const last3 = [...currentFinishedMatches]
-              .sort((a: any, b: any) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
-              .slice(0, 3);
+          {last3Matches.length > 0 && (() => {
             return (
               <section className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
                 <div className="mb-2.5 sm:mb-3.5 flex items-center justify-between">
@@ -879,7 +835,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                   </Link>
                 </div>
                 <div className="space-y-2">
-                  {last3.map((m: any) => (
+                  {last3Matches.map((m: any) => (
                     <Link
                       key={m.id}
                       href={`/matches/${m.id}`}
@@ -891,21 +847,32 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         const result = our > their ? 'WIN' : our < their ? 'LOSE' : 'DRAW';
                         const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
                         const resultBg = result === 'WIN' ? 'rgba(22,163,74,0.1)' : result === 'LOSE' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)';
+                        const compName = (m.competition || 'FRIENDLY').toUpperCase();
+                        const stageLabel = m.stage || (compName === 'FRIENDLY' ? `Matchday ${m.matchday || 1}` : null);
                         return (
                           <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
-                            <span
-                              className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border font-mono"
-                              style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
-                            >
-                              {result}
-                            </span>
-                            <span className="flex items-center gap-1.5 sm:gap-2">
+                            {/* UJUNG KIRI: KOMPETISI & STAGE/BABAK/MATCHDAY */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+                              <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider">
+                                {compName}
+                              </span>
+                              {stageLabel && (
+                                <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                                  {stageLabel}
+                                </span>
+                              )}
+                              <span className="text-slate-300 hidden sm:inline">•</span>
                               <span className="text-[9px] sm:text-xs font-medium text-slate-500">
                                 {formatWibDate(m.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
-                              <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
-                                {m.stage || ((m.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${m.matchday || 1}` : m.competition)}
-                              </span>
+                            </div>
+
+                            {/* UJUNG KANAN: STATUS WIN / DRAW / LOSE */}
+                            <span
+                              className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border font-mono shrink-0"
+                              style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
+                            >
+                              {result}
                             </span>
                           </div>
                         );

@@ -104,6 +104,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     if (data.nationality !== undefined) updateData.nationality = data.nationality;
     if (data.birthDate !== undefined) updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+    if (data.joinDate !== undefined) updateData.joinDate = data.joinDate ? new Date(data.joinDate) : null;
     if (data.heightCm !== undefined) updateData.heightCm = data.heightCm ? parseInt(data.heightCm) : null;
     if (data.weightKg !== undefined) updateData.weightKg = data.weightKg ? parseInt(data.weightKg) : null;
 

@@ -277,6 +277,7 @@ export async function POST(req: Request) {
         })(),
         nationality: data.nationality || 'Indonesia',
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
+        joinDate: data.joinDate ? new Date(data.joinDate) : null,
         heightCm: data.heightCm ? parseInt(data.heightCm) : null,
         weightKg: data.weightKg ? parseInt(data.weightKg) : null,
         photoUrl: finalPhotoUrl,

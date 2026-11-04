@@ -158,6 +158,7 @@ export default function PlayerProfileView({
       .filter(Boolean)
   );
   const hasSeasonEnrollment = playerSeasonNames.size > 0 || playerSeasonYears.size > 0;
+  const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
 
   // Saring riwayat laga sejak pemain bergabung
   const eligibleMatches = activeMatches.filter((m: any) => {
@@ -165,7 +166,13 @@ export default function PlayerProfileView({
     const inLineup = (m.lineups || []).some((l: any) => l.playerId === player.id);
     if (inLineup) return true;
 
-    // 2. Jika pemain terdaftar dalam musim tertentu (contoh: Musim 2027)
+    // 2. Jika tanggal join tim ditentukan, tentukan visibilitas laga dari tanggal join
+    if (joinDateMs !== null && !isNaN(joinDateMs)) {
+      const mDateMs = new Date(m.matchDate).getTime();
+      return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
+    }
+
+    // 3. Jika pemain terdaftar dalam musim tertentu (contoh: Musim 2027)
     if (hasSeasonEnrollment) {
       const mSeason = (m.seasonName || '').trim().toLowerCase();
       const mYear =
@@ -176,7 +183,7 @@ export default function PlayerProfileView({
       }
     }
 
-    // 3. Jika sudah pernah melakoni debut/lineup di tanggal tertentu
+    // 4. Jika sudah pernah melakoni debut/lineup di tanggal tertentu
     if (firstLineupDateMs !== null) {
       const mDateMs = new Date(m.matchDate).getTime();
       if (!isNaN(mDateMs) && mDateMs >= firstLineupDateMs - 12 * 3600 * 1000) {
@@ -184,7 +191,7 @@ export default function PlayerProfileView({
       }
     }
 
-    // 4. Jika belum pernah masuk lineup dan tidak terikat musim khusus, gunakan player.createdAt
+    // 5. Jika belum pernah masuk lineup dan tidak terikat musim khusus, gunakan player.createdAt
     if (!hasSeasonEnrollment && firstLineupDateMs === null && player.createdAt) {
       const mDateMs = new Date(m.matchDate).getTime();
       const createdDateMs = new Date(player.createdAt).getTime();

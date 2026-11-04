@@ -21,6 +21,7 @@ export async function GET() {
       teamName: setting?.teamName || 'TEAM',
       teamLogo: setting?.teamLogo || '/defaultteam.webp',
       clubType: setting?.clubType || 'SOCCER CLUB',
+      clubBio: setting?.clubBio || 'Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.',
       playerDefaultPhoto: setting?.playerDefaultPhoto || '/playertemplate.webp',
       loginWallpaper: setting?.loginWallpaper || '/NYCOMP.webp',
       adminWallpaper: setting?.adminWallpaper || '/stadium.webp',
@@ -44,6 +45,7 @@ export async function GET() {
       teamName: 'TEAM',
       teamLogo: '/defaultteam.webp',
       clubType: 'SOCCER CLUB',
+      clubBio: 'Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.',
       playerDefaultPhoto: '/playertemplate.webp',
       loginWallpaper: '/NYCOMP.webp',
       adminWallpaper: '/stadium.webp',
@@ -81,7 +83,7 @@ export async function PUT(req: Request) {
 
     const body = await req.json();
     const {
-      teamName, teamLogo, clubType, playerDefaultPhoto, loginWallpaper, adminWallpaper,
+      teamName, teamLogo, clubType, clubBio, playerDefaultPhoto, loginWallpaper, adminWallpaper,
       playerCardBg, isCommunityEnabled, showHeroOverlay,
       heroTagline, heroSubtitle, heroCtaText,
       whatsappMode, whatsappToken,
@@ -97,7 +99,12 @@ export async function PUT(req: Request) {
 
     if (clubType !== undefined && typeof clubType === 'string') {
       const cleanClubType = clubType.trim().toUpperCase();
-      updateData.clubType = cleanClubType === 'FOOTBALL CLUB' ? 'FOOTBALL CLUB' : 'SOCCER CLUB';
+      const validTypes = ['SOCCER CLUB', 'FOOTBALL CLUB', 'FOOTBALL COMMUNITY', 'SOCCER COMMUNITY'];
+      updateData.clubType = validTypes.includes(cleanClubType) ? cleanClubType : 'SOCCER CLUB';
+    }
+
+    if (clubBio !== undefined && typeof clubBio === 'string') {
+      updateData.clubBio = clubBio.trim();
     }
 
     if (playerDefaultPhoto !== undefined && typeof playerDefaultPhoto === 'string') {
@@ -206,6 +213,7 @@ export async function PUT(req: Request) {
         teamName: updateData.teamName || 'TEAM',
         teamLogo: updateData.teamLogo || '/defaultteam.webp',
         clubType: updateData.clubType || 'SOCCER CLUB',
+        clubBio: updateData.clubBio || 'Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.',
         playerDefaultPhoto: updateData.playerDefaultPhoto || '/playertemplate.webp',
         loginWallpaper: updateData.loginWallpaper || '/NYCOMP.webp',
         adminWallpaper: updateData.adminWallpaper || '/stadium.webp',
@@ -238,6 +246,7 @@ export async function PUT(req: Request) {
         teamName: updated.teamName,
         teamLogo: updated.teamLogo,
         clubType: updated.clubType,
+        clubBio: updated.clubBio,
         playerDefaultPhoto: updated.playerDefaultPhoto,
         loginWallpaper: updated.loginWallpaper,
         adminWallpaper: updated.adminWallpaper,

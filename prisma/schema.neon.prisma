@@ -41,6 +41,7 @@ model Player {
   yellowCards    Int          @default(0)
   redCards       Int          @default(0)
   phone          String?
+  joinDate       DateTime?
   seasonData     String?      @default("{}") // JSON overrides per season: { "2026": { "photoUrl": "...", "number": 10 } }
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -259,6 +260,7 @@ model SystemSetting {
   teamName           String   @default("TEAM")
   teamLogo           String   @default("/defaultteam.webp")
   clubType           String   @default("SOCCER CLUB")
+  clubBio            String?  @default("Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.")
   playerDefaultPhoto String   @default("/playertemplate.webp")
   loginWallpaper     String   @default("/NYCOMP.webp")
   adminWallpaper     String   @default("/stadium_hero2.png")

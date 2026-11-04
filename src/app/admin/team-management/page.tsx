@@ -31,6 +31,7 @@ export default function TeamManagementPage() {
   const [teamName, setTeamName] = useState('TEAM');
   const [teamLogo, setTeamLogo] = useState('/defaultteam.webp');
   const [clubType, setClubType] = useState('SOCCER CLUB');
+  const [clubBio, setClubBio] = useState('Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.');
   const [playerDefaultPhoto, setPlayerDefaultPhoto] = useState('/playertemplate.webp');
   const [loginWallpaper, setLoginWallpaper] = useState('/NYCOMP.webp');
   const [adminWallpaper, setAdminWallpaper] = useState('/stadium.webp');
@@ -119,6 +120,7 @@ export default function TeamManagementPage() {
           if (data.teamName) setTeamName(data.teamName);
           if (data.teamLogo) setTeamLogo(data.teamLogo);
           if (data.clubType) setClubType(data.clubType);
+          if (data.clubBio) setClubBio(data.clubBio);
           if (data.playerDefaultPhoto) setPlayerDefaultPhoto(data.playerDefaultPhoto);
           if (data.loginWallpaper) setLoginWallpaper(data.loginWallpaper);
           if (data.adminWallpaper) setAdminWallpaper(data.adminWallpaper);
@@ -394,6 +396,7 @@ export default function TeamManagementPage() {
           teamName,
           teamLogo,
           clubType,
+          clubBio,
           playerDefaultPhoto,
           loginWallpaper,
           adminWallpaper,
@@ -841,7 +844,25 @@ export default function TeamManagementPage() {
                   >
                     <option value="SOCCER CLUB">SOCCER CLUB</option>
                     <option value="FOOTBALL CLUB">FOOTBALL CLUB</option>
+                    <option value="FOOTBALL COMMUNITY">FOOTBALL COMMUNITY</option>
+                    <option value="SOCCER COMMUNITY">SOCCER COMMUNITY</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                    Slogan / Deskripsi Klub
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={clubBio}
+                    onChange={(e) => setClubBio(e.target.value)}
+                    placeholder="Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi."
+                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 focus:border-blue-500 text-slate-900 font-medium text-xs outline-hidden transition-all leading-relaxed"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Teks ini tampil pada footer situs web sebagai ringkasan profil klub.
+                  </p>
                 </div>
 
                 <p className="text-[11px] text-slate-500">

@@ -6,6 +6,7 @@ export interface SystemSettingData {
   teamName: string;
   teamLogo: string;
   clubType: string;
+  clubBio?: string;
   playerDefaultPhoto: string;
   loginWallpaper: string;
   adminWallpaper: string;
@@ -27,6 +28,7 @@ const defaultSettings: SystemSettingData = {
   teamName: 'TEAM',
   teamLogo: '/defaultteam.webp',
   clubType: 'SOCCER CLUB',
+  clubBio: 'Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.',
   playerDefaultPhoto: '/playertemplate.webp',
   loginWallpaper: '/NYCOMP.webp',
   adminWallpaper: '/stadium.webp',
@@ -70,6 +72,7 @@ export function SystemSettingProvider({
           teamName: data.teamName || defaultSettings.teamName,
           teamLogo: data.teamLogo || defaultSettings.teamLogo,
           clubType: data.clubType || defaultSettings.clubType,
+          clubBio: data.clubBio || defaultSettings.clubBio,
           playerDefaultPhoto: data.playerDefaultPhoto || defaultSettings.playerDefaultPhoto,
           loginWallpaper: data.loginWallpaper || defaultSettings.loginWallpaper,
           adminWallpaper: data.adminWallpaper || defaultSettings.adminWallpaper,

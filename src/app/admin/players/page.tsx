@@ -17,8 +17,6 @@ import {
   Users,
   UserPlus,
   UserMinus,
-  UserCheck,
-  UserX,
   Check,
   Search,
 } from 'lucide-react';
@@ -40,6 +38,7 @@ interface Player {
   position: string;
   nationality: string;
   birthDate?: string | Date | null;
+  joinDate?: string | Date | null;
   heightCm: number | null;
   weightKg: number | null;
   photoUrl: string;
@@ -116,6 +115,7 @@ export default function AdminPlayersPage() {
     position: 'FORWARD',
     nationality: 'Indonesia',
     birthDate: '',
+    joinDate: '',
     heightCm: '',
     weightKg: '',
     photoUrl: '/playertemplate.webp',
@@ -466,6 +466,7 @@ export default function AdminPlayersPage() {
       position: 'FW',
       nationality: 'Indonesia',
       birthDate: '',
+      joinDate: '',
       heightCm: '',
       weightKg: '',
       photoUrl: defaultPlayerPhoto,
@@ -493,6 +494,7 @@ export default function AdminPlayersPage() {
         position: guest.position,
         nationality: guest.nationality || 'Indonesia',
         birthDate: formatDateForInput(guest.birthDate),
+        joinDate: (guest as any).joinDate ? formatDateForInput((guest as any).joinDate) : '',
         heightCm: guest.heightCm?.toString() || '',
         weightKg: guest.weightKg?.toString() || '',
         photoUrl: guest.photoUrl || defaultPlayerPhoto,
@@ -520,6 +522,7 @@ export default function AdminPlayersPage() {
       position: player.position,
       nationality: player.nationality,
       birthDate: formatDateForInput(player.birthDate),
+      joinDate: (player as any).joinDate ? formatDateForInput((player as any).joinDate) : '',
       heightCm: player.heightCm?.toString() || '',
       weightKg: player.weightKg?.toString() || '',
       photoUrl: player.photoUrl || defaultPlayerPhoto,
@@ -970,28 +973,6 @@ export default function AdminPlayersPage() {
                       </td>
 
                       <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                        {/* NONAKTIFKAN / AKTIFKAN PEMAIN */}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStatus(player)}
-                          title={
-                            player.status === 'Active'
-                              ? `Nonaktifkan ${player.name} (Data Tetap Tersimpan)`
-                              : `Aktifkan ${player.name}`
-                          }
-                          className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                            player.status === 'Active'
-                              ? 'bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 border-slate-200'
-                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border-emerald-300'
-                          }`}
-                        >
-                          {player.status === 'Active' ? (
-                            <UserX className="w-4 h-4" />
-                          ) : (
-                            <UserCheck className="w-4 h-4" />
-                          )}
-                        </button>
-
                         {/* LEPAS PEMAIN DARI MUSIM INI */}
                         {activeTab === 'season_squad' && (
                           <button
@@ -1368,6 +1349,16 @@ export default function AdminPlayersPage() {
                     onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
                   />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 uppercase block mb-1">Tanggal Join Tim</label>
+                  <input
+                    type="date"
+                    value={formData.joinDate}
+                    onChange={(e) => setFormData({ ...formData, joinDate: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-blue-500 outline-none"
+                  />
+                  <span className="text-[10px] text-slate-500 font-normal">Menentukan awal riwayat pertandingan pemain ini.</span>
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 uppercase block mb-1">Tinggi (cm)</label>

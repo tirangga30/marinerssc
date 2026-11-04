@@ -9,7 +9,7 @@ import { useSystemSetting } from '@/context/SystemSettingContext';
 export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const { teamName, teamLogo, clubType, isCommunityEnabled } = useSystemSetting();
+  const { teamName, teamLogo, clubType, clubBio, isCommunityEnabled } = useSystemSetting();
   const displayTeamName = (teamName || 'TEAM').toUpperCase();
   const displayTeamLogo = teamLogo || '/defaultteam.webp';
 
@@ -82,7 +82,7 @@ export default function Footer() {
                     </div>
                   </div>
                   <p className="text-xs text-blue-100/90 leading-relaxed">
-                    Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.
+                    {clubBio || 'Klub Sepak Bola Profesional. Berkomitmen menjunjung tinggi keunggulan, sportivitas, dan meraih kejayaan di setiap kompetisi.'}
                   </p>
 
                   {/* Developer Partners - Desktop Only */}
