@@ -181,11 +181,21 @@ export default async function MatchDetailPage({
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
       {/* Main Score Board Header - NO BOX AROUND LOGOS */}
-      <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md text-center space-y-4 relative overflow-hidden">
+      <div className="relative bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-md text-center space-y-4 overflow-hidden">
+        {/* Stadium Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url('/stadium.webp')` }}
+        />
+        {/* Subtle light overlay to ensure flawless contrast */}
+        <div className="absolute inset-0 bg-white/20 pointer-events-none" />
+
+        <div className="relative z-10 space-y-4">
         {/* Top Bar Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 text-[10px] sm:text-xs font-bold uppercase">
+        <div className="flex items-center justify-between border-b border-slate-400/80 pb-3 text-[10px] sm:text-xs font-bold uppercase">
           {/* Ujung Kiri: Kompetisi, Tahun, dan Stage */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+            <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
             <span className="text-[10px] sm:text-sm font-black uppercase text-slate-900 tracking-wider">
               {(match.competition || 'FRIENDLY').toUpperCase()}
             </span>
@@ -292,7 +302,7 @@ export default async function MatchDetailPage({
         </div>
 
         {/* Footer Row: Waktu di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
-        <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-3 sm:mt-4 border-t border-slate-100 text-[9px] sm:text-xs text-slate-500">
+        <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-3 sm:mt-4 border-t border-slate-400/80 text-[9px] sm:text-xs text-slate-500">
           {/* Ujung kiri bawah: Hari, Tanggal, Bulan, Tahun, Jam */}
           <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
             <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -306,6 +316,7 @@ export default async function MatchDetailPage({
             <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="truncate">{match.venue || '—'}</span>
           </span>
+        </div>
         </div>
       </div>
 

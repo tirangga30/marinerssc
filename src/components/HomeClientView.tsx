@@ -654,6 +654,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
                   {/* Ujung Kiri: Kompetisi, Tahun Musim, dan Stage/Babak/Matchday */}
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+                    <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
                     <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-slate-900 group-hover:text-blue-600 transition-colors">
                       {currentNextMatch?.competition || 'FRIENDLY'}
                     </span>
@@ -821,8 +822,17 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                     <Link
                       key={m.id}
                       href={`/matches/${m.id}`}
-                      className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200 hover:border-blue-400/60 shadow-md shadow-slate-200/50 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
+                      className="relative block group overflow-hidden p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-blue-400/60 shadow-md shadow-slate-200/50 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
                     >
+                      {/* Stadium Background */}
+                      <div
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
+                        style={{ backgroundImage: `url('/stadium.webp')` }}
+                      />
+                      {/* Subtle light overlay to ensure flawless contrast */}
+                      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
+
+                      <div className="relative z-10">
                       {(() => {
                         const our = m.isHome ? m.homeScore : m.awayScore;
                         const their = m.isHome ? m.awayScore : m.homeScore;
@@ -833,9 +843,10 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         const seasonYear = m.seasonName ? (m.seasonName.replace(/[^0-9]/g, '') || m.seasonName) : (m.matchDate ? new Date(m.matchDate).getFullYear() : '');
                         const stageLabel = m.stage || (compName === 'FRIENDLY' ? `Matchday ${m.matchday || 1}` : null);
                         return (
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
+                          <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
                             {/* UJUNG KIRI: KOMPETISI, TAHUN MUSIM, DAN STAGE/BABAK/MATCHDAY */}
                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+                              <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
                               <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider">
                                 {compName}
                               </span>
@@ -915,7 +926,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       </div>
 
                       {/* Footer Row: Waktu (Hari, Tanggal, Bulan, Tahun, Jam) di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
-                      <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-100 text-[9px] sm:text-xs text-slate-500">
+                      <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-400/80 text-[9px] sm:text-xs text-slate-500">
                         {/* Ujung kiri bawah: Hari, Tanggal, Bulan, Tahun, Jam */}
                         <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
                           <Clock className="w-3 h-3 text-slate-400 shrink-0" />
@@ -929,6 +940,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                           <span className="truncate">{m.venue || '—'}</span>
                         </span>
+                      </div>
                       </div>
                     </Link>
                   ))}
@@ -978,11 +990,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                 {/* 7 White Cards */}
                 <div className="grid grid-cols-7 gap-2 lg:gap-3">
                   {[
-                    { label: 'WIN RATE', value: `${currentWinRate}%` },
-                    { label: 'MAIN', value: currentTotalFinished },
                     { label: 'MENANG', value: currentWins },
                     { label: 'SERI', value: currentDraws },
                     { label: 'KALAH', value: currentLosses },
+                    { label: 'MAIN', value: currentTotalFinished },
+                    { label: 'WIN RATE', value: `${currentWinRate}%` },
                     { label: 'GOL', value: currentTotalGoals },
                     { label: 'KEBOBOLAN', value: currentConcededGoals },
                   ].map((s) => (
@@ -1025,28 +1037,8 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
               <div className="absolute top-2 bottom-2 right-2 left-[47%] z-20 flex items-center justify-center">
                 <div className="w-full h-full bg-white/95 backdrop-blur-xs rounded-xl p-2 sm:p-2.5 shadow-md border border-slate-100/90 flex flex-col justify-center gap-1.5 sm:gap-2">
 
-                  {/* Row 1: 3 Items (Win Rate, Main, Menang) - Tanpa Icon */}
+                  {/* Row 1: 3 Items (Menang, Seri, Kalah) - Tanpa Icon */}
                   <div className="grid grid-cols-3 gap-1 text-center items-center">
-                    {/* Win Rate */}
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
-                        {currentWinRate}%
-                      </span>
-                      <span className="text-[7px] sm:text-[9px] text-slate-500 font-bold capitalize mt-0.5">
-                        Win Rate
-                      </span>
-                    </div>
-
-                    {/* Main */}
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
-                        {currentTotalFinished}
-                      </span>
-                      <span className="text-[7px] sm:text-[9px] text-slate-500 font-bold capitalize mt-0.5">
-                        Main
-                      </span>
-                    </div>
-
                     {/* Menang */}
                     <div className="flex flex-col items-center justify-center">
                       <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
@@ -1056,19 +1048,13 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         Menang
                       </span>
                     </div>
-                  </div>
 
-                  {/* Garis pemisah tipis */}
-                  <div className="w-full h-[1px] bg-slate-100/90" />
-
-                  {/* Row 2: 4 Items (Seri, Kalah, Gol, Kebobolan) - Tanpa Icon */}
-                  <div className="grid grid-cols-4 gap-0.5 text-center items-center">
                     {/* Seri */}
                     <div className="flex flex-col items-center justify-center">
                       <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
                         {currentDraws}
                       </span>
-                      <span className="text-[6.5px] sm:text-[8px] text-slate-500 font-bold capitalize mt-0.5 truncate max-w-full">
+                      <span className="text-[7px] sm:text-[9px] text-slate-500 font-bold capitalize mt-0.5">
                         Seri
                       </span>
                     </div>
@@ -1078,8 +1064,34 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
                         {currentLosses}
                       </span>
-                      <span className="text-[6.5px] sm:text-[8px] text-slate-500 font-bold capitalize mt-0.5 truncate max-w-full">
+                      <span className="text-[7px] sm:text-[9px] text-slate-500 font-bold capitalize mt-0.5">
                         Kalah
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Garis pemisah tipis */}
+                  <div className="w-full h-[1px] bg-slate-100/90" />
+
+                  {/* Row 2: 4 Items (Main, Win Rate, Gol, Kebobolan) - Tanpa Icon */}
+                  <div className="grid grid-cols-4 gap-0.5 text-center items-center">
+                    {/* Main */}
+                    <div className="flex flex-col items-center justify-center">
+                      <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
+                        {currentTotalFinished}
+                      </span>
+                      <span className="text-[6.5px] sm:text-[8px] text-slate-500 font-bold capitalize mt-0.5 truncate max-w-full">
+                        Main
+                      </span>
+                    </div>
+
+                    {/* Win Rate */}
+                    <div className="flex flex-col items-center justify-center">
+                      <span className="text-[11px] sm:text-base font-black text-slate-900 leading-tight">
+                        {currentWinRate}%
+                      </span>
+                      <span className="text-[6.5px] sm:text-[8px] text-slate-500 font-bold capitalize mt-0.5 truncate max-w-full">
+                        Win Rate
                       </span>
                     </div>
 

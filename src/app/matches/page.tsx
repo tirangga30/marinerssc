@@ -91,10 +91,19 @@ function MatchCard({
   return (
     <Link
       href={`/matches/${match.id}`}
-      className="block group glass-panel p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200 hover:border-blue-400/60 shadow-md shadow-slate-200/50 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
+      className="relative block group overflow-hidden p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-blue-400/60 shadow-md shadow-slate-200/50 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
     >
+      {/* Stadium Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
+        style={{ backgroundImage: `url('/stadium.webp')` }}
+      />
+      {/* Subtle light overlay to ensure flawless contrast */}
+      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
+
+      <div className="relative z-10">
       {/* Top Bar Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
+      <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
         {/* UJUNG KIRI: LANGSUNG MATCHDAY / BABAK / STAGE TANPA NAMA KOMPETISI */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
           {stageLabel && (
@@ -212,7 +221,7 @@ function MatchCard({
       </div>
 
       {/* Footer Row: Waktu di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
-      <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-100 text-[9px] sm:text-xs text-slate-500">
+      <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-400/80 text-[9px] sm:text-xs text-slate-500">
         {/* Ujung kiri bawah: Hari, Tanggal, Bulan, Tahun, Jam */}
         <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
           <Clock className="w-3 h-3 text-slate-400 shrink-0" />
@@ -226,6 +235,7 @@ function MatchCard({
           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
           <span className="truncate">{match.venue || '—'}</span>
         </span>
+      </div>
       </div>
     </Link>
   );
@@ -256,7 +266,7 @@ function MatchListGroupedByCompetition({
           <React.Fragment key={m.id}>
             {isNewComp && (
               <div className="flex items-center gap-2 pt-4 pb-2 border-b border-slate-200 mt-4 first:mt-0">
-                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />
                 <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                   <span>{m.competition || 'FRIENDLY'}</span>
                   {m.seasonName && (
