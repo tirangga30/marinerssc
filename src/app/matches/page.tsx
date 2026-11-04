@@ -313,14 +313,7 @@ export default async function MatchesPage({
     filter === 'finished' ? finishedMatches : [];
 
   return (
-    <>
-      <SeasonSubNav
-        seasons={seasons}
-        selectedSeason={selectedSeason}
-        basePath="/matches"
-        searchParams={params}
-      />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
       {/* Filter Tabs (Navbar Underline Style) */}
       <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -355,6 +348,14 @@ export default async function MatchesPage({
           Selesai ({finishedMatches.length})
         </Link>
       </div>
+
+      {/* Navigasi Musim (Di Bawah Navigasi Halaman, Latar Sama Persis) */}
+      <SeasonSubNav
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        basePath="/matches"
+        searchParams={params}
+      />
 
       {/* Matches List */}
       {filter === 'all' ? (
@@ -393,6 +394,5 @@ export default async function MatchesPage({
         </div>
       )}
     </div>
-    </>
   );
 }

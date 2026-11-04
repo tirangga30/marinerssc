@@ -671,32 +671,33 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between border-b border-slate-400/80 pb-2 sm:pb-4 mb-3 sm:mb-6">
-                  {currentFeaturedStatus === 'live' ? (
-                    <span className="px-2.5 py-0.5 rounded-full bg-red-50/90 text-red-600 border border-red-200 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5 backdrop-blur-xs">
-                      <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" /> LIVE
-                    </span>
-                  ) : (
-                    <h3 className="text-[10px] sm:text-sm uppercase tracking-widest transition-colors flex items-center gap-1.5 flex-wrap">
-                      <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                  {/* Ujung Kiri: Kompetisi, Tahun Musim, dan Stage/Babak/Matchday */}
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
+                    {currentFeaturedStatus === 'live' ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-red-50/90 text-red-600 border border-red-200 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse flex items-center gap-1.5 backdrop-blur-xs shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" /> LIVE
+                      </span>
+                    ) : (
+                      <span className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-slate-900 group-hover:text-blue-600 transition-colors">
                         {currentNextMatch?.competition || 'FRIENDLY'}
                       </span>
-                      <span className="font-bold text-slate-500">
-                        {currentNextMatch?.seasonName || selectedSeason || '2026'}
-                      </span>
-                    </h3>
-                  )}
-                  <span className="flex items-center gap-1.5 sm:gap-2">
-                    {currentNextMatch && (
-                      <span className="text-[9px] sm:text-xs font-medium text-slate-600">
-                        {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
                     )}
+                    <span className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
+                      {currentNextMatch?.seasonName ? (currentNextMatch.seasonName.replace(/[^0-9]/g, '') || currentNextMatch.seasonName) : (selectedSeason || '')}
+                    </span>
                     {currentNextMatch && (
                       <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50/90 text-blue-600 border border-blue-200 backdrop-blur-xs">
                         {currentNextMatch?.stage || ((currentNextMatch?.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
                       </span>
                     )}
-                  </span>
+                  </div>
+
+                  {/* Ujung Kanan: Tanggal Pertandingan */}
+                  {currentNextMatch && (
+                    <span className="text-[9px] sm:text-xs font-medium text-slate-600 shrink-0">
+                      {formatWibDate(currentNextMatch.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  )}
                 </div>
 
                 {currentNextMatch ? (
@@ -848,32 +849,39 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                         const resultColor = result === 'WIN' ? '#16a34a' : result === 'LOSE' ? '#dc2626' : '#d97706';
                         const resultBg = result === 'WIN' ? 'rgba(22,163,74,0.1)' : result === 'LOSE' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)';
                         const compName = (m.competition || 'FRIENDLY').toUpperCase();
+                        const seasonYear = m.seasonName ? (m.seasonName.replace(/[^0-9]/g, '') || m.seasonName) : (m.matchDate ? new Date(m.matchDate).getFullYear() : '');
                         const stageLabel = m.stage || (compName === 'FRIENDLY' ? `Matchday ${m.matchday || 1}` : null);
                         return (
                           <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-4 mb-3 sm:mb-6">
-                            {/* UJUNG KIRI: KOMPETISI & STAGE/BABAK/MATCHDAY */}
+                            {/* UJUNG KIRI: KOMPETISI, TAHUN MUSIM, DAN STAGE/BABAK/MATCHDAY */}
                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
                               <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider">
                                 {compName}
                               </span>
+                              {seasonYear && (
+                                <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                  {seasonYear}
+                                </span>
+                              )}
                               {stageLabel && (
                                 <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
                                   {stageLabel}
                                 </span>
                               )}
-                              <span className="text-slate-300 hidden sm:inline">•</span>
+                            </div>
+
+                            {/* UJUNG KANAN: TANGGAL DI SEBELAH KIRI STATUS WIN/DRAW/LOSE */}
+                            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                               <span className="text-[9px] sm:text-xs font-medium text-slate-500">
                                 {formatWibDate(m.matchDate, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
+                              <span
+                                className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border font-mono"
+                                style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
+                              >
+                                {result}
+                              </span>
                             </div>
-
-                            {/* UJUNG KANAN: STATUS WIN / DRAW / LOSE */}
-                            <span
-                              className="text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg border font-mono shrink-0"
-                              style={{ color: resultColor, background: resultBg, borderColor: `${resultColor}40` }}
-                            >
-                              {result}
-                            </span>
                           </div>
                         );
                       })()}

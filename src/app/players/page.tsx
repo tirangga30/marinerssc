@@ -194,14 +194,7 @@ export default async function PlayersPage({
   });
 
   return (
-    <>
-      <SeasonSubNav
-        seasons={seasons}
-        selectedSeason={selectedSeason}
-        basePath="/players"
-        searchParams={params}
-      />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       
       {/* Position Filter Tabs (Navbar Underline Style) */}
       <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -223,6 +216,14 @@ export default async function PlayersPage({
           );
         })}
       </div>
+
+      {/* Navigasi Musim (Di Bawah Navigasi Halaman, Latar Sama Persis) */}
+      <SeasonSubNav
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        basePath="/players"
+        searchParams={params}
+      />
 
       {players.length === 0 && (
         <div className="glass-panel p-12 rounded-2xl border border-slate-200 bg-white text-center space-y-3 shadow-sm">
@@ -307,6 +308,5 @@ export default async function PlayersPage({
       })}
 
     </div>
-    </>
   );
 }

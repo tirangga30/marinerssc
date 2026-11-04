@@ -160,39 +160,45 @@ export default function PlayerProfileView({
   const hasSeasonEnrollment = playerSeasonNames.size > 0 || playerSeasonYears.size > 0;
   const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
 
-  // Saring riwayat laga sejak pemain bergabung
+  // Saring riwayat laga sejak pemain bergabung:
+  // - Pemain di lineup -> selalu muncul
+  // - Pemain yang tidak ditarik ke musim baru JANGAN tampilkan laga/musim barunya
   const eligibleMatches = activeMatches.filter((m: any) => {
     // 1. Jika pemain masuk dalam lineup laga ini
     const inLineup = (m.lineups || []).some((l: any) => l.playerId === player.id);
     if (inLineup) return true;
 
-    // 2. Jika tanggal join tim ditentukan, tentukan visibilitas laga dari tanggal join
+    const mSeason = (m.seasonName || '').trim().toLowerCase();
+    const mYear =
+      m.seasonName?.match(/\d{4}/)?.[0] ||
+      (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+
+    const isEnrolledInSeason = playerSeasonNames.has(mSeason) || playerSeasonYears.has(mYear);
+
+    // 2. Jika pemain terdaftar dalam musim tertentu: HANYA boleh melihat laga musim yang diikutinya
+    if (hasSeasonEnrollment) {
+      if (!isEnrolledInSeason) return false;
+      if (joinDateMs !== null && !isNaN(joinDateMs)) {
+        const mDateMs = new Date(m.matchDate).getTime();
+        return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
+      }
+      return true;
+    }
+
+    // 3. Jika belum terikat musim spesifik, gunakan joinDate jika ada
     if (joinDateMs !== null && !isNaN(joinDateMs)) {
       const mDateMs = new Date(m.matchDate).getTime();
       return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
     }
 
-    // 3. Jika pemain terdaftar dalam musim tertentu (contoh: Musim 2027)
-    if (hasSeasonEnrollment) {
-      const mSeason = (m.seasonName || '').trim().toLowerCase();
-      const mYear =
-        m.seasonName?.match(/\d{4}/)?.[0] ||
-        (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
-      if (playerSeasonNames.has(mSeason) || playerSeasonYears.has(mYear)) {
-        return true;
-      }
-    }
-
     // 4. Jika sudah pernah melakoni debut/lineup di tanggal tertentu
     if (firstLineupDateMs !== null) {
       const mDateMs = new Date(m.matchDate).getTime();
-      if (!isNaN(mDateMs) && mDateMs >= firstLineupDateMs - 12 * 3600 * 1000) {
-        return true;
-      }
+      return !isNaN(mDateMs) && mDateMs >= firstLineupDateMs - 12 * 3600 * 1000;
     }
 
     // 5. Jika belum pernah masuk lineup dan tidak terikat musim khusus, gunakan player.createdAt
-    if (!hasSeasonEnrollment && firstLineupDateMs === null && player.createdAt) {
+    if (player.createdAt) {
       const mDateMs = new Date(m.matchDate).getTime();
       const createdDateMs = new Date(player.createdAt).getTime();
       if (!isNaN(mDateMs) && !isNaN(createdDateMs)) {
@@ -200,7 +206,7 @@ export default function PlayerProfileView({
       }
     }
 
-    return !hasSeasonEnrollment && firstLineupDateMs === null && !player.createdAt;
+    return false;
   });
 
   // Ambil daftar tahun musim unik dari eligibleMatches DAN player.seasons
@@ -222,24 +228,22 @@ export default function PlayerProfileView({
   // Tentukan tahun aktif default / musim utama (e.g. 2027)
   const cleanActiveYear = activeSeasonName?.match(/\d{4}/)?.[0] || activeSeasonName || '2027';
 
-  // Pastikan musim utama selalu ada dalam daftar musim
+  // Musim hanya yang benar-benar diikuti oleh pemain. JANGAN tambahkan musim baru jika pemain belum ditarik ke musim baru!
   const seasonsSet = new Set([...matchSeasons, ...enrolledSeasons]);
-  if (cleanActiveYear) {
-    seasonsSet.add(cleanActiveYear);
-  }
   const seasonList = Array.from(seasonsSet).sort((a, b) =>
     b.localeCompare(a)
   );
 
-  // Posisi SEMUA di kiri, yang pertama ditampilkan tetap musim utama
+  // Posisi SEMUA di kiri
   const seasonTabs = seasonList.length > 0 ? ['SEMUA', ...seasonList] : ['SEMUA'];
 
-  // Default season: yang pertama ditampilkan harus musim utama (atau parameter URL jika diberikan)
+  // Default season: jika pemain ada di musim utama aktif (2027), tampilkan 2027.
+  // Jika TIDAK ditarik ke musim 2027, tampilkan musim terbaru yang diikutinya (e.g. 2025).
   const getDefaultSeason = () => {
     if (initialSeason && seasonTabs.includes(initialSeason)) {
       return initialSeason;
     }
-    if (cleanActiveYear && seasonTabs.includes(cleanActiveYear)) {
+    if (cleanActiveYear && seasonsSet.has(cleanActiveYear)) {
       return cleanActiveYear;
     }
     if (seasonList.length > 0) {

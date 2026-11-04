@@ -94,42 +94,43 @@ export default function PlayerMatchHistory({
 
   // Saring riwayat laga sejak pemain bergabung:
   // - Pemain di lineup -> selalu muncul
-  // - Jika tanggal join ditentukan -> tampilkan laga sejak tanggal join
-  // - Jika terdaftar di musim -> tampilkan laga dari musim-musim yang diikuti
-  // - Jika pernah masuk lineup sebelumnya -> tampilkan laga sejak tanggal debut/lineup pertama
-  // - Jika belum pernah main tapi ada createdAt -> tampilkan laga sejak tanggal didaftarkan
+  // - Pemain yang tidak ditarik ke musim baru JANGAN tampilkan laga/musim barunya
   const eligibleMatches = matches.filter((m: any) => {
     // 1. Jika pemain masuk dalam lineup laga ini
     const inLineup = (m.lineups || []).some((l: any) => l.playerId === player.id);
     if (inLineup) return true;
 
-    // 2. Jika tanggal join tim ditentukan, tentukan visibilitas laga dari tanggal join
+    const mSeason = (m.seasonName || '').trim().toLowerCase();
+    const mYear =
+      m.seasonName?.match(/\d{4}/)?.[0] ||
+      (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+
+    const isEnrolledInSeason = playerSeasonNames.has(mSeason) || playerSeasonYears.has(mYear);
+
+    // 2. Jika pemain terdaftar dalam musim tertentu: HANYA boleh melihat laga musim yang diikutinya
+    if (hasSeasonEnrollment) {
+      if (!isEnrolledInSeason) return false;
+      if (joinDateMs !== null && !isNaN(joinDateMs)) {
+        const mDateMs = new Date(m.matchDate).getTime();
+        return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
+      }
+      return true;
+    }
+
+    // 3. Jika belum terikat musim spesifik, gunakan joinDate jika ada
     if (joinDateMs !== null && !isNaN(joinDateMs)) {
       const mDateMs = new Date(m.matchDate).getTime();
       return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
     }
 
-    // 3. Jika pemain terdaftar dalam musim tertentu (contoh: Musim 2027)
-    if (hasSeasonEnrollment) {
-      const mSeason = (m.seasonName || '').trim().toLowerCase();
-      const mYear =
-        m.seasonName?.match(/\d{4}/)?.[0] ||
-        (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
-      if (playerSeasonNames.has(mSeason) || playerSeasonYears.has(mYear)) {
-        return true;
-      }
-    }
-
-    // 4. Jika sudah pernah melakoni debut/lineup di tanggal tertentu, sertakan laga setelahnya
+    // 4. Jika sudah pernah melakoni debut/lineup di tanggal tertentu
     if (firstLineupDateMs !== null) {
       const mDateMs = new Date(m.matchDate).getTime();
-      if (!isNaN(mDateMs) && mDateMs >= firstLineupDateMs - 12 * 3600 * 1000) {
-        return true;
-      }
+      return !isNaN(mDateMs) && mDateMs >= firstLineupDateMs - 12 * 3600 * 1000;
     }
 
     // 5. Jika belum pernah masuk lineup dan tidak terikat musim khusus, gunakan player.createdAt
-    if (!hasSeasonEnrollment && firstLineupDateMs === null && player.createdAt) {
+    if (player.createdAt) {
       const mDateMs = new Date(m.matchDate).getTime();
       const createdDateMs = new Date(player.createdAt).getTime();
       if (!isNaN(mDateMs) && !isNaN(createdDateMs)) {
@@ -137,7 +138,7 @@ export default function PlayerMatchHistory({
       }
     }
 
-    return !hasSeasonEnrollment && firstLineupDateMs === null && !player.createdAt;
+    return false;
   });
 
   // Ambil daftar musim unik HANYA dari pertandingan yang berhak diikuti pemain

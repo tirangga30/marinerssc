@@ -20,6 +20,14 @@ const getCachedStatsData = unstable_cache(
         }),
         prisma.footballMatch.findMany({
           orderBy: { matchDate: 'asc' },
+          include: {
+            lineups: {
+              select: { playerId: true, isStarter: true },
+            },
+            events: {
+              select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
+            },
+          },
         }),
         prisma.player.findMany({
           where: {
@@ -39,25 +47,17 @@ const getCachedStatsData = unstable_cache(
             appearances: true,
             yellowCards: true,
             redCards: true,
-            seasons: { select: { id: true, name: true } },
+            seasons: { select: { id: true, name: true, year: true } },
             events: {
-              select: { type: true },
+              select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
             },
             assistedEvents: {
-              select: { type: true },
+              select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
             },
             lineups: {
               select: {
+                matchId: true,
                 isStarter: true,
-                match: {
-                  select: {
-                    status: true,
-                    matchDate: true,
-                    events: {
-                      select: { type: true, playerId: true },
-                    },
-                  },
-                },
               },
             },
           },
@@ -105,12 +105,24 @@ export default async function StatsPage({
   const selectedSeason = params.season || (cookieSeason && cookieSeason !== 'all' && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
   const activeTab = (params.tab || 'all').toLowerCase();
 
-  // 1. Fetch Season Matches for Team Stats Calculation
-  const seasonMatches = selectedSeason !== 'all'
-    ? allMatches.filter((m: any) => m.seasonName === selectedSeason)
-    : allMatches;
+  const isAll = selectedSeason === 'all';
 
-  const finishedMatches = seasonMatches.filter((m) => {
+  // 1. Filter Season Matches for Stats Calculation
+  const seasonMatches = isAll
+    ? allMatches
+    : allMatches.filter((m: any) => {
+        const s = (m.seasonName || '').trim().toLowerCase();
+        const yr =
+          m.seasonName?.match(/\d{4}/)?.[0] ||
+          (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+        const target = selectedSeason.trim().toLowerCase();
+        return s === target || s.includes(target) || yr === target;
+      });
+
+  const seasonMatchIds = new Set(seasonMatches.map((m: any) => m.id));
+
+  // Team Stats Calculation
+  const finishedMatches = seasonMatches.filter((m: any) => {
     if (m.status === 'finished') return true;
     if (m.homeScore !== null && m.awayScore !== null) return true;
     return false;
@@ -123,7 +135,7 @@ export default async function StatsPage({
   let totalConceded = 0;
   let cleanSheets = 0;
 
-  finishedMatches.forEach((m) => {
+  finishedMatches.forEach((m: any) => {
     const marinersScore = m.isHome ? m.homeScore : m.awayScore;
     const opponentScore = m.isHome ? m.awayScore : m.homeScore;
     if (marinersScore !== null && opponentScore !== null) {
@@ -141,53 +153,74 @@ export default async function StatsPage({
   const goalDiff = totalGoals - totalConceded;
   const totalPoints = (totalWins * 3) + (totalDraws * 1);
 
-  // 2. Filter Players for Season
-  const rawPlayers = selectedSeason && selectedSeason !== 'all'
-    ? allPlayersRaw.filter((p: any) => {
-        if (Array.isArray(p.seasons) && p.seasons.length > 0) {
-          return p.seasons.some((s: any) => s.name === selectedSeason);
-        }
-        return selectedSeason === defaultSeason;
-      })
-    : allPlayersRaw;
+  // 2. Filter Players for Season:
+  // Hanya sertakan pemain yang terdaftar di musim ini, atau yang pernah masuk lineup di musim ini
+  const rawPlayers = isAll
+    ? allPlayersRaw
+    : allPlayersRaw.filter((p: any) => {
+        const isEnrolled = Array.isArray(p.seasons) && p.seasons.some((s: any) => {
+          const sName = (s.name || '').trim().toLowerCase();
+          const sYr = s.year?.toString() || sName.match(/\d{4}/)?.[0];
+          const target = selectedSeason.trim().toLowerCase();
+          return sName === target || sYr === target;
+        });
+        if (isEnrolled) return true;
 
-  const effectivePlayers = rawPlayers.length > 0 ? rawPlayers : allPlayersRaw;
+        const hasLineupInSeason = (p.lineups || []).some((l: any) => seasonMatchIds.has(l.matchId));
+        return hasLineupInSeason;
+      });
 
-  const nowMs = new Date().getTime();
-
-  const allPlayers = effectivePlayers.map((rawP) => {
+  // Calculate individual stats strictly adapted to the selected season!
+  const allPlayers = rawPlayers.map((rawP: any) => {
     // Resolve player photo & number for target season, falling back to main season (isCurrent)
     const p = resolvePlayerForSeason(
       resolvePlayerForSeason(rawP, mainSeason),
-      selectedSeason && selectedSeason !== 'all' ? selectedSeason : mainSeason
+      !isAll ? selectedSeason : mainSeason
     );
-    const activeLineups = (p.lineups || []).filter((l: any) => {
-      if (!l.match) return false;
-      const m = l.match;
-      if (m.status === 'finished') return true;
-      const hasFT = Array.isArray(m.events) && m.events.some((e: any) => e.type === 'fulltime');
-      if (hasFT) return true;
-      const matchStartMs = new Date(m.matchDate).getTime();
-      return !isNaN(matchStartMs) && nowMs >= matchStartMs;
-    });
 
-    const calcGoals = (p.events || []).filter((e: any) => e.type === 'goal' || e.type === 'penalty').length;
-    const goals = Math.max(p.goals || 0, calcGoals);
+    // Penampilan di musim ini: Starter maupun Cadangan yang masuk skuad laga musim ini
+    const calcAppearances = seasonMatches.filter((m: any) => {
+      return (m.lineups || []).some((l: any) => l.playerId === p.id);
+    }).length;
 
+    // Gol di musim ini
+    const calcGoals = (p.events || []).filter((e: any) => {
+      if (!seasonMatchIds.has(e.matchId)) return false;
+      return e.type === 'goal' || e.type === 'penalty';
+    }).length;
+
+    // Assist di musim ini
     const calcAssists =
-      (p.events || []).filter((e: any) => e.type === 'assist').length +
-      (p.assistedEvents || []).filter((e: any) => e.type !== 'sub').length;
-    const assists = Math.max(p.assists || 0, calcAssists);
+      (p.events || []).filter((e: any) => {
+        if (!seasonMatchIds.has(e.matchId)) return false;
+        return e.type === 'assist';
+      }).length +
+      (p.assistedEvents || []).filter((e: any) => {
+        if (!seasonMatchIds.has(e.matchId)) return false;
+        return e.type !== 'sub';
+      }).length;
 
-    // Baik pemain inti maupun cadangan di bangku ikut mendapatkan 1 penampilan / poin
-    const calcAppearances = activeLineups.length;
-    const appearances = Math.max(p.appearances || 0, calcAppearances);
+    // Kartu kuning di musim ini
+    const calcYellow = (p.events || []).filter((e: any) => {
+      if (!seasonMatchIds.has(e.matchId)) return false;
+      return e.type === 'yellow_card';
+    }).length;
 
-    const calcYellow = (p.events || []).filter((e: any) => e.type === 'yellow_card').length;
-    const yellowCards = Math.max(p.yellowCards || 0, calcYellow);
+    // Kartu merah di musim ini
+    const calcRed = (p.events || []).filter((e: any) => {
+      if (!seasonMatchIds.has(e.matchId)) return false;
+      return e.type === 'red_card' || e.type === 'second_yellow';
+    }).length;
 
-    const calcRed = (p.events || []).filter((e: any) => e.type === 'red_card' || e.type === 'second_yellow').length;
-    const redCards = Math.max(p.redCards || 0, calcRed);
+    // Mode SEMUA MUSIM vs Musim Spesifik
+    const appearances = isAll ? Math.max(p.appearances || 0, calcAppearances) : calcAppearances;
+    const goals = isAll ? Math.max(p.goals || 0, calcGoals) : calcGoals;
+    const assists = isAll ? Math.max(p.assists || 0, calcAssists) : calcAssists;
+    const yellowCards = isAll ? Math.max(p.yellowCards || 0, calcYellow) : calcYellow;
+    const redCards = isAll ? Math.max(p.redCards || 0, calcRed) : calcRed;
+
+    // Points system: Goal(5), Assist(3), Appearance(1), YellowCard(-1), RedCard(-3)
+    const points = (goals * 5) + (assists * 3) + (appearances * 1) - (yellowCards * 1) - (redCards * 3);
 
     return {
       ...p,
@@ -196,19 +229,26 @@ export default async function StatsPage({
       appearances,
       yellowCards,
       redCards,
+      points,
     };
   });
 
-  // Calculate points for Performance Table
-  // Points system: Goal(5), Assist(3), Appearance(1), YellowCard(-1), RedCard(-3)
-  const performancePlayers = allPlayers.map(player => {
-    const points = (player.goals * 5) + (player.assists * 3) + (player.appearances * 1) - (player.yellowCards * 1) - (player.redCards * 3);
-    return { ...player, points };
-  }).sort((a, b) => b.points - a.points).slice(0, 5);
+  // Calculate sorted rankings for Performance, Scorers, Assists, Appearances
+  const performancePlayers = [...allPlayers]
+    .sort((a, b) => b.points - a.points || b.goals - a.goals || b.assists - a.assists || b.appearances - a.appearances)
+    .slice(0, 5);
 
-  const topScorers = [...allPlayers].sort((a, b) => b.goals - a.goals).slice(0, 5);
-  const topAssists = [...allPlayers].sort((a, b) => b.assists - a.assists).slice(0, 5);
-  const topAppearances = [...allPlayers].sort((a, b) => b.appearances - a.appearances).slice(0, 5);
+  const topScorers = [...allPlayers]
+    .sort((a, b) => b.goals - a.goals || b.points - a.points)
+    .slice(0, 5);
+
+  const topAssists = [...allPlayers]
+    .sort((a, b) => b.assists - a.assists || b.points - a.points)
+    .slice(0, 5);
+
+  const topAppearances = [...allPlayers]
+    .sort((a, b) => b.appearances - a.appearances || b.points - a.points)
+    .slice(0, 5);
 
   const statTabs = [
     { key: 'all', label: 'SEMUA' },
@@ -222,15 +262,7 @@ export default async function StatsPage({
   const seasonParam = selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : '';
 
   return (
-    <>
-      <SeasonSubNav
-        seasons={seasons}
-        selectedSeason={selectedSeason}
-        basePath="/stats"
-        searchParams={params}
-        showAllOption={true}
-      />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       
       {/* Navigation Filter Tabs (Navbar Underline Style) */}
       <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -251,6 +283,15 @@ export default async function StatsPage({
           );
         })}
       </div>
+
+      {/* Navigasi Musim (Di Bawah Navigasi Halaman, Latar Sama Persis) */}
+      <SeasonSubNav
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        basePath="/stats"
+        searchParams={params}
+        showAllOption={true}
+      />
 
       {allPlayers.length === 0 && (
         <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3 shadow-sm">
@@ -498,6 +539,5 @@ export default async function StatsPage({
       )}
 
     </div>
-    </>
   );
 }

@@ -66,14 +66,7 @@ export default async function ArticlesPage({
   const seasonParam = selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : '';
 
   return (
-    <>
-      <SeasonSubNav
-        seasons={seasons}
-        selectedSeason={selectedSeason}
-        basePath="/articles"
-        searchParams={params}
-      />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
         {/* Category Filter Bar (Navbar Underline Style) */}
         <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -101,6 +94,14 @@ export default async function ArticlesPage({
             </Link>
           ))}
         </div>
+
+        {/* Navigasi Musim (Di Bawah Navigasi Halaman, Latar Sama Persis) */}
+        <SeasonSubNav
+          seasons={seasons}
+          selectedSeason={selectedSeason}
+          basePath="/articles"
+          searchParams={params}
+        />
 
         {/* Articles Grid - 3 COLUMNS SIDE-BY-SIDE ON MOBILE */}
         {filteredArticles.length === 0 ? (
@@ -147,6 +148,5 @@ export default async function ArticlesPage({
         )}
 
       </div>
-    </>
   );
 }

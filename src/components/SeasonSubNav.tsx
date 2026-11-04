@@ -76,32 +76,28 @@ export default function SeasonSubNav({
   if (tabs.length === 0) return null;
 
   return (
-    <div className="bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs sticky top-16 sm:top-20 z-40">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-start gap-4 sm:gap-6 overflow-x-auto no-scrollbar">
-          {tabs.map((tab) => {
-            const isActive = selectedSeason === tab.value;
-            return (
-              <Link
-                key={tab.key}
-                href={tab.href}
-                onClick={() => {
-                  if (tab.value && tab.value !== 'all') {
-                    setClientPublicSeason(tab.value);
-                  }
-                }}
-                className={`pb-2.5 sm:pb-3 pt-2.5 sm:pt-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'border-blue-600 text-blue-600 font-black'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
-                }`}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+    <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar -mt-2 sm:-mt-4">
+      {tabs.map((tab) => {
+        const isActive = selectedSeason === tab.value;
+        return (
+          <Link
+            key={tab.key}
+            href={tab.href}
+            onClick={() => {
+              if (tab.value && tab.value !== 'all') {
+                setClientPublicSeason(tab.value);
+              }
+            }}
+            className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 cursor-pointer ${
+              isActive
+                ? 'border-blue-600 text-blue-600 font-black'
+                : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+            }`}
+          >
+            {tab.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
