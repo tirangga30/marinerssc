@@ -6,6 +6,7 @@ import { unstable_cache } from 'next/cache';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
+import { ensureDbColumns } from '@/lib/dbMigrations';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 30;
@@ -13,6 +14,7 @@ export const revalidate = 30;
 const getCachedMatchesData = unstable_cache(
   async () => {
     try {
+      await ensureDbColumns().catch(() => {});
       const [seasons, allMatchesRaw, systemSetting] = await Promise.all([
         prisma.season.findMany({
           orderBy: { year: 'desc' },

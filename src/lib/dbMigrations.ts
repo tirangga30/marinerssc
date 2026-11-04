@@ -49,6 +49,9 @@ export async function ensureDbColumns() {
       `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "heroSubtitle" TEXT DEFAULT 'Lebih dari sekadar sepak bola.'`,
       `ALTER TABLE "SystemSetting" ADD COLUMN IF NOT EXISTS "heroCtaText" TEXT DEFAULT 'LIHAT TIM'`,
       `ALTER TABLE "FootballMatch" ADD COLUMN IF NOT EXISTS "sendWhatsAppInvite" BOOLEAN DEFAULT true`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 1' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate"::text LIKE '2025-06-29%' OR ("matchDate" >= '2025-06-28' AND "matchDate" <= '2025-06-30'))`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 2' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate"::text LIKE '2025-09-05%' OR ("matchDate" >= '2025-09-04' AND "matchDate" <= '2025-09-06'))`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 3' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate"::text LIKE '2025-10-11%' OR ("matchDate" >= '2025-10-10' AND "matchDate" <= '2025-10-12'))`,
     ];
 
     for (const sql of pgMigrations) {
@@ -74,6 +77,9 @@ export async function ensureDbColumns() {
       `ALTER TABLE "SystemSetting" ADD COLUMN "heroSubtitle" TEXT DEFAULT 'Lebih dari sekadar sepak bola.'`,
       `ALTER TABLE "SystemSetting" ADD COLUMN "heroCtaText" TEXT DEFAULT 'LIHAT TIM'`,
       `ALTER TABLE "FootballMatch" ADD COLUMN "sendWhatsAppInvite" BOOLEAN DEFAULT 1`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 1' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate" LIKE '2025-06-29%' OR ("matchDate" >= '2025-06-28' AND "matchDate" <= '2025-06-30'))`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 2' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate" LIKE '2025-09-05%' OR ("matchDate" >= '2025-09-04' AND "matchDate" <= '2025-09-06'))`,
+      `UPDATE "FootballMatch" SET "stage" = 'Matchday 3' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate" LIKE '2025-10-11%' OR ("matchDate" >= '2025-10-10' AND "matchDate" <= '2025-10-12'))`,
     ];
 
     for (const sql of sqliteMigrations) {
@@ -83,6 +89,34 @@ export async function ensureDbColumns() {
         // Expected when column already exists in SQLite
       }
     }
+  }
+
+  // General 2025 matchday alignment (starts from Matchday 1 for earliest match Date at bottom)
+  try {
+    const matches2025 = await prisma.footballMatch.findMany({
+      where: {
+        OR: [
+          { seasonName: '2025' },
+          { matchDate: { gte: new Date('2025-01-01T00:00:00.000Z'), lt: new Date('2026-01-01T00:00:00.000Z') } },
+        ],
+      },
+      orderBy: { matchDate: 'asc' },
+    });
+
+    if (matches2025.length > 0) {
+      for (let i = 0; i < matches2025.length; i++) {
+        const m = matches2025[i];
+        const targetStage = `Matchday ${i + 1}`;
+        if (m.stage !== targetStage) {
+          await prisma.footballMatch.update({
+            where: { id: m.id },
+            data: { stage: targetStage },
+          });
+        }
+      }
+    }
+  } catch (err2025) {
+    console.warn('[dbMigration 2025 stage update warning]:', err2025);
   }
 
   migrationRan = true;

@@ -12,6 +12,7 @@ import { Calendar, MapPin, Trophy, ArrowLeft } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import MatchShareButton from '@/components/MatchShareButton';
+import { ensureDbColumns } from '@/lib/dbMigrations';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -53,6 +54,7 @@ export default async function MatchDetailPage({
   let match: any = null;
   let systemSetting: any = null;
   try {
+    await ensureDbColumns().catch(() => {});
     const [fetchedMatch, fetchedSetting] = await Promise.all([
       prisma.footballMatch.findUnique({
         where: { id },

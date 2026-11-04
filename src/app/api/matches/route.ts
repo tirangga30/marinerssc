@@ -3,9 +3,11 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { parseWibDate } from '@/lib/date';
 import { cleanupUnusedUploads } from '@/lib/cleanup';
+import { ensureDbColumns } from '@/lib/dbMigrations';
 
 export async function GET(req: Request) {
   try {
+    await ensureDbColumns().catch(() => {});
     const { searchParams } = new URL(req.url);
     const season = searchParams.get('season');
     const seasonId = searchParams.get('seasonId');
