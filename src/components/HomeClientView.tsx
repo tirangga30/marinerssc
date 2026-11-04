@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar, ArrowRight, Flame, Sparkles, Shield, Users,
+  Calendar, ArrowRight, Clock, Flame, Sparkles, Shield, Users,
   Trophy, Award, Activity, MapPin, CheckCircle2, UserCheck, Star, ChevronDown, ExternalLink,
   TrendingUp, Minus, XCircle, ShieldAlert
 } from 'lucide-react';
@@ -117,17 +117,13 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
   const allMatches = mainSquadData.allMatches || [];
   const allPlayers = mainSquadData.allPlayers || mainSquadData.featuredPlayers || [];
 
+  // Beranda WAJIB selalu tampil musim utama (isCurrent)
   const defaultActiveSeason =
     seasons.find((s: any) => Boolean(s.isCurrent))?.name ||
     seasons[0]?.name ||
-    '2026';
+    '2027';
 
-  const initialSeason =
-    (mainSquadData.defaultSelectedSeason && seasons.some((s: any) => s.name === mainSquadData.defaultSelectedSeason)
-      ? mainSquadData.defaultSelectedSeason
-      : null) ||
-    defaultActiveSeason;
-  const [selectedSeason, setSelectedSeason] = useState(initialSeason);
+  const selectedSeason = defaultActiveSeason;
 
   // Live Posters state with real-time sync
   const [livePosters, setLivePosters] = useState<any[]>(heroPosters || []);
@@ -293,22 +289,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
     };
   };
 
-  React.useEffect(() => {
-    const saved = getClientPublicSeason();
-    if (saved && seasons.some((s: any) => s.name === saved)) {
-      setSelectedSeason(saved);
-    } else {
-      const active = seasons.find((s: any) => Boolean(s.isCurrent))?.name;
-      if (active) setSelectedSeason(active);
-    }
-    const handleSeasonChange = (e: any) => {
-      if (e.detail?.season) {
-        setSelectedSeason(e.detail.season);
-      }
-    };
-    window.addEventListener('public_season_changed', handleSeasonChange);
-    return () => window.removeEventListener('public_season_changed', handleSeasonChange);
-  }, [seasons]);
+  // Beranda tidak mengikuti cookie musim halaman lain; selalu terkunci pada musim utama
 
   // Dynamic calculations for selectedSeason
   const seasonMatches = allMatches.filter((m: any) => (m.seasonName || '2026') === selectedSeason);
@@ -686,9 +667,12 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                       {currentNextMatch?.seasonName ? (currentNextMatch.seasonName.replace(/[^0-9]/g, '') || currentNextMatch.seasonName) : (selectedSeason || '')}
                     </span>
                     {currentNextMatch && (
-                      <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50/90 text-blue-600 border border-blue-200 backdrop-blur-xs">
-                        {currentNextMatch?.stage || ((currentNextMatch?.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
-                      </span>
+                      <>
+                        <span className="text-slate-300 font-normal select-none">|</span>
+                        <span className="text-[10px] sm:text-sm font-bold text-slate-700 uppercase tracking-wider">
+                          {currentNextMatch?.stage || ((currentNextMatch?.competition || 'FRIENDLY').toUpperCase() === 'FRIENDLY' ? `Matchday ${currentNextMatch?.matchday || 1}` : (currentNextMatch?.competition || 'FRIENDLY'))}
+                        </span>
+                      </>
                     )}
                   </div>
 
@@ -744,11 +728,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                                 VS
                               </div>
                             </div>
-                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
-                                {currentNextMatch.venue || '—'}
-                              </p>
-                            </div>
+                            <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                           </>
                         ) : currentFeaturedStatus === 'finished' ? (
                           <>
@@ -760,11 +740,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest drop-shadow-xs flex items-center justify-center leading-none my-0.5 sm:my-1">
                               {currentNextMatch.homeScore ?? 0} : {currentNextMatch.awayScore ?? 0}
                             </div>
-                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
-                                {currentNextMatch.venue || '—'}
-                              </p>
-                            </div>
+                            <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                           </>
                         ) : (
                           <>
@@ -778,11 +754,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                                 VS
                               </div>
                             </div>
-                            <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                              <p className="text-[8px] sm:text-[10px] text-slate-600 font-medium truncate text-center drop-shadow-xs">
-                                {currentNextMatch.venue || '—'}
-                              </p>
-                            </div>
+                            <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                           </>
                         )}
                       </div>
@@ -806,6 +778,14 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                     </div>
 
                     <MatchTimer targetDate={currentNextMatch.matchDate} status={currentFeaturedStatus} duration={currentNextMatch.duration} isLiveEnabled={currentNextMatch.isLiveEnabled !== false} />
+                    {currentNextMatch.venue && (
+                      <div className="flex items-center justify-end pt-2 text-[9px] sm:text-xs text-slate-500 font-medium">
+                        <span className="flex items-center gap-1 max-w-[65%] truncate justify-end">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{currentNextMatch.venue}</span>
+                        </span>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-6 text-xs text-slate-500">
@@ -864,9 +844,12 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                                 </span>
                               )}
                               {stageLabel && (
-                                <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
-                                  {stageLabel}
-                                </span>
+                                <>
+                                  <span className="text-slate-300 font-normal select-none">|</span>
+                                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                    {stageLabel}
+                                  </span>
+                                </>
                               )}
                             </div>
 
@@ -913,11 +896,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                           <div className="text-2xl sm:text-5xl font-black font-mono blue-gradient-text tracking-widest leading-none my-0.5 sm:my-1 flex items-center justify-center">
                             {m.homeScore} : {m.awayScore}
                           </div>
-                          <div className="h-4 sm:h-5 flex items-center justify-center shrink-0 max-w-[130px] sm:max-w-xs">
-                            <p className="text-[8px] sm:text-[10px] text-slate-500 font-medium truncate text-center">
-                              {m.venue || '—'}
-                            </p>
-                          </div>
+                          <div className="h-4 sm:h-5 shrink-0" aria-hidden="true" />
                         </div>
 
                         {/* Away Team (Logo di tengah mendekat ke skor, Nama di sisi luar kanan) */}
@@ -935,6 +914,21 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
                             </h4>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Footer Row: Waktu di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
+                      <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-100 text-[9px] sm:text-xs text-slate-500">
+                        {/* Ujung kiri bawah: Waktu */}
+                        <span className="font-semibold text-slate-600 flex items-center gap-1 shrink-0">
+                          <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span>{formatWibTime(m.matchDate)}</span>
+                        </span>
+
+                        {/* Ujung kanan bawah: Lokasi */}
+                        <span className="font-medium text-slate-500 flex items-center gap-1 max-w-[65%] truncate justify-end">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{m.venue || '—'}</span>
+                        </span>
                       </div>
                     </Link>
                   ))}
