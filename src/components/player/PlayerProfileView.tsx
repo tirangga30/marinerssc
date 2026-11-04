@@ -51,15 +51,10 @@ export function computePlayerStats(
 
   const seasonMatchIds = new Set(seasonMatches.map((m: any) => m.id));
 
-  // Hitung jumlah penampilan (Starter atau Masuk Pengganti)
+  // Hitung jumlah penampilan (Starter maupun Cadangan yang masuk skuad laga)
   const appearances = seasonMatches.filter((m: any) => {
     const l = (m.lineups || []).find((line: any) => line.playerId === player.id);
-    if (!l) return false;
-    if (l.isStarter) return true;
-    const matchEvents = m?.events || [];
-    return matchEvents.some(
-      (e: any) => e.type === 'sub' && (e.playerId === player.id || e.player?.id === player.id)
-    );
+    return Boolean(l);
   }).length;
 
   // Hitung gol (goal atau penalty)

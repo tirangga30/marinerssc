@@ -384,12 +384,11 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
 
         // If detailed events/lineups are available, calculate specifically for selectedSeason
         if (Array.isArray(player.events) || Array.isArray(player.lineups)) {
+          // Baik pemain inti maupun cadangan di bangku ikut mendapatkan 1 penampilan / poin
           const seasonLineups = (player.lineups || []).filter((l: any) => {
             if (!l.match || l.match.status !== 'finished') return false;
             if (l.match.seasonName && l.match.seasonName !== selectedSeason) return false;
-            if (l.isStarter) return true;
-            const matchEvents = l.match.events || [];
-            return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === player.id);
+            return true;
           });
 
           const seasonGoalEvents = (player.events || []).filter((e: any) => {

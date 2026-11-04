@@ -11,11 +11,9 @@ export async function recalculateAllPlayerStats() {
     });
 
     for (const p of players) {
+      // Baik pemain inti (starter) maupun cadangan di bangku ikut mendapatkan 1 penampilan / poin
       const playedLineups = (p.lineups || []).filter((l) => {
-        if (l.match.status !== 'finished') return false;
-        if (l.isStarter) return true;
-        const matchEvents = (l.match as any).events || [];
-        return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === p.id);
+        return l.match.status === 'finished';
       });
       const appearances = playedLineups.length;
 

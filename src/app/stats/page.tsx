@@ -177,12 +177,8 @@ export default async function StatsPage({
       (p.assistedEvents || []).filter((e: any) => e.type !== 'sub').length;
     const assists = Math.max(p.assists || 0, calcAssists);
 
-    const calcAppearances = activeLineups.filter((l: any) => {
-      if (l.isStarter) return true;
-      const m = l.match;
-      const matchEvents = m?.events || [];
-      return matchEvents.some((e: any) => e.type === 'sub' && e.playerId === p.id);
-    }).length;
+    // Baik pemain inti maupun cadangan di bangku ikut mendapatkan 1 penampilan / poin
+    const calcAppearances = activeLineups.length;
     const appearances = Math.max(p.appearances || 0, calcAppearances);
 
     const calcYellow = (p.events || []).filter((e: any) => e.type === 'yellow_card').length;
