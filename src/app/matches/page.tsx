@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
-import { Trophy, Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin } from 'lucide-react';
 import { ensureDbColumns } from '@/lib/dbMigrations';
 import SeasonSubNav from '@/components/SeasonSubNav';
 
@@ -255,13 +255,12 @@ function MatchListGroupedByCompetition({
         return (
           <React.Fragment key={m.id}>
             {isNewComp && (
-              <div className="flex items-center gap-2 pt-4 pb-2 border-b border-sky-400/20 mt-4 first:mt-0">
+              <div className="flex items-center gap-2 pt-4 pb-2 border-b border-slate-200 mt-4 first:mt-0">
                 <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                   <span>{m.competition || 'FRIENDLY'}</span>
                   {m.seasonName && (
-                    <span className="text-slate-400 font-mono text-[11px] font-bold">
+                    <span className="text-slate-500 font-mono text-[11px] font-bold">
                       {m.seasonName.replace(/[^0-9]/g, '') || m.seasonName}
                     </span>
                   )}

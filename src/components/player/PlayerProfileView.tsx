@@ -289,7 +289,7 @@ export default function PlayerProfileView({
 
   const specs = [
     { label: 'Tanggal Lahir', value: birthDateValue },
-    { label: 'Kewarganegaraan', value: nationalityValue },
+    { label: 'Warganegara', value: nationalityValue },
     { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
     { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
   ];
@@ -381,7 +381,7 @@ export default function PlayerProfileView({
                 </div>
               </div>
 
-              {/* Kewarganegaraan */}
+              {/* Warganegara */}
               <div className="flex items-center gap-1.5 min-w-0">
                 <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0">
                   <div className="w-3.5 h-2.5 rounded-xs overflow-hidden border border-white/20 flex flex-col shadow-xs shrink-0">
@@ -391,7 +391,7 @@ export default function PlayerProfileView({
                 </div>
                 <div className="min-w-0">
                   <p className="text-[6.5px] sm:text-[7.5px] font-medium text-slate-300 uppercase tracking-wider truncate leading-none">
-                    Kewarganegaraan
+                    Warganegara
                   </p>
                   <p className="text-[8.5px] sm:text-[9.5px] font-black text-white truncate leading-tight mt-0.5">
                     {nationalityValue}
