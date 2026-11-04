@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await getMemberSession();
     if (!session) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return NextResponse.json({ authenticated: false, member: null });
     }
 
     const member = await prisma.member.findUnique({
@@ -41,7 +41,7 @@ export async function GET() {
     });
 
     if (!member) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return NextResponse.json({ authenticated: false, member: null });
     }
 
     // Calculate strictly from Fun Matches
