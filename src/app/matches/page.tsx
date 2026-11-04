@@ -7,6 +7,7 @@ import LiveScoreDisplay from '@/components/LiveScoreDisplay';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 import { Trophy, Calendar } from 'lucide-react';
 import { ensureDbColumns } from '@/lib/dbMigrations';
+import SeasonSubNav from '@/components/SeasonSubNav';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 30;
@@ -312,7 +313,14 @@ export default async function MatchesPage({
     filter === 'finished' ? finishedMatches : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <>
+      <SeasonSubNav
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        basePath="/matches"
+        searchParams={params}
+      />
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
       {/* Filter Tabs (Navbar Underline Style) */}
       <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -385,5 +393,6 @@ export default async function MatchesPage({
         </div>
       )}
     </div>
+    </>
   );
 }

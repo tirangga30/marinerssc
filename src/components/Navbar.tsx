@@ -92,7 +92,7 @@ export default function Navbar() {
     { name: 'Beranda', href: '/', icon: Shield },
     { name: 'Jadwal & Hasil', href: `/matches${seasonQuery}`, icon: Calendar },
     { name: 'Pemain', href: `/players${seasonQuery}`, icon: Users },
-    { name: 'Berita', href: '/articles', icon: Newspaper },
+    { name: 'Berita', href: `/articles${seasonQuery}`, icon: Newspaper },
     { name: 'Statistik', href: `/stats${seasonQuery}`, icon: BarChart3 },
   ];
 

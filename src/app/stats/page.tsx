@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { Trophy, Award, Flame, Shield, Activity, Users, BarChart3 } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
+import SeasonSubNav from '@/components/SeasonSubNav';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -100,7 +101,8 @@ export default async function StatsPage({
 
   const mainSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '2027');
   const defaultSeason = mainSeason;
-  const selectedSeason = params.season || (cookieSeason && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
+  // Khusus statistik: ketika awal dibuka tetap menampilkan musim utama
+  const selectedSeason = params.season || (cookieSeason && cookieSeason !== 'all' && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);
   const activeTab = (params.tab || 'all').toLowerCase();
 
   // 1. Fetch Season Matches for Team Stats Calculation
@@ -220,7 +222,15 @@ export default async function StatsPage({
   const seasonParam = selectedSeason && selectedSeason !== 'all' ? `&season=${encodeURIComponent(selectedSeason)}` : '';
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <>
+      <SeasonSubNav
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        basePath="/stats"
+        searchParams={params}
+        showAllOption={true}
+      />
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       
       {/* Navigation Filter Tabs (Navbar Underline Style) */}
       <div className="flex items-center justify-start gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
@@ -246,7 +256,7 @@ export default async function StatsPage({
         <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3 shadow-sm">
           <Users className="w-10 h-10 text-slate-400 mx-auto" />
           <p className="text-sm font-bold text-slate-500">
-            Belum ada data statistik pemain di Musim {selectedSeason}.
+            Belum ada data statistik pemain di {selectedSeason === 'all' ? 'Semua Musim' : `Musim ${selectedSeason}` }.
           </p>
         </div>
       )}
@@ -262,7 +272,7 @@ export default async function StatsPage({
               </h2>
             </div>
             <span className="text-xs font-bold text-slate-500">
-              Musim {selectedSeason}
+              {selectedSeason === 'all' ? 'Semua Musim' : `Musim ${selectedSeason}`}
             </span>
           </div>
 
@@ -292,7 +302,7 @@ export default async function StatsPage({
             ))}
           </div>
           <div className="pt-2 text-[10px] text-slate-500 text-left font-medium">
-            Dihitung dari {totalPlayed} laga resmi di Musim {selectedSeason}
+            Dihitung dari {totalPlayed} laga resmi di {selectedSeason === 'all' ? 'Semua Musim' : `Musim ${selectedSeason}` }
           </div>
         </div>
       )}
@@ -488,5 +498,6 @@ export default async function StatsPage({
       )}
 
     </div>
+    </>
   );
 }
