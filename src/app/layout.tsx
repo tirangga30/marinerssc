@@ -38,11 +38,12 @@ export async function generateMetadata(): Promise<Metadata> {
     description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
     icons: {
       icon: [
+        { url: '/api/team-logo?format=ico', type: 'image/x-icon' },
+        { url: '/api/team-logo', type: 'image/webp' },
         { url: '/icon.png', type: 'image/png' },
-        { url: '/api/team-logo' },
       ],
-      shortcut: '/icon.png',
-      apple: '/apple-icon.png',
+      shortcut: '/api/team-logo?format=ico',
+      apple: '/api/team-logo',
     },
     verification: {
       google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',

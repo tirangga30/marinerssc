@@ -24,6 +24,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/api/team-logo?format=ico',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

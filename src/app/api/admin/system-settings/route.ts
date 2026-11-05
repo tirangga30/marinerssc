@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { ensureDbColumns } from '@/lib/dbMigrations';
+import { syncFaviconFiles } from '@/lib/favicon';
 
 export const dynamic = 'force-dynamic';
 
@@ -142,8 +143,9 @@ export async function PUT(req: Request) {
     if (teamLogo !== undefined && typeof teamLogo === 'string' && teamLogo.trim()) {
       updateData.teamLogo = teamLogo.trim();
 
-      // If the teamLogo is a local file in /uploads/, also copy it to /public/marinerssc.webp
+      // Automatically convert and sync uploaded logo to favicon.ico, icon.png, apple-icon.png, and marinerssc.webp
       try {
+        let logoBuf: Buffer | null = null;
         if (teamLogo.startsWith('/uploads/')) {
           const sourcePath = path.join(process.cwd(), 'public', teamLogo.replace(/^\//, ''));
           const targetPath = path.join(process.cwd(), 'public', 'marinerssc.webp');
@@ -154,10 +156,20 @@ export async function PUT(req: Request) {
               fs.copyFileSync(targetPath, backupPath);
             }
             fs.copyFileSync(sourcePath, targetPath);
+            logoBuf = fs.readFileSync(sourcePath);
+          }
+        } else if (teamLogo.startsWith('data:')) {
+          const match = teamLogo.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            logoBuf = Buffer.from(match[2], 'base64');
           }
         }
+
+        if (logoBuf) {
+          syncFaviconFiles(logoBuf).catch((e) => console.warn('Favicon sync failed:', e));
+        }
       } catch (copyErr) {
-        console.warn('Error syncing marinerssc.webp:', copyErr);
+        console.warn('Error syncing marinerssc.webp and favicons:', copyErr);
       }
     }
 
