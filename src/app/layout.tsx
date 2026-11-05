@@ -21,6 +21,7 @@ const oswald = Oswald({
 
 export async function generateMetadata(): Promise<Metadata> {
   let teamName = 'TEAM';
+  let logoVersion = '1';
 
   try {
     const setting = await (prisma as any).systemSetting.findUnique({
@@ -28,22 +29,29 @@ export async function generateMetadata(): Promise<Metadata> {
     });
     if (setting) {
       if (setting.teamName) teamName = setting.teamName;
+      if (setting.updatedAt) {
+        logoVersion = new Date(setting.updatedAt).getTime().toString();
+      } else if (setting.teamLogo) {
+        logoVersion = Buffer.from(setting.teamLogo).toString('base64').slice(-8);
+      }
     }
   } catch (e) {
     // fallback
   }
+
+  const icoUrl = `/api/team-logo?format=ico&v=${logoVersion}`;
+  const pngUrl = `/api/team-logo?v=${logoVersion}`;
 
   return {
     title: `${teamName} - Website Resmi Klub Sepak Bola`,
     description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
     icons: {
       icon: [
-        { url: '/api/team-logo?format=ico', type: 'image/x-icon' },
-        { url: '/api/team-logo', type: 'image/webp' },
-        { url: '/icon.png', type: 'image/png' },
+        { url: icoUrl, type: 'image/x-icon' },
+        { url: pngUrl, type: 'image/png' },
       ],
-      shortcut: '/api/team-logo?format=ico',
-      apple: '/api/team-logo',
+      shortcut: icoUrl,
+      apple: pngUrl,
     },
     verification: {
       google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',
