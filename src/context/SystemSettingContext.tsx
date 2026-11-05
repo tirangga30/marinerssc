@@ -108,9 +108,9 @@ export function SystemSettingProvider({
   // Sync document title and favicon dynamically in the browser tab
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      if (settings.teamName) {
-        document.title = `${settings.teamName} - Website Resmi Klub Sepak Bola`;
-      }
+      const currentName = settings.teamName || 'Mars FC';
+      document.title = `${currentName} - Website Komunitas Sepakbola`;
+
       if (settings.teamLogo) {
         let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
         if (!link) {
@@ -118,7 +118,7 @@ export function SystemSettingProvider({
           link.rel = 'icon';
           document.head.appendChild(link);
         }
-        link.href = settings.teamLogo.startsWith('data:') ? '/api/team-logo' : settings.teamLogo;
+        link.href = '/api/team-logo?format=ico';
       }
     }
   }, [settings.teamName, settings.teamLogo]);

@@ -20,7 +20,7 @@ const oswald = Oswald({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let teamName = 'TEAM';
+  let teamName = 'Mars FC';
   let logoVersion = '1';
 
   try {
@@ -43,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const pngUrl = `/api/team-logo?v=${logoVersion}`;
 
   return {
-    title: `${teamName} - Website Resmi Klub Sepak Bola`,
-    description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
+    title: `${teamName} - Website Komunitas Sepakbola`,
+    description: `Website resmi komunitas sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
     icons: {
       icon: [
         { url: icoUrl, type: 'image/x-icon' },
