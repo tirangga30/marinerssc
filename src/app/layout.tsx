@@ -37,9 +37,12 @@ export async function generateMetadata(): Promise<Metadata> {
     title: `${teamName} - Website Resmi Klub Sepak Bola`,
     description: `Website resmi klub sepak bola ${teamName}. Informasi jadwal pertandingan, hasil laga, skuad pemain, statistik tim, dan berita klub terbaru.`,
     icons: {
-      icon: '/api/team-logo',
-      shortcut: '/api/team-logo',
-      apple: '/api/team-logo',
+      icon: [
+        { url: '/icon.png', type: 'image/png' },
+        { url: '/api/team-logo' },
+      ],
+      shortcut: '/icon.png',
+      apple: '/apple-icon.png',
     },
     verification: {
       google: 'vRkFi6sss2BFLqgmFsbyxGQuT3p4arjTZ631pixiFFQ',

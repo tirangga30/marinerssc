@@ -52,8 +52,19 @@ export async function GET() {
     console.warn('Error serving team logo:', err);
   }
 
-  // 3. Fallback to default defaultteam.webp
+  // 3. Fallback to marinerssc.webp or defaultteam.webp
   try {
+    const primaryFallback = path.join(process.cwd(), 'public', 'marinerssc.webp');
+    if (fs.existsSync(primaryFallback)) {
+      const buffer = fs.readFileSync(primaryFallback);
+      return new NextResponse(buffer, {
+        headers: {
+          'Content-Type': 'image/webp',
+          'Cache-Control': 'public, max-age=3600',
+        },
+      });
+    }
+
     const fallbackPath = path.join(process.cwd(), 'public', 'defaultteam.webp');
     if (fs.existsSync(fallbackPath)) {
       const buffer = fs.readFileSync(fallbackPath);
