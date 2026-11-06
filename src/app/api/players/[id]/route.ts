@@ -6,6 +6,32 @@ import { cleanupUnusedUploads } from '@/lib/cleanup';
 import { renamePlayerPhotoFile } from '@/lib/fileNaming';
 import { parsePlayerSeasonData } from '@/lib/seasonPlayer';
 
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const player = await prisma.player.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
+      include: {
+        seasons: true,
+      },
+    });
+
+    if (!player) {
+      return NextResponse.json({ error: 'Pemain tidak ditemukan' }, { status: 404 });
+    }
+
+    return NextResponse.json(player);
+  } catch (error) {
+    console.error('GET /api/players/[id] error:', error);
+    return NextResponse.json({ error: 'Gagal mengambil data pemain' }, { status: 500 });
+  }
+}
+
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getAdminSession();

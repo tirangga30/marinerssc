@@ -68,6 +68,9 @@ export default function MatchAttendanceConfirm({
             setPlayerData(data.attendance.player);
             setStatus(data.attendance.status);
             if (data.attendance.declineReason) setDeclineReason(data.attendance.declineReason);
+          } else if (data.player) {
+            setPlayerData(data.player);
+            setStatus('INVITED');
           } else {
             fetch(`/api/players/${playerId}`)
               .then((pRes) => pRes.json())

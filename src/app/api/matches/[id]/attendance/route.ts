@@ -23,14 +23,28 @@ export async function GET(
     const attendance = await prisma.matchAttendance.findFirst({
       where: {
         matchId,
-        playerId,
+        OR: [
+          { playerId },
+          { player: { slug: playerId } },
+        ],
       },
       include: {
         player: true,
       },
     });
 
-    return NextResponse.json({ attendance });
+    if (attendance) {
+      return NextResponse.json({ attendance, player: attendance.player });
+    }
+
+    // If no attendance record yet, find player directly so confirmation card can render immediately
+    const player = await prisma.player.findFirst({
+      where: {
+        OR: [{ id: playerId }, { slug: playerId }],
+      },
+    });
+
+    return NextResponse.json({ attendance: null, player });
   } catch (error) {
     console.error('Error fetching attendance:', error);
     return NextResponse.json({ error: 'Gagal mengambil data kehadiran' }, { status: 500 });
@@ -57,7 +71,11 @@ export async function POST(
 
     const [match, player] = await Promise.all([
       prisma.footballMatch.findUnique({ where: { id: matchId } }),
-      prisma.player.findUnique({ where: { id: playerId } }),
+      prisma.player.findFirst({
+        where: {
+          OR: [{ id: playerId }, { slug: playerId }],
+        },
+      }),
     ]);
 
     if (!match) {
