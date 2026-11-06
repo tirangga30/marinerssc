@@ -485,36 +485,6 @@ export default function AdminPlayersPage() {
     setShowModal(true);
   };
 
-  const handleSelectGuest = (guestId: string) => {
-    const guest = guestPlayers.find(g => g.id === guestId);
-    if (guest) {
-      setEditingPlayer(guest);
-      setFormData({
-        name: guest.name,
-        number: guest.number.toString(),
-        position: guest.position,
-        nationality: guest.nationality || 'Indonesia',
-        birthDate: formatDateForInput(guest.birthDate),
-        joinDate: (guest as any).joinDate ? formatDateForInput((guest as any).joinDate) : '',
-        heightCm: guest.heightCm?.toString() || '',
-        weightKg: guest.weightKg?.toString() || '',
-        photoUrl: guest.photoUrl || defaultPlayerPhoto,
-        bio: guest.bio || '',
-        phone: guest.phone || '',
-        isCaptain: guest.isCaptain || false,
-        status: guest.status || 'Active',
-        isGuest: false,
-        goals: guest.goals.toString(),
-        assists: guest.assists.toString(),
-        appearances: guest.appearances.toString(),
-        yellowCards: guest.yellowCards.toString(),
-        redCards: guest.redCards.toString(),
-      });
-    } else {
-      openAddModal(); // Reset form if empty string is selected
-    }
-  };
-
   const openEditModal = (player: Player) => {
     setEditingPlayer(player);
     setFormData({
@@ -1211,21 +1181,6 @@ export default function AdminPlayersPage() {
                   >
                     <UserPlus className="w-3.5 h-3.5" /> Tarik Pemain ({availableToPullPlayers.length})
                   </button>
-                </div>
-              )}
-              {!editingPlayer && guestPlayers.length > 0 && (
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
-                  <label className="font-bold text-amber-800 uppercase text-xs">Pilih dari Pemain Loan (Opsional)</label>
-                  <p className="text-xs text-amber-700/80 mb-2">Pilih pemain loan untuk dipromosikan ke skuad utama secara permanen.</p>
-                  <select 
-                    onChange={(e) => handleSelectGuest(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 focus:border-amber-500 outline-none text-sm"
-                  >
-                    <option value="">-- Buat Baru (Bukan dari Loan) --</option>
-                    {guestPlayers.map(g => (
-                      <option key={g.id} value={g.id}>{g.name} (#{g.number})</option>
-                    ))}
-                  </select>
                 </div>
               )}
 
