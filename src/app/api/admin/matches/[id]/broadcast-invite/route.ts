@@ -93,31 +93,61 @@ export async function GET(
 
     const teamName = systemSetting?.teamName || 'MARINERS SC';
 
+    // Existing attendances for this match
+    const attendances = await prisma.matchAttendance.findMany({
+      where: { matchId: match.id },
+    });
+    const attMap = new Map(attendances.map((a) => [a.playerId, a]));
+
     // Find active squad players for this season
-    let players = await prisma.player.findMany({
+    const seasonConditions: any[] = [];
+    if (match.seasonId) seasonConditions.push({ seasons: { some: { id: match.seasonId } } });
+    if (match.seasonName) {
+      seasonConditions.push({ seasons: { some: { name: match.seasonName } } });
+      seasonConditions.push({ seasonData: { contains: `"${match.seasonName}"` } });
+    }
+
+    let seasonPlayers = await prisma.player.findMany({
       where: {
         isGuest: false,
-        OR: [
-          ...(match.seasonId ? [{ seasons: { some: { id: match.seasonId } } }] : []),
-          ...(match.seasonName ? [{ seasons: { some: { name: match.seasonName } } }] : []),
-        ],
+        OR: seasonConditions.length > 0 ? seasonConditions : undefined,
       },
       orderBy: { number: 'asc' },
     });
 
     // Fallback: If no players enrolled in that specific season yet, load all non-guest players
-    if (players.length === 0) {
-      players = await prisma.player.findMany({
+    if (seasonPlayers.length === 0) {
+      seasonPlayers = await prisma.player.findMany({
         where: { isGuest: false },
         orderBy: { number: 'asc' },
       });
     }
 
-    // Existing attendances
-    const attendances = await prisma.matchAttendance.findMany({
-      where: { matchId: match.id },
+    // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
+    const extraPlayerIds = new Set<string>();
+    attendances.forEach((a) => {
+      if (a.playerId) extraPlayerIds.add(a.playerId);
     });
-    const attMap = new Map(attendances.map((a) => [a.playerId, a]));
+
+    const extraPlayers = await prisma.player.findMany({
+      where: {
+        OR: [
+          ...(extraPlayerIds.size > 0 ? [{ id: { in: Array.from(extraPlayerIds) } }] : []),
+          { guestMatchId: match.id },
+        ],
+      },
+    });
+
+    // Merge and deduplicate
+    const playerMap = new Map<string, any>();
+    seasonPlayers.forEach((p) => playerMap.set(p.id, p));
+    extraPlayers.forEach((p) => {
+      if (!playerMap.has(p.id)) {
+        playerMap.set(p.id, p);
+      }
+    });
+
+    const players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
 
     const urlObj = new URL(req.url);
     const origin = urlObj.origin || process.env.NEXT_PUBLIC_APP_URL || 'https://marinerssc.vercel.app';
@@ -219,36 +249,66 @@ export async function POST(
 
     const teamName = systemSetting?.teamName || 'MARINERS SC';
 
+    // Existing attendances for this match
+    const existingAttendances = await prisma.matchAttendance.findMany({
+      where: { matchId: match.id },
+    });
+    const existingMap = new Map(existingAttendances.map((a) => [a.playerId, a]));
+
     // Find active squad players for this season
-    let players = await prisma.player.findMany({
+    const seasonConditions: any[] = [];
+    if (match.seasonId) seasonConditions.push({ seasons: { some: { id: match.seasonId } } });
+    if (match.seasonName) {
+      seasonConditions.push({ seasons: { some: { name: match.seasonName } } });
+      seasonConditions.push({ seasonData: { contains: `"${match.seasonName}"` } });
+    }
+
+    let seasonPlayers = await prisma.player.findMany({
       where: {
         isGuest: false,
-        OR: [
-          ...(match.seasonId ? [{ seasons: { some: { id: match.seasonId } } }] : []),
-          ...(match.seasonName ? [{ seasons: { some: { name: match.seasonName } } }] : []),
-        ],
+        OR: seasonConditions.length > 0 ? seasonConditions : undefined,
       },
       orderBy: { number: 'asc' },
     });
 
-    if (players.length === 0) {
-      players = await prisma.player.findMany({
+    if (seasonPlayers.length === 0) {
+      seasonPlayers = await prisma.player.findMany({
         where: { isGuest: false },
         orderBy: { number: 'asc' },
       });
     }
+
+    // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
+    const extraPlayerIds = new Set<string>();
+    existingAttendances.forEach((a) => {
+      if (a.playerId) extraPlayerIds.add(a.playerId);
+    });
+
+    const extraPlayers = await prisma.player.findMany({
+      where: {
+        OR: [
+          ...(extraPlayerIds.size > 0 ? [{ id: { in: Array.from(extraPlayerIds) } }] : []),
+          { guestMatchId: match.id },
+        ],
+      },
+    });
+
+    // Merge and deduplicate
+    const playerMap = new Map<string, any>();
+    seasonPlayers.forEach((p) => playerMap.set(p.id, p));
+    extraPlayers.forEach((p) => {
+      if (!playerMap.has(p.id)) {
+        playerMap.set(p.id, p);
+      }
+    });
+
+    let players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
 
     // Filter by playerIds if provided
     if (Array.isArray(body.playerIds) && body.playerIds.length > 0) {
       const allowed = new Set(body.playerIds);
       players = players.filter((p) => allowed.has(p.id));
     }
-
-    // Upsert MatchAttendance for each player as 'INVITED'
-    const existingAttendances = await prisma.matchAttendance.findMany({
-      where: { matchId: match.id },
-    });
-    const existingMap = new Map(existingAttendances.map((a) => [a.playerId, a]));
 
     for (const p of players) {
       const existing = existingMap.get(p.id);

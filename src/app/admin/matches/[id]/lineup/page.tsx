@@ -425,6 +425,23 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     }
   };
 
+  const handleAddSquadPlayerToMatch = async (playerId: string) => {
+    try {
+      const res = await fetch(`/api/admin/matches/${matchId}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ADD_SQUAD_PLAYER', playerId }),
+      });
+      if (res.ok) {
+        const attRes = await fetch(`/api/admin/matches/${matchId}/attendance`);
+        const attData = await attRes.json();
+        if (attData.attendances) setMatchAttendances(attData.attendances);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -830,6 +847,16 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
         return confirmedPlayerIds.has(p.id);
       }
       return true;
+    })
+  );
+
+  const unconfirmedSquadPlayers = sortRosterList(
+    availablePlayers.filter((p) => {
+      if (p.isGuest || (p.member && !p.member.isPermanent)) return false;
+      if (hasAttendanceSystem) {
+        return !confirmedPlayerIds.has(p.id);
+      }
+      return false;
     })
   );
   const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
@@ -1250,6 +1277,47 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             </span>
                           </div>
                         ))
+                      )}
+
+                      {/* PEMAIN SKUAD UTAMA BELUM KONFIRMASI */}
+                      {hasAttendanceSystem && unconfirmedSquadPlayers.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-slate-200">
+                          <div className="flex items-center justify-between mb-1.5 px-1">
+                            <span className="text-[10px] font-black uppercase text-amber-700 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-amber-600" /> Belum Konfirmasi ({unconfirmedSquadPlayers.length})
+                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {unconfirmedSquadPlayers.map((p) => {
+                              const att = matchAttendances.find((a) => a.playerId === p.id);
+                              const isDeclined = att?.status === 'DECLINED';
+                              return (
+                                <div
+                                  key={p.id}
+                                  className={`flex items-center justify-between gap-2 p-2 rounded-xl border text-xs ${
+                                    isDeclined ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                                      <img src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate} alt={p.name} className="w-full h-full object-cover object-top" />
+                                    </div>
+                                    <span className="font-mono font-black text-[10px] text-blue-700 shrink-0">#{p.number}</span>
+                                    <span className="truncate block font-bold text-[10px] text-slate-800">{p.name}</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddSquadPlayerToMatch(p.id)}
+                                    className="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold uppercase text-[8.5px] shrink-0 cursor-pointer transition-colors"
+                                    title="Tandai Hadir / Masukkan ke Skuad Tersedia"
+                                  >
+                                    + Hadirkan
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       )}
                     </>
                   )}

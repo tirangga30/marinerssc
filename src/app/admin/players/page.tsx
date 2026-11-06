@@ -214,9 +214,10 @@ export default function AdminPlayersPage() {
     .filter((p) => p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id))
     .map((p) => resolvePlayerForSeason(p, selectedSeason));
 
-  const availableToPullPlayers = players.filter(
-    (p) => !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)
-  );
+  const availableToPullPlayers = [
+    ...players.filter((p) => !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)),
+    ...guestPlayers.filter((g) => !seasonSquadPlayers.some((sp) => sp.id === g.id)),
+  ];
 
   const displayedList =
     activeTab === 'season_squad'
@@ -840,6 +841,24 @@ export default function AdminPlayersPage() {
                         <Star className={`w-3.5 h-3.5 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-500 text-amber-500' : ''}`} />
                       </button>
                     )}
+                    {player.isGuest && (
+                      <button
+                        onClick={async () => {
+                          if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
+                            await fetch('/api/players/' + player.id, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ isGuest: false, seasonName: selectedSeason }),
+                            });
+                            fetchPlayers();
+                          }
+                        }}
+                        title="Promosikan ke Skuad Utama"
+                        className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors border border-amber-300 cursor-pointer"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(player)}
                       className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200 cursor-pointer"
@@ -991,7 +1010,7 @@ export default function AdminPlayersPage() {
                                 await fetch('/api/players/' + player.id, {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ isGuest: false }),
+                                  body: JSON.stringify({ isGuest: false, seasonName: selectedSeason }),
                                 });
                                 fetchPlayers();
                               }

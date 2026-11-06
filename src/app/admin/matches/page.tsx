@@ -470,7 +470,7 @@ export default function AdminMatchesPage() {
                     >
                       <Settings2 className="w-3.5 h-3.5" /> Match Options
                     </Link>
-                    {m.sendWhatsAppInvite !== false && Boolean(m.attendances && m.attendances.length > 0) && (
+                    {m.sendWhatsAppInvite !== false && (
                       <button
                         onClick={() => setBroadcastMatchId(m.id)}
                         className="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300"
@@ -588,7 +588,7 @@ export default function AdminMatchesPage() {
                       >
                         <Settings2 className="w-3.5 h-3.5" /> Match Options
                       </Link>
-                      {m.sendWhatsAppInvite !== false && Boolean(m.attendances && m.attendances.length > 0) && (
+                      {m.sendWhatsAppInvite !== false && (
                         <button
                           onClick={() => setBroadcastMatchId(m.id)}
                           className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors font-bold uppercase text-[10px] inline-flex items-center gap-1 cursor-pointer"

@@ -144,7 +144,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (data.isFeatured !== undefined) updateData.isFeatured = Boolean(data.isFeatured);
     if (data.status !== undefined) updateData.status = data.status;
     if (data.phone !== undefined) updateData.phone = data.phone ? String(data.phone).trim() : null;
-    if (data.isGuest !== undefined) updateData.isGuest = Boolean(data.isGuest);
+    if (data.isGuest !== undefined) {
+      updateData.isGuest = Boolean(data.isGuest);
+      if (!updateData.isGuest) {
+        updateData.guestMatchId = null;
+      }
+    }
     if (data.goals !== undefined) updateData.goals = parseInt(data.goals || 0);
     if (data.assists !== undefined) updateData.assists = parseInt(data.assists || 0);
     if (data.appearances !== undefined) updateData.appearances = parseInt(data.appearances || 0);
@@ -163,6 +168,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     // 4. Handle season-specific data isolation
+    let seasonToConnect = targetSeason
+      ? await prisma.season.findFirst({
+          where: { OR: [{ name: targetSeason }, { id: targetSeason }] },
+        })
+      : null;
+
+    if (!seasonToConnect && (data.isGuest === false || existingPlayer.seasons.length === 0)) {
+      seasonToConnect =
+        (await prisma.season.findFirst({ where: { isCurrent: true } })) ||
+        (await prisma.season.findFirst({ orderBy: { year: 'desc' } }));
+    }
+
+    if (seasonToConnect) {
+      updateData.seasons = {
+        connect: { id: seasonToConnect.id },
+      };
+    }
+
     if (targetSeason) {
       const seasonMap = parsePlayerSeasonData(existingPlayer.seasonData);
 
@@ -200,7 +223,45 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const player = await prisma.player.update({
       where: { id },
       data: updateData,
+      include: {
+        seasons: true,
+      },
     });
+
+    // Auto-sync newly promoted or assigned player into existing upcoming matches of this season
+    if (seasonToConnect && !player.isGuest) {
+      try {
+        const upcomingMatches = await prisma.footballMatch.findMany({
+          where: {
+            OR: [
+              { seasonId: seasonToConnect.id },
+              { seasonName: seasonToConnect.name },
+            ],
+            status: { in: ['scheduled', 'upcoming'] },
+          },
+          include: {
+            attendances: { select: { playerId: true } },
+          },
+        });
+
+        for (const m of upcomingMatches) {
+          const alreadyInMatch = m.attendances.some((a) => a.playerId === player.id);
+          if (!alreadyInMatch && m.attendances.length > 0) {
+            await prisma.matchAttendance.create({
+              data: {
+                matchId: m.id,
+                playerId: player.id,
+                playerType: 'SQUAD',
+                playerName: player.name,
+                status: 'INVITED',
+              },
+            }).catch(() => null);
+          }
+        }
+      } catch (syncErr) {
+        console.error('Error syncing player with upcoming matches:', syncErr);
+      }
+    }
 
     // Automatically remove replaced unreferenced files from disk
     await cleanupUnusedUploads();

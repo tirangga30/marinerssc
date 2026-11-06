@@ -76,7 +76,7 @@ export async function POST(
     if (playerIds.length > 0) {
       await prisma.player.updateMany({
         where: { id: { in: playerIds }, isGuest: true },
-        data: { isGuest: false },
+        data: { isGuest: false, guestMatchId: null },
       });
     }
 
@@ -110,6 +110,43 @@ export async function POST(
         _count: { select: { players: true } },
       },
     });
+
+    // Sync newly enrolled players into upcoming matches of this season
+    try {
+      const upcomingMatches = await prisma.footballMatch.findMany({
+        where: {
+          OR: [{ seasonId: id }, { seasonName: updated.name }],
+          status: { in: ['scheduled', 'upcoming'] },
+        },
+        include: {
+          attendances: { select: { playerId: true } },
+        },
+      });
+
+      for (const match of upcomingMatches) {
+        if (match.attendances.length > 0) {
+          const existingSet = new Set(match.attendances.map((a) => a.playerId));
+          for (const pid of playerIds) {
+            if (!existingSet.has(pid)) {
+              const pInfo = playersToEnroll.find((p) => p.id === pid);
+              if (pInfo) {
+                await prisma.matchAttendance.create({
+                  data: {
+                    matchId: match.id,
+                    playerId: pid,
+                    playerType: 'SQUAD',
+                    playerName: pInfo.name,
+                    status: 'INVITED',
+                  },
+                }).catch(() => null);
+              }
+            }
+          }
+        }
+      }
+    } catch (syncErr) {
+      console.error('Failed to sync players with season matches:', syncErr);
+    }
 
     return NextResponse.json({
       success: true,
