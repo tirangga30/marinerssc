@@ -228,41 +228,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     });
 
-    // Auto-sync newly promoted or assigned player into existing upcoming matches of this season
-    if (seasonToConnect && !player.isGuest) {
-      try {
-        const upcomingMatches = await prisma.footballMatch.findMany({
-          where: {
-            OR: [
-              { seasonId: seasonToConnect.id },
-              { seasonName: seasonToConnect.name },
-            ],
-            status: { in: ['scheduled', 'upcoming'] },
-          },
-          include: {
-            attendances: { select: { playerId: true } },
-          },
-        });
-
-        for (const m of upcomingMatches) {
-          const alreadyInMatch = m.attendances.some((a) => a.playerId === player.id);
-          if (!alreadyInMatch && m.attendances.length > 0) {
-            await prisma.matchAttendance.create({
-              data: {
-                matchId: m.id,
-                playerId: player.id,
-                playerType: 'SQUAD',
-                playerName: player.name,
-                status: 'INVITED',
-              },
-            }).catch(() => null);
-          }
-        }
-      } catch (syncErr) {
-        console.error('Error syncing player with upcoming matches:', syncErr);
-      }
-    }
-
     // Automatically remove replaced unreferenced files from disk
     await cleanupUnusedUploads();
 
