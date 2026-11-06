@@ -123,7 +123,11 @@ export default function MatchWhatsAppInviteModal({
     }
   };
 
-  const players: PlayerInvite[] = data?.players || [];
+  const isUnknown = (p: { id?: string; name?: string }) =>
+    p.id === 'unknown-player' ||
+    Boolean(p.name && p.name.trim().toLowerCase() === 'tidak diketahui');
+
+  const players: PlayerInvite[] = (data?.players || []).filter((p: any) => !isUnknown(p));
   const filteredPlayers = players.filter((p) => {
     if (category === 'SQUAD' && p.isGuest) return false;
     if (category === 'LOAN' && !p.isGuest) return false;

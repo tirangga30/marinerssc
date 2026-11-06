@@ -3,6 +3,13 @@ import { prisma } from '@/lib/db';
 export async function recalculateAllPlayerStats() {
   try {
     const players = await prisma.player.findMany({
+      where: {
+        NOT: [
+          { id: 'unknown-player' },
+          { slug: 'tidak-diketahui' },
+          { name: 'Tidak Diketahui' },
+        ],
+      },
       include: {
         lineups: { include: { match: true } },
         events: { include: { match: true } },

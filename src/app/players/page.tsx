@@ -71,7 +71,11 @@ export default async function PlayersPage({
       }).catch(() => []),
       prisma.player.findMany({
         where: {
-          NOT: { id: 'unknown-player' },
+          NOT: [
+            { id: 'unknown-player' },
+            { slug: 'tidak-diketahui' },
+            { name: 'Tidak Diketahui' },
+          ],
           isGuest: false,
           AND: [
             {
@@ -100,7 +104,11 @@ export default async function PlayersPage({
         // Safe fallback without member join if member relation throws
         return prisma.player.findMany({
           where: {
-            NOT: { id: 'unknown-player' },
+            NOT: [
+              { id: 'unknown-player' },
+              { slug: 'tidak-diketahui' },
+              { name: 'Tidak Diketahui' },
+            ],
             isGuest: false,
           },
           select: {

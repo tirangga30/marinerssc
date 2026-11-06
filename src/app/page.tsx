@@ -125,7 +125,15 @@ export default async function HomePage() {
         },
       }),
       prisma.player.findMany({
-        where: { isGuest: false, member: null },
+        where: {
+          isGuest: false,
+          member: null,
+          NOT: [
+            { id: 'unknown-player' },
+            { slug: 'tidak-diketahui' },
+            { name: 'Tidak Diketahui' },
+          ],
+        },
         select: {
           id: true,
           name: true,

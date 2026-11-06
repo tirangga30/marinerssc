@@ -149,18 +149,23 @@ export default function AdminPlayersPage() {
     });
   };
 
+  const isUnknownPlayer = (p: { id?: string; name?: string; slug?: string }) =>
+    p.id === 'unknown-player' ||
+    p.slug === 'tidak-diketahui' ||
+    Boolean(p.name && p.name.trim().toLowerCase() === 'tidak diketahui');
+
   const fetchPlayers = async () => {
     try {
       const res = await fetch('/api/players');
       const data = await res.json();
       if (Array.isArray(data)) {
-        setPlayers(sortPlayersByPos(data));
+        setPlayers(sortPlayersByPos(data.filter((p: any) => !isUnknownPlayer(p))));
       }
 
       const guestRes = await fetch('/api/players?guestsOnly=true');
       const guestData = await guestRes.json();
       if (Array.isArray(guestData)) {
-        setGuestPlayers(sortPlayersByPos(guestData));
+        setGuestPlayers(sortPlayersByPos(guestData.filter((g: any) => !isUnknownPlayer(g))));
       }
     } catch {
       console.error('Gagal mengambil pemain');
@@ -211,18 +216,18 @@ export default function AdminPlayersPage() {
   };
 
   const seasonSquadPlayers = players
-    .filter((p) => p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id))
+    .filter((p) => !isUnknownPlayer(p) && p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id))
     .map((p) => resolvePlayerForSeason(p, selectedSeason));
 
   const availableToPullPlayers = [
-    ...players.filter((p) => !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)),
-    ...guestPlayers.filter((g) => !seasonSquadPlayers.some((sp) => sp.id === g.id)),
+    ...players.filter((p) => !isUnknownPlayer(p) && !p.seasons?.some((s) => s.name === selectedSeason || s.id === currentSeasonObj?.id)),
+    ...guestPlayers.filter((g) => !isUnknownPlayer(g) && !seasonSquadPlayers.some((sp) => sp.id === g.id)),
   ];
 
   const displayedList =
     activeTab === 'season_squad'
       ? seasonSquadPlayers
-      : guestPlayers;
+      : guestPlayers.filter((g) => !isUnknownPlayer(g));
 
   const isBirthdayToday = (bDate?: string | Date | null) => {
     if (!bDate) return false;

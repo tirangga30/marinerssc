@@ -107,9 +107,16 @@ export async function GET(
       seasonConditions.push({ seasonData: { contains: `"${match.seasonName}"` } });
     }
 
+    const unknownExclusion = [
+      { id: 'unknown-player' },
+      { slug: 'tidak-diketahui' },
+      { name: 'Tidak Diketahui' },
+    ];
+
     let seasonPlayers = await prisma.player.findMany({
       where: {
         isGuest: false,
+        NOT: unknownExclusion,
         OR: seasonConditions.length > 0 ? seasonConditions : undefined,
       },
       orderBy: { number: 'asc' },
@@ -118,25 +125,32 @@ export async function GET(
     // Fallback: If no players enrolled in that specific season yet, load all non-guest players
     if (seasonPlayers.length === 0) {
       seasonPlayers = await prisma.player.findMany({
-        where: { isGuest: false },
+        where: {
+          isGuest: false,
+          NOT: unknownExclusion,
+        },
         orderBy: { number: 'asc' },
       });
     }
 
     // Also include loan players (isGuest: true)
     const loanPlayers = await prisma.player.findMany({
-      where: { isGuest: true },
+      where: {
+        isGuest: true,
+        NOT: unknownExclusion,
+      },
       orderBy: { number: 'asc' },
     });
 
     // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
     const extraPlayerIds = new Set<string>();
     attendances.forEach((a) => {
-      if (a.playerId) extraPlayerIds.add(a.playerId);
+      if (a.playerId && a.playerId !== 'unknown-player') extraPlayerIds.add(a.playerId);
     });
 
     const extraPlayers = await prisma.player.findMany({
       where: {
+        NOT: unknownExclusion,
         OR: [
           ...(extraPlayerIds.size > 0 ? [{ id: { in: Array.from(extraPlayerIds) } }] : []),
           { guestMatchId: match.id },
@@ -281,9 +295,16 @@ export async function POST(
       seasonConditions.push({ seasonData: { contains: `"${match.seasonName}"` } });
     }
 
+    const unknownExclusion = [
+      { id: 'unknown-player' },
+      { slug: 'tidak-diketahui' },
+      { name: 'Tidak Diketahui' },
+    ];
+
     let seasonPlayers = await prisma.player.findMany({
       where: {
         isGuest: false,
+        NOT: unknownExclusion,
         OR: seasonConditions.length > 0 ? seasonConditions : undefined,
       },
       orderBy: { number: 'asc' },
@@ -291,25 +312,32 @@ export async function POST(
 
     if (seasonPlayers.length === 0) {
       seasonPlayers = await prisma.player.findMany({
-        where: { isGuest: false },
+        where: {
+          isGuest: false,
+          NOT: unknownExclusion,
+        },
         orderBy: { number: 'asc' },
       });
     }
 
     // Also include loan players (isGuest: true)
     const loanPlayers = await prisma.player.findMany({
-      where: { isGuest: true },
+      where: {
+        isGuest: true,
+        NOT: unknownExclusion,
+      },
       orderBy: { number: 'asc' },
     });
 
     // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
     const extraPlayerIds = new Set<string>();
     existingAttendances.forEach((a) => {
-      if (a.playerId) extraPlayerIds.add(a.playerId);
+      if (a.playerId && a.playerId !== 'unknown-player') extraPlayerIds.add(a.playerId);
     });
 
     const extraPlayers = await prisma.player.findMany({
       where: {
+        NOT: unknownExclusion,
         OR: [
           ...(extraPlayerIds.size > 0 ? [{ id: { in: Array.from(extraPlayerIds) } }] : []),
           { guestMatchId: match.id },

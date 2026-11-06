@@ -55,6 +55,9 @@ export async function ensureDbColumns() {
       `UPDATE "FootballMatch" SET "stage" = 'Matchday 2' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate"::text LIKE '2025-09-05%' OR ("matchDate" >= '2025-09-04' AND "matchDate" <= '2025-09-06'))`,
       `UPDATE "FootballMatch" SET "stage" = 'Matchday 3' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate"::text LIKE '2025-10-11%' OR ("matchDate" >= '2025-10-10' AND "matchDate" <= '2025-10-12'))`,
       `DELETE FROM "MatchAttendance" WHERE LOWER("playerName") LIKE '%nathan%'`,
+      `DELETE FROM "MatchAttendance" WHERE "playerId" = 'unknown-player' OR LOWER("playerName") LIKE '%tidak diketahui%'`,
+      `DELETE FROM "_PlayerToSeason" WHERE "A" = 'unknown-player' OR "B" = 'unknown-player'`,
+      `UPDATE "Player" SET "status" = 'Inactive', "hidePhoto" = true WHERE "id" = 'unknown-player' OR "slug" = 'tidak-diketahui'`,
     ];
 
     for (const sql of pgMigrations) {
@@ -86,6 +89,9 @@ export async function ensureDbColumns() {
       `UPDATE "FootballMatch" SET "stage" = 'Matchday 2' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate" LIKE '2025-09-05%' OR ("matchDate" >= '2025-09-04' AND "matchDate" <= '2025-09-06'))`,
       `UPDATE "FootballMatch" SET "stage" = 'Matchday 3' WHERE LOWER("opponentName") LIKE '%manonjaya%' AND ("matchDate" LIKE '2025-10-11%' OR ("matchDate" >= '2025-10-10' AND "matchDate" <= '2025-10-12'))`,
       `DELETE FROM "MatchAttendance" WHERE LOWER("playerName") LIKE '%nathan%'`,
+      `DELETE FROM "MatchAttendance" WHERE "playerId" = 'unknown-player' OR LOWER("playerName") LIKE '%tidak diketahui%'`,
+      `DELETE FROM "_PlayerToSeason" WHERE "A" = 'unknown-player' OR "B" = 'unknown-player'`,
+      `UPDATE "Player" SET "status" = 'Inactive', "hidePhoto" = true WHERE "id" = 'unknown-player' OR "slug" = 'tidak-diketahui'`,
     ];
 
     for (const sql of sqliteMigrations) {

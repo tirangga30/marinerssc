@@ -11,8 +11,15 @@ export async function GET(req: Request) {
     const matchId = searchParams.get('matchId');
     const guestsOnly = searchParams.get('guestsOnly') === 'true';
 
+    const unknownExclusion = [
+      { id: 'unknown-player' },
+      { slug: 'tidak-diketahui' },
+      { name: 'Tidak Diketahui' },
+    ];
+
     let whereClause: any = {
       isGuest: false,
+      NOT: unknownExclusion,
       OR: [
         { member: null },
         { member: { isPermanent: true } },
@@ -20,9 +27,14 @@ export async function GET(req: Request) {
     };
 
     if (guestsOnly) {
-      whereClause = { isGuest: true };
+      whereClause = {
+        isGuest: true,
+        NOT: unknownExclusion,
+      };
     } else if (matchId) {
-      whereClause = {}; // Ambil semua pemain agar dapat memisahkan skuad utama, tamu match ini, dan rekomendasi tamu match lain
+      whereClause = {
+        NOT: unknownExclusion,
+      }; // Ambil semua pemain agar dapat memisahkan skuad utama, tamu match ini, dan rekomendasi tamu match lain
 
       // Auto-sync confirmed members for this match into Player table so they can be dragged in lineup
       try {
@@ -152,7 +164,14 @@ export async function GET(req: Request) {
       return a.number - b.number;
     });
 
-    return NextResponse.json(mappedPlayers);
+    const isUnknown = (p: any) =>
+      p.id === 'unknown-player' ||
+      p.slug === 'tidak-diketahui' ||
+      (p.name && p.name.trim().toLowerCase() === 'tidak diketahui');
+
+    const cleanPlayers = mappedPlayers.filter((p) => !isUnknown(p));
+
+    return NextResponse.json(cleanPlayers);
   } catch (error) {
     return NextResponse.json({ error: 'Gagal mengambil data pemain' }, { status: 500 });
   }

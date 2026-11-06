@@ -23,6 +23,11 @@ export async function GET(
     const allSquadPlayers = await prisma.player.findMany({
       where: {
         isGuest: false,
+        NOT: [
+          { id: 'unknown-player' },
+          { slug: 'tidak-diketahui' },
+          { name: 'Tidak Diketahui' },
+        ],
         OR: [
           { member: null },
           { member: { isPermanent: true } },

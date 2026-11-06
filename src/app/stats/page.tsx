@@ -33,6 +33,11 @@ const getCachedStatsData = unstable_cache(
           where: {
             isGuest: false,
             member: null,
+            NOT: [
+              { id: 'unknown-player' },
+              { slug: 'tidak-diketahui' },
+              { name: 'Tidak Diketahui' },
+            ],
           },
           select: {
             id: true,
