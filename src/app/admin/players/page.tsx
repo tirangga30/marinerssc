@@ -811,24 +811,6 @@ export default function AdminPlayersPage() {
                         <Star className={`w-3.5 h-3.5 ${isPlayerFeaturedInSeason(player) ? 'fill-amber-500 text-amber-500' : ''}`} />
                       </button>
                     )}
-                    {player.isGuest && (
-                      <button
-                        onClick={async () => {
-                          if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
-                            await fetch('/api/players/' + player.id, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ isGuest: false, seasonName: selectedSeason }),
-                            });
-                            fetchPlayers();
-                          }
-                        }}
-                        title="Promosikan ke Skuad Utama"
-                        className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors border border-amber-300 cursor-pointer"
-                      >
-                        <Star className="w-3.5 h-3.5" />
-                      </button>
-                    )}
                     <button
                       onClick={() => openEditModal(player)}
                       className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200 cursor-pointer"
@@ -973,24 +955,6 @@ export default function AdminPlayersPage() {
                           </button>
                         )}
 
-                        {player.isGuest && (
-                          <button
-                            onClick={async () => {
-                              if (confirm('Promosikan ' + player.name + ' ke skuad utama?')) {
-                                await fetch('/api/players/' + player.id, {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ isGuest: false, seasonName: selectedSeason }),
-                                });
-                                fetchPlayers();
-                              }
-                            }}
-                            title="Promosikan ke Skuad Utama"
-                            className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors border border-amber-300 cursor-pointer"
-                          >
-                            <Star className="w-4 h-4" />
-                          </button>
-                        )}
                         <button
                           onClick={() => openEditModal(player)}
                           className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white transition-colors border border-slate-200 cursor-pointer"
@@ -1161,29 +1125,6 @@ export default function AdminPlayersPage() {
             </div>
 
             <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
-              {!editingPlayer && availableToPullPlayers.length > 0 && (
-                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-amber-800">Pemain pernah terdaftar di musim sebelumnya?</p>
-                    <p className="text-[11px] text-amber-700/80">
-                      Tarik data pemain dari musim lain secara otomatis tanpa perlu input manual ulang.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      setPullSearch('');
-                      setSelectedPlayerIdsForPull([]);
-                      setShowPullModal(true);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase transition-colors shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" /> Tarik Pemain ({availableToPullPlayers.length})
-                  </button>
-                </div>
-              )}
-
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 {/* Photo Upload Section with Cropper */}
                 <div className="p-5 sm:p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">

@@ -29,6 +29,8 @@ interface PlayerInvite {
   inviteUrl: string;
   message: string;
   waUrl: string | null;
+  isGuest?: boolean;
+  playerType?: string;
 }
 
 interface MatchWhatsAppInviteModalProps {
@@ -44,6 +46,7 @@ export default function MatchWhatsAppInviteModal({
   const [data, setData] = useState<any>(null);
   const [dispatching, setDispatching] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'CONFIRMED' | 'INVITED' | 'DECLINED'>('ALL');
+  const [category, setCategory] = useState<'ALL' | 'SQUAD' | 'LOAN'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -122,6 +125,8 @@ export default function MatchWhatsAppInviteModal({
 
   const players: PlayerInvite[] = data?.players || [];
   const filteredPlayers = players.filter((p) => {
+    if (category === 'SQUAD' && p.isGuest) return false;
+    if (category === 'LOAN' && !p.isGuest) return false;
     if (filter !== 'ALL' && p.status !== filter) return false;
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
@@ -129,6 +134,9 @@ export default function MatchWhatsAppInviteModal({
     }
     return true;
   });
+
+  const displayedSquadPlayers = filteredPlayers.filter((p) => !p.isGuest);
+  const displayedLoanPlayers = filteredPlayers.filter((p) => p.isGuest);
 
   const isAllFilteredSelected =
     filteredPlayers.length > 0 &&
@@ -144,6 +152,120 @@ export default function MatchWhatsAppInviteModal({
       }
       return next;
     });
+  };
+
+  const renderPlayerRow = (p: PlayerInvite) => {
+    const isConfirmed = p.status === 'CONFIRMED';
+    const isDeclined = p.status === 'DECLINED';
+    const isCopied = copiedId === p.id;
+    const isSelected = selectedIds.has(p.id);
+
+    return (
+      <div
+        key={p.id}
+        className={`p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
+          isSelected ? 'bg-blue-50/50 hover:bg-blue-50/80' : 'hover:bg-slate-50'
+        }`}
+      >
+        {/* Checkbox + Player Avatar & Details */}
+        <div className="flex items-center gap-3 min-w-0">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => toggleSelectPlayer(p.id)}
+            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 shrink-0 cursor-pointer"
+          />
+          <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+            <img
+              src={p.photoUrl || '/playertemplate.webp'}
+              alt={p.name}
+              className="w-full h-full object-cover object-top scale-[1.3] origin-top"
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-slate-900 text-xs sm:text-sm uppercase truncate">
+                {p.name}
+              </span>
+              <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                #{p.number}
+              </span>
+              <span className="text-[9px] font-bold text-slate-600 uppercase">
+                {p.position}
+              </span>
+              {p.isGuest && (
+                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs">
+                  LOAN
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-600">
+              {p.phone ? (
+                <span className="font-mono text-emerald-700 flex items-center gap-1 font-semibold">
+                  <Phone className="w-2.5 h-2.5" /> {p.phone}
+                </span>
+              ) : (
+                <span className="text-rose-600 italic">No HP belum diisi</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Status & Action Buttons */}
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          {/* Status Badge */}
+          <div className="mr-1">
+            {isConfirmed ? (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-black uppercase flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Ikut
+              </span>
+            ) : isDeclined ? (
+              <span
+                className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black uppercase flex items-center gap-1"
+                title={p.declineReason ? `Alasan: ${p.declineReason}` : undefined}
+              >
+                <XCircle className="w-3 h-3" /> Tidak
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-300 text-[10px] font-bold uppercase flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Menunggu
+              </span>
+            )}
+          </div>
+
+          {/* Copy Link Button */}
+          <button
+            type="button"
+            onClick={() => handleCopy(p.inviteUrl, p.id)}
+            title="Salin tautan konfirmasi pemain"
+            className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isCopied ? 'Tersalin!' : 'Link'}</span>
+          </button>
+
+          {/* Direct WhatsApp Button */}
+          {p.waUrl ? (
+            <a
+              href={p.waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-600/30"
+            >
+              <i className="fa-brands fa-whatsapp text-sm" />
+              <span>Kirim WA</span>
+            </a>
+          ) : (
+            <span
+              className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs uppercase cursor-not-allowed border border-slate-200"
+              title="Nomor WhatsApp pemain belum diisi"
+            >
+              No WA Kosong
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -185,8 +307,11 @@ export default function MatchWhatsAppInviteModal({
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Total Skuad</span>
+                <span className="text-[10px] font-bold text-slate-600 uppercase block">Total Pemain</span>
                 <span className="text-lg font-black font-mono text-slate-900">{data?.totalPlayers || 0}</span>
+                <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
+                  {data?.squadCount ?? 0} Skuad • {data?.loanCount ?? 0} Loan
+                </span>
               </div>
               <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
                 <span className="text-[10px] font-bold text-emerald-700 uppercase block">Konfirmasi Ikut</span>
@@ -251,6 +376,46 @@ export default function MatchWhatsAppInviteModal({
                   {dispatching ? 'Mengirim...' : `Kirim ke ${selectedIds.size} Pemain Terpilih`}
                 </button>
               )}
+            </div>
+
+            {/* Category Filter Pills (Skuad vs Loan) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-xs font-bold text-slate-500 mr-1 shrink-0">Kategori:</span>
+              <button
+                type="button"
+                onClick={() => setCategory('ALL')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all shrink-0 cursor-pointer ${
+                  category === 'ALL'
+                    ? 'bg-slate-900 text-white font-black shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                }`}
+              >
+                Semua ({players.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('SQUAD')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  category === 'SQUAD'
+                    ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-500/20'
+                    : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                Skuad Utama ({players.filter((p) => !p.isGuest).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('LOAN')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  category === 'LOAN'
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20'
+                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                Pemain Loan ({players.filter((p) => p.isGuest).length})
+              </button>
             </div>
 
             {/* Search & Filter Toolbar */}
@@ -319,121 +484,54 @@ export default function MatchWhatsAppInviteModal({
               </div>
             </div>
 
-            {/* Players Table / List */}
-            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white divide-y divide-slate-100 shadow-xs">
+            {/* Players Table / List with Separated Skuad & Loan Groups */}
+            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-xs">
               {filteredPlayers.length === 0 ? (
                 <div className="py-10 text-center text-xs text-slate-500">
                   Tidak ada pemain yang cocok dengan filter.
                 </div>
               ) : (
-                filteredPlayers.map((p) => {
-                  const isConfirmed = p.status === 'CONFIRMED';
-                  const isDeclined = p.status === 'DECLINED';
-                  const isCopied = copiedId === p.id;
-                  const isSelected = selectedIds.has(p.id);
-
-                  return (
-                    <div
-                      key={p.id}
-                      className={`p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
-                        isSelected ? 'bg-blue-50/50 hover:bg-blue-50/80' : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      {/* Checkbox + Player Avatar & Details */}
-                      <div className="flex items-center gap-3 min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSelectPlayer(p.id)}
-                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 shrink-0 cursor-pointer"
-                        />
-                        <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
-                          <img
-                            src={p.photoUrl || '/playertemplate.webp'}
-                            alt={p.name}
-                            className="w-full h-full object-cover object-top scale-[1.3] origin-top"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm uppercase truncate">
-                              {p.name}
-                            </span>
-                            <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                              #{p.number}
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-600 uppercase">
-                              {p.position}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-600">
-                            {p.phone ? (
-                              <span className="font-mono text-emerald-700 flex items-center gap-1 font-semibold">
-                                <Phone className="w-2.5 h-2.5" /> {p.phone}
-                              </span>
-                            ) : (
-                              <span className="text-rose-600 italic">No HP belum diisi</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status & Action Buttons */}
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        {/* Status Badge */}
-                        <div className="mr-1">
-                          {isConfirmed ? (
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-black uppercase flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Ikut
-                            </span>
-                          ) : isDeclined ? (
-                            <span
-                              className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black uppercase flex items-center gap-1"
-                              title={p.declineReason ? `Alasan: ${p.declineReason}` : undefined}
-                            >
-                              <XCircle className="w-3 h-3" /> Tidak
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-300 text-[10px] font-bold uppercase flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> Menunggu
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Copy Link Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(p.inviteUrl, p.id)}
-                          title="Salin tautan konfirmasi pemain"
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">{isCopied ? 'Tersalin!' : 'Link'}</span>
-                        </button>
-
-                        {/* Direct WhatsApp Button */}
-                        {p.waUrl ? (
-                          <a
-                            href={p.waUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-600/30"
-                          >
-                            <i className="fa-brands fa-whatsapp text-sm" />
-                            <span>Kirim WA</span>
-                          </a>
-                        ) : (
-                          <span
-                            className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs uppercase cursor-not-allowed border border-slate-200"
-                            title="Nomor WhatsApp pemain belum diisi"
-                          >
-                            No WA Kosong
+                <div className="divide-y divide-slate-200">
+                  {/* Skuad Utama Section */}
+                  {displayedSquadPlayers.length > 0 && (category === 'ALL' || category === 'SQUAD') && (
+                    <div>
+                      <div className="px-3.5 py-2 bg-blue-50/80 border-b border-blue-100 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
+                          <span className="text-xs font-black uppercase text-blue-950 tracking-wider">
+                            Skuad Utama ({displayedSquadPlayers.length})
                           </span>
-                        )}
+                        </div>
+                        <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                          Resmi
+                        </span>
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {displayedSquadPlayers.map(renderPlayerRow)}
                       </div>
                     </div>
-                  );
-                })
+                  )}
+
+                  {/* Pemain Loan Section */}
+                  {displayedLoanPlayers.length > 0 && (category === 'ALL' || category === 'LOAN') && (
+                    <div>
+                      <div className="px-3.5 py-2 bg-amber-50/90 border-t border-b border-amber-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                          <span className="text-xs font-black uppercase text-amber-950 tracking-wider">
+                            Pemain Loan ({displayedLoanPlayers.length})
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded-full border border-amber-200">
+                          Pinjaman / Tamu
+                        </span>
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {displayedLoanPlayers.map(renderPlayerRow)}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </>

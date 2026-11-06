@@ -123,6 +123,12 @@ export async function GET(
       });
     }
 
+    // Also include loan players (isGuest: true)
+    const loanPlayers = await prisma.player.findMany({
+      where: { isGuest: true },
+      orderBy: { number: 'asc' },
+    });
+
     // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
     const extraPlayerIds = new Set<string>();
     attendances.forEach((a) => {
@@ -141,6 +147,11 @@ export async function GET(
     // Merge and deduplicate
     const playerMap = new Map<string, any>();
     seasonPlayers.forEach((p) => playerMap.set(p.id, p));
+    loanPlayers.forEach((p) => {
+      if (!playerMap.has(p.id)) {
+        playerMap.set(p.id, p);
+      }
+    });
     extraPlayers.forEach((p) => {
       if (!playerMap.has(p.id)) {
         playerMap.set(p.id, p);
@@ -187,8 +198,13 @@ export async function GET(
         inviteUrl,
         message,
         waUrl,
+        isGuest: Boolean(p.isGuest),
+        playerType: p.isGuest ? 'LOAN' : 'SQUAD',
       };
     });
+
+    const squadCount = playerInvites.filter((p) => !p.isGuest).length;
+    const loanCount = playerInvites.filter((p) => p.isGuest).length;
 
     return NextResponse.json({
       match: {
@@ -205,6 +221,8 @@ export async function GET(
       whatsappMode: systemSetting?.whatsappMode || 'disabled',
       isInviteAllowed: (match as any).sendWhatsAppInvite !== false,
       totalPlayers: playerInvites.length,
+      squadCount,
+      loanCount,
       totalWithPhone: playerInvites.filter((p) => Boolean(p.cleanPhone)).length,
       confirmedCount: playerInvites.filter((p) => p.status === 'CONFIRMED').length,
       declinedCount: playerInvites.filter((p) => p.status === 'DECLINED').length,
@@ -278,6 +296,12 @@ export async function POST(
       });
     }
 
+    // Also include loan players (isGuest: true)
+    const loanPlayers = await prisma.player.findMany({
+      where: { isGuest: true },
+      orderBy: { number: 'asc' },
+    });
+
     // Also include extra players tied to this match (already has attendance or assigned as loan/guest)
     const extraPlayerIds = new Set<string>();
     existingAttendances.forEach((a) => {
@@ -296,6 +320,11 @@ export async function POST(
     // Merge and deduplicate
     const playerMap = new Map<string, any>();
     seasonPlayers.forEach((p) => playerMap.set(p.id, p));
+    loanPlayers.forEach((p) => {
+      if (!playerMap.has(p.id)) {
+        playerMap.set(p.id, p);
+      }
+    });
     extraPlayers.forEach((p) => {
       if (!playerMap.has(p.id)) {
         playerMap.set(p.id, p);
@@ -317,7 +346,7 @@ export async function POST(
           data: {
             matchId: match.id,
             playerId: p.id,
-            playerType: 'SQUAD',
+            playerType: p.isGuest ? 'GUEST' : 'SQUAD',
             playerName: p.name,
             status: 'INVITED',
           },
