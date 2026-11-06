@@ -203,17 +203,19 @@ export async function POST(req: Request) {
       }
     }
 
-    // Resolve target season for number separation
+    // Resolve target season for number separation (only for regular squad players)
     const targetSeasonId = data.seasonId;
     const targetSeasonName = data.seasonName;
     let targetSeason = null;
-    if (targetSeasonId) {
-      targetSeason = await prisma.season.findUnique({ where: { id: targetSeasonId } });
-    } else if (targetSeasonName) {
-      targetSeason = await prisma.season.findUnique({ where: { name: targetSeasonName } });
-    } else {
-      targetSeason = await prisma.season.findFirst({ where: { isCurrent: true } })
-        || await prisma.season.findFirst({ orderBy: { year: 'desc' } });
+    if (!data.isGuest) {
+      if (targetSeasonId) {
+        targetSeason = await prisma.season.findUnique({ where: { id: targetSeasonId } });
+      } else if (targetSeasonName) {
+        targetSeason = await prisma.season.findUnique({ where: { name: targetSeasonName } });
+      } else {
+        targetSeason = await prisma.season.findFirst({ where: { isCurrent: true } })
+          || await prisma.season.findFirst({ orderBy: { year: 'desc' } });
+      }
     }
 
     if (data.isGuest) {
@@ -323,8 +325,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // Auto-connect to resolved target season
-    if (targetSeason) {
+    // Auto-connect to resolved target season (only for non-loan squad players)
+    if (targetSeason && !data.isGuest) {
       try {
         await prisma.season.update({
           where: { id: targetSeason.id },

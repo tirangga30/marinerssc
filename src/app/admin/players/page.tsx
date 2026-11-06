@@ -466,6 +466,7 @@ export default function AdminPlayersPage() {
 
   const openAddModal = () => {
     setEditingPlayer(null);
+    const isLoanTab = activeTab === 'guests';
     setFormData({
       name: '',
       number: '',
@@ -480,7 +481,7 @@ export default function AdminPlayersPage() {
       phone: '',
       isCaptain: false,
       status: 'Active',
-      isGuest: false,
+      isGuest: isLoanTab,
       goals: '0',
       assists: '0',
       appearances: '0',
@@ -506,7 +507,7 @@ export default function AdminPlayersPage() {
       phone: player.phone || '',
       isCaptain: player.isCaptain,
       status: player.status,
-      isGuest: false,
+      isGuest: Boolean(player.isGuest),
       goals: player.goals.toString(),
       assists: player.assists.toString(),
       appearances: player.appearances.toString(),
@@ -608,13 +609,16 @@ export default function AdminPlayersPage() {
         formData.photoUrl === defaultPlayerPhoto ||
         formData.photoUrl === '/playertemplate.webp';
 
+      const isLoan = editingPlayer ? Boolean(editingPlayer.isGuest) : activeTab === 'guests';
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          isGuest: isLoan,
           photoUrl: isDefaultTemplate ? '/playertemplate.webp' : formData.photoUrl,
-          seasonName: selectedSeason,
+          seasonName: isLoan ? undefined : selectedSeason,
         }),
       });
 
@@ -665,7 +669,7 @@ export default function AdminPlayersPage() {
             onClick={openAddModal}
             className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl white-blue-btn font-extrabold uppercase text-[11px] sm:text-xs flex items-center gap-1.5 shadow-lg cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-blue-600" /> Tambah Pemain Baru
+            <Plus className="w-3.5 h-3.5 text-blue-600" /> {activeTab === 'guests' ? 'Tambah Pemain Loan' : 'Tambah Pemain Baru'}
           </button>
         </div>
       </div>
@@ -1121,9 +1125,18 @@ export default function AdminPlayersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
           <div className="w-full max-w-2xl glass-panel bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6 shadow-2xl my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h2 className="text-base sm:text-xl font-black uppercase text-slate-900 tracking-wide">
-                {editingPlayer ? 'Edit Pemain' : 'Tambah Pemain Baru'}
-              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-xl font-black uppercase text-slate-900 tracking-wide">
+                  {editingPlayer
+                    ? (formData.isGuest ? 'Edit Pemain Loan' : 'Edit Pemain')
+                    : (formData.isGuest ? 'Tambah Pemain Loan' : 'Tambah Pemain Baru')}
+                </h2>
+                {formData.isGuest && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black uppercase border border-amber-300">
+                    Portal Loan
+                  </span>
+                )}
+              </div>
               <button onClick={() => setShowModal(false)} className="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-white hover:bg-red-500 transition-colors cursor-pointer border border-slate-200">
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>

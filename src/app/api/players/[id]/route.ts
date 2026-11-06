@@ -200,16 +200,20 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         })
       : null;
 
-    if (!seasonToConnect && (data.isGuest === false || existingPlayer.seasons.length === 0)) {
-      seasonToConnect =
-        (await prisma.season.findFirst({ where: { isCurrent: true } })) ||
-        (await prisma.season.findFirst({ orderBy: { year: 'desc' } }));
-    }
+    const isLoanPlayer = data.isGuest !== undefined ? Boolean(data.isGuest) : existingPlayer.isGuest;
 
-    if (seasonToConnect) {
-      updateData.seasons = {
-        connect: { id: seasonToConnect.id },
-      };
+    if (!isLoanPlayer) {
+      if (!seasonToConnect && (data.isGuest === false || existingPlayer.seasons.length === 0)) {
+        seasonToConnect =
+          (await prisma.season.findFirst({ where: { isCurrent: true } })) ||
+          (await prisma.season.findFirst({ orderBy: { year: 'desc' } }));
+      }
+
+      if (seasonToConnect) {
+        updateData.seasons = {
+          connect: { id: seasonToConnect.id },
+        };
+      }
     }
 
     if (targetSeason) {
