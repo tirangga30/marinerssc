@@ -121,9 +121,8 @@ export default async function CommunityStatsPage() {
             </Link>
           ))}
         </div>
-        <div className="pt-2 text-[10px] text-slate-500 text-center space-y-0.5">
-          <div>*Poin = Gol (5), Assist (3), Tampil (1), Kartu Kuning (-1), Kartu Merah (-3)</div>
-          <div className="text-slate-400 font-normal">Disiplin Invite = Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)</div>
+        <div className="pt-2 text-[10px] text-slate-500 text-center font-medium">
+          * Poin = Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
         </div>
       </div>
 

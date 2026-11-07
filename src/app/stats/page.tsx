@@ -231,10 +231,10 @@ export default async function StatsPage({
     const yellowCards = isAll ? Math.max(p.yellowCards || 0, calcYellow) : calcYellow;
     const redCards = isAll ? Math.max(p.redCards || 0, calcRed) : calcRed;
 
-    // Calculate performance points including WhatsApp invite discipline rules
+    // Calculate performance points: Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
     const perf = calculatePlayerPerformance(p, allMatches, selectedSeason);
     const fallbackBasePoints = (goals * 5) + (assists * 3) + (appearances * 1) - (yellowCards * 1) - (redCards * 3);
-    const points = isAll && fallbackBasePoints > perf.totalPoints ? fallbackBasePoints : perf.totalPoints;
+    const points = isAll && fallbackBasePoints > perf.matchPoints ? fallbackBasePoints : perf.matchPoints;
 
     return {
       ...p,
@@ -243,7 +243,8 @@ export default async function StatsPage({
       appearances,
       yellowCards,
       redCards,
-      points,
+      points, // Pure Top Perform match points
+      performancePoints: perf.totalPoints, // EXP points
       isIndiscipline: perf.isIndiscipline,
       badgeColor: perf.badgeColor,
     };
@@ -406,9 +407,8 @@ export default async function StatsPage({
               </Link>
             ))}
           </div>
-          <div className="pt-2 text-[10px] text-slate-500 text-left font-medium space-y-0.5">
-            <div>Poin = Gol (5), Assist (3), Tampil (1), Kartu Kuning (-1), Kartu Merah (-3)</div>
-            <div className="text-slate-400 font-normal">Disiplin Invite = Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)</div>
+          <div className="pt-2 text-[10px] text-slate-500 text-left font-medium">
+            * Poin = Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
           </div>
         </div>
       )}

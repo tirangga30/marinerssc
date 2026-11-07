@@ -107,9 +107,12 @@ export default function PlayerPerformanceExpModal({
                 >
                   {formatPoints(totalPoints)}
                 </span>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1">
+                  Performa Laga: <strong>{formatPoints(performance.matchPoints || 0)}</strong> • Disiplin: <strong>{formatPoints(performance.disciplinePoints || 0)}</strong>
+                </span>
               </div>
 
-              <div className="text-right">
+              <div className="text-right self-start sm:self-center">
                 <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">
                   Status Skuad
                 </span>
@@ -128,7 +131,7 @@ export default function PlayerPerformanceExpModal({
             {/* Info Legend Note */}
             <div className="text-[10px] text-slate-500 bg-slate-50/60 p-2.5 rounded-xl border border-slate-100 space-y-0.5">
               <div>
-                <strong>Aturan Poin:</strong> Gol (+5), Assist (+3), Tampil (+1), Kartu Kuning (-1), Kartu Merah (-3)
+                <strong>Aturan Poin:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
               </div>
               <div>
                 <strong>Disiplin Invite:</strong> Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)
@@ -195,3 +198,4 @@ export default function PlayerPerformanceExpModal({
     </>
   );
 }
+

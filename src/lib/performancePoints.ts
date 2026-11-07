@@ -22,7 +22,9 @@ export interface PerformanceActivity {
 }
 
 export interface PlayerPerformanceResult {
-  totalPoints: number;
+  totalPoints: number; // Total EXP (matchPoints + disciplinePoints)
+  matchPoints: number; // Top Performa: Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+  disciplinePoints: number; // Disiplin Undangan: Abaikan (-3), Batal <1 Jam (-1), Tanpa Kabar (-4)
   goalsCount: number;
   assistsCount: number;
   appearancesCount: number;
@@ -363,7 +365,19 @@ export function calculatePlayerPerformance(
     return (b.minute || 0) - (a.minute || 0);
   });
 
-  // Calculate total points
+  // Calculate pure match performance points (Goal +5, Assist +3, Appearance +1, Declined Appearance 0, Yellow -1, Red -3)
+  const matchActivities = activities.filter((act) =>
+    ['goal', 'assist', 'appearance', 'declined_appearance', 'yellow_card', 'red_card'].includes(act.type)
+  );
+  const matchPoints = matchActivities.reduce((sum, item) => sum + item.points, 0);
+
+  // Calculate discipline penalties (Ignored invite -3, Late decline -1, No show -4)
+  const disciplineActivities = activities.filter((act) =>
+    ['ignored_invite', 'late_decline', 'no_show'].includes(act.type)
+  );
+  const disciplinePoints = disciplineActivities.reduce((sum, item) => sum + item.points, 0);
+
+  // Total EXP = matchPoints + disciplinePoints (sum of all activities)
   const totalPoints = activities.reduce((sum, item) => sum + item.points, 0);
 
   // Status Indiscipline rule:
@@ -381,6 +395,8 @@ export function calculatePlayerPerformance(
 
   return {
     totalPoints,
+    matchPoints,
+    disciplinePoints,
     goalsCount,
     assistsCount,
     appearancesCount,
@@ -393,3 +409,4 @@ export function calculatePlayerPerformance(
     activities,
   };
 }
+
