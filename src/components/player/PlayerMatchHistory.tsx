@@ -30,12 +30,14 @@ interface PlayerMatchHistoryProps {
   matches: any[];
   player: {
     id: string;
+    status?: string;
     createdAt?: string | Date;
     joinDate?: string | Date | null;
     seasons?: Array<{ id: string; name: string; year?: number }>;
     isGuest?: boolean;
     events?: any[];
     assistedEvents?: any[];
+    [key: string]: any;
   };
   selectedSeason?: string;
   onSelectSeason?: (season: string) => void;
@@ -257,7 +259,23 @@ export default function PlayerMatchHistory({
                 const isNotInSquad = !lineup;
 
                 const attendance = (match.attendances || []).find((a: any) => a.playerId === player.id);
-                const nonSquadStatus = attendance?.declineReason?.trim() || 'Tidak masuk skuad';
+                const pStatus = (player.status || '').toLowerCase().trim();
+                const isPlayerInactive = pStatus === 'inactive';
+                const isPlayerInjured = pStatus === 'injured' || pStatus === 'cedera';
+
+                let nonSquadStatus = 'Tidak terdaftar';
+                if (isPlayerInactive) {
+                  nonSquadStatus = 'Inactive';
+                } else if (isPlayerInjured) {
+                  nonSquadStatus = 'Cedera';
+                } else if (attendance?.declineReason?.trim()) {
+                  const reason = attendance.declineReason.trim();
+                  if (reason.toLowerCase() === 'tidak masuk skuad' || reason.toLowerCase() === 'tidak terdaftar') {
+                    nonSquadStatus = 'Tidak terdaftar';
+                  } else {
+                    nonSquadStatus = reason;
+                  }
+                }
 
                 const evts = (player.events || []).filter((e: any) => e.matchId === match.id);
                 const assistEvts = (player.assistedEvents || []).filter(

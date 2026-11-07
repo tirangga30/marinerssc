@@ -115,7 +115,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           where: { matchId, playerId: pId },
         });
 
-        if (reason && reason !== 'Tidak masuk skuad') {
+        if (reason && reason !== 'Tidak terdaftar' && reason !== 'Tidak masuk skuad') {
           if (existing) {
             await prisma.matchAttendance.update({
               where: { id: existing.id },
@@ -138,13 +138,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             });
           }
         } else {
-          // If reset to "Tidak masuk skuad" or empty
+          // If reset to "Tidak terdaftar" or empty
           if (existing) {
             await prisma.matchAttendance.update({
               where: { id: existing.id },
               data: {
                 status: 'DECLINED',
-                declineReason: reason === 'Tidak masuk skuad' ? 'Tidak masuk skuad' : null,
+                declineReason: (reason === 'Tidak terdaftar' || reason === 'Tidak masuk skuad') ? 'Tidak terdaftar' : null,
               },
             });
           }

@@ -86,6 +86,11 @@ export function getExpBadgeColor(points: number): PlayerPerformanceResult['badge
 
 const EXEMPT_REASONS = [
   'cedera',
+  'injured',
+  'inactive',
+  'nonaktif',
+  'tidak terdaftar',
+  'tidak masuk skuad',
   'sakit',
   'izin',
   'tugas',
@@ -139,6 +144,11 @@ export function calculatePlayerPerformance(
   const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
   const playerNameLower = (player.name || '').toLowerCase();
   const playerSlugLower = (player.slug || '').toLowerCase();
+  const playerStatusLower = (player.status || '').toLowerCase().trim();
+  const isPlayerInactiveOrInjured =
+    playerStatusLower === 'inactive' ||
+    playerStatusLower === 'injured' ||
+    playerStatusLower === 'cedera';
   const isExemptPlayer =
     playerNameLower.includes('endra') ||
     playerSlugLower.includes('endra') ||
@@ -158,10 +168,11 @@ export function calculatePlayerPerformance(
     // Discipline rules ONLY apply starting season 2027 onwards
     const isDisciplineSeason = matchSeasonYear >= 2027;
 
-    // Discipline rules DO NOT apply to loan players, OR matches before joinDate
+    // Discipline rules DO NOT apply to loan players, inactive or injured players, OR matches before joinDate
     const isDisciplineEligible =
       isDisciplineSeason &&
       !isLoan &&
+      !isPlayerInactiveOrInjured &&
       (joinDateMs === null || isNaN(joinDateMs) || matchDateMs >= joinDateMs - 12 * 3600 * 1000);
 
     // Check lineup participation
@@ -223,10 +234,10 @@ export function calculatePlayerPerformance(
       }
     } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer) {
       // Player was NOT in lineup, match passed kickoff: evaluate discipline rules
-      if (attStatus === 'CONFIRMED') {
-        // User rule: "ikut tetapi tiba-tiba tidak datang ke pertandingan tanpa mengubah status = -4"
-        const isExempt = isExemptReason(attendance?.declineReason);
-        if (!isExempt) {
+      const isExempt = isExemptReason(attendance?.declineReason);
+      if (!isExempt) {
+        if (attStatus === 'CONFIRMED') {
+          // User rule: "ikut tetapi tiba-tiba tidak datang ke pertandingan tanpa mengubah status = -4"
           penaltiesCount++;
           activities.push({
             id: `${match.id}-no-show`,
@@ -239,36 +250,36 @@ export function calculatePlayerPerformance(
             reason: 'Tercatat konfirmasi hadir namun tidak datang ke laga tanpa alasan resmi',
             points: -4,
           });
-        }
-      } else if (attStatus === 'INVITED') {
-        // User rule: "Mengabaikan invite = -3"
-        penaltiesCount++;
-        activities.push({
-          id: `${match.id}-ignored`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'ignored_invite',
-          title: 'Mengabaikan Undangan',
-          reason: 'Tidak merespons undangan kehadiran hingga waktu kickoff tiba',
-          points: -3,
-        });
-      } else if (attStatus === 'DECLINED') {
-        // User rule: "mengubah status menjadi batal kurang dari 1 jam menelang kickoff = -1"
-        if (attendance?.isLateDecline) {
+        } else if (attStatus === 'INVITED') {
+          // User rule: "Mengabaikan invite = -3"
           penaltiesCount++;
           activities.push({
-            id: `${match.id}-late-decline`,
+            id: `${match.id}-ignored`,
             matchId: match.id,
             opponentName: match.opponentName,
             matchDate: match.matchDate,
             stage: match.stage,
-            type: 'late_decline',
-            title: 'Batal Hadir < 1 Jam Kickoff',
-            reason: 'Membatalkan kehadiran mendadak kurang dari 1 jam sebelum pertandingan',
-            points: -1,
+            type: 'ignored_invite',
+            title: 'Mengabaikan Undangan',
+            reason: 'Tidak merespons undangan kehadiran hingga waktu kickoff tiba',
+            points: -3,
           });
+        } else if (attStatus === 'DECLINED') {
+          // User rule: "mengubah status menjadi batal kurang dari 1 jam menelang kickoff = -1"
+          if (attendance?.isLateDecline) {
+            penaltiesCount++;
+            activities.push({
+              id: `${match.id}-late-decline`,
+              matchId: match.id,
+              opponentName: match.opponentName,
+              matchDate: match.matchDate,
+              stage: match.stage,
+              type: 'late_decline',
+              title: 'Batal Hadir < 1 Jam Kickoff',
+              reason: 'Membatalkan kehadiran mendadak kurang dari 1 jam sebelum pertandingan',
+              points: -1,
+            });
+          }
         }
       }
     }
@@ -475,10 +486,8 @@ export function calculatePlayerPerformance(
   const isIndiscipline = totalPoints <= -30;
   let status: 'Active' | 'INDISCIPLINE' | 'Injured' | 'Inactive' = isIndiscipline
     ? 'INDISCIPLINE'
-    : player.status === 'Injured'
-    ? 'Injured'
-    : player.status === 'Inactive'
-    ? 'Inactive'
+    : isPlayerInactiveOrInjured
+    ? (playerStatusLower === 'inactive' ? 'Inactive' : 'Injured')
     : 'Active';
 
   const badgeColor = getExpBadgeColor(totalPoints);

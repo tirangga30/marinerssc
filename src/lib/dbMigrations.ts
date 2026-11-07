@@ -62,6 +62,7 @@ export async function ensureDbColumns() {
       `DELETE FROM "MatchAttendance" WHERE "playerId" = 'unknown-player' OR LOWER("playerName") LIKE '%tidak diketahui%'`,
       `DELETE FROM "_PlayerToSeason" WHERE "A" = 'unknown-player' OR "B" = 'unknown-player'`,
       `UPDATE "Player" SET "status" = 'Inactive', "hidePhoto" = true WHERE "id" = 'unknown-player' OR "slug" = 'tidak-diketahui'`,
+      `UPDATE "MatchAttendance" SET "declineReason" = 'Tidak terdaftar' WHERE LOWER("declineReason") = 'tidak masuk skuad'`,
     ];
 
     for (const sql of pgMigrations) {
@@ -100,6 +101,7 @@ export async function ensureDbColumns() {
       `DELETE FROM "MatchAttendance" WHERE "playerId" = 'unknown-player' OR LOWER("playerName") LIKE '%tidak diketahui%'`,
       `DELETE FROM "_PlayerToSeason" WHERE "A" = 'unknown-player' OR "B" = 'unknown-player'`,
       `UPDATE "Player" SET "status" = 'Inactive', "hidePhoto" = true WHERE "id" = 'unknown-player' OR "slug" = 'tidak-diketahui'`,
+      `UPDATE "MatchAttendance" SET "declineReason" = 'Tidak terdaftar' WHERE LOWER("declineReason") = 'tidak masuk skuad'`,
     ];
 
     for (const sql of sqliteMigrations) {
@@ -109,6 +111,22 @@ export async function ensureDbColumns() {
         // Expected when column already exists in SQLite
       }
     }
+  }
+
+  // Update existing declineReason from "Tidak masuk skuad" to "Tidak terdaftar"
+  try {
+    await prisma.matchAttendance.updateMany({
+      where: {
+        declineReason: {
+          in: ['Tidak masuk skuad', 'tidak masuk skuad', 'Tidak Masuk Skuad'],
+        },
+      },
+      data: {
+        declineReason: 'Tidak terdaftar',
+      },
+    });
+  } catch {
+    // ignore
   }
 
   // General 2025 matchday alignment (starts from Matchday 1 for earliest match Date at bottom)

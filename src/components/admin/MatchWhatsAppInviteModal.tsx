@@ -62,9 +62,16 @@ export default function MatchWhatsAppInviteModal({
       const res = await fetch(`/api/admin/matches/${matchId}/broadcast-invite`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Gagal mengambil data');
-      setData(json);
+      
+      // Filter out inactive/injured players
+      const activeOnlyPlayers = (json.players || []).filter((p: any) => {
+        const s = (p.playerStatus || '').toLowerCase().trim();
+        return s !== 'inactive' && s !== 'injured' && s !== 'cedera';
+      });
+
+      setData({ ...json, players: activeOnlyPlayers });
       // Inisialisasi pilihan: default pilih pemain yang memiliki nomor HP
-      const validPhoneIds = (json.players || [])
+      const validPhoneIds = activeOnlyPlayers
         .filter((p: any) => p.phone && p.phone.trim() !== '')
         .map((p: any) => p.id);
       setSelectedIds(new Set(validPhoneIds));

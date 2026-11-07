@@ -904,9 +904,9 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <UserX className="w-4 h-4 text-amber-600" />
               <span className="hidden sm:inline">Status Luar Skuad</span>
               <span className="sm:hidden">Luar Skuad</span>
-              {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 && (
+              {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak terdaftar' && r.trim() !== 'Tidak masuk skuad').length > 0 && (
                 <span className="w-4 h-4 rounded-full bg-amber-500 text-white font-black text-[9px] flex items-center justify-center font-mono">
-                  {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length}
+                  {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak terdaftar' && r.trim() !== 'Tidak masuk skuad').length}
                 </span>
               )}
             </button>
@@ -1918,7 +1918,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>
-                  Status bawaan adalah <strong>&ldquo;Tidak masuk skuad&rdquo;</strong>. Anda dapat memilih opsi cepat seperti <strong>Cedera</strong>, <strong>Akumulasi Kartu</strong>, <strong>Izin</strong>, atau mengetikkan keterangan khusus.
+                  Status bawaan adalah <strong>&ldquo;Tidak terdaftar&rdquo;</strong>. Anda dapat memilih opsi cepat seperti <strong>Cedera</strong>, <strong>Akumulasi Kartu</strong>, <strong>Izin</strong>, atau mengetikkan keterangan khusus.
                 </span>
               </div>
 
@@ -1933,7 +1933,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 <div className="space-y-3">
                   {nonSquadPlayers.map((p) => {
                     const currentReason = nonSquadReasons[p.id] || '';
-                    const displayStatus = currentReason.trim() || 'Tidak masuk skuad';
+                    const displayStatus = currentReason.trim() || 'Tidak terdaftar';
 
                     return (
                       <div
@@ -1979,7 +1979,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                         {/* Quick Preset Buttons */}
                         <div className="flex items-center gap-1.5 flex-wrap pt-1">
                           {[
-                            'Tidak masuk skuad',
+                            'Tidak terdaftar',
                             'Cedera',
                             'Akumulasi Kartu',
                             'Izin',
@@ -1987,8 +1987,8 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                             'Diistirahatkan',
                           ].map((preset) => {
                             const isSelected =
-                              preset === 'Tidak masuk skuad'
-                                ? !currentReason || currentReason === 'Tidak masuk skuad'
+                              preset === 'Tidak terdaftar'
+                                ? !currentReason || currentReason === 'Tidak terdaftar' || currentReason === 'Tidak masuk skuad'
                                 : currentReason === preset;
 
                             return (
@@ -1998,7 +1998,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 onClick={() => {
                                   setNonSquadReasons((prev) => ({
                                     ...prev,
-                                    [p.id]: preset === 'Tidak masuk skuad' ? '' : preset,
+                                    [p.id]: preset === 'Tidak terdaftar' ? '' : preset,
                                   }));
                                 }}
                                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
@@ -2039,12 +2039,12 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
             {/* Modal Footer */}
             <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
               <span className="text-[11px] text-slate-600 font-semibold">
-                {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length > 0 ? (
+                {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak terdaftar' && r.trim() !== 'Tidak masuk skuad').length > 0 ? (
                   <span className="text-amber-800">
-                    {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak masuk skuad').length} pemain memiliki status khusus
+                    {Object.values(nonSquadReasons).filter((r) => r && r.trim() !== '' && r.trim() !== 'Tidak terdaftar' && r.trim() !== 'Tidak masuk skuad').length} pemain memiliki status khusus
                   </span>
                 ) : (
-                  'Semua pemain berstatus default "Tidak masuk skuad"'
+                  'Semua pemain berstatus default "Tidak terdaftar"'
                 )}
               </span>
 

@@ -175,7 +175,15 @@ export async function GET(
       }
     });
 
-    const players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
+    // Pemain Inactive / Cedera jangan dimunculkan di DAFTAR INVITE WA
+    const isPlayerInactiveOrInjured = (p: any) => {
+      const s = (p?.status || '').toLowerCase().trim();
+      return s === 'inactive' || s === 'injured' || s === 'cedera';
+    };
+
+    const players = Array.from(playerMap.values())
+      .filter((p) => !isPlayerInactiveOrInjured(p))
+      .sort((a, b) => (a.number || 0) - (b.number || 0));
 
     const urlObj = new URL(req.url);
     const origin = urlObj.origin || process.env.NEXT_PUBLIC_APP_URL || 'https://marinerssc.vercel.app';
@@ -213,6 +221,7 @@ export async function GET(
         phone: p.phone,
         cleanPhone,
         status,
+        playerStatus: p.status || 'Active',
         isInvited,
         invitedAt: att?.invitedAt || null,
         declineReason,
@@ -367,7 +376,15 @@ export async function POST(
       }
     });
 
-    let players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
+    // Pemain Inactive / Cedera jangan dimunculkan di DAFTAR INVITE WA
+    const isPlayerInactiveOrInjured = (p: any) => {
+      const s = (p?.status || '').toLowerCase().trim();
+      return s === 'inactive' || s === 'injured' || s === 'cedera';
+    };
+
+    let players = Array.from(playerMap.values())
+      .filter((p) => !isPlayerInactiveOrInjured(p))
+      .sort((a, b) => (a.number || 0) - (b.number || 0));
 
     // Reset all unconfirmed invites back to NOT_INVITED (delete attendances so status becomes Belum Di-invite)
     if (body.action === 'RESET_ALL' || body.resetAll) {
@@ -383,7 +400,7 @@ export async function POST(
     // Mark single player as invited (e.g. when copying link or clicking WhatsApp button)
     if (body.markPlayerId) {
       const p = playerMap.get(body.markPlayerId) || players.find((pl) => pl.id === body.markPlayerId);
-      if (p) {
+      if (p && !isPlayerInactiveOrInjured(p)) {
         const existing = existingMap.get(p.id);
         if (existing) {
           await prisma.matchAttendance.update({
