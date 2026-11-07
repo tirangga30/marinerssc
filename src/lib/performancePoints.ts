@@ -139,6 +139,11 @@ export function calculatePlayerPerformance(
   const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
   const playerNameLower = (player.name || '').toLowerCase();
   const playerSlugLower = (player.slug || '').toLowerCase();
+  const isExemptPlayer =
+    playerNameLower.includes('endra') ||
+    playerSlugLower.includes('endra') ||
+    playerNameLower.includes('rifki') ||
+    playerSlugLower.includes('rifki');
 
   for (const match of seasonMatches) {
     const matchDateObj = match.matchDate ? new Date(match.matchDate) : null;
@@ -216,7 +221,7 @@ export function calculatePlayerPerformance(
           points: 1,
         });
       }
-    } else if (isDisciplineEligible && isPastKickoff && wasInvited) {
+    } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer) {
       // Player was NOT in lineup, match passed kickoff: evaluate discipline rules
       if (attStatus === 'CONFIRMED') {
         // User rule: "ikut tetapi tiba-tiba tidak datang ke pertandingan tanpa mengubah status = -4"
@@ -275,7 +280,7 @@ export function calculatePlayerPerformance(
       (Boolean(match.stage && match.stage.toLowerCase().includes('matchday 1')) &&
         (matchSeasonYear === 2027 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
 
-    if (isCikuyaMatch && isDisciplineEligible && !inLineup) {
+    if (isCikuyaMatch && isDisciplineEligible && !inLineup && !isExemptPlayer) {
       const alreadyHasDiscipline = activities.some(
         (a) => a.matchId === match.id && (a.type === 'ignored_invite' || a.type === 'no_show')
       );
@@ -430,6 +435,16 @@ export function calculatePlayerPerformance(
         });
       }
     }
+  }
+
+  // Admin explicit override: Endra 0 EXP, Rifki 0 EXP (remove any penalties)
+  if (isExemptPlayer) {
+    const nonPenalties = activities.filter(
+      (act) => !['ignored_invite', 'late_decline', 'no_show'].includes(act.type)
+    );
+    activities.length = 0;
+    activities.push(...nonPenalties);
+    penaltiesCount = 0;
   }
 
   // Sort activities newest first

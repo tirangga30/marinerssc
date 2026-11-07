@@ -201,5 +201,26 @@ export async function ensureDbColumns() {
     console.warn('[dbMigration Cikuya sync warning]:', errCikuya);
   }
 
+  // Ensure Endra and Rifki have 0 EXP (no penalties)
+  try {
+    const allPlayers = await prisma.player.findMany();
+    const exemptPlayers = allPlayers.filter((p) => {
+      const l = ((p.name || '') + ' ' + (p.slug || '')).toLowerCase();
+      return l.includes('endra') || l.includes('rifki');
+    });
+
+    for (const ep of exemptPlayers) {
+      await prisma.matchAttendance.updateMany({
+        where: { playerId: ep.id },
+        data: {
+          status: 'DECLINED',
+          declineReason: 'Exempt (Diatur Admin)',
+        },
+      });
+    }
+  } catch (errExempt) {
+    console.warn('[dbMigration Endra/Rifki exempt warning]:', errExempt);
+  }
+
   migrationRan = true;
 }
