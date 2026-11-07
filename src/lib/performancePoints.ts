@@ -117,9 +117,10 @@ export function calculatePlayerPerformance(
   const seasonMatches = isAll
     ? matches
     : matches.filter((m: any) => {
-        const s = (m.seasonName || '').trim();
+        const s = (m.seasonName || m.season?.name || '').trim();
         const yr =
           m.seasonName?.match(/\d{4}/)?.[0] ||
+          m.season?.name?.match(/\d{4}/)?.[0] ||
           (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
         return s === targetSeason || s.includes(targetSeason) || yr === targetSeason;
       });
@@ -136,6 +137,8 @@ export function calculatePlayerPerformance(
   const playerId = player.id;
   const isLoan = Boolean(player.isGuest);
   const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
+  const playerNameLower = (player.name || '').toLowerCase();
+  const playerSlugLower = (player.slug || '').toLowerCase();
 
   for (const match of seasonMatches) {
     const matchDateObj = match.matchDate ? new Date(match.matchDate) : null;
@@ -260,6 +263,75 @@ export function calculatePlayerPerformance(
             title: 'Batal Hadir < 1 Jam Kickoff',
             reason: 'Membatalkan kehadiran mendadak kurang dari 1 jam sebelum pertandingan',
             points: -1,
+          });
+        }
+      }
+    }
+
+    // Special user adjustment for Matchday 1 2027 vs Cikuya (without WA invite broadcast):
+    // adly -3, agung -3, ariel -3, ikam -4
+    const isCikuyaMatch =
+      Boolean(match.opponentName && match.opponentName.toLowerCase().includes('cikuya')) ||
+      (Boolean(match.stage && match.stage.toLowerCase().includes('matchday 1')) &&
+        (matchSeasonYear === 2027 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
+
+    if (isCikuyaMatch && isDisciplineEligible && !inLineup) {
+      const alreadyHasDiscipline = activities.some(
+        (a) => a.matchId === match.id && (a.type === 'ignored_invite' || a.type === 'no_show')
+      );
+
+      if (!alreadyHasDiscipline) {
+        if (playerNameLower.includes('adly') || playerSlugLower.includes('adly')) {
+          penaltiesCount++;
+          activities.push({
+            id: `${match.id}-cikuya-adly-ignored`,
+            matchId: match.id,
+            opponentName: match.opponentName || 'Cikuya',
+            matchDate: match.matchDate,
+            stage: match.stage || 'Matchday 1',
+            type: 'ignored_invite',
+            title: 'Mengabaikan Undangan',
+            reason: 'Mengabaikan invite pertandingan (Matchday 1 vs Cikuya)',
+            points: -3,
+          });
+        } else if (playerNameLower.includes('agung') || playerSlugLower.includes('agung')) {
+          penaltiesCount++;
+          activities.push({
+            id: `${match.id}-cikuya-agung-ignored`,
+            matchId: match.id,
+            opponentName: match.opponentName || 'Cikuya',
+            matchDate: match.matchDate,
+            stage: match.stage || 'Matchday 1',
+            type: 'ignored_invite',
+            title: 'Mengabaikan Undangan',
+            reason: 'Mengabaikan invite pertandingan (Matchday 1 vs Cikuya)',
+            points: -3,
+          });
+        } else if (playerNameLower.includes('ariel') || playerSlugLower.includes('ariel')) {
+          penaltiesCount++;
+          activities.push({
+            id: `${match.id}-cikuya-ariel-ignored`,
+            matchId: match.id,
+            opponentName: match.opponentName || 'Cikuya',
+            matchDate: match.matchDate,
+            stage: match.stage || 'Matchday 1',
+            type: 'ignored_invite',
+            title: 'Mengabaikan Undangan',
+            reason: 'Mengabaikan invite pertandingan (Matchday 1 vs Cikuya)',
+            points: -3,
+          });
+        } else if (playerNameLower.includes('ikam') || playerSlugLower.includes('ikam')) {
+          penaltiesCount++;
+          activities.push({
+            id: `${match.id}-cikuya-ikam-no-show`,
+            matchId: match.id,
+            opponentName: match.opponentName || 'Cikuya',
+            matchDate: match.matchDate,
+            stage: match.stage || 'Matchday 1',
+            type: 'no_show',
+            title: 'Konfirmasi Hadir Tanpa Kabar',
+            reason: 'Konfirmasi ikut namun tidak hadir ke laga (Matchday 1 vs Cikuya)',
+            points: -4,
           });
         }
       }

@@ -137,5 +137,69 @@ export async function ensureDbColumns() {
     console.warn('[dbMigration 2025 stage update warning]:', err2025);
   }
 
+  // Ensure Matchday 1 2027 vs Cikuya attendance records for Adly, Agung, Ariel (-3) and Ikam (-4)
+  try {
+    const allMatches = await prisma.footballMatch.findMany({
+      include: { attendances: true },
+    });
+
+    const cikuyaMatch = allMatches.find((m) => {
+      const opp = (m.opponentName || '').toLowerCase();
+      const stg = (m.stage || '').toLowerCase();
+      const yr = m.seasonName?.match(/\d{4}/)?.[0] || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
+      return opp.includes('cikuya') || (stg.includes('matchday 1') && yr === '2027');
+    });
+
+    if (cikuyaMatch) {
+      const allPlayers = await prisma.player.findMany();
+      const adjustments = [
+        { key: 'adly', status: 'INVITED' },
+        { key: 'agung', status: 'INVITED' },
+        { key: 'ariel', status: 'INVITED' },
+        { key: 'ikam', status: 'CONFIRMED' },
+      ];
+
+      for (const adj of adjustments) {
+        const player = allPlayers.find(
+          (p) =>
+            p.name.toLowerCase().includes(adj.key) ||
+            p.slug.toLowerCase().includes(adj.key)
+        );
+
+        if (player) {
+          const existing = (cikuyaMatch.attendances || []).find(
+            (a) => a.playerId === player.id
+          );
+          const attDate = cikuyaMatch.matchDate || new Date();
+
+          if (existing) {
+            if (existing.status !== adj.status) {
+              await prisma.matchAttendance.update({
+                where: { id: existing.id },
+                data: {
+                  status: adj.status,
+                  invitedAt: existing.invitedAt || attDate,
+                },
+              });
+            }
+          } else {
+            await prisma.matchAttendance.create({
+              data: {
+                matchId: cikuyaMatch.id,
+                playerId: player.id,
+                playerName: player.name,
+                playerType: player.isGuest ? 'LOAN' : 'SQUAD',
+                status: adj.status,
+                invitedAt: attDate,
+              },
+            });
+          }
+        }
+      }
+    }
+  } catch (errCikuya) {
+    console.warn('[dbMigration Cikuya sync warning]:', errCikuya);
+  }
+
   migrationRan = true;
 }
