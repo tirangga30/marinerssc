@@ -277,6 +277,7 @@ export default function PlayerProfileView({
 
   // Hitung performa pemain & poin disiplin EXP untuk musim yang dipilih
   const performanceResult = calculatePlayerPerformance(player, activeMatches, selectedSeason);
+  const isAllSeason = !selectedSeason || selectedSeason.toUpperCase() === 'SEMUA' || selectedSeason.toLowerCase() === 'all';
 
   // Biodata specs
   const birthDateValue = player.birthDate
@@ -359,13 +360,15 @@ export default function PlayerProfileView({
           <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/65 to-transparent pointer-events-none z-10" />
 
           {/* Top-Left: EXP Performance Badge */}
-          <div className="absolute top-3 left-3 z-30">
-            <PlayerPerformanceExpModal
-              playerName={player.name}
-              seasonName={selectedSeason}
-              performance={performanceResult}
-            />
-          </div>
+          {!isAllSeason && (
+            <div className="absolute top-3 left-3 z-30">
+              <PlayerPerformanceExpModal
+                playerName={player.name}
+                seasonName={selectedSeason}
+                performance={performanceResult}
+              />
+            </div>
+          )}
 
           {/* Member Tag */}
           {member && (
@@ -530,13 +533,15 @@ export default function PlayerProfileView({
             <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none z-15" />
 
             {/* Top-Left: EXP Performance Badge */}
-            <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 z-20">
-              <PlayerPerformanceExpModal
-                playerName={player.name}
-                seasonName={selectedSeason}
-                performance={performanceResult}
-              />
-            </div>
+            {!isAllSeason && (
+              <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 z-20">
+                <PlayerPerformanceExpModal
+                  playerName={player.name}
+                  seasonName={selectedSeason}
+                  performance={performanceResult}
+                />
+              </div>
+            )}
 
             {/* Top-Right Tag: "MEMBER" */}
             {member && (
