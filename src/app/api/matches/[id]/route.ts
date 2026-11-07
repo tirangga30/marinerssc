@@ -113,6 +113,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         extraTime: data.extraTime !== undefined ? parseInt(data.extraTime) : 0,
         isLiveEnabled: data.isLiveEnabled !== undefined ? Boolean(data.isLiveEnabled) : undefined,
         sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : undefined,
+        inviteNotes: data.inviteNotes !== undefined ? (data.inviteNotes ? String(data.inviteNotes).trim() : null) : undefined,
         summary: data.summary,
       },
     });

@@ -23,6 +23,7 @@ function buildInviteMessage({
   stage,
   matchDate,
   venue,
+  notes,
   inviteUrl,
 }: {
   playerName: string;
@@ -33,6 +34,7 @@ function buildInviteMessage({
   isHome?: boolean;
   matchDate: Date;
   venue?: string | null;
+  notes?: string | null;
   inviteUrl: string;
 }): string {
   const dateStr = formatWibDate(matchDate, {
@@ -45,6 +47,7 @@ function buildInviteMessage({
   const displayTeam = teamName || 'MARS FC';
   const stageLabel = (stage || competition || '').trim();
   const header = stageLabel ? `*MARS CALLING!* ${stageLabel}` : '*MARS CALLING!*';
+  const notesText = notes && notes.trim() ? `\n📝 *Catatan*: ${notes.trim()}\n` : '';
 
   return `${header}
 Halo *${playerName}*,
@@ -53,7 +56,7 @@ Anda dipanggil masuk dalam daftar skuad *${displayTeam}* untuk laga berikut:
 
 ⚔️ *Lawan*: ${opponentName}
 📅 *Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)
-🏟️ *Tempat*: ${venue || 'Menyusul'}
+🏟️ *Tempat*: ${venue || 'Menyusul'}${notesText}
 
 Langsung konfirmasi satu klik di sini ya:
 ${inviteUrl}
@@ -194,6 +197,7 @@ export async function GET(
         isHome: match.isHome,
         matchDate: match.matchDate,
         venue: match.venue,
+        notes: (match as any).inviteNotes,
         inviteUrl,
       });
       const waUrl = cleanPhone
@@ -449,6 +453,7 @@ export async function POST(
             isHome: match.isHome,
             matchDate: match.matchDate,
             venue: match.venue,
+            notes: (match as any).inviteNotes,
             inviteUrl,
           });
 

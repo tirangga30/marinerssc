@@ -81,6 +81,7 @@ export async function POST(req: Request) {
         formation: data.formation || 'Belum Tersedia',
         summary: data.summary || '',
         sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : true,
+        inviteNotes: data.inviteNotes ? String(data.inviteNotes).trim() : null,
       },
     });
 

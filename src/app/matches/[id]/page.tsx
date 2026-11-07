@@ -335,6 +335,7 @@ export default async function MatchDetailPage({
           })} • ${formatWibTime(match.matchDate)}`}
           venueText={match.venue}
           initialAttendances={resolvedMatch.attendances}
+          inviteNotes={(resolvedMatch as any).inviteNotes || (match as any).inviteNotes}
         />
       </React.Suspense>
 

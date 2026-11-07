@@ -28,6 +28,7 @@ interface MatchAttendanceConfirmProps {
   matchDate?: Date | string;
   matchStatus?: string;
   initialAttendances: AttendanceItem[];
+  inviteNotes?: string | null;
 }
 
 export default function MatchAttendanceConfirm({
@@ -35,6 +36,7 @@ export default function MatchAttendanceConfirm({
   matchDate,
   matchStatus,
   initialAttendances,
+  inviteNotes,
 }: MatchAttendanceConfirmProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -47,9 +49,16 @@ export default function MatchAttendanceConfirm({
   const [saving, setSaving] = useState(false);
   const [playerData, setPlayerData] = useState<any>(null);
   const [status, setStatus] = useState<'INVITED' | 'CONFIRMED' | 'DECLINED' | null>(null);
+  const [currentInviteNotes, setCurrentInviteNotes] = useState(inviteNotes || '');
   const [declineReason, setDeclineReason] = useState('');
   const [showDeclineInput, setShowDeclineInput] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (inviteNotes !== undefined) {
+      setCurrentInviteNotes(inviteNotes || '');
+    }
+  }, [inviteNotes]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -64,6 +73,9 @@ export default function MatchAttendanceConfirm({
       fetch(`/api/matches/${matchId}/attendance?playerId=${playerId}`)
         .then((res) => res.json())
         .then((data) => {
+          if (data.inviteNotes !== undefined && data.inviteNotes !== null) {
+            setCurrentInviteNotes(data.inviteNotes);
+          }
           if (data.attendance?.player) {
             setPlayerData(data.attendance.player);
             setStatus(data.attendance.status);
@@ -204,11 +216,11 @@ export default function MatchAttendanceConfirm({
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-black text-slate-900 uppercase">
-              {playerData.name}
-            </span>
             <span className="text-xs font-black font-mono text-blue-600">
               #{playerData.number}
+            </span>
+            <span className="text-sm font-black text-slate-900 uppercase">
+              {playerData.name}
             </span>
             <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 rounded bg-slate-100">
               {playerData.position}
@@ -217,22 +229,29 @@ export default function MatchAttendanceConfirm({
         </div>
 
         {/* Status indicator */}
-        <div className="shrink-0">
+        <div className="shrink-0 w-full sm:w-auto">
           {isConfirmed ? (
-            <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase inline-block">
+            <span className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase inline-block">
               Status: Ikut Bertanding
             </span>
           ) : isDeclined ? (
-            <span className="px-3 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase inline-block">
+            <span className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase inline-block">
               Status: Tidak Bisa Ikut
             </span>
           ) : (
-            <span className="px-3 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold uppercase inline-block">
+            <span className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold uppercase inline-block">
               Status: Menunggu Konfirmasi
             </span>
           )}
         </div>
       </div>
+
+      {/* Catatan pertandingan di bawah STATUS (tanpa box & tanpa tulisan label catatan) */}
+      {currentInviteNotes && (
+        <p className="text-xs sm:text-sm text-slate-600 font-medium whitespace-pre-line leading-relaxed px-0.5">
+          {currentInviteNotes}
+        </p>
+      )}
 
       {/* Feedback alert */}
       {feedbackMsg && (

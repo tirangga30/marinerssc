@@ -40,6 +40,7 @@ interface FootballMatch {
   formation: string;
   summary: string | null;
   sendWhatsAppInvite?: boolean;
+  inviteNotes?: string | null;
   attendances?: Array<{ id: string; status: string }>;
 }
 
@@ -123,6 +124,7 @@ export default function AdminMatchesPage() {
     isHome: true,
     summary: '',
     sendWhatsAppInvite: true,
+    inviteNotes: '',
   });
 
   const fetchMatches = async () => {
@@ -226,6 +228,7 @@ export default function AdminMatchesPage() {
       isHome: true,
       summary: '',
       sendWhatsAppInvite: true,
+      inviteNotes: '',
     });
     setShowModal(true);
   };
@@ -245,6 +248,7 @@ export default function AdminMatchesPage() {
       isHome: m.isHome,
       summary: m.summary || '',
       sendWhatsAppInvite: m.sendWhatsAppInvite !== false,
+      inviteNotes: m.inviteNotes || '',
     });
     setShowModal(true);
   };
@@ -847,6 +851,22 @@ export default function AdminMatchesPage() {
                       Otomatis siapkan rincian pertandingan dan tautan konfirmasi kehadiran via WhatsApp untuk seluruh pemain aktif di musim {formData.seasonName}. Pemain yang memilih IKUT akan otomatis masuk ke daftar <strong>SQUAD LIST</strong>.
                     </span>
                   </label>
+                </div>
+              )}
+
+              {/* Catatan Pertandingan (Opsional) - hanya muncul jika mode WA aktif pada tambah pertandingan baru */}
+              {!editingMatch && formData.sendWhatsAppInvite && (
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase text-slate-600 block">
+                    Catatan Pertandingan (Opsional)
+                  </label>
+                  <textarea
+                    value={formData.inviteNotes}
+                    onChange={(e) => setFormData({ ...formData, inviteNotes: e.target.value })}
+                    placeholder="Tulis catatan tambahan untuk konfirmasi pemain (opsional)..."
+                    rows={3}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                  />
                 </div>
               )}
 

@@ -20,21 +20,31 @@ export async function GET(
       return NextResponse.json(attendances);
     }
 
-    const attendance = await prisma.matchAttendance.findFirst({
-      where: {
-        matchId,
-        OR: [
-          { playerId },
-          { player: { slug: playerId } },
-        ],
-      },
-      include: {
-        player: true,
-      },
-    });
+    const [attendance, match] = await Promise.all([
+      prisma.matchAttendance.findFirst({
+        where: {
+          matchId,
+          OR: [
+            { playerId },
+            { player: { slug: playerId } },
+          ],
+        },
+        include: {
+          player: true,
+        },
+      }),
+      prisma.footballMatch.findUnique({
+        where: { id: matchId },
+        select: { inviteNotes: true },
+      }),
+    ]);
 
     if (attendance) {
-      return NextResponse.json({ attendance, player: attendance.player });
+      return NextResponse.json({
+        attendance,
+        player: attendance.player,
+        inviteNotes: match?.inviteNotes || null,
+      });
     }
 
     // If no attendance record yet, find player directly so confirmation card can render immediately
@@ -44,7 +54,11 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ attendance: null, player });
+    return NextResponse.json({
+      attendance: null,
+      player,
+      inviteNotes: match?.inviteNotes || null,
+    });
   } catch (error) {
     console.error('Error fetching attendance:', error);
     return NextResponse.json({ error: 'Gagal mengambil data kehadiran' }, { status: 500 });
