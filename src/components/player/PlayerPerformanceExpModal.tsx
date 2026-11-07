@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import {
   PlayerPerformanceResult,
@@ -19,6 +20,11 @@ export default function PlayerPerformanceExpModal({
   performance,
 }: PlayerPerformanceExpModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { totalPoints, isIndiscipline, status, badgeColor, activities } = performance;
 
@@ -63,24 +69,31 @@ export default function PlayerPerformanceExpModal({
         </span>
       </button>
 
-      {/* ── Blur Backdrop Modal Dialog ── */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-[#08101e]/85 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8)] p-4 sm:p-6 max-h-[88vh] flex flex-col space-y-4 text-white">
+      {/* ── Blur Backdrop Modal Dialog (Portaled to document.body) ── */}
+      {isOpen && mounted && createPortal(
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          {/* Light Frosted Glass Dialog Box ("box tetap terang, latar buram") */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg bg-white/85 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-white/80 shadow-[0_25px_60px_rgba(0,0,0,0.35)] p-4 sm:p-6 max-h-[88vh] flex flex-col space-y-4 text-slate-900 animate-in zoom-in-95 duration-150"
+          >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm sm:text-base font-black uppercase text-white tracking-wide">
+                  <h3 className="text-sm sm:text-base font-black uppercase text-slate-900 tracking-wide">
                     Riwayat Poin Performa
                   </h3>
                   {isIndiscipline && (
-                    <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-black uppercase border border-rose-500/40">
+                    <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-black uppercase border border-rose-300">
                       INDISCIPLINE
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-300 font-medium">
+                <p className="text-[11px] text-slate-500 font-medium">
                   {playerName} • {displaySeason}
                 </p>
               </div>
@@ -88,39 +101,39 @@ export default function PlayerPerformanceExpModal({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-xl bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 transition-colors cursor-pointer border border-white/10"
+                className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer border border-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Total EXP Summary Banner */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-between">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 backdrop-blur-sm border border-slate-200/80 shadow-xs flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">
                   Total Poin EXP
                 </span>
                 <span
                   className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
-                    totalPoints >= 0 ? 'text-sky-400' : 'text-rose-400'
+                    totalPoints >= 0 ? 'text-blue-600' : 'text-rose-600'
                   }`}
                 >
                   {formatPoints(totalPoints)}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium block mt-1">
-                  Performa Laga: <strong className="text-slate-200">{formatPoints(performance.matchPoints || 0)}</strong> • Disiplin: <strong className="text-slate-200">{formatPoints(performance.disciplinePoints || 0)}</strong>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1">
+                  Performa Laga: <strong className="text-slate-800">{formatPoints(performance.matchPoints || 0)}</strong> • Disiplin: <strong className="text-slate-800">{formatPoints(performance.disciplinePoints || 0)}</strong>
                 </span>
               </div>
 
               <div className="text-right self-start sm:self-center">
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">
                   Status Skuad
                 </span>
                 <span
                   className={`text-xs font-black uppercase px-2.5 py-1 rounded-lg inline-block mt-0.5 border ${
                     isIndiscipline
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      ? 'bg-rose-50 text-rose-700 border-rose-300'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-300'
                   }`}
                 >
                   {status}
@@ -129,12 +142,12 @@ export default function PlayerPerformanceExpModal({
             </div>
 
             {/* Info Legend Note */}
-            <div className="text-[10px] text-slate-300 bg-white/5 backdrop-blur-sm p-2.5 rounded-xl border border-white/10 space-y-0.5">
+            <div className="text-[10px] text-slate-600 bg-slate-50/70 backdrop-blur-xs p-2.5 rounded-xl border border-slate-200/70 space-y-0.5">
               <div>
-                <strong className="text-white">Aturan Poin:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+                <strong className="text-slate-800">Aturan Poin:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
               </div>
               <div>
-                <strong className="text-white">Disiplin Invite:</strong> Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)
+                <strong className="text-slate-800">Disiplin Invite:</strong> Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)
               </div>
             </div>
 
@@ -153,20 +166,20 @@ export default function PlayerPerformanceExpModal({
                   return (
                     <div
                       key={act.id}
-                      className="p-3 rounded-xl bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 flex items-start justify-between gap-3 transition-colors"
+                      className="p-3 rounded-xl bg-white/80 hover:bg-white backdrop-blur-xs border border-slate-200/80 flex items-start justify-between gap-3 shadow-2xs transition-colors"
                     >
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-white">
+                          <span className="text-xs font-bold text-slate-900">
                             {act.title}
                           </span>
                           {act.minute && (
-                            <span className="text-[10px] font-mono text-sky-300">
+                            <span className="text-[10px] font-mono text-blue-600 font-bold">
                               {act.minute}&apos;
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-300 font-medium">
+                        <p className="text-[11px] text-slate-600 font-medium">
                           {act.reason}
                         </p>
                         <p className="text-[10px] text-slate-400 font-medium">
@@ -178,10 +191,10 @@ export default function PlayerPerformanceExpModal({
                         <span
                           className={`px-2.5 py-1 rounded-lg text-xs font-black font-mono border ${
                             isPositive
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                               : isNegative
-                              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                              : 'bg-white/10 text-slate-300 border-white/20'
+                              ? 'bg-rose-50 text-rose-700 border-rose-300'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
                           }`}
                         >
                           {formatPoints(act.points)}
@@ -193,9 +206,9 @@ export default function PlayerPerformanceExpModal({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
 }
-
