@@ -14,6 +14,7 @@ import {
   Loader2,
   Sparkles,
   Search,
+  RotateCcw,
 } from 'lucide-react';
 
 interface PlayerInvite {
@@ -53,6 +54,7 @@ export default function MatchWhatsAppInviteModal({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [resetting, setResetting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -153,6 +155,31 @@ export default function MatchWhatsAppInviteModal({
       setAlertMsg({ type: 'error', text: err.message || 'Terjadi kesalahan saat dispatch' });
     } finally {
       setDispatching(false);
+    }
+  };
+
+  const handleResetInvites = async () => {
+    if (!confirm('Yakin ingin mereset status semua pemain yang "Menunggu" kembali ke "Belum Di-invite"?\n\nIni akan melindungi pemain yang belum dikirimi invite dari pengurangan poin.')) return;
+    setResetting(true);
+    setAlertMsg(null);
+    try {
+      const res = await fetch(`/api/admin/matches/${matchId}/broadcast-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'RESET_ALL' }),
+      });
+      if (res.ok) {
+        setAlertMsg({ type: 'success', text: 'Semua status Menunggu berhasil dikembalikan ke Belum Di-invite!' });
+        fetchData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Gagal mereset status invite');
+      }
+    } catch (e: any) {
+      console.error(e);
+      setAlertMsg({ type: 'error', text: 'Terjadi kesalahan jaringan saat mereset status invite' });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -462,6 +489,19 @@ export default function MatchWhatsAppInviteModal({
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Pemain Loan ({players.filter((p) => p.isGuest).length})
               </button>
+
+              {data?.invitedCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetInvites}
+                  disabled={resetting}
+                  className="ml-auto px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-bold uppercase text-[10px] flex items-center gap-1.5 border border-slate-200 hover:border-rose-300 transition-colors cursor-pointer shrink-0"
+                  title="Kembalikan semua status 'Menunggu' menjadi 'Belum Di-invite'"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>{resetting ? 'Mereset...' : 'Reset ke Belum Di-invite'}</span>
+                </button>
+              )}
             </div>
 
             {/* Search & Filter Toolbar */}

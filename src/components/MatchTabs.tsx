@@ -50,6 +50,7 @@ interface AttendanceItem {
   playerName?: string | null;
   status: string; // 'INVITED' | 'CONFIRMED' | 'DECLINED'
   declineReason?: string | null;
+  invitedAt?: string | Date | null;
   player?: Player;
 }
 
@@ -224,9 +225,17 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
   // "ringkasan jangan muncul jika belum kickoff."
   // "list squad mana? itu tetap ada walaupun line up udah keluar, kecuali udah kickoff maka hilang"
   // "JIKA BELUM MELAKUKAN INVITE PEMAIN TAPI JADWAL UDAH DIBUAT, MAKA NAVIGASI SQUAD LIST JANGAN DULU DITAMPILKAN"
+  // Hanya tampilkan navigasi Squad List jika admin benar-benar sudah melakukan invite:
+  // Harus ada setidaknya 1 pemain dengan status INVITED, CONFIRMED, atau DECLINED, atau memiliki invitedAt
   const searchParams = useSearchParams();
   const isInvite = Boolean(searchParams?.get('p') || searchParams?.get('player'));
-  const hasInvitedPlayers = localAttendances.length > 0 || isInvite;
+  const hasInvitedPlayers = localAttendances.some(
+    (a) =>
+      a.status === 'CONFIRMED' ||
+      a.status === 'DECLINED' ||
+      a.status === 'INVITED' ||
+      Boolean(a.invitedAt)
+  );
 
   const hasKickedOff = isStarted;
   const showSummaryTab = hasLineup && hasKickedOff;

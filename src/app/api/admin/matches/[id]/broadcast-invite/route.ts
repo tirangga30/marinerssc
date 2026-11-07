@@ -369,6 +369,17 @@ export async function POST(
 
     let players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
 
+    // Reset all unconfirmed invites back to NOT_INVITED (delete attendances so status becomes Belum Di-invite)
+    if (body.action === 'RESET_ALL' || body.resetAll) {
+      await prisma.matchAttendance.deleteMany({
+        where: {
+          matchId: match.id,
+          status: { in: ['INVITED', 'NOT_INVITED'] },
+        },
+      });
+      return NextResponse.json({ success: true, message: 'Semua status invite berhasil direset ke Belum Di-invite' });
+    }
+
     // Mark single player as invited (e.g. when copying link or clicking WhatsApp button)
     if (body.markPlayerId) {
       const p = playerMap.get(body.markPlayerId) || players.find((pl) => pl.id === body.markPlayerId);
@@ -398,10 +409,15 @@ export async function POST(
       }
     }
 
-    // Filter by playerIds if provided
-    if (Array.isArray(body.playerIds) && body.playerIds.length > 0) {
+    // Filter by playerIds if provided. Jika tidak ada playerIds dan bukan markPlayerId, jangan mark sembarang pemain
+    if (Array.isArray(body.playerIds)) {
+      if (body.playerIds.length === 0) {
+        return NextResponse.json({ success: true, count: 0, message: 'Tidak ada pemain yang dipilih' });
+      }
       const allowed = new Set(body.playerIds);
       players = players.filter((p) => allowed.has(p.id));
+    } else {
+      return NextResponse.json({ success: true, count: 0, message: 'Harus memilih pemain yang ingin di-invite' });
     }
 
     for (const p of players) {

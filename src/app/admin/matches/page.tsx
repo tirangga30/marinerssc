@@ -331,16 +331,8 @@ export default function AdminMatchesPage() {
         fetchMatches();
 
         // Jika tambah pertandingan baru dan opsi kirim WA dicentang:
+        // Buka modal undangan agar admin dapat memilih siapa yang ingin di-invite (default: Belum Di-invite)
         if (!editingMatch && formData.sendWhatsAppInvite && savedData?.id) {
-          try {
-            await fetch(`/api/admin/matches/${savedData.id}/broadcast-invite`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ autoSendWhatsApp: true }),
-            });
-          } catch (e) {
-            console.error('Failed to trigger broadcast invites:', e);
-          }
           setBroadcastMatchId(savedData.id);
         }
       } else {
