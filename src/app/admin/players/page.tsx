@@ -879,7 +879,7 @@ export default function AdminPlayersPage() {
                 <th className="p-3">No</th>
                 <th className="p-3">Pemain</th>
                 <th className="p-3">Posisi</th>
-                <th className="p-3">Poin Perform</th>
+                <th className="p-3">EXP</th>
                 <th className="p-3">Gol / Assist</th>
                 <th className="p-3">Laga</th>
                 <th className="p-3">Status</th>

@@ -150,10 +150,10 @@ export default function PlayerPerformanceExpModal({
             {/* Info Legend Note */}
             <div className="text-[10px] text-slate-600 bg-slate-50/70 backdrop-blur-xs p-2.5 rounded-xl border border-slate-200/70 space-y-0.5">
               <div>
-                <strong className="text-slate-800">Aturan Poin:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+                <strong className="text-slate-800">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
               </div>
               <div>
-                <strong className="text-slate-800">Disiplin Invite:</strong> Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)
+                <strong className="text-slate-800">Pelanggaran:</strong> Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
               </div>
             </div>
 
