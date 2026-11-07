@@ -21,6 +21,7 @@ interface Player {
   isGuest: boolean;
   guestMatchId?: string | null;
   seasonData?: any;
+  seasons?: Array<{ id: string; name: string; year?: number }>;
   member?: {
     id: string;
     isPermanent: boolean;
@@ -375,7 +376,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           ...guestFormData,
           photoUrl: isDefault ? '/playertemplate.webp' : guestFormData.photoUrl,
           isGuest: true,
-          guestMatchId: matchId, // Bind this guest to this match only
+          guestMatchId: editingGuestPlayer ? (editingGuestPlayer.guestMatchId || null) : matchId,
         })
       });
       if (res.ok) {
@@ -833,6 +834,28 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
     })
   );
   const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
+
+  // Pemain Luar Skuad: Semua pemain skuad utama (bukan loan) yang TIDAK masuk starting dan TIDAK masuk cadangan.
+  // Termasuk pemain yang tidak di-invite, yang berhalangan hadir, maupun yang tidak masuk line-up match ini.
+  const nonSquadPlayers = sortRosterList(
+    players.filter((p) => {
+      if (pitchedIds.has(p.id)) return false;
+      if (benchSet.has(p.id)) return false;
+      if (p.isGuest) return false;
+      if (p.member && !p.member.isPermanent) return false;
+
+      // Filter skuad musim ini jika relasi musim tersedia
+      if (matchData?.seasonName && Array.isArray(p.seasons) && p.seasons.length > 0) {
+        const isAttended = matchAttendances.some((a) => a.playerId === p.id);
+        const inThisSeason = p.seasons.some(
+          (s: any) => s.name === matchData.seasonName || s.id === matchData.seasonId
+        );
+        if (!inThisSeason && !isAttended) return false;
+      }
+
+      return true;
+    })
+  );
 
   const activeMatchPlayerIds = new Set([...pitchedIds, ...benchSet]);
   const matchPlayers = players.filter((p) => activeMatchPlayerIds.has(p.id));
@@ -1491,8 +1514,16 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                         e.stopPropagation();
                                         setBenchPlayerIds((prev) => [...prev, p.id]);
                                       }}
-                                      className="px-2 py-1 rounded bg-amber-50 text-amber-800 hover:bg-amber-600 hover:text-white transition-colors text-[9px] font-bold uppercase flex items-center gap-1 border border-amber-300 cursor-pointer"
+                                      className="p-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300 cursor-pointer"
                                       title="Masukkan ke Cadangan Match Ini"
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
+                                      className="p-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-colors border border-amber-300 cursor-pointer"
+                                      title="Edit Pemain Loan"
                                     >
                                       <Edit className="w-3 h-3" />
                                     </button>
@@ -1891,7 +1922,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </span>
               </div>
 
-              {mainSquadAvailable.length === 0 ? (
+              {nonSquadPlayers.length === 0 ? (
                 <div className="text-center py-10 space-y-2">
                   <UserCheck className="w-8 h-8 mx-auto text-slate-400" />
                   <p className="text-xs font-semibold text-slate-600">
@@ -1900,7 +1931,7 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {mainSquadAvailable.map((p) => {
+                  {nonSquadPlayers.map((p) => {
                     const currentReason = nonSquadReasons[p.id] || '';
                     const displayStatus = currentReason.trim() || 'Tidak masuk skuad';
 

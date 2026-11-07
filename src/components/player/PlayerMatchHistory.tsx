@@ -447,6 +447,18 @@ export default function PlayerMatchHistory({
                   ? (match.seasonName.match(/\d{4}/)?.[0] || match.seasonName)
                   : (match.matchDate ? new Date(match.matchDate).getFullYear().toString() : '');
 
+                const matchDateMs = match.matchDate ? new Date(match.matchDate).getTime() : 0;
+                const mSeasonLower = (match.seasonName || '').trim().toLowerCase();
+                const isEnrolledInMatchSeason = playerSeasonNames.has(mSeasonLower) || playerSeasonYears.has(seasonYear);
+
+                // Status LOAN:
+                // Pemain loan yang baru ditarik dan memiliki tanggal join namun pernah debut duluan sebagai pemain loan:
+                // tandai LOAN di samping kiri menit bermainnya.
+                const isLoanInMatch =
+                  Boolean(player.isGuest) ||
+                  (joinDateMs !== null && !isNaN(joinDateMs) && matchDateMs > 0 && matchDateMs < joinDateMs - 12 * 3600 * 1000) ||
+                  (hasSeasonEnrollment && !isEnrolledInMatchSeason);
+
                 return (
                   <React.Fragment key={match.id}>
                     {isNewCompGroup && (
@@ -498,9 +510,16 @@ export default function PlayerMatchHistory({
                               {nonSquadStatus}
                             </span>
                           ) : isOnBenchOnly ? (
-                            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500">
-                              On the bench
-                            </span>
+                            <div className="flex items-center gap-1.5 justify-end">
+                              {isLoanInMatch && (
+                                <span className="text-[8px] sm:text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 shadow-xs shrink-0">
+                                  LOAN
+                                </span>
+                              )}
+                              <span className="text-[10px] sm:text-[11px] font-medium text-slate-500">
+                                On the bench
+                              </span>
+                            </div>
                           ) : (
                             <>
                               {hasEvents && (
@@ -561,9 +580,16 @@ export default function PlayerMatchHistory({
                                   ))}
                                 </div>
                               )}
-                              <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-800">
-                                {minutesPlayed}&apos;
-                              </span>
+                              <div className="flex items-center gap-1.5 justify-end">
+                                {isLoanInMatch && (
+                                  <span className="text-[8px] sm:text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 shadow-xs shrink-0">
+                                    LOAN
+                                  </span>
+                                )}
+                                <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                                  {minutesPlayed}&apos;
+                                </span>
+                              </div>
                             </>
                           )}
                         </div>
