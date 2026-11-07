@@ -45,6 +45,7 @@ export interface PlayerPerformanceResult {
 
 export function getExpBadgeColor(points: number): PlayerPerformanceResult['badgeColor'] {
   if (points <= -30) {
+    // -30 dan seterusnya : MERAH
     return {
       border: 'border-rose-500/90',
       bg: 'bg-gradient-to-t from-rose-600/50 via-rose-500/25 to-rose-400/10',
@@ -53,28 +54,30 @@ export function getExpBadgeColor(points: number): PlayerPerformanceResult['badge
       level: 'red',
     };
   }
-  if (points <= -20) {
+  if (points <= -15) {
+    // -15 sampai -29 : ORANYE
     return {
       border: 'border-orange-500/90',
-      bg: 'bg-gradient-to-t from-orange-600/40 via-orange-500/20 to-orange-400/5',
+      bg: 'bg-gradient-to-t from-orange-600/45 via-orange-500/20 to-orange-400/5',
       text: 'text-white',
       ring: 'ring-orange-500/30',
       level: 'orange',
     };
   }
-  if (points <= -10) {
+  if (points <= 0) {
+    // 0 sampai -14 : KUNING
     return {
       border: 'border-yellow-400/90',
-      bg: 'bg-gradient-to-t from-yellow-600/40 via-yellow-500/20 to-yellow-400/5',
+      bg: 'bg-gradient-to-t from-yellow-500/45 via-yellow-400/20 to-yellow-300/5',
       text: 'text-white',
       ring: 'ring-yellow-400/30',
       level: 'yellow',
     };
   }
-  // Points > -10 (includes 0 and positive)
+  // 1 dan seterusnya : HIJAU
   return {
-    border: 'border-emerald-400/80',
-    bg: 'bg-gradient-to-t from-emerald-600/40 via-emerald-500/20 to-emerald-400/5',
+    border: 'border-emerald-400/90',
+    bg: 'bg-gradient-to-t from-emerald-600/45 via-emerald-500/20 to-emerald-400/5',
     text: 'text-white',
     ring: 'ring-emerald-400/30',
     level: 'normal',

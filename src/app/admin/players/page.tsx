@@ -790,7 +790,15 @@ export default function AdminPlayersPage() {
                           INDISCIPLINE
                         </span>
                       ) : (
-                        <span className="px-1.5 py-0.2 rounded font-mono font-bold text-[8px] bg-blue-50 text-blue-700 border border-blue-200">
+                        <span
+                          className={`px-1.5 py-0.2 rounded font-mono font-bold text-[8px] border ${
+                            perf.totalPoints >= 1
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                              : perf.totalPoints >= -14
+                              ? 'bg-amber-50 text-amber-700 border-amber-300'
+                              : 'bg-orange-50 text-orange-700 border-orange-300'
+                          }`}
+                        >
                           {perf.totalPoints > 0 ? `+${perf.totalPoints}` : perf.totalPoints} EXP
                         </span>
                       )}
@@ -926,11 +934,13 @@ export default function AdminPlayersPage() {
                       <td className="p-3">
                         <span
                           className={`px-2 py-0.5 rounded-md font-mono font-black text-xs border ${
-                            perf.totalPoints >= 0
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : perf.isIndiscipline
-                              ? 'bg-rose-100 text-rose-800 border-rose-300'
-                              : 'bg-amber-50 text-amber-800 border-amber-300'
+                            perf.totalPoints >= 1
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                              : perf.totalPoints >= -14
+                              ? 'bg-amber-50 text-amber-700 border-amber-300'
+                              : perf.totalPoints >= -29
+                              ? 'bg-orange-50 text-orange-700 border-orange-300'
+                              : 'bg-rose-100 text-rose-800 border-rose-300'
                           }`}
                           title={`Total EXP: ${perf.totalPoints > 0 ? `+${perf.totalPoints}` : perf.totalPoints}`}
                         >

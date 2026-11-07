@@ -115,7 +115,13 @@ export default function PlayerPerformanceExpModal({
                 </span>
                 <span
                   className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
-                    totalPoints >= 0 ? 'text-blue-600' : 'text-rose-600'
+                    totalPoints >= 1
+                      ? 'text-emerald-600'
+                      : totalPoints >= -14
+                      ? 'text-amber-500'
+                      : totalPoints >= -29
+                      ? 'text-orange-600'
+                      : 'text-rose-600'
                   }`}
                 >
                   {formatPoints(totalPoints)}
