@@ -24,7 +24,9 @@ interface PlayerInvite {
   photoUrl: string;
   phone: string | null;
   cleanPhone: string;
-  status: string; // 'INVITED' | 'CONFIRMED' | 'DECLINED'
+  status: string; // 'INVITED' | 'CONFIRMED' | 'DECLINED' | 'NOT_INVITED'
+  isInvited?: boolean;
+  invitedAt?: string | Date | null;
   declineReason?: string | null;
   inviteUrl: string;
   message: string;
@@ -45,7 +47,7 @@ export default function MatchWhatsAppInviteModal({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [dispatching, setDispatching] = useState(false);
-  const [filter, setFilter] = useState<'ALL' | 'CONFIRMED' | 'INVITED' | 'DECLINED'>('ALL');
+  const [filter, setFilter] = useState<'ALL' | 'CONFIRMED' | 'INVITED' | 'DECLINED' | 'NOT_INVITED'>('ALL');
   const [category, setCategory] = useState<'ALL' | 'SQUAD' | 'LOAN'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -76,10 +78,41 @@ export default function MatchWhatsAppInviteModal({
     fetchData();
   }, [matchId]);
 
+  const markPlayerAsInvited = async (id: string) => {
+    // Update local state optimistically
+    setData((prev: any) => {
+      if (!prev) return prev;
+      const updatedPlayers = (prev.players || []).map((p: any) => {
+        if (p.id === id && p.status === 'NOT_INVITED') {
+          return { ...p, status: 'INVITED', isInvited: true };
+        }
+        return p;
+      });
+      const wasNotInvited = prev.players?.some((p: any) => p.id === id && p.status === 'NOT_INVITED');
+      return {
+        ...prev,
+        players: updatedPlayers,
+        invitedCount: wasNotInvited ? (prev.invitedCount || 0) + 1 : prev.invitedCount,
+        notInvitedCount: wasNotInvited ? Math.max(0, (prev.notInvitedCount || 0) - 1) : prev.notInvitedCount,
+      };
+    });
+
+    try {
+      await fetch(`/api/admin/matches/${matchId}/broadcast-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markPlayerId: id }),
+      });
+    } catch (e) {
+      console.warn('Gagal menandai invite pemain:', e);
+    }
+  };
+
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+    markPlayerAsInvited(id);
   };
 
   const toggleSelectPlayer = (id: string) => {
@@ -230,9 +263,13 @@ export default function MatchWhatsAppInviteModal({
               >
                 <XCircle className="w-3 h-3" /> Tidak
               </span>
-            ) : (
+            ) : p.status === 'INVITED' ? (
               <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-300 text-[10px] font-bold uppercase flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Menunggu
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-bold uppercase flex items-center gap-1">
+                Belum Di-invite
               </span>
             )}
           </div>
@@ -241,7 +278,7 @@ export default function MatchWhatsAppInviteModal({
           <button
             type="button"
             onClick={() => handleCopy(p.inviteUrl, p.id)}
-            title="Salin tautan konfirmasi pemain"
+            title="Salin tautan konfirmasi pemain & tandai telah di-invite"
             className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -254,6 +291,7 @@ export default function MatchWhatsAppInviteModal({
               href={p.waUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => markPlayerAsInvited(p.id)}
               className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-600/30"
             >
               <i className="fa-brands fa-whatsapp text-sm" />
@@ -309,25 +347,29 @@ export default function MatchWhatsAppInviteModal({
         ) : (
           <>
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
                 <span className="text-[10px] font-bold text-slate-600 uppercase block">Total Pemain</span>
-                <span className="text-lg font-black font-mono text-slate-900">{data?.totalPlayers || 0}</span>
+                <span className="text-base sm:text-lg font-black font-mono text-slate-900">{data?.totalPlayers || 0}</span>
                 <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
                   {data?.squadCount ?? 0} Skuad • {data?.loanCount ?? 0} Loan
                 </span>
               </div>
-              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Konfirmasi Ikut</span>
-                <span className="text-lg font-black font-mono text-emerald-800">{data?.confirmedCount || 0}</span>
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Ikut</span>
+                <span className="text-base sm:text-lg font-black font-mono text-emerald-800">{data?.confirmedCount || 0}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-                <span className="text-[10px] font-bold text-amber-700 uppercase block">Menunggu Respon</span>
-                <span className="text-lg font-black font-mono text-amber-800">{data?.invitedCount || 0}</span>
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+                <span className="text-[10px] font-bold text-amber-700 uppercase block">Menunggu</span>
+                <span className="text-base sm:text-lg font-black font-mono text-amber-800">{data?.invitedCount || 0}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-center">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-100 border border-slate-200 text-center">
+                <span className="text-[10px] font-bold text-slate-600 uppercase block">Belum Di-invite</span>
+                <span className="text-base sm:text-lg font-black font-mono text-slate-700">{data?.notInvitedCount || 0}</span>
+              </div>
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-rose-50 border border-rose-200 text-center col-span-2 sm:col-span-1">
                 <span className="text-[10px] font-bold text-rose-700 uppercase block">Tidak Bisa</span>
-                <span className="text-lg font-black font-mono text-rose-800">{data?.declinedCount || 0}</span>
+                <span className="text-base sm:text-lg font-black font-mono text-rose-800">{data?.declinedCount || 0}</span>
               </div>
             </div>
 
@@ -438,7 +480,7 @@ export default function MatchWhatsAppInviteModal({
 
               {/* Status Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-                {(['ALL', 'CONFIRMED', 'INVITED', 'DECLINED'] as const).map((st) => (
+                {(['ALL', 'CONFIRMED', 'INVITED', 'NOT_INVITED', 'DECLINED'] as const).map((st) => (
                   <button
                     key={st}
                     type="button"
@@ -455,6 +497,8 @@ export default function MatchWhatsAppInviteModal({
                       ? 'Ikut'
                       : st === 'INVITED'
                       ? 'Menunggu'
+                      : st === 'NOT_INVITED'
+                      ? 'Belum Di-invite'
                       : 'Tidak Bisa'}
                   </button>
                 ))}

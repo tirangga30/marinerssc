@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Shield, Sparkles, Calendar, Ruler, Weight } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import PlayerMatchHistory from './PlayerMatchHistory';
+import PlayerPerformanceExpModal from './PlayerPerformanceExpModal';
+import { calculatePlayerPerformance } from '@/lib/performancePoints';
 
 function getPositionLabel(pos: string) {
   const p = pos?.toUpperCase();
@@ -273,6 +275,9 @@ export default function PlayerProfileView({
   // Hitung statistik pemain dinamis untuk musim yang sedang dipilih
   const currentStats = computePlayerStats(player, activeMatches, selectedSeason);
 
+  // Hitung performa pemain & poin disiplin EXP untuk musim yang dipilih
+  const performanceResult = calculatePlayerPerformance(player, activeMatches, selectedSeason);
+
   // Biodata specs
   const birthDateValue = player.birthDate
     ? new Date(player.birthDate).toLocaleDateString('id-ID', {
@@ -287,11 +292,29 @@ export default function PlayerProfileView({
       ? player.nationality
       : 'Indonesia';
 
+  const debutValue = firstLineupDateMs
+    ? new Date(firstLineupDateMs).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—';
+
+  const joinDateValue = player.joinDate
+    ? new Date(player.joinDate).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—';
+
   const specs = [
     { label: 'Tanggal Lahir', value: birthDateValue },
     { label: 'Warganegara', value: nationalityValue },
     { label: 'Tinggi Badan', value: player.heightCm ? `${player.heightCm} cm` : '—' },
     { label: 'Berat Badan', value: player.weightKg ? `${player.weightKg} kg` : '—' },
+    { label: 'Debut Klub', value: debutValue },
+    { label: 'Bergabung Skuad', value: joinDateValue },
   ];
 
   // For pure guest player without season enrollment, only pass matches where in lineup
@@ -334,6 +357,15 @@ export default function PlayerProfileView({
 
           {/* Gradasi Hitam Latar Font */}
           <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[#060b14]/95 via-[#060b14]/65 to-transparent pointer-events-none z-10" />
+
+          {/* Top-Left: EXP Performance Badge */}
+          <div className="absolute top-3 left-3 z-30">
+            <PlayerPerformanceExpModal
+              playerName={player.name}
+              seasonName={selectedSeason}
+              performance={performanceResult}
+            />
+          </div>
 
           {/* Member Tag */}
           {member && (
@@ -496,6 +528,15 @@ export default function PlayerProfileView({
 
             {/* Gradasi Hitam Pekat di Bawah */}
             <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none z-15" />
+
+            {/* Top-Left: EXP Performance Badge */}
+            <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 z-20">
+              <PlayerPerformanceExpModal
+                playerName={player.name}
+                seasonName={selectedSeason}
+                performance={performanceResult}
+              />
+            </div>
 
             {/* Top-Right Tag: "MEMBER" */}
             {member && (

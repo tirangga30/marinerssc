@@ -231,6 +231,9 @@ model MatchAttendance {
   status        String         @default("INVITED") // "INVITED" (Menunggu Konfirmasi), "CONFIRMED" (Ikut), "DECLINED" (Tidak Ikut)
   declineReason String?
   assignedTeam  String?        // For Fun Match: "TEAM_A" | "TEAM_B" | null
+  invitedAt     DateTime?
+  isLateDecline Boolean        @default(false)
+  declinedAt    DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

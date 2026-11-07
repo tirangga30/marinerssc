@@ -6,6 +6,7 @@ import { unstable_cache } from 'next/cache';
 import { Shield, ArrowRight, Sparkles, Users } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import SeasonSubNav from '@/components/SeasonSubNav';
+import { calculatePlayerPerformance } from '@/lib/performancePoints';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -63,8 +64,10 @@ export default async function PlayersPage({
   let playerCardBg = '/bgprofil2.webp';
   let playerDefaultPhoto = '/playertemplate.webp';
 
+  let allMatches: any[] = [];
+
   try {
-    const [seasonsData, playersData, settingData] = await Promise.all([
+    const [seasonsData, playersData, settingData, matchesData] = await Promise.all([
       prisma.season.findMany({
         orderBy: { year: 'desc' },
         select: { id: true, name: true, year: true, isCurrent: true },
@@ -95,6 +98,8 @@ export default async function PlayersPage({
           photoUrl: true,
           hidePhoto: true,
           isCaptain: true,
+          status: true,
+          joinDate: true,
           seasonData: true,
           member: { select: { id: true } },
           seasons: { select: { id: true, name: true } },
@@ -120,6 +125,8 @@ export default async function PlayersPage({
             photoUrl: true,
             hidePhoto: true,
             isCaptain: true,
+            status: true,
+            joinDate: true,
             seasonData: true,
             seasons: { select: { id: true, name: true } },
           },
@@ -130,10 +137,22 @@ export default async function PlayersPage({
         where: { id: 'default' },
         select: { playerCardBg: true, playerDefaultPhoto: true },
       }).catch(() => null),
+      prisma.footballMatch.findMany({
+        select: {
+          id: true,
+          matchDate: true,
+          seasonName: true,
+          status: true,
+          lineups: { select: { playerId: true, isStarter: true } },
+          events: { select: { playerId: true, assistPlayerId: true, type: true } },
+          attendances: { select: { playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true } },
+        },
+      }).catch(() => []),
     ]);
 
     seasons = seasonsData || [];
     allPlayers = playersData || [];
+    allMatches = matchesData || [];
     if (settingData?.playerCardBg) playerCardBg = settingData.playerCardBg;
     if (settingData?.playerDefaultPhoto) playerDefaultPhoto = settingData.playerDefaultPhoto;
   } catch (err) {
@@ -181,6 +200,14 @@ export default async function PlayersPage({
       seasonFiltered = allPlayers;
     }
   }
+
+  // Saring pemain berstatus INDISCIPLINE (poin <= -30 di musim ini tidak ditampilkan di daftar skuad publik)
+  seasonFiltered = seasonFiltered.filter((p: any) => {
+    if (p.status === 'INDISCIPLINE') return false;
+    const perf = calculatePlayerPerformance(p, allMatches, selectedSeason);
+    if (perf.isIndiscipline) return false;
+    return true;
+  });
 
   const players = seasonFiltered.map((p) => resolvePlayerForSeason(p, selectedSeason));
 

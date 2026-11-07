@@ -24,6 +24,7 @@ import ImageCropperModal from '@/components/ImageCropperModal';
 import { getClientAdminSeason, setClientAdminSeason } from '@/lib/adminSeason';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import { useSystemSetting } from '@/context/SystemSettingContext';
+import { calculatePlayerPerformance } from '@/lib/performancePoints';
 
 interface SeasonRef {
   id: string;
@@ -71,6 +72,7 @@ export default function AdminPlayersPage() {
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [guestPlayers, setGuestPlayers] = useState<Player[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<string>('2026');
   const [activeTab, setActiveTab] = useState<'season_squad' | 'guests'>('season_squad');
@@ -156,16 +158,26 @@ export default function AdminPlayersPage() {
 
   const fetchPlayers = async () => {
     try {
-      const res = await fetch('/api/players');
+      const [res, guestRes, matchRes] = await Promise.all([
+        fetch('/api/players'),
+        fetch('/api/players?guestsOnly=true'),
+        fetch('/api/matches').catch(() => null),
+      ]);
       const data = await res.json();
       if (Array.isArray(data)) {
         setPlayers(sortPlayersByPos(data.filter((p: any) => !isUnknownPlayer(p))));
       }
 
-      const guestRes = await fetch('/api/players?guestsOnly=true');
       const guestData = await guestRes.json();
       if (Array.isArray(guestData)) {
         setGuestPlayers(sortPlayersByPos(guestData.filter((g: any) => !isUnknownPlayer(g))));
+      }
+
+      if (matchRes && matchRes.ok) {
+        const matchData = await matchRes.json().catch(() => []);
+        if (Array.isArray(matchData)) {
+          setMatches(matchData);
+        }
       }
     } catch {
       console.error('Gagal mengambil pemain');
@@ -734,6 +746,7 @@ export default function AdminPlayersPage() {
             </div>
           ) : (
             displayedList.map((player) => {
+              const perf = calculatePlayerPerformance(player, matches, selectedSeason);
               const isEnrolledInActiveSeason = player.seasons?.some(
                 (s) => s.name === selectedSeason || s.id === currentSeasonObj?.id
               );
@@ -770,6 +783,15 @@ export default function AdminPlayersPage() {
                       {player.isGuest && (
                         <span className="px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-300 text-[8px] uppercase font-bold">
                           Loan
+                        </span>
+                      )}
+                      {perf.isIndiscipline ? (
+                        <span className="px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 border border-rose-300 text-[8px] font-black uppercase">
+                          INDISCIPLINE
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.2 rounded font-mono font-bold text-[8px] bg-blue-50 text-blue-700 border border-blue-200">
+                          {perf.totalPoints > 0 ? `+${perf.totalPoints}` : perf.totalPoints} EXP
                         </span>
                       )}
                     </div>
@@ -849,6 +871,7 @@ export default function AdminPlayersPage() {
                 <th className="p-3">No</th>
                 <th className="p-3">Pemain</th>
                 <th className="p-3">Posisi</th>
+                <th className="p-3">Poin Perform</th>
                 <th className="p-3">Gol / Assist</th>
                 <th className="p-3">Laga</th>
                 <th className="p-3">Status</th>
@@ -859,7 +882,7 @@ export default function AdminPlayersPage() {
             <tbody className="divide-y divide-slate-100 font-medium">
               {displayedList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-500">
+                  <td colSpan={9} className="p-8 text-center text-slate-500">
                     {activeTab === 'season_squad'
                       ? `Belum ada pemain di skuad Musim ${selectedSeason}. Klik "Tarik Pemain" untuk memasukkan pemain.`
                       : 'Belum ada data pemain.'}
@@ -867,6 +890,8 @@ export default function AdminPlayersPage() {
                 </tr>
               ) : (
                 displayedList.map((player) => {
+                  const perf = calculatePlayerPerformance(player, matches, selectedSeason);
+
                   return (
                     <tr key={player.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3 font-mono font-bold text-blue-700">#{player.number}</td>
@@ -898,30 +923,54 @@ export default function AdminPlayersPage() {
                           </span>
                         )}
                       </td>
+                      <td className="p-3">
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-mono font-black text-xs border ${
+                            perf.totalPoints >= 0
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : perf.isIndiscipline
+                              ? 'bg-rose-100 text-rose-800 border-rose-300'
+                              : 'bg-amber-50 text-amber-800 border-amber-300'
+                          }`}
+                          title={`Total EXP: ${perf.totalPoints > 0 ? `+${perf.totalPoints}` : perf.totalPoints}`}
+                        >
+                          {perf.totalPoints > 0 ? `+${perf.totalPoints}` : perf.totalPoints} EXP
+                        </span>
+                      </td>
                       <td className="p-3 text-slate-700 font-medium">
                         {player.goals} Gol / {player.assists} Assist
                       </td>
                       <td className="p-3 text-slate-700 font-medium">{player.appearances}</td>
                       <td className="p-3">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStatus(player)}
-                          title={
-                            player.status === 'Active'
-                              ? `Klik untuk Nonaktifkan (${player.name})`
-                              : `Klik untuk Aktifkan (${player.name})`
-                          }
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5 ${
-                            player.status === 'Active'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
-                              : player.status === 'Injured'
-                              ? 'bg-amber-50 text-amber-700 border border-amber-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
-                              : 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
-                          }`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${player.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                          {player.status === 'Active' ? 'Active' : player.status || 'Inactive'}
-                        </button>
+                        {perf.isIndiscipline ? (
+                          <span
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-300 inline-flex items-center gap-1.5"
+                            title="Poin performa minus <= -30. Otomatis INDISCIPLINE dan disembunyikan dari skuad publik."
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                            INDISCIPLINE
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(player)}
+                            title={
+                              player.status === 'Active'
+                                ? `Klik untuk Nonaktifkan (${player.name})`
+                                : `Klik untuk Aktifkan (${player.name})`
+                            }
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                              player.status === 'Active'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
+                                : player.status === 'Injured'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
+                                : 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${player.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                            {player.status === 'Active' ? 'Active' : player.status || 'Inactive'}
+                          </button>
+                        )}
                       </td>
 
                       {/* TOMBOL BINTANG BERANDA */}

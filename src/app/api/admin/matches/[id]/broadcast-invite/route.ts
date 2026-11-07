@@ -180,7 +180,8 @@ export async function GET(
     const playerInvites = players.map((p) => {
       const resolved = resolvePlayerForSeason(p, match.seasonName);
       const att = attMap.get(p.id);
-      const status = att ? att.status : 'INVITED';
+      const isInvited = Boolean(att && (att.invitedAt || att.status === 'CONFIRMED' || att.status === 'DECLINED'));
+      const status = att ? (isInvited ? att.status : 'NOT_INVITED') : 'NOT_INVITED';
       const declineReason = att?.declineReason || null;
       const cleanPhone = cleanIndonesianPhone(p.phone);
       const inviteUrl = `${origin}/matches/${match.id}?p=${p.id}`;
@@ -208,6 +209,8 @@ export async function GET(
         phone: p.phone,
         cleanPhone,
         status,
+        isInvited,
+        invitedAt: att?.invitedAt || null,
         declineReason,
         inviteUrl,
         message,
@@ -241,6 +244,7 @@ export async function GET(
       confirmedCount: playerInvites.filter((p) => p.status === 'CONFIRMED').length,
       declinedCount: playerInvites.filter((p) => p.status === 'DECLINED').length,
       invitedCount: playerInvites.filter((p) => p.status === 'INVITED').length,
+      notInvitedCount: playerInvites.filter((p) => p.status === 'NOT_INVITED').length,
       players: playerInvites,
     });
   } catch (error: any) {
@@ -361,6 +365,35 @@ export async function POST(
 
     let players = Array.from(playerMap.values()).sort((a, b) => (a.number || 0) - (b.number || 0));
 
+    // Mark single player as invited (e.g. when copying link or clicking WhatsApp button)
+    if (body.markPlayerId) {
+      const p = playerMap.get(body.markPlayerId) || players.find((pl) => pl.id === body.markPlayerId);
+      if (p) {
+        const existing = existingMap.get(p.id);
+        if (existing) {
+          await prisma.matchAttendance.update({
+            where: { id: existing.id },
+            data: {
+              invitedAt: existing.invitedAt || new Date(),
+              status: existing.status === 'NOT_INVITED' ? 'INVITED' : existing.status,
+            },
+          });
+        } else {
+          await prisma.matchAttendance.create({
+            data: {
+              matchId: match.id,
+              playerId: p.id,
+              playerType: p.isGuest ? 'GUEST' : 'SQUAD',
+              playerName: p.name,
+              status: 'INVITED',
+              invitedAt: new Date(),
+            },
+          });
+        }
+        return NextResponse.json({ success: true, markedPlayerId: p.id });
+      }
+    }
+
     // Filter by playerIds if provided
     if (Array.isArray(body.playerIds) && body.playerIds.length > 0) {
       const allowed = new Set(body.playerIds);
@@ -369,7 +402,15 @@ export async function POST(
 
     for (const p of players) {
       const existing = existingMap.get(p.id);
-      if (!existing) {
+      if (existing) {
+        await prisma.matchAttendance.update({
+          where: { id: existing.id },
+          data: {
+            invitedAt: existing.invitedAt || new Date(),
+            status: existing.status === 'NOT_INVITED' ? 'INVITED' : existing.status,
+          },
+        });
+      } else {
         await prisma.matchAttendance.create({
           data: {
             matchId: match.id,
@@ -377,6 +418,7 @@ export async function POST(
             playerType: p.isGuest ? 'GUEST' : 'SQUAD',
             playerName: p.name,
             status: 'INVITED',
+            invitedAt: new Date(),
           },
         });
       }

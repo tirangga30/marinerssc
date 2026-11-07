@@ -95,7 +95,15 @@ export default async function PlayerDetailPage({
           },
           attendances: {
             where: { playerId: player.id },
-            select: { id: true, status: true, declineReason: true, playerId: true },
+            select: {
+              id: true,
+              status: true,
+              declineReason: true,
+              playerId: true,
+              invitedAt: true,
+              isLateDecline: true,
+              declinedAt: true,
+            },
           },
           events: {
             select: {

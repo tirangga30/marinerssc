@@ -6,6 +6,7 @@ import { unstable_cache } from 'next/cache';
 import { Trophy, Award, Flame, Shield, Activity, Users, BarChart3 } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import SeasonSubNav from '@/components/SeasonSubNav';
+import { calculatePlayerPerformance } from '@/lib/performancePoints';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -26,6 +27,9 @@ const getCachedStatsData = unstable_cache(
             },
             events: {
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
+            },
+            attendances: {
+              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true },
             },
           },
         }),
@@ -55,6 +59,9 @@ const getCachedStatsData = unstable_cache(
             seasons: { select: { id: true, name: true, year: true } },
             events: {
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
+            },
+            attendances: {
+              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true },
             },
             assistedEvents: {
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
@@ -224,8 +231,10 @@ export default async function StatsPage({
     const yellowCards = isAll ? Math.max(p.yellowCards || 0, calcYellow) : calcYellow;
     const redCards = isAll ? Math.max(p.redCards || 0, calcRed) : calcRed;
 
-    // Points system: Goal(5), Assist(3), Appearance(1), YellowCard(-1), RedCard(-3)
-    const points = (goals * 5) + (assists * 3) + (appearances * 1) - (yellowCards * 1) - (redCards * 3);
+    // Calculate performance points including WhatsApp invite discipline rules
+    const perf = calculatePlayerPerformance(p, allMatches, selectedSeason);
+    const fallbackBasePoints = (goals * 5) + (assists * 3) + (appearances * 1) - (yellowCards * 1) - (redCards * 3);
+    const points = isAll && fallbackBasePoints > perf.totalPoints ? fallbackBasePoints : perf.totalPoints;
 
     return {
       ...p,
@@ -235,6 +244,8 @@ export default async function StatsPage({
       yellowCards,
       redCards,
       points,
+      isIndiscipline: perf.isIndiscipline,
+      badgeColor: perf.badgeColor,
     };
   });
 
@@ -395,8 +406,9 @@ export default async function StatsPage({
               </Link>
             ))}
           </div>
-          <div className="pt-2 text-[10px] text-slate-500 text-left font-medium">
-            Poin = Gol (5), Assist (3), Tampil (1), Kartu Kuning (-1), Kartu Merah (-3)
+          <div className="pt-2 text-[10px] text-slate-500 text-left font-medium space-y-0.5">
+            <div>Poin = Gol (5), Assist (3), Tampil (1), Kartu Kuning (-1), Kartu Merah (-3)</div>
+            <div className="text-slate-400 font-normal">Disiplin Invite = Abaikan (-3), Batal &lt;1 Jam (-1), Tanpa Kabar (-4), Tolak (0)</div>
           </div>
         </div>
       )}

@@ -92,7 +92,19 @@ export default function MatchAttendanceConfirm({
     return null;
   }
 
+  const matchDateMs = matchDate ? new Date(matchDate).getTime() : 0;
+  const nowMs = Date.now();
+  const isWithin1Hour =
+    matchDateMs > 0 && matchDateMs - nowMs <= 3600 * 1000 && nowMs < matchDateMs;
+
   const handleConfirmAttendance = async (newStatus: 'CONFIRMED' | 'DECLINED', reason = '') => {
+    if (newStatus === 'DECLINED' && isWithin1Hour) {
+      const confirmed = window.confirm(
+        '⚠️ Peringatan Penalti Disiplin:\n\nPertandingan akan dimulai dalam waktu kurang dari 1 jam. Membatalkan kehadiran saat ini akan dikenakan penalti -1 poin performa setelah kickoff.\n\nApakah Anda yakin ingin membatalkan kehadiran?'
+      );
+      if (!confirmed) return;
+    }
+
     setSaving(true);
     setFeedbackMsg(null);
     try {
@@ -103,6 +115,7 @@ export default function MatchAttendanceConfirm({
           playerId,
           status: newStatus,
           declineReason: newStatus === 'DECLINED' ? reason : undefined,
+          isLateDecline: newStatus === 'DECLINED' && isWithin1Hour,
         }),
       });
 
@@ -249,6 +262,11 @@ export default function MatchAttendanceConfirm({
         </div>
       ) : showDeclineInput ? (
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          {isWithin1Hour && (
+            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
+              ⚠️ Peringatan: Kickoff kurang dari 1 jam. Pembatalan sekarang akan dikenakan penalti disiplin -1 poin performa (EXP) setelah kickoff.
+            </div>
+          )}
           <label className="text-xs font-bold text-slate-700 block">
             Alasan berhalangan (opsional):
           </label>

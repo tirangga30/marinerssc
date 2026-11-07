@@ -109,6 +109,12 @@ export async function POST(
       },
     });
 
+    const isWithin1HourBeforeKickoff =
+      !isNaN(matchTime.getTime()) &&
+      matchTime.getTime() - now.getTime() <= 3600 * 1000 &&
+      now.getTime() < matchTime.getTime();
+    const isLate = Boolean(body.isLateDecline || isWithin1HourBeforeKickoff);
+
     let attendance;
     if (existing) {
       attendance = await prisma.matchAttendance.update({
@@ -116,6 +122,8 @@ export async function POST(
         data: {
           status,
           declineReason: status === 'DECLINED' ? (declineReason || null) : null,
+          isLateDecline: status === 'DECLINED' ? isLate : false,
+          declinedAt: status === 'DECLINED' ? new Date() : null,
           playerName: player.name,
           updatedAt: new Date(),
         },
@@ -129,6 +137,8 @@ export async function POST(
           playerName: player.name,
           status,
           declineReason: status === 'DECLINED' ? (declineReason || null) : null,
+          isLateDecline: status === 'DECLINED' ? isLate : false,
+          declinedAt: status === 'DECLINED' ? new Date() : null,
         },
       });
     }
