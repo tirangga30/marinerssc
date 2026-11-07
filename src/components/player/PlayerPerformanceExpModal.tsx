@@ -107,36 +107,38 @@ export default function PlayerPerformanceExpModal({
               </button>
             </div>
 
-            {/* Total EXP Summary Banner */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 backdrop-blur-sm border border-slate-200/80 shadow-xs flex items-center justify-between">
+            {/* Total EXP Summary (Tanpa Box) */}
+            <div className="flex items-center justify-between px-0.5 pt-1">
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
                   Total Poin EXP
                 </span>
-                <span
-                  className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
-                    totalPoints >= 1
-                      ? 'text-emerald-600'
-                      : totalPoints >= -14
-                      ? 'text-amber-500'
-                      : totalPoints >= -29
-                      ? 'text-orange-600'
-                      : 'text-rose-600'
-                  }`}
-                >
-                  {formatPoints(totalPoints)}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium block mt-1">
-                  Performa Laga: <strong className="text-slate-800">{formatPoints(performance.matchPoints || 0)}</strong> • Disiplin: <strong className="text-slate-800">{formatPoints(performance.disciplinePoints || 0)}</strong>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span
+                    className={`text-3xl sm:text-4xl font-black font-mono leading-none ${
+                      totalPoints >= 1
+                        ? 'text-emerald-600'
+                        : totalPoints >= -14
+                        ? 'text-amber-500'
+                        : totalPoints >= -29
+                        ? 'text-orange-600'
+                        : 'text-rose-600'
+                    }`}
+                  >
+                    {formatPoints(totalPoints)}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1.5">
+                  Performa Laga: <strong className="text-slate-700">{formatPoints(performance.matchPoints || 0)}</strong> • Disiplin: <strong className="text-slate-700">{formatPoints(performance.disciplinePoints || 0)}</strong>
                 </span>
               </div>
 
               <div className="text-right self-start sm:self-center">
-                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
                   Status Skuad
                 </span>
                 <span
-                  className={`text-xs font-black uppercase px-2.5 py-1 rounded-lg inline-block mt-0.5 border ${
+                  className={`text-xs font-black uppercase px-2.5 py-1 rounded-lg inline-block mt-1 border ${
                     isIndiscipline
                       ? 'bg-rose-50 text-rose-700 border-rose-300'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-300'
@@ -147,18 +149,18 @@ export default function PlayerPerformanceExpModal({
               </div>
             </div>
 
-            {/* Info Legend Note */}
-            <div className="text-[10px] text-slate-600 bg-slate-50/70 backdrop-blur-xs p-2.5 rounded-xl border border-slate-200/70 space-y-0.5">
+            {/* Info Legend Note (Tanpa Box) */}
+            <div className="text-[10px] text-slate-500 space-y-0.5 px-0.5 pb-1 border-b border-slate-100">
               <div>
-                <strong className="text-slate-800">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+                <strong className="text-slate-700">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
               </div>
               <div>
-                <strong className="text-slate-800">Pelanggaran:</strong> Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
+                <strong className="text-slate-700">Pelanggaran:</strong> Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
               </div>
             </div>
 
-            {/* Activity History List */}
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[180px] max-h-[380px]">
+            {/* Activity History List (Hanya riwayat poin yang memakai box) */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[160px] max-h-[380px]">
               {activities.length === 0 ? (
                 <div className="py-12 text-center text-slate-400 text-xs font-semibold">
                   Belum ada aktivitas poin tercatat untuk {displaySeason}.
@@ -172,7 +174,7 @@ export default function PlayerPerformanceExpModal({
                   return (
                     <div
                       key={act.id}
-                      className="p-3 rounded-xl bg-white/80 hover:bg-white backdrop-blur-xs border border-slate-200/80 flex items-start justify-between gap-3 shadow-2xs transition-colors"
+                      className="p-3 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 flex items-start justify-between gap-3 shadow-xs transition-colors"
                     >
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
