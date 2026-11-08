@@ -204,14 +204,22 @@ export function calculatePlayerPerformance(
       Boolean(attendance) &&
       (Boolean(attendance.invitedAt) || attStatus === 'INVITED' || attStatus === 'CONFIRMED' || attStatus === 'DECLINED');
 
+    // Special match detection: Matchday 1 vs Cikuya
+    const isCikuyaMatch =
+      Boolean(match.opponentName && match.opponentName.toLowerCase().includes('cikuya')) ||
+      (Boolean(match.stage && match.stage.toLowerCase().includes('matchday 1')) &&
+        (matchSeasonYear === 2027 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
+
     if (inLineup) {
       appearancesCount++;
 
       // User rule:
       // "jika di klik manual poin pertandingan gak akan nambah +1, karena itu khusus pemain yang tidak konfirmasi/tidak ikut namun tiba tiba ikut, masuknya ke tampil tanpa konfirmasi"
+      // KECUALI Matchday 1 vs Cikuya: "LAWAN CIKUYA MATCHDAY 1, PEMAIN SKUAD yang main JANGAN 0, TAPI +1in aja (tirangga, miraj, sudarman, ujang)"
       const isUnconfirmedAppearance =
         isDisciplineEligible &&
-        (isManualConfirm || attStatus === 'DECLINED' || !wasInvited || attStatus === 'INVITED' || attStatus === 'NOT_INVITED');
+        !isCikuyaMatch &&
+        (isManualConfirm || attStatus === 'DECLINED' || (wasInvited && (attStatus === 'INVITED' || attStatus === 'NOT_INVITED')));
 
       if (isUnconfirmedAppearance) {
         activities.push({
@@ -296,11 +304,6 @@ export function calculatePlayerPerformance(
 
     // Special user adjustment for Matchday 1 2027 vs Cikuya (without WA invite broadcast):
     // adly -3, agung -3, ariel -3, ikam -4
-    const isCikuyaMatch =
-      Boolean(match.opponentName && match.opponentName.toLowerCase().includes('cikuya')) ||
-      (Boolean(match.stage && match.stage.toLowerCase().includes('matchday 1')) &&
-        (matchSeasonYear === 2027 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
-
     if (isCikuyaMatch && isDisciplineEligible && !inLineup && !isExemptPlayer) {
       const alreadyHasDiscipline = activities.some(
         (a) => a.matchId === match.id && (a.type === 'ignored_invite' || a.type === 'no_show')
