@@ -385,61 +385,107 @@ export default function PlayerMatchHistory({
                 const isSubbedIn = matchEvents.some(
                   (e: any) => e.type === 'sub' && (e.playerId === player.id || e.player?.id === player.id)
                 );
-                const isOnBenchOnly = !isNotInSquad && !isStarter && !isSubbedIn;
+                const hasEverPlayed = isStarter || isSubbedIn;
+                const isOnBenchOnly = !isNotInSquad && !hasEverPlayed;
 
-                // Hitung Menit Bermain
-                const matchDuration = match.duration || 60;
+                // Hitung Menit Bermain Akumulatif (mendukung pergantian pemain berulang / masuk lagi setelah diganti)
+                const baseDuration = match.duration || 60;
                 let minutesPlayed = 0;
 
-                if (isStarter) {
-                  const subOutEvt = matchEvents.find(
-                    (e: any) =>
-                      e.type === 'sub' &&
-                      (e.assistPlayerId === player.id || e.assistPlayer?.id === player.id)
-                  );
-                  const redEvt = matchEvents.find(
-                    (e: any) =>
-                      (e.playerId === player.id || e.player?.id === player.id) &&
-                      (e.type === 'red_card' || e.type === 'second_yellow')
-                  );
+                if (hasEverPlayed) {
+                  // Kumpulkan semua transisi pergantian pemain (masuk/keluar) dan kartu merah yang dialami pemain ini
+                  type MatchTransition = {
+                    type: 'in' | 'out' | 'red_card';
+                    minute: number;
+                  };
 
-                  let endMinute = matchDuration;
-                  if (subOutEvt && typeof subOutEvt.minute === 'number') {
-                    endMinute = Math.min(endMinute, subOutEvt.minute);
-                  }
-                  if (redEvt && typeof redEvt.minute === 'number') {
-                    endMinute = Math.min(endMinute, redEvt.minute);
-                  }
-                  minutesPlayed = Math.max(1, endMinute);
-                } else if (isSubbedIn) {
-                  const subInEvt = matchEvents.find(
-                    (e: any) =>
-                      e.type === 'sub' &&
-                      (e.playerId === player.id || e.player?.id === player.id)
-                  );
-                  const subInMinute = subInEvt?.minute || 0;
+                  const transitions: MatchTransition[] = [];
 
-                  const subOutEvt = matchEvents.find(
-                    (e: any) =>
-                      e.type === 'sub' &&
-                      (e.assistPlayerId === player.id || e.assistPlayer?.id === player.id) &&
-                      e.minute > subInMinute
-                  );
-                  const redEvt = matchEvents.find(
-                    (e: any) =>
-                      (e.playerId === player.id || e.player?.id === player.id) &&
-                      (e.type === 'red_card' || e.type === 'second_yellow') &&
-                      e.minute > subInMinute
-                  );
+                  for (const e of matchEvents) {
+                    const isPlayer = e.playerId === player.id || e.player?.id === player.id;
+                    const isAssist = e.assistPlayerId === player.id || e.assistPlayer?.id === player.id;
+                    const rawMin = typeof e.minute === 'number' ? e.minute : parseInt(e.minute, 10);
+                    const minute = isNaN(rawMin) ? 0 : Math.max(0, rawMin);
 
-                  let endMinute = matchDuration;
-                  if (subOutEvt && typeof subOutEvt.minute === 'number') {
-                    endMinute = Math.min(endMinute, subOutEvt.minute);
+                    if (e.type === 'sub') {
+                      if (isPlayer) {
+                        transitions.push({ type: 'in', minute });
+                      }
+                      if (isAssist) {
+                        transitions.push({ type: 'out', minute });
+                      }
+                    } else if (e.type === 'red_card' || e.type === 'second_yellow') {
+                      if (isPlayer) {
+                        transitions.push({ type: 'red_card', minute });
+                      }
+                    }
                   }
-                  if (redEvt && typeof redEvt.minute === 'number') {
-                    endMinute = Math.min(endMinute, redEvt.minute);
+
+                  // Durasi efektif laga (bila terdapat kejadian di injury time melampaui durasi dasar)
+                  const maxTransitionMin = transitions.length > 0
+                    ? Math.max(...transitions.map((t) => t.minute))
+                    : 0;
+                  const effectiveMatchDuration = Math.max(baseDuration, maxTransitionMin);
+
+                  // Urutkan transisi secara kronologis berdasarkan menit.
+                  // Jika ada pergantian pada menit yang sama, dahulukan keluar ('out') sebelum masuk ('in').
+                  const priorityMap: Record<string, number> = {
+                    out: 1,
+                    in: 2,
+                    red_card: 3,
+                  };
+
+                  transitions.sort((a, b) => {
+                    if (a.minute !== b.minute) {
+                      return a.minute - b.minute;
+                    }
+                    return (priorityMap[a.type] || 0) - (priorityMap[b.type] || 0);
+                  });
+
+                  let isOnPitch = isStarter;
+                  let currentPeriodStart: number | null = isStarter ? 0 : null;
+                  let totalMinutes = 0;
+
+                  for (const tr of transitions) {
+                    if (tr.type === 'in') {
+                      if (!isOnPitch) {
+                        isOnPitch = true;
+                        currentPeriodStart = Math.min(effectiveMatchDuration, tr.minute);
+                      }
+                    } else if (tr.type === 'out') {
+                      if (isOnPitch && currentPeriodStart !== null) {
+                        const endMin = Math.min(effectiveMatchDuration, tr.minute);
+                        if (endMin >= currentPeriodStart) {
+                          totalMinutes += endMin - currentPeriodStart;
+                        }
+                        isOnPitch = false;
+                        currentPeriodStart = null;
+                      }
+                    } else if (tr.type === 'red_card') {
+                      if (isOnPitch && currentPeriodStart !== null) {
+                        const endMin = Math.min(effectiveMatchDuration, tr.minute);
+                        if (endMin >= currentPeriodStart) {
+                          totalMinutes += endMin - currentPeriodStart;
+                        }
+                        isOnPitch = false;
+                        currentPeriodStart = null;
+                      }
+                      // Pemain yang terkena kartu merah tidak dapat bermain kembali
+                      break;
+                    }
                   }
-                  minutesPlayed = Math.max(1, endMinute - subInMinute);
+
+                  // Jika sampai peluit akhir pertandingan pemain masih berada di lapangan
+                  if (isOnPitch && currentPeriodStart !== null) {
+                    const endMin = effectiveMatchDuration;
+                    if (endMin >= currentPeriodStart) {
+                      totalMinutes += endMin - currentPeriodStart;
+                    }
+                    isOnPitch = false;
+                    currentPeriodStart = null;
+                  }
+
+                  minutesPlayed = Math.max(1, totalMinutes);
                 }
 
                 const hasEvents = chronEvts.length > 0;
