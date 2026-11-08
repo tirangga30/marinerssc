@@ -15,6 +15,8 @@ import {
   Sparkles,
   Search,
   RotateCcw,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
 
 interface PlayerInvite {
@@ -55,6 +57,7 @@ export default function MatchWhatsAppInviteModal({
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [resetting, setResetting] = useState(false);
+  const [updatingManualId, setUpdatingManualId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -114,6 +117,78 @@ export default function MatchWhatsAppInviteModal({
       });
     } catch (e) {
       console.warn('Gagal menandai invite pemain:', e);
+    }
+  };
+
+  const handleToggleManualAttendance = async (playerId: string, makeConfirmed: boolean) => {
+    setUpdatingManualId(playerId);
+    try {
+      const res = await fetch(`/api/admin/matches/${matchId}/broadcast-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manualAttendance: {
+            playerId,
+            status: makeConfirmed ? 'CONFIRMED' : 'INVITED',
+          },
+        }),
+      });
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.error || 'Gagal mengubah status kehadiran');
+
+      // Optimistic update state
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const targetPlayer = prev.players?.find((p: any) => p.id === playerId);
+        const oldStatus = targetPlayer?.status || 'NOT_INVITED';
+        const newStatus = makeConfirmed ? 'CONFIRMED' : 'INVITED';
+
+        let confirmedDelta = 0;
+        let invitedDelta = 0;
+        let declinedDelta = 0;
+        let notInvitedDelta = 0;
+
+        if (oldStatus === 'CONFIRMED') confirmedDelta--;
+        else if (oldStatus === 'INVITED') invitedDelta--;
+        else if (oldStatus === 'DECLINED') declinedDelta--;
+        else if (oldStatus === 'NOT_INVITED') notInvitedDelta--;
+
+        if (newStatus === 'CONFIRMED') confirmedDelta++;
+        else if (newStatus === 'INVITED') invitedDelta++;
+
+        const updatedPlayers = (prev.players || []).map((p: any) => {
+          if (p.id === playerId) {
+            return {
+              ...p,
+              status: newStatus,
+              isInvited: true,
+              declineReason: makeConfirmed ? null : p.declineReason,
+            };
+          }
+          return p;
+        });
+
+        return {
+          ...prev,
+          players: updatedPlayers,
+          confirmedCount: Math.max(0, (prev.confirmedCount || 0) + confirmedDelta),
+          invitedCount: Math.max(0, (prev.invitedCount || 0) + invitedDelta),
+          declinedCount: Math.max(0, (prev.declinedCount || 0) + declinedDelta),
+          notInvitedCount: Math.max(0, (prev.notInvitedCount || 0) + notInvitedDelta),
+        };
+      });
+
+      setAlertMsg({
+        type: 'success',
+        text: makeConfirmed
+          ? 'Pemain berhasil dikonfirmasi IKUT secara manual'
+          : 'Konfirmasi ikut pemain berhasil dibatalkan',
+      });
+    } catch (e: any) {
+      console.error(e);
+      setAlertMsg({ type: 'error', text: e.message || 'Gagal memperbarui status kehadiran' });
+    } finally {
+      setUpdatingManualId(null);
     }
   };
 
@@ -307,6 +382,37 @@ export default function MatchWhatsAppInviteModal({
               </span>
             )}
           </div>
+
+          {/* Tombol Ikut Manual (Disebelah kiri tombol Link) */}
+          <button
+            type="button"
+            disabled={updatingManualId === p.id}
+            onClick={() => handleToggleManualAttendance(p.id, !isConfirmed)}
+            title={
+              isConfirmed
+                ? 'Klik untuk membatalkan status Ikut pemain ini'
+                : 'Konfirmasi kehadiran pemain ini secara manual (Ikut Bertanding)'
+            }
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border shadow-2xs active:scale-95 disabled:opacity-50 ${
+              isConfirmed
+                ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+            }`}
+          >
+            {updatingManualId === p.id ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isConfirmed ? (
+              <UserX className="w-3.5 h-3.5 text-rose-600" />
+            ) : (
+              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+            )}
+            <span className="hidden sm:inline">
+              {isConfirmed ? 'Batal Ikut' : 'Ikut Manual'}
+            </span>
+            <span className="sm:hidden">
+              {isConfirmed ? 'Batal' : 'Ikut'}
+            </span>
+          </button>
 
           {/* Copy Link Button */}
           <button

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { formatWibDate, formatWibTime } from '@/lib/date';
@@ -423,6 +424,87 @@ export async function POST(
           });
         }
         return NextResponse.json({ success: true, markedPlayerId: p.id });
+      }
+    }
+
+    // Manual confirm / cancel attendance for a single player
+    if (body.manualAttendance) {
+      const { playerId, status } = body.manualAttendance;
+      const p = playerMap.get(playerId) || players.find((pl) => pl.id === playerId);
+      if (p && !isPlayerInactiveOrInjured(p)) {
+        const existing = existingMap.get(p.id);
+        const isConfirm = status === 'CONFIRMED';
+        const newStatus = isConfirm ? 'CONFIRMED' : (existing?.invitedAt ? 'INVITED' : 'NOT_INVITED');
+
+        let attendanceRecord;
+        if (existing) {
+          attendanceRecord = await prisma.matchAttendance.update({
+            where: { id: existing.id },
+            data: {
+              status: newStatus,
+              declineReason: isConfirm ? null : existing.declineReason,
+              declinedAt: isConfirm ? null : existing.declinedAt,
+              isLateDecline: isConfirm ? false : existing.isLateDecline,
+              invitedAt: existing.invitedAt || new Date(),
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          attendanceRecord = await prisma.matchAttendance.create({
+            data: {
+              matchId: match.id,
+              playerId: p.id,
+              playerType: p.isGuest ? 'GUEST' : 'SQUAD',
+              playerName: p.name,
+              status: newStatus,
+              invitedAt: new Date(),
+            },
+          });
+        }
+
+        // Otomatis sinkronisasi ke cadangan jika lineup sudah dirilis
+        if (isConfirm) {
+          const lineupCount = await prisma.matchLineup.count({ where: { matchId: match.id } });
+          if (lineupCount > 0) {
+            const inLineup = await prisma.matchLineup.findFirst({
+              where: { matchId: match.id, playerId: p.id },
+            });
+            if (!inLineup) {
+              await prisma.matchLineup.create({
+                data: {
+                  matchId: match.id,
+                  playerId: p.id,
+                  isStarter: false,
+                  pitchPosition: 'SUB',
+                  positionName: 'Substitute',
+                },
+              });
+            }
+          }
+        } else {
+          // Jika membatalkan konfirmasi ikut, hapus dari cadangan (jika bukan starter)
+          await prisma.matchLineup.deleteMany({
+            where: {
+              matchId: match.id,
+              playerId: p.id,
+              isStarter: false,
+            },
+          });
+        }
+
+        try {
+          revalidatePath(`/matches/${match.id}`);
+          revalidatePath('/matches');
+        } catch {
+          // ignore
+        }
+
+        return NextResponse.json({
+          success: true,
+          attendance: attendanceRecord,
+          status: newStatus,
+          playerId: p.id,
+        });
       }
     }
 
