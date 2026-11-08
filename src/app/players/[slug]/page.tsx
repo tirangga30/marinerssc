@@ -102,6 +102,7 @@ export default async function PlayerDetailPage({
               playerId: true,
               invitedAt: true,
               isLateDecline: true,
+              isManualConfirm: true,
               declinedAt: true,
             },
           },

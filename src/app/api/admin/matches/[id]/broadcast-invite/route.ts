@@ -223,6 +223,7 @@ export async function GET(
         cleanPhone,
         status,
         playerStatus: p.status || 'Active',
+        isManualConfirm: Boolean((att as any)?.isManualConfirm),
         isInvited,
         invitedAt: att?.invitedAt || null,
         declineReason,
@@ -442,6 +443,7 @@ export async function POST(
             where: { id: existing.id },
             data: {
               status: newStatus,
+              isManualConfirm: isConfirm,
               declineReason: isConfirm ? null : existing.declineReason,
               declinedAt: isConfirm ? null : existing.declinedAt,
               isLateDecline: isConfirm ? false : existing.isLateDecline,
@@ -457,6 +459,7 @@ export async function POST(
               playerType: p.isGuest ? 'GUEST' : 'SQUAD',
               playerName: p.name,
               status: newStatus,
+              isManualConfirm: isConfirm,
               invitedAt: new Date(),
             },
           });

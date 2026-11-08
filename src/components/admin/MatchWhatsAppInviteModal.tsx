@@ -29,6 +29,7 @@ interface PlayerInvite {
   cleanPhone: string;
   status: string; // 'INVITED' | 'CONFIRMED' | 'DECLINED' | 'NOT_INVITED'
   isInvited?: boolean;
+  isManualConfirm?: boolean;
   invitedAt?: string | Date | null;
   declineReason?: string | null;
   inviteUrl: string;
@@ -162,6 +163,7 @@ export default function MatchWhatsAppInviteModal({
               ...p,
               status: newStatus,
               isInvited: true,
+              isManualConfirm: makeConfirmed,
               declineReason: makeConfirmed ? null : p.declineReason,
             };
           }
@@ -181,7 +183,7 @@ export default function MatchWhatsAppInviteModal({
       setAlertMsg({
         type: 'success',
         text: makeConfirmed
-          ? 'Pemain berhasil dikonfirmasi IKUT secara manual'
+          ? 'Pemain berhasil dikonfirmasi IKUT secara manual (Tampil Tanpa Konfirmasi, 0 poin laga)'
           : 'Konfirmasi ikut pemain berhasil dibatalkan',
       });
     } catch (e: any) {
@@ -362,8 +364,20 @@ export default function MatchWhatsAppInviteModal({
           {/* Status Badge */}
           <div className="mr-1">
             {isConfirmed ? (
-              <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-black uppercase flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Ikut
+              <span
+                className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase flex items-center gap-1 border ${
+                  p.isManualConfirm
+                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                }`}
+                title={
+                  p.isManualConfirm
+                    ? 'Dikonfirmasi manual (Tampil Tanpa Konfirmasi, 0 poin laga)'
+                    : 'Konfirmasi mandiri via link (Dapat +1 poin laga jika tampil)'
+                }
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                <span>{p.isManualConfirm ? 'Ikut (Manual)' : 'Ikut'}</span>
               </span>
             ) : isDeclined ? (
               <span

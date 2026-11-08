@@ -29,7 +29,7 @@ const getCachedStatsData = unstable_cache(
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
             },
             attendances: {
-              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true },
+              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true, isManualConfirm: true },
             },
           },
         }),
@@ -61,7 +61,7 @@ const getCachedStatsData = unstable_cache(
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },
             },
             attendances: {
-              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true },
+              select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true, isManualConfirm: true },
             },
             assistedEvents: {
               select: { id: true, matchId: true, type: true, minute: true, playerId: true, assistPlayerId: true },

@@ -234,6 +234,7 @@ model MatchAttendance {
   assignedTeam  String?        // For Fun Match: "TEAM_A" | "TEAM_B" | null
   invitedAt     DateTime?
   isLateDecline Boolean        @default(false)
+  isManualConfirm Boolean      @default(false)
   declinedAt    DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

@@ -199,6 +199,7 @@ export function calculatePlayerPerformance(
 
     // 1. Lineup appearance & attendance interaction
     const attStatus = attendance?.status;
+    const isManualConfirm = Boolean(attendance?.isManualConfirm);
     const wasInvited =
       Boolean(attendance) &&
       (Boolean(attendance.invitedAt) || attStatus === 'INVITED' || attStatus === 'CONFIRMED' || attStatus === 'DECLINED');
@@ -206,17 +207,26 @@ export function calculatePlayerPerformance(
     if (inLineup) {
       appearancesCount++;
 
-      // User rule: "pilih tidak ikut tetapi tiba tiba ikut = tidak dapat +1 poin pertandingan walaupun diakhir dimasukan line up dan bahkan mencetak goal"
-      if (isDisciplineEligible && attStatus === 'DECLINED') {
+      // User rule:
+      // "jika di klik manual poin pertandingan gak akan nambah +1, karena itu khusus pemain yang tidak konfirmasi/tidak ikut namun tiba tiba ikut, masuknya ke tampil tanpa konfirmasi"
+      const isUnconfirmedAppearance =
+        isDisciplineEligible &&
+        (isManualConfirm || attStatus === 'DECLINED' || !wasInvited || attStatus === 'INVITED' || attStatus === 'NOT_INVITED');
+
+      if (isUnconfirmedAppearance) {
         activities.push({
-          id: `${match.id}-app-declined`,
+          id: `${match.id}-app-unconfirmed`,
           matchId: match.id,
           opponentName: match.opponentName,
           matchDate: match.matchDate,
           stage: match.stage,
           type: 'declined_appearance',
-          title: 'Tampil di Laga (Awalnya Menolak)',
-          reason: 'Dimasukkan ke lineup meski sebelumnya berstatus Tidak Ikut (tanpa poin tampil)',
+          title: 'Tampil Tanpa Konfirmasi',
+          reason: isManualConfirm
+            ? 'Dikonfirmasi manual oleh admin (tampil tanpa konfirmasi mandiri, 0 poin)'
+            : attStatus === 'DECLINED'
+            ? 'Tampil di laga meski awalnya berstatus Tidak Ikut (0 poin)'
+            : 'Tampil di laga tanpa melakukan konfirmasi kehadiran (0 poin)',
           points: 0,
         });
       } else {
@@ -232,7 +242,7 @@ export function calculatePlayerPerformance(
           points: 1,
         });
       }
-    } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer) {
+    } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer && !isManualConfirm) {
       // Player was NOT in lineup, match passed kickoff: evaluate discipline rules
       const isExempt = isExemptReason(attendance?.declineReason);
       if (!isExempt) {

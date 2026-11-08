@@ -145,7 +145,7 @@ export default async function PlayersPage({
           status: true,
           lineups: { select: { playerId: true, isStarter: true } },
           events: { select: { playerId: true, assistPlayerId: true, type: true } },
-          attendances: { select: { playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true } },
+          attendances: { select: { playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true, isManualConfirm: true } },
         },
       }).catch(() => []),
     ]);

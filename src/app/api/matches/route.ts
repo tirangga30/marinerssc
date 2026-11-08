@@ -26,7 +26,7 @@ export async function GET(req: Request) {
         events: { include: { player: true, assistPlayer: true } },
         competitionRef: true,
         season: true,
-        attendances: { select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true } },
+        attendances: { select: { id: true, playerId: true, status: true, declineReason: true, invitedAt: true, isLateDecline: true, isManualConfirm: true } },
       },
       orderBy: { matchDate: 'desc' },
     });
