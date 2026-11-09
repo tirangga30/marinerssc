@@ -46,8 +46,24 @@ function buildInviteMessage({
   });
   const timeStr = formatWibTime(matchDate);
   const displayTeam = teamName || 'MARS FC';
-  const stageLabel = (stage || competition || '').trim();
-  const header = stageLabel ? `*MARS CALLING!* ${stageLabel}` : '*MARS CALLING!*';
+  const compText = (competition || '').trim();
+  const stageText = (stage || '').trim();
+
+  let labelParts: string[] = [];
+  if (compText && stageText) {
+    if (stageText.toLowerCase().includes(compText.toLowerCase())) {
+      labelParts = [stageText];
+    } else {
+      labelParts = [compText, stageText];
+    }
+  } else if (compText) {
+    labelParts = [compText];
+  } else if (stageText) {
+    labelParts = [stageText];
+  }
+
+  const headerLabel = labelParts.join(' ').trim();
+  const header = headerLabel ? `*MARS CALLING!* ${headerLabel}` : '*MARS CALLING!*';
   const notesText = notes && notes.trim() ? `\n📝 *Catatan*: ${notes.trim()}\n` : '';
 
   return `${header}
