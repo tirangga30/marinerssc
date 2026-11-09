@@ -846,8 +846,8 @@ export default function AdminMatchesPage() {
                 </div>
               )}
 
-              {/* Catatan Pertandingan (Opsional) - hanya muncul jika mode WA aktif pada tambah pertandingan baru */}
-              {!editingMatch && formData.sendWhatsAppInvite && (
+              {/* Catatan Pertandingan (Opsional) - muncul di Edit Pertandingan atau saat mode WA aktif di Tambah Pertandingan */}
+              {(editingMatch || formData.sendWhatsAppInvite) && (
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold uppercase text-slate-600 block">
                     Catatan Pertandingan (Opsional)
