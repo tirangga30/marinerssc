@@ -111,7 +111,7 @@ export default async function StatsPage({
 
   const { seasons, allMatches, allPlayersRaw, playerDefaultPhoto } = await getCachedStatsData();
 
-  const mainSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '2027');
+  const mainSeason = seasons.find((s) => Boolean(s.isCurrent))?.name || (seasons.length > 0 ? seasons[0].name : '2026');
   const defaultSeason = mainSeason;
   // Khusus statistik: ketika awal dibuka tetap menampilkan musim utama
   const selectedSeason = params.season || (cookieSeason && cookieSeason !== 'all' && seasons.some((s) => s.name === cookieSeason) ? cookieSeason : defaultSeason);

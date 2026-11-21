@@ -157,14 +157,43 @@ export async function PUT(req: Request) {
 
     // If name changed, update seasonName in related matches and competitions
     if (name && name.trim() !== existing.name) {
+      const oldName = existing.name;
+      const newName = name.trim();
+
       await prisma.footballMatch.updateMany({
         where: { seasonId: id },
-        data: { seasonName: name.trim() },
+        data: { seasonName: newName },
       });
       await prisma.competition.updateMany({
         where: { seasonId: id },
-        data: { season: name.trim() },
+        data: { season: newName },
       });
+
+      // Synchronize player seasonData keys so photos and numbers transfer to the renamed season
+      try {
+        const playersWithSd = await prisma.player.findMany({
+          where: { seasonData: { not: null } },
+          select: { id: true, seasonData: true },
+        });
+        for (const p of playersWithSd) {
+          if (!p.seasonData) continue;
+          let sd: any = {};
+          try {
+            sd = typeof p.seasonData === 'string' ? JSON.parse(p.seasonData) : p.seasonData;
+          } catch {
+            continue;
+          }
+          if (sd && typeof sd === 'object' && sd[oldName]) {
+            sd[newName] = { ...sd[oldName], ...(sd[newName] || {}) };
+            await prisma.player.update({
+              where: { id: p.id },
+              data: { seasonData: JSON.stringify(sd) },
+            });
+          }
+        }
+      } catch (errSdSync) {
+        console.warn('Failed to sync player seasonData on season rename:', errSdSync);
+      }
     }
 
     revalidatePath('/');

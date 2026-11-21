@@ -42,7 +42,26 @@ export function resolvePlayerForSeason<T extends { photoUrl?: string | null; num
   if (!cleanSeason || cleanSeason === 'all') return player;
 
   const seasonMap = parsePlayerSeasonData(player.seasonData);
-  const override = seasonMap[cleanSeason];
+  let override = seasonMap[cleanSeason];
+
+  // Seamless fallback for renamed seasons between 2026 and 2027
+  if (cleanSeason === '2026' && (!override || !override.photoUrl) && seasonMap['2027']?.photoUrl) {
+    override = {
+      ...(override || {}),
+      photoUrl: seasonMap['2027'].photoUrl,
+      number: typeof override?.number === 'number' ? override.number : seasonMap['2027'].number,
+    };
+  } else if (cleanSeason === '2027' && (!override || !override.photoUrl) && seasonMap['2026']?.photoUrl) {
+    override = {
+      ...(override || {}),
+      photoUrl: seasonMap['2026'].photoUrl,
+      number: typeof override?.number === 'number' ? override.number : seasonMap['2026'].number,
+    };
+  } else if (!override && cleanSeason === '2026' && seasonMap['2027']) {
+    override = seasonMap['2027'];
+  } else if (!override && cleanSeason === '2027' && seasonMap['2026']) {
+    override = seasonMap['2026'];
+  }
 
   if (!override) {
     return player;

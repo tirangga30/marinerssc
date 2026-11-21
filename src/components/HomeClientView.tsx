@@ -121,7 +121,7 @@ export default function HomeClientView({ mainSquadData, communityData, heroPoste
   const defaultActiveSeason =
     seasons.find((s: any) => Boolean(s.isCurrent))?.name ||
     seasons[0]?.name ||
-    '2027';
+    '2026';
 
   const selectedSeason = defaultActiveSeason;
 

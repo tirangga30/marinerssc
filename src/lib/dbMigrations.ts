@@ -244,5 +244,56 @@ export async function ensureDbColumns() {
     console.warn('[dbMigration Endra/Rifki exempt warning]:', errExempt);
   }
 
+  // Synchronize player seasonData when season 2027 was renamed/merged to 2026
+  try {
+    const playersWithSd = await prisma.player.findMany({
+      where: { seasonData: { not: null } },
+      include: { seasons: true },
+    });
+
+    for (const p of playersWithSd) {
+      if (!p.seasonData) continue;
+      let sd: any = {};
+      try {
+        sd = typeof p.seasonData === 'string' ? JSON.parse(p.seasonData) : p.seasonData;
+      } catch {
+        continue;
+      }
+
+      if (sd && typeof sd === 'object') {
+        let changed = false;
+        // If player has 2027 entry and 2026 is missing or has no photoUrl
+        if (sd['2027'] && (!sd['2026'] || !sd['2026'].photoUrl)) {
+          sd['2026'] = {
+            ...sd['2027'],
+            ...(sd['2026'] || {}),
+            photoUrl: sd['2026']?.photoUrl || sd['2027'].photoUrl,
+            number: sd['2026']?.number ?? sd['2027'].number,
+          };
+          changed = true;
+        }
+
+        if (changed) {
+          const updateData: any = {
+            seasonData: JSON.stringify(sd),
+          };
+
+          // If current photo is old or from 2025, update baseline photoUrl to 2026 photo
+          const isCurrentSeason2026 = p.seasons.some((s) => s.name === '2026' || s.isCurrent);
+          if (isCurrentSeason2026 && sd['2026']?.photoUrl) {
+            updateData.photoUrl = sd['2026'].photoUrl;
+          }
+
+          await prisma.player.update({
+            where: { id: p.id },
+            data: updateData,
+          });
+        }
+      }
+    }
+  } catch (errSdSync) {
+    console.warn('[dbMigration seasonData 2027->2026 warning]:', errSdSync);
+  }
+
   migrationRan = true;
 }

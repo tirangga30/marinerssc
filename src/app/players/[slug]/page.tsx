@@ -134,7 +134,7 @@ export default async function PlayerDetailPage({
 
   if (!player || player.isGuest) notFound();
 
-  const primarySeason = currentSeasonObj?.name || latestSeasonObj?.name || '2027';
+  const primarySeason = currentSeasonObj?.name || latestSeasonObj?.name || '2026';
 
   const nowMs = new Date().getTime();
 

@@ -227,8 +227,8 @@ export default function PlayerProfileView({
     .map((s: any) => s.year?.toString() || s.name?.match(/\d{4}/)?.[0] || s.name)
     .filter(Boolean);
 
-  // Tentukan tahun aktif default / musim utama (e.g. 2027)
-  const cleanActiveYear = activeSeasonName?.match(/\d{4}/)?.[0] || activeSeasonName || '2027';
+  // Tentukan tahun aktif default / musim utama (e.g. 2026)
+  const cleanActiveYear = activeSeasonName?.match(/\d{4}/)?.[0] || activeSeasonName || '2026';
 
   // Musim hanya yang benar-benar diikuti oleh pemain. JANGAN tambahkan musim baru jika pemain belum ditarik ke musim baru!
   const seasonsSet = new Set([...matchSeasons, ...enrolledSeasons]);
@@ -269,8 +269,9 @@ export default function PlayerProfileView({
     } catch {}
   };
 
-  // Resolusi data nomor punggung & foto pemain untuk musim utama aktif
-  const resolvedPlayer = resolvePlayerForSeason(player, activeSeasonName);
+  // Resolusi data nomor punggung & foto pemain untuk musim yang sedang dipilih / aktif
+  const effectiveSeason = selectedSeason && selectedSeason !== 'SEMUA' ? selectedSeason : activeSeasonName;
+  const resolvedPlayer = resolvePlayerForSeason(player, effectiveSeason);
 
   // Hitung statistik pemain dinamis untuk musim yang sedang dipilih
   const currentStats = computePlayerStats(player, activeMatches, selectedSeason);
