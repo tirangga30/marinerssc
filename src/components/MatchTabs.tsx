@@ -242,19 +242,77 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
   const showLineupTab = hasLineup;
   const showSquadTab = !hasKickedOff && hasInvitedPlayers;
 
-  React.useEffect(() => {
-    if (isInvite && showSquadTab) {
-      setActiveTab('squad');
-    } else if (showLineupTab) {
-      setActiveTab('lineup');
-    } else if (showSummaryTab) {
-      setActiveTab('summary');
-    } else if (showSquadTab) {
-      setActiveTab('squad');
-    } else if (hasH2H) {
-      setActiveTab('h2h');
+  const normalizeTab = (t?: string | null): 'summary' | 'lineup' | 'squad' | 'h2h' | null => {
+    if (!t) return null;
+    const clean = t.toLowerCase().trim();
+    if (clean === 'lineup' || clean === 'line-up' || clean === 'susunan-pemain') return 'lineup';
+    if (clean === 'summary' || clean === 'ringkasan') return 'summary';
+    if (clean === 'squad' || clean === 'skuad' || clean === 'squad-list') return 'squad';
+    if (clean === 'h2h' || clean === 'head-to-head') return 'h2h';
+    return null;
+  };
+
+  const handleTabChange = (tab: 'summary' | 'lineup' | 'squad' | 'h2h') => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState(null, '', url.toString());
     }
-  }, [showLineupTab, showSummaryTab, showSquadTab, hasH2H, isInvite]);
+  };
+
+  React.useEffect(() => {
+    const rawTab = searchParams?.get('tab');
+    const requested = normalizeTab(rawTab);
+
+    let targetTab: 'summary' | 'lineup' | 'squad' | 'h2h';
+
+    if (requested === 'lineup' && showLineupTab) {
+      targetTab = 'lineup';
+    } else if (requested === 'summary' && showSummaryTab) {
+      targetTab = 'summary';
+    } else if (requested === 'squad' && showSquadTab) {
+      targetTab = 'squad';
+    } else if (requested === 'h2h' && hasH2H) {
+      targetTab = 'h2h';
+    } else if (isInvite && showSquadTab) {
+      targetTab = 'squad';
+    } else if (showLineupTab) {
+      targetTab = 'lineup';
+    } else if (showSummaryTab) {
+      targetTab = 'summary';
+    } else if (showSquadTab) {
+      targetTab = 'squad';
+    } else if (hasH2H) {
+      targetTab = 'h2h';
+    } else {
+      targetTab = 'lineup';
+    }
+
+    setActiveTab(targetTab);
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('tab') !== targetTab) {
+        url.searchParams.set('tab', targetTab);
+        window.history.replaceState(null, '', url.toString());
+      }
+    }
+  }, [showLineupTab, showSummaryTab, showSquadTab, hasH2H, isInvite, searchParams]);
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window === 'undefined') return;
+      const sp = new URLSearchParams(window.location.search);
+      const req = normalizeTab(sp.get('tab'));
+      if (req === 'lineup' && showLineupTab) setActiveTab('lineup');
+      else if (req === 'summary' && showSummaryTab) setActiveTab('summary');
+      else if (req === 'squad' && showSquadTab) setActiveTab('squad');
+      else if (req === 'h2h' && hasH2H) setActiveTab('h2h');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [showLineupTab, showSummaryTab, showSquadTab, hasH2H]);
 
   const isLiveMode = match.isLiveEnabled !== false;
 
@@ -315,7 +373,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
         <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200">
           {showSummaryTab && (
             <button
-              onClick={() => setActiveTab('summary')}
+              onClick={() => handleTabChange('summary')}
               className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
                 activeTab === 'summary'
                   ? 'border-blue-600 text-blue-600 font-black'
@@ -328,7 +386,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
           {showLineupTab && (
             <button
-              onClick={() => setActiveTab('lineup')}
+              onClick={() => handleTabChange('lineup')}
               className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
                 activeTab === 'lineup'
                   ? 'border-blue-600 text-blue-600 font-black'
@@ -341,7 +399,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
           {showSquadTab && (
             <button
-              onClick={() => setActiveTab('squad')}
+              onClick={() => handleTabChange('squad')}
               className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
                 activeTab === 'squad'
                   ? 'border-blue-600 text-blue-600 font-black'
@@ -354,7 +412,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
 
           {hasH2H && (
             <button
-              onClick={() => setActiveTab('h2h')}
+              onClick={() => handleTabChange('h2h')}
               className={`pb-2.5 sm:pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 border-b-2 shrink-0 ${
                 activeTab === 'h2h'
                   ? 'border-blue-600 text-blue-600 font-black'

@@ -44,7 +44,7 @@ export default async function MatchDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ season?: string }>;
+  searchParams?: Promise<{ season?: string; tab?: string; [key: string]: any }>;
 }) {
   const { id } = await params;
   const sParams = searchParams ? await searchParams : undefined;

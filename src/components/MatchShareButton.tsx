@@ -42,7 +42,13 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
     const isLive = match.status === 'live';
 
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const shareUrl = `${origin}/matches/${match.id}`;
+    let currentTab = '';
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      currentTab = sp.get('tab') || '';
+    }
+    const tabParam = currentTab ? `?tab=${currentTab}` : '';
+    const shareUrl = `${origin}/matches/${match.id}${tabParam}`;
 
     let title = '';
     let textLines: string[] = [];
@@ -58,7 +64,51 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
     const timeStr = formatWibTime(match.matchDate);
     const venueStr = match.venue || 'Menyusul';
 
-    if (isFinished && hasScore) {
+    if (currentTab === 'lineup') {
+      title = `Susunan Pemain (Line Up): ${homeTeam} vs ${awayTeam}`;
+      textLines = [
+        `*SUSUNAN PEMAIN (LINE UP)*${stageHeader}`,
+        hasScore && isFinished
+          ? `*${homeTeam.toUpperCase()} ${match.homeScore} - ${match.awayScore} ${awayTeam.toUpperCase()}*`
+          : `*${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}*`,
+        ``,
+        `*Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Cek susunan pemain (line up) dan formasi pertandingan di sini:`,
+        shareUrl,
+        ``,
+        `*MARS*`,
+      ];
+    } else if (currentTab === 'squad') {
+      title = `Daftar Skuad (Squad List): ${homeTeam} vs ${awayTeam}`;
+      textLines = [
+        `*DAFTAR SKUAD (SQUAD LIST)*${stageHeader}`,
+        `*${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}*`,
+        ``,
+        `*Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Cek daftar pemain dan info skuad di sini:`,
+        shareUrl,
+        ``,
+        `*MARS*`,
+      ];
+    } else if (currentTab === 'h2h') {
+      title = `Head to Head (H2H): ${homeTeam} vs ${awayTeam}`;
+      textLines = [
+        `*HEAD TO HEAD (H2H)*${stageHeader}`,
+        `*${homeTeam.toUpperCase()} VS ${awayTeam.toUpperCase()}*`,
+        ``,
+        `*Waktu*: ${dateStr} (Kickoff ${timeStr} WIB)`,
+        `*Tempat*: ${venueStr}`,
+        ``,
+        `Cek riwayat pertemuan kedua tim di sini:`,
+        shareUrl,
+        ``,
+        `*MARS*`,
+      ];
+    } else if (isFinished && hasScore) {
       title = `Hasil Pertandingan: ${homeTeam} ${match.homeScore} - ${match.awayScore} ${awayTeam}`;
       textLines = [
         `*HASIL PERTANDINGAN*${stageHeader}`,
