@@ -113,7 +113,7 @@ export async function POST(
           data: {
             matchId,
             playerId,
-            playerType: 'SQUAD',
+            playerType: player.isGuest ? 'GUEST' : 'SQUAD',
             playerName: player.name,
             status: 'CONFIRMED',
           },

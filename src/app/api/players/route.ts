@@ -109,6 +109,30 @@ export async function GET(req: Request) {
             }
           }
         }
+
+        // Auto-sync guest players created specifically for this match into matchAttendance
+        const matchHasAttendance = await prisma.matchAttendance.count({ where: { matchId } });
+        if (matchHasAttendance > 0) {
+          const matchGuests = await prisma.player.findMany({
+            where: { isGuest: true, guestMatchId: matchId },
+          });
+          for (const g of matchGuests) {
+            const hasAtt = await prisma.matchAttendance.findFirst({
+              where: { matchId, playerId: g.id },
+            });
+            if (!hasAtt) {
+              await prisma.matchAttendance.create({
+                data: {
+                  matchId,
+                  playerId: g.id,
+                  playerType: 'GUEST',
+                  playerName: g.name,
+                  status: 'CONFIRMED',
+                },
+              });
+            }
+          }
+        }
       } catch (syncErr) {
         console.error('Error syncing confirmed members to player table:', syncErr);
       }
@@ -334,6 +358,33 @@ export async function POST(req: Request) {
         });
       } catch (seasonErr) {
         console.error('Failed to link player to season:', seasonErr);
+      }
+    }
+
+    // Auto-add guest player to match attendance if this match has attendance active
+    if (data.isGuest && data.guestMatchId) {
+      try {
+        const attCount = await prisma.matchAttendance.count({
+          where: { matchId: data.guestMatchId },
+        });
+        if (attCount > 0) {
+          const hasAtt = await prisma.matchAttendance.findFirst({
+            where: { matchId: data.guestMatchId, playerId: player.id },
+          });
+          if (!hasAtt) {
+            await prisma.matchAttendance.create({
+              data: {
+                matchId: data.guestMatchId,
+                playerId: player.id,
+                playerType: 'GUEST',
+                playerName: player.name,
+                status: 'CONFIRMED',
+              },
+            });
+          }
+        }
+      } catch (attErr) {
+        console.warn('Failed to auto-create matchAttendance for new guest player:', attErr);
       }
     }
 

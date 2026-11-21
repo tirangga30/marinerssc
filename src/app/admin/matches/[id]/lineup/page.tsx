@@ -385,6 +385,25 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
           setPlayers((prev) => prev.map((p) => (p.id === savedPlayer.id ? savedPlayer : p)));
         } else {
           setPlayers((prev) => [...prev, savedPlayer]);
+          if (hasAttendanceSystem) {
+            try {
+              await fetch(`/api/admin/matches/${matchId}/attendance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'ADD_SQUAD_PLAYER',
+                  playerId: savedPlayer.id,
+                }),
+              });
+              const attRes = await fetch(`/api/admin/matches/${matchId}/attendance`);
+              if (attRes.ok) {
+                const attData = await attRes.json();
+                if (attData.attendances) setMatchAttendances(attData.attendances);
+              }
+            } catch (errAtt) {
+              console.warn('Failed to auto-confirm new guest player attendance:', errAtt);
+            }
+          }
         }
         setShowGuestModal(false);
         setEditingGuestPlayer(null);
@@ -833,7 +852,15 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
       return true;
     })
   );
-  const guestPlayersAvailable = sortRosterList(availablePlayers.filter((p) => p.isGuest));
+  const guestPlayersAvailable = sortRosterList(
+    availablePlayers.filter((p) => {
+      if (!p.isGuest) return false;
+      if (hasAttendanceSystem) {
+        return confirmedPlayerIds.has(p.id);
+      }
+      return true;
+    })
+  );
 
   // Pemain Luar Skuad: Semua pemain skuad utama (bukan loan) yang TIDAK masuk starting dan TIDAK masuk cadangan.
   // Termasuk pemain yang tidak di-invite, yang berhalangan hadir, maupun yang tidak masuk line-up match ini.
@@ -1454,11 +1481,15 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                     <>
                       {guestPlayersAvailable.length === 0 ? (
                         <div className="text-center py-5 space-y-2">
-                          <p className="text-[10px] text-slate-500">Belum ada pemain loan.</p>
+                          <p className="text-[10px] text-slate-500">
+                            {hasAttendanceSystem
+                              ? 'Belum ada pemain loan yang masuk daftar ikut (konfirmasi hadir).'
+                              : 'Belum ada pemain loan.'}
+                          </p>
                         </div>
                       ) : (
                         guestPlayersAvailable.map((p) => {
-                          const isThisMatch = p.guestMatchId === matchId;
+                          const isThisMatch = p.guestMatchId === matchId || (hasAttendanceSystem && confirmedPlayerIds.has(p.id));
                           return (
                             <div
                               key={p.id}
@@ -1484,59 +1515,38 @@ export default function MatchLineupBuilderPage({ params }: { params: Promise<{ i
                                 <span className="block min-w-0">
                                   <span className="block text-[10px] font-bold truncate text-slate-900">{p.name}</span>
                                   <span className={`text-[8px] ${isThisMatch ? 'text-emerald-700' : 'text-amber-700'}`}>
-                                    {formatPosition(p.position)} • {isThisMatch ? 'Loan Match Ini' : ''}
+                                    {formatPosition(p.position)} • {isThisMatch ? 'Loan Match Ini' : 'Loan'}
                                   </span>
                                 </span>
-                                {isThisMatch ? (
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
-                                      className="p-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
-                                      title="Edit Pemain Loan"
-                                    >
-                                      <Edit className="w-3 h-3" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
-                                      className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
-                                      title="Hapus Pemain Loan"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setBenchPlayerIds((prev) => [...prev, p.id]);
-                                      }}
-                                      className="p-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300 cursor-pointer"
-                                      title="Masukkan ke Cadangan Match Ini"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
-                                      className="p-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-colors border border-amber-300 cursor-pointer"
-                                      title="Edit Pemain Loan"
-                                    >
-                                      <Edit className="w-3 h-3" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
-                                      className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors border border-rose-200 cursor-pointer"
-                                      title="Hapus Pemain Loan"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                )}
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setBenchPlayerIds((prev) => [...prev, p.id]);
+                                    }}
+                                    className="p-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300 cursor-pointer"
+                                    title="Masukkan ke Cadangan Match Ini"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); openEditGuestModal(p); }}
+                                    className="p-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                                    title="Edit Pemain Loan"
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteGuest(p.id, p.name); }}
+                                    className="p-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
+                                    title="Hapus Pemain Loan"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
                               </span>
                             </div>
                           );
