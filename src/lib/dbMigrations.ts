@@ -169,7 +169,7 @@ export async function ensureDbColumns() {
       const opp = (m.opponentName || '').toLowerCase();
       const stg = (m.stage || '').toLowerCase();
       const yr = m.seasonName?.match(/\d{4}/)?.[0] || (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
-      return opp.includes('cikuya') || (stg.includes('matchday 1') && yr === '2027');
+      return opp.includes('cikuya') || (stg.includes('matchday 1') && (yr === '2027' || yr === '2026'));
     });
 
     if (cikuyaMatch) {

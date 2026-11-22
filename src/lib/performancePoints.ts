@@ -127,7 +127,13 @@ export function calculatePlayerPerformance(
           m.seasonName?.match(/\d{4}/)?.[0] ||
           m.season?.name?.match(/\d{4}/)?.[0] ||
           (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
-        return s === targetSeason || s.includes(targetSeason) || yr === targetSeason;
+        return (
+          s === targetSeason ||
+          s.includes(targetSeason) ||
+          yr === targetSeason ||
+          (targetSeason === '2026' && (s === '2027' || yr === '2027')) ||
+          (targetSeason === '2027' && (s === '2026' || yr === '2026'))
+        );
       });
 
   const activities: PerformanceActivity[] = [];
@@ -165,8 +171,8 @@ export function calculatePlayerPerformance(
       parseInt(match.seasonName?.match(/\d{4}/)?.[0] || '', 10) ||
       (matchDateObj ? matchDateObj.getFullYear() : 0);
 
-    // Discipline rules ONLY apply starting season 2027 onwards
-    const isDisciplineSeason = matchSeasonYear >= 2027;
+    // Discipline rules apply starting season 2026 onwards (formerly 2027)
+    const isDisciplineSeason = matchSeasonYear >= 2026;
 
     // Discipline rules DO NOT apply to loan players, inactive or injured players, OR matches before joinDate
     const isDisciplineEligible =
@@ -208,7 +214,7 @@ export function calculatePlayerPerformance(
     const isCikuyaMatch =
       Boolean(match.opponentName && match.opponentName.toLowerCase().includes('cikuya')) ||
       (Boolean(match.stage && match.stage.toLowerCase().includes('matchday 1')) &&
-        (matchSeasonYear === 2027 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
+        (matchSeasonYear >= 2026 || (match.opponentName && match.opponentName.toLowerCase().includes('cikuya'))));
 
     if (inLineup) {
       appearancesCount++;
