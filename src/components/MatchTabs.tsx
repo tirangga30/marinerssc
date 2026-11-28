@@ -209,7 +209,16 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
   };
 
   const starters = sortLineupsByPosition(match.lineups.filter((l) => l.isStarter));
-  const bench = sortLineupsByPosition(match.lineups.filter((l) => !l.isStarter));
+  const starterPlayerIds = new Set<string>();
+  for (const s of starters) {
+    if (s.player?.id) starterPlayerIds.add(s.player.id);
+    if ((s as any).playerId) starterPlayerIds.add((s as any).playerId);
+  }
+  const bench = sortLineupsByPosition(
+    match.lineups.filter(
+      (l) => !l.isStarter && !starterPlayerIds.has(l.player?.id) && !starterPlayerIds.has((l as any).playerId)
+    )
+  );
   const hasLineup = starters.length > 0;
 
   const confirmedAttendances = localAttendances.filter(

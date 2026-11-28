@@ -96,40 +96,51 @@ export default function QuickLineupEditor({
     const initBench: BenchItem[] = [];
     const addedPlayerIds = new Set<string>();
 
-    // 1. Process existing lineups
+    // 1. Process starters first
     for (const l of initialLineups || []) {
-      if (!l.player) continue;
-      if (l.isStarter) {
-        initStarters.push({
-          id: l.id || `starter-${l.player.id}`,
-          playerId: l.player.id,
-          x: l.x != null && !isNaN(Number(l.x)) ? Number(l.x) : 50,
-          y: l.y != null && !isNaN(Number(l.y)) ? Number(l.y) : 50,
-          pitchPosition: l.pitchPosition || 'PITCH',
-          positionName: l.positionName || 'Starter',
-          player: l.player,
-        });
-        addedPlayerIds.add(l.player.id);
-      } else {
-        initBench.push({
-          id: l.id || `bench-${l.player.id}`,
-          playerId: l.player.id,
-          player: l.player,
-        });
-        addedPlayerIds.add(l.player.id);
-      }
+      const pId = l.player?.id || (l as any).playerId;
+      if (!pId || !l.isStarter || addedPlayerIds.has(pId)) continue;
+      initStarters.push({
+        id: l.id || `starter-${pId}`,
+        playerId: pId,
+        x: l.x != null && !isNaN(Number(l.x)) ? Number(l.x) : 50,
+        y: l.y != null && !isNaN(Number(l.y)) ? Number(l.y) : 50,
+        pitchPosition: l.pitchPosition || 'PITCH',
+        positionName: l.positionName || 'Starter',
+        player: l.player,
+      });
+      addedPlayerIds.add(pId);
     }
 
-    // 2. Add confirmed attendances not yet in lineup
+    // 2. Process bench lineups (hanya jika BELUM ada di starters)
+    for (const l of initialLineups || []) {
+      const pId = l.player?.id || (l as any).playerId;
+      if (!pId || l.isStarter || addedPlayerIds.has(pId)) continue;
+      initBench.push({
+        id: l.id || `bench-${pId}`,
+        playerId: pId,
+        player: l.player,
+      });
+      addedPlayerIds.add(pId);
+    }
+
+    // 3. Add confirmed attendances not yet in lineup (hanya jika BELUM ada di starters maupun bench)
     for (const att of attendances || []) {
-      if (!att.player) continue;
-      if (att.status === 'CONFIRMED' && !addedPlayerIds.has(att.player.id)) {
+      const pId = att.player?.id || att.playerId;
+      if (!pId || addedPlayerIds.has(pId)) continue;
+      if (att.status === 'CONFIRMED') {
         initBench.push({
-          id: `att-${att.player.id}`,
-          playerId: att.player.id,
-          player: att.player,
+          id: `att-${pId}`,
+          playerId: pId,
+          player: (att.player as any) || {
+            id: pId,
+            name: (att as any).playerName || 'Pemain',
+            number: 0,
+            position: '',
+            photoUrl: '',
+          },
         });
-        addedPlayerIds.add(att.player.id);
+        addedPlayerIds.add(pId);
       }
     }
 
@@ -402,6 +413,9 @@ export default function QuickLineupEditor({
     setErrorMessage('');
 
     try {
+      const starterIdSet = new Set(starters.map((s) => s.playerId));
+      const cleanBench = bench.filter((b) => !starterIdSet.has(b.playerId));
+
       const newLineups = [
         ...starters.map((s) => ({
           playerId: s.playerId,
@@ -411,7 +425,7 @@ export default function QuickLineupEditor({
           pitchPosition: s.pitchPosition || 'PITCH',
           positionName: s.positionName || 'Starter',
         })),
-        ...bench.map((b) => ({
+        ...cleanBench.map((b) => ({
           playerId: b.playerId,
           isStarter: false,
           pitchPosition: 'SUB',

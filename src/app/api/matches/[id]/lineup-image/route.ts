@@ -52,16 +52,22 @@ export async function GET(
 
     // Separate starters and bench (termasuk pemain cadangan dari konfirmasi kehadiran)
     const rawStarters = (match.lineups || []).filter((l) => l.isStarter && l.player);
-    const starterPlayerIds = new Set(rawStarters.map((s) => s.player?.id).filter(Boolean));
+    const starterPlayerIds = new Set<string>();
+    for (const s of rawStarters) {
+      if (s.player?.id) starterPlayerIds.add(s.player.id);
+      if (s.playerId) starterPlayerIds.add(s.playerId);
+    }
     const benchMap = new Map<string, any>();
     for (const b of (match.lineups || []).filter((l) => !l.isStarter && l.player)) {
-      if (!starterPlayerIds.has(b.player.id)) {
-        benchMap.set(b.player.id, b);
+      const pId = b.player?.id || b.playerId;
+      if (pId && !starterPlayerIds.has(pId)) {
+        benchMap.set(pId, b);
       }
     }
     for (const att of (match.attendances || [])) {
-      if (att.status === 'CONFIRMED' && att.player && !starterPlayerIds.has(att.player.id) && !benchMap.has(att.player.id)) {
-        benchMap.set(att.player.id, { player: att.player });
+      const pId = att.player?.id || att.playerId;
+      if (att.status === 'CONFIRMED' && pId && !starterPlayerIds.has(pId) && !benchMap.has(pId)) {
+        benchMap.set(pId, { player: att.player });
       }
     }
     const rawBench = Array.from(benchMap.values());

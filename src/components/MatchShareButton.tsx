@@ -195,11 +195,18 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
               isStarter: true,
             }));
 
-          const starterPlayerIds = new Set(starters.map((s: any) => s.id));
+          const starterPlayerIds = new Set<string>();
+          for (const s of (lineupsData || []).filter((l: any) => l.isStarter)) {
+            if (s.player?.id) starterPlayerIds.add(s.player.id);
+            if (s.playerId) starterPlayerIds.add(s.playerId);
+            if (s.id) starterPlayerIds.add(s.id);
+          }
+
           const benchMap = new Map<string, any>();
           for (const b of (lineupsData || []).filter((l: any) => !l.isStarter && l.player)) {
-            if (!starterPlayerIds.has(b.id) && !starterPlayerIds.has(b.player.id)) {
-              benchMap.set(b.player.id, {
+            const pId = b.player?.id || b.playerId;
+            if (pId && !starterPlayerIds.has(pId) && !starterPlayerIds.has(b.id)) {
+              benchMap.set(pId, {
                 id: b.id,
                 name: b.player.name,
                 number: b.player.number,
@@ -209,12 +216,13 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
             }
           }
           for (const att of attendancesData || []) {
-            if (att.status === 'CONFIRMED' && att.player?.id && !starterPlayerIds.has(att.player.id) && !benchMap.has(att.player.id)) {
-              benchMap.set(att.player.id, {
+            const pId = att.player?.id || att.playerId;
+            if (att.status === 'CONFIRMED' && pId && !starterPlayerIds.has(pId) && !benchMap.has(pId)) {
+              benchMap.set(pId, {
                 id: att.id,
-                name: att.player.name,
-                number: att.player.number,
-                photoUrl: att.player.photoUrl,
+                name: att.player?.name || att.playerName || 'Pemain',
+                number: att.player?.number ?? 0,
+                photoUrl: att.player?.photoUrl || '',
                 isStarter: false,
               });
             }

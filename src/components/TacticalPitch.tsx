@@ -125,12 +125,18 @@ export default function TacticalPitch({
         isGk: s.id === detectedGkLineupId || s.player?.id === detectedGkPlayerId,
       }));
 
-      // Bench: gabungkan cadangan + pemain hadir terkonfirmasi
-      const starterIds = new Set(canvasStarters.map((s) => s.id));
+      // Bench: gabungkan cadangan + pemain hadir terkonfirmasi (PASTIKAN STARTER TIDAK MASUK CADANGAN)
+      const starterPlayerIds = new Set<string>();
+      for (const s of starters) {
+        if (s.player?.id) starterPlayerIds.add(s.player.id);
+        if (s.id) starterPlayerIds.add(s.id);
+      }
+
       const benchMap = new Map<string, any>();
       for (const b of bench) {
-        if (b.player?.id && !starterIds.has(b.id) && !starterIds.has(b.player.id)) {
-          benchMap.set(b.player.id, {
+        const pId = b.player?.id;
+        if (pId && !starterPlayerIds.has(pId) && !starterPlayerIds.has(b.id)) {
+          benchMap.set(pId, {
             id: b.id,
             name: b.player.name,
             number: b.player.number,
@@ -140,12 +146,13 @@ export default function TacticalPitch({
         }
       }
       for (const att of attendances || []) {
-        if (att.status === 'CONFIRMED' && att.player?.id && !starterIds.has(att.player.id) && !benchMap.has(att.player.id)) {
-          benchMap.set(att.player.id, {
+        const pId = att.player?.id || att.playerId;
+        if (att.status === 'CONFIRMED' && pId && !starterPlayerIds.has(pId) && !benchMap.has(pId)) {
+          benchMap.set(pId, {
             id: att.id,
-            name: att.player.name,
-            number: att.player.number,
-            photoUrl: att.player.photoUrl,
+            name: att.player?.name || att.playerName || 'Pemain',
+            number: att.player?.number ?? 0,
+            photoUrl: att.player?.photoUrl || '',
             isStarter: false,
           });
         }

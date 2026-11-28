@@ -73,10 +73,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await prisma.matchEvent.deleteMany({ where: { matchId } });
     }
 
-    // Insert new lineups
+    // Insert new lineups (pastikan setiap playerId unik, starters diprioritaskan)
     if (Array.isArray(lineups) && lineups.length > 0) {
+      const seenPlayerIds = new Set<string>();
+      const sanitizedLineups: any[] = [];
+
+      // Starters first
+      for (const l of lineups.filter((x: any) => x.isStarter)) {
+        if (l.playerId && !seenPlayerIds.has(l.playerId)) {
+          seenPlayerIds.add(l.playerId);
+          sanitizedLineups.push(l);
+        }
+      }
+      // Bench second (tidak boleh ada yang sudah masuk starter)
+      for (const l of lineups.filter((x: any) => !x.isStarter)) {
+        if (l.playerId && !seenPlayerIds.has(l.playerId)) {
+          seenPlayerIds.add(l.playerId);
+          sanitizedLineups.push(l);
+        }
+      }
+
       await prisma.matchLineup.createMany({
-        data: lineups.map((l: any) => ({
+        data: sanitizedLineups.map((l: any) => ({
           matchId,
           playerId: l.playerId,
           isStarter: Boolean(l.isStarter),
