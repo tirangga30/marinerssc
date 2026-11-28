@@ -62,6 +62,7 @@ interface MatchTabsProps {
     opponentLogo: string;
     matchDate: Date | string;
     competition: string;
+    stage?: string | null;
     venue: string;
     isHome: boolean;
     status: string;
@@ -651,6 +652,12 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
             events={pitchEvents}
             season={match.seasonName}
             attendances={match.attendances}
+            opponentName={match.opponentName}
+            competition={match.competition}
+            stage={match.stage || undefined}
+            venue={match.venue}
+            isHome={match.isHome}
+            teamName={teamName}
           />
 
           {/* Lineup Detail Grid (Starting XI + Substitutes) */}

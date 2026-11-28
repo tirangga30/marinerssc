@@ -21,6 +21,9 @@ export async function GET(
           lineups: {
             include: { player: true },
           },
+          attendances: {
+            include: { player: true },
+          },
         },
       }),
       (prisma as any).systemSetting.findUnique({
@@ -47,9 +50,21 @@ export async function GET(
     const venueText = match.venue || '—';
     const formation = match.formation || '4-3-3';
 
-    // Separate starters and bench
+    // Separate starters and bench (termasuk pemain cadangan dari konfirmasi kehadiran)
     const rawStarters = (match.lineups || []).filter((l) => l.isStarter && l.player);
-    const rawBench = (match.lineups || []).filter((l) => !l.isStarter && l.player);
+    const starterPlayerIds = new Set(rawStarters.map((s) => s.player?.id).filter(Boolean));
+    const benchMap = new Map<string, any>();
+    for (const b of (match.lineups || []).filter((l) => !l.isStarter && l.player)) {
+      if (!starterPlayerIds.has(b.player.id)) {
+        benchMap.set(b.player.id, b);
+      }
+    }
+    for (const att of (match.attendances || [])) {
+      if (att.status === 'CONFIRMED' && att.player && !starterPlayerIds.has(att.player.id) && !benchMap.has(att.player.id)) {
+        benchMap.set(att.player.id, { player: att.player });
+      }
+    }
+    const rawBench = Array.from(benchMap.values());
 
     // Auto-detect goalkeeper (lowest on pitch / highest Y)
     let maxTopY = -Infinity;

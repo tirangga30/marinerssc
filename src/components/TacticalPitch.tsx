@@ -7,6 +7,7 @@ import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import { getClientPublicSeason } from '@/lib/publicSeason';
 import { useSystemSetting } from '@/context/SystemSettingContext';
 import QuickLineupEditor from './QuickLineupEditor';
+import { generateLineupCanvas } from '@/lib/generateLineupCanvas';
 
 interface LineupPlayer {
   id: string;
@@ -43,6 +44,12 @@ interface TacticalPitchProps {
     assistPlayer?: { id: string; name?: string; slug?: string; photoUrl?: string; number?: number; seasonData?: any } | null;
   }>;
   attendances?: any[];
+  opponentName?: string;
+  competition?: string;
+  stage?: string;
+  venue?: string;
+  isHome?: boolean;
+  teamName?: string;
 }
 
 // Preset coordinates on pitch percentage (top %, left %)
@@ -77,6 +84,12 @@ export default function TacticalPitch({
   events = [],
   season,
   attendances = [],
+  opponentName = 'Lawan',
+  competition = 'FRIENDLY',
+  stage = '2026',
+  venue = '—',
+  isHome = true,
+  teamName = 'MARS FC',
 }: TacticalPitchProps) {
   const { playerDefaultPhoto } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
@@ -100,9 +113,73 @@ export default function TacticalPitch({
 
     setSharingImage(true);
     try {
-      const res = await fetch(`/api/matches/${matchId}/lineup-image?v=${Date.now()}`);
-      if (res.ok) {
-        const blob = await res.blob();
+      // 1. Siapkan Starters dan Bench langsung dari data yang tampil di layar
+      const canvasStarters = starters.map((s) => ({
+        id: s.id,
+        name: s.player.name,
+        number: s.player.number,
+        photoUrl: s.player.photoUrl,
+        x: s.x != null && !isNaN(Number(s.x)) ? Number(s.x) : positionCoordinates[s.pitchPosition]?.left ?? 50,
+        y: s.y != null && !isNaN(Number(s.y)) ? Number(s.y) : positionCoordinates[s.pitchPosition]?.top ?? 50,
+        isStarter: true,
+        isGk: s.id === detectedGkLineupId || s.player?.id === detectedGkPlayerId,
+      }));
+
+      // Bench: gabungkan cadangan + pemain hadir terkonfirmasi
+      const starterIds = new Set(canvasStarters.map((s) => s.id));
+      const benchMap = new Map<string, any>();
+      for (const b of bench) {
+        if (b.player?.id && !starterIds.has(b.id) && !starterIds.has(b.player.id)) {
+          benchMap.set(b.player.id, {
+            id: b.id,
+            name: b.player.name,
+            number: b.player.number,
+            photoUrl: b.player.photoUrl,
+            isStarter: false,
+          });
+        }
+      }
+      for (const att of attendances || []) {
+        if (att.status === 'CONFIRMED' && att.player?.id && !starterIds.has(att.player.id) && !benchMap.has(att.player.id)) {
+          benchMap.set(att.player.id, {
+            id: att.id,
+            name: att.player.name,
+            number: att.player.number,
+            photoUrl: att.player.photoUrl,
+            isStarter: false,
+          });
+        }
+      }
+      const canvasBench = Array.from(benchMap.values());
+
+      // 2. Generate Gambar Lineup via HTML5 Canvas (Font Sistem HP/Device Native, 100% Anti-Kotak/Tofu)
+      let blob: Blob | null = null;
+      try {
+        blob = await generateLineupCanvas({
+          match: {
+            id: matchId,
+            competition,
+            stage,
+            seasonName: season,
+            matchDate: matchDate || new Date(),
+            venue,
+            isHome,
+            opponentName,
+          },
+          teamName,
+          formation: currentFormation || '4-3-3',
+          starters: canvasStarters,
+          bench: canvasBench,
+        });
+      } catch (canvasErr) {
+        console.warn('Canvas generator failed, falling back to server:', canvasErr);
+        const res = await fetch(`/api/matches/${matchId}/lineup-image?v=${Date.now()}`);
+        if (res.ok) {
+          blob = await res.blob();
+        }
+      }
+
+      if (blob) {
         const file = new File([blob], `lineup-${matchId}.png`, { type: 'image/png' });
 
         if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Share2, Check, Loader2 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
+import { generateLineupCanvas } from '@/lib/generateLineupCanvas';
 
 interface MatchShareButtonProps {
   match: {
@@ -163,9 +164,93 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
     if (isLineupShare) {
       setLoading(true);
       try {
-        const imgRes = await fetch(`/api/matches/${match.id}/lineup-image?v=${Date.now()}`);
-        if (imgRes.ok) {
-          const blob = await imgRes.blob();
+        let lineupsData = (match as any).lineups;
+        let attendancesData = (match as any).attendances;
+        let formationData = (match as any).formation || '4-3-3';
+
+        // Jika belum ada lineups di prop, fetch JSON match data
+        if (!lineupsData) {
+          try {
+            const jsonRes = await fetch(`/api/matches/${match.id}`);
+            if (jsonRes.ok) {
+              const fullMatch = await jsonRes.json();
+              lineupsData = fullMatch.lineups || [];
+              attendancesData = fullMatch.attendances || [];
+              formationData = fullMatch.formation || formationData;
+            }
+          } catch {}
+        }
+
+        let blob: Blob | null = null;
+        if (lineupsData && lineupsData.length > 0) {
+          const starters = (lineupsData || [])
+            .filter((l: any) => l.isStarter && l.player)
+            .map((s: any) => ({
+              id: s.id,
+              name: s.player.name,
+              number: s.player.number,
+              photoUrl: s.player.photoUrl,
+              x: s.x != null && !isNaN(Number(s.x)) ? Number(s.x) : 50,
+              y: s.y != null && !isNaN(Number(s.y)) ? Number(s.y) : 50,
+              isStarter: true,
+            }));
+
+          const starterPlayerIds = new Set(starters.map((s: any) => s.id));
+          const benchMap = new Map<string, any>();
+          for (const b of (lineupsData || []).filter((l: any) => !l.isStarter && l.player)) {
+            if (!starterPlayerIds.has(b.id) && !starterPlayerIds.has(b.player.id)) {
+              benchMap.set(b.player.id, {
+                id: b.id,
+                name: b.player.name,
+                number: b.player.number,
+                photoUrl: b.player.photoUrl,
+                isStarter: false,
+              });
+            }
+          }
+          for (const att of attendancesData || []) {
+            if (att.status === 'CONFIRMED' && att.player?.id && !starterPlayerIds.has(att.player.id) && !benchMap.has(att.player.id)) {
+              benchMap.set(att.player.id, {
+                id: att.id,
+                name: att.player.name,
+                number: att.player.number,
+                photoUrl: att.player.photoUrl,
+                isStarter: false,
+              });
+            }
+          }
+          const bench = Array.from(benchMap.values());
+
+          try {
+            blob = await generateLineupCanvas({
+              match: {
+                id: match.id,
+                competition: match.competition,
+                stage: match.stage,
+                matchDate: match.matchDate,
+                venue: match.venue,
+                isHome: match.isHome,
+                opponentName: match.opponentName,
+              },
+              teamName,
+              formation: formationData,
+              starters,
+              bench,
+            });
+          } catch (canvasErr) {
+            console.warn('Canvas share fallback:', canvasErr);
+          }
+        }
+
+        // Fallback ke server jika canvas tidak menghasilkan blob
+        if (!blob) {
+          const imgRes = await fetch(`/api/matches/${match.id}/lineup-image?v=${Date.now()}`);
+          if (imgRes.ok) {
+            blob = await imgRes.blob();
+          }
+        }
+
+        if (blob) {
           const cleanTitle = `${homeTeam}-vs-${awayTeam}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
           const fileName = `lineup-${cleanTitle}.png`;
           const file = new File([blob], fileName, { type: 'image/png' });
