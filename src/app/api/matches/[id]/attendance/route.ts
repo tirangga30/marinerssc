@@ -41,6 +41,8 @@ export async function GET(
       prisma.footballMatch.findMany({
         select: {
           id: true,
+          opponentName: true,
+          stage: true,
           matchDate: true,
           seasonName: true,
           lineups: {

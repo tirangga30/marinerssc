@@ -373,19 +373,11 @@ export default function PlayerProfileView({
             </div>
           )}
 
-          {/* Top-Right: Status Pemain & Member Tag */}
+          {/* Top-Right: Status Pemain (Khusus Non-Aktif) & Member Tag */}
           <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-1.5">
-            {playerSquadStatus && (
-              <span
-                className={`px-2.5 py-0.5 rounded-lg border-2 font-black text-[10px] uppercase tracking-wider shadow-md backdrop-blur-md ${
-                  isSquadInactive
-                    ? 'border-rose-500 text-rose-500 bg-rose-500/15'
-                    : playerSquadStatus === 'LOAN'
-                    ? 'border-amber-500 text-amber-500 bg-amber-500/15'
-                    : 'border-emerald-500 text-emerald-500 bg-emerald-500/15'
-                }`}
-              >
-                {playerSquadStatus}
+            {isSquadInactive && (
+              <span className="px-2.5 py-0.5 rounded-lg border-2 border-rose-500 text-rose-500 bg-rose-500/15 font-black text-[10px] uppercase tracking-wider shadow-md backdrop-blur-md">
+                INACTIVE
               </span>
             )}
             {member && (
@@ -559,19 +551,11 @@ export default function PlayerProfileView({
               </div>
             )}
 
-            {/* Top-Right: Status Pemain & Member Tag */}
+            {/* Top-Right: Status Pemain (Khusus Non-Aktif) & Member Tag */}
             <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20 flex flex-col items-end gap-1.5">
-              {playerSquadStatus && (
-                <span
-                  className={`px-3 py-1 rounded-lg border-2 font-black text-xs uppercase tracking-wider shadow-md backdrop-blur-md ${
-                    isSquadInactive
-                      ? 'border-rose-500 text-rose-500 bg-rose-500/15'
-                      : playerSquadStatus === 'LOAN'
-                      ? 'border-amber-500 text-amber-500 bg-amber-500/15'
-                      : 'border-emerald-500 text-emerald-500 bg-emerald-500/15'
-                  }`}
-                >
-                  {playerSquadStatus}
+              {isSquadInactive && (
+                <span className="px-3 py-1 rounded-lg border-2 border-rose-500 text-rose-500 bg-rose-500/15 font-black text-xs uppercase tracking-wider shadow-md backdrop-blur-md">
+                  INACTIVE
                 </span>
               )}
               {member && (

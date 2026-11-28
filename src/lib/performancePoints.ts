@@ -172,6 +172,8 @@ export function calculatePlayerPerformance(
     playerSlugLower.includes('rifki');
   const isErick =
     playerNameLower.includes('erick') || playerSlugLower.includes('erick');
+  const isFahrul =
+    playerNameLower.includes('fahrul') || playerSlugLower.includes('fahrul');
 
   for (const match of seasonMatches) {
     const matchDateObj = match.matchDate ? new Date(match.matchDate) : null;
@@ -282,7 +284,6 @@ export function calculatePlayerPerformance(
       isErick &&
       Boolean(match.opponentName && match.opponentName.toLowerCase().includes('irege'))
     ) {
-      // Special user adjustment: Erick tiba-tiba tidak ikut melawan IREGE (-5 poin)
       penaltiesCount++;
       activities.push({
         id: `${match.id}-irege-erick-no-show`,
@@ -291,9 +292,27 @@ export function calculatePlayerPerformance(
         matchDate: match.matchDate,
         stage: match.stage,
         type: 'no_show',
-        title: 'Tiba-tiba Tidak Ikut (-5)',
-        reason: 'Tiba-tiba tidak ikut bertanding melawan IREGE (-5 poin)',
-        points: -5,
+        title: 'Konfirmasi Hadir Tanpa Kabar',
+        reason: 'Tercatat konfirmasi hadir namun tidak datang ke laga tanpa alasan resmi',
+        points: -4,
+      });
+    } else if (
+      isDisciplineEligible &&
+      isPastKickoff &&
+      isFahrul &&
+      Boolean(match.opponentName && match.opponentName.toLowerCase().includes('irege'))
+    ) {
+      penaltiesCount++;
+      activities.push({
+        id: `${match.id}-irege-fahrul-late-decline`,
+        matchId: match.id,
+        opponentName: match.opponentName || 'IREGE',
+        matchDate: match.matchDate,
+        stage: match.stage,
+        type: 'late_decline',
+        title: 'Batal Hadir < 1 Jam Kickoff',
+        reason: 'Membatalkan kehadiran mendadak kurang dari 1 jam sebelum pertandingan',
+        points: -1,
       });
     } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer) {
       // Player was NOT in lineup, match passed kickoff: evaluate discipline rules

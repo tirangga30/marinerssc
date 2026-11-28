@@ -155,14 +155,14 @@ export default function PlayerPerformanceExpModal({
             {/* Info Legend Note & Aturan Kedisiplinan */}
             <div className="text-[10px] text-slate-500 space-y-1 px-0.5 pb-1 border-b border-slate-100">
               <div>
-                <strong className="text-slate-700">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+                <strong className="text-slate-700">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0)
               </div>
               <div>
-                <strong className="text-slate-700">Pelanggaran:</strong> Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
+                <strong className="text-slate-700">Pelanggaran:</strong> Kartu Kuning (-1), Kartu Merah (-3), Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
               </div>
               <div className="pt-1.5 border-t border-slate-100 space-y-0.5">
                 <p className="text-rose-600 font-bold">
-                  * Catatan: jika poin sudah melebihi -30 maka otomatis akan keluar squad.
+                  Jika poin sudah melebihi -30 maka otomatis akan keluar squad.
                 </p>
                 <p className="text-slate-500 font-medium text-[9.5px]">
                   Konfirmasi admin jika mau absen dalam waktu lama.
