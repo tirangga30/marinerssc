@@ -337,6 +337,7 @@ export default async function MatchDetailPage({
           initialAttendances={resolvedMatch.attendances}
           inviteNotes={(resolvedMatch as any).inviteNotes || (match as any).inviteNotes}
           statusJourney={(resolvedMatch as any).statusJourney || (match as any).statusJourney}
+          seasonName={targetSeason || match.seasonName || '2026'}
         />
       </React.Suspense>
 

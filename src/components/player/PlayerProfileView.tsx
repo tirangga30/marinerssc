@@ -279,6 +279,8 @@ export default function PlayerProfileView({
   // Hitung performa pemain & poin disiplin EXP untuk musim yang dipilih
   const performanceResult = calculatePlayerPerformance(player, activeMatches, selectedSeason);
   const isAllSeason = !selectedSeason || selectedSeason.toUpperCase() === 'SEMUA' || selectedSeason.toLowerCase() === 'all';
+  const playerSquadStatus = (performanceResult.status || player.status || 'Active').toUpperCase();
+  const isSquadInactive = playerSquadStatus === 'INACTIVE' || performanceResult.isIndiscipline;
 
   // Biodata specs
   const birthDateValue = player.birthDate
@@ -371,15 +373,28 @@ export default function PlayerProfileView({
             </div>
           )}
 
-          {/* Member Tag */}
-          {member && (
-            <div className="absolute top-3 right-3 z-30">
+          {/* Top-Right: Status Pemain & Member Tag */}
+          <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-1.5">
+            {playerSquadStatus && (
+              <span
+                className={`px-2.5 py-0.5 rounded-lg border-2 font-black text-[10px] uppercase tracking-wider shadow-md backdrop-blur-md ${
+                  isSquadInactive
+                    ? 'border-rose-500 text-rose-500 bg-rose-500/15'
+                    : playerSquadStatus === 'LOAN'
+                    ? 'border-amber-500 text-amber-500 bg-amber-500/15'
+                    : 'border-emerald-500 text-emerald-500 bg-emerald-500/15'
+                }`}
+              >
+                {playerSquadStatus}
+              </span>
+            )}
+            {member && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md border border-amber-300">
                 <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
                 MEMBER
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Nomor, Nama & Posisi Pemain */}
           <div className="absolute left-3.5 sm:left-4 bottom-[58px] sm:bottom-[64px] z-20 flex items-center gap-3 sm:gap-3.5 max-w-[70%] sm:max-w-[65%]">
@@ -544,15 +559,28 @@ export default function PlayerProfileView({
               </div>
             )}
 
-            {/* Top-Right Tag: "MEMBER" */}
-            {member && (
-              <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20">
+            {/* Top-Right: Status Pemain & Member Tag */}
+            <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20 flex flex-col items-end gap-1.5">
+              {playerSquadStatus && (
+                <span
+                  className={`px-3 py-1 rounded-lg border-2 font-black text-xs uppercase tracking-wider shadow-md backdrop-blur-md ${
+                    isSquadInactive
+                      ? 'border-rose-500 text-rose-500 bg-rose-500/15'
+                      : playerSquadStatus === 'LOAN'
+                      ? 'border-amber-500 text-amber-500 bg-amber-500/15'
+                      : 'border-emerald-500 text-emerald-500 bg-emerald-500/15'
+                  }`}
+                >
+                  {playerSquadStatus}
+                </span>
+              )}
+              {member && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md border border-amber-300">
                   <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
                   MEMBER
                 </span>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Bottom Info: Extra Large Number alongside Name & Position */}
             <div className="relative z-20 p-5 sm:p-8 md:p-6 flex items-center gap-4 sm:gap-6 md:gap-5">

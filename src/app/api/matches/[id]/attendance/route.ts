@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { calculatePlayerPerformance } from '@/lib/performancePoints';
 
 export async function GET(
   req: Request,
@@ -20,7 +21,7 @@ export async function GET(
       return NextResponse.json(attendances);
     }
 
-    const [attendance, match] = await Promise.all([
+    const [attendance, match, allMatches] = await Promise.all([
       prisma.matchAttendance.findFirst({
         where: {
           matchId,
@@ -35,29 +36,68 @@ export async function GET(
       }),
       prisma.footballMatch.findUnique({
         where: { id: matchId },
-        select: { inviteNotes: true, statusJourney: true },
+        select: { seasonName: true, inviteNotes: true, statusJourney: true },
+      }),
+      prisma.footballMatch.findMany({
+        select: {
+          id: true,
+          matchDate: true,
+          seasonName: true,
+          lineups: {
+            where: { OR: [{ playerId }, { player: { slug: playerId } }] },
+            select: { playerId: true, isStarter: true },
+          },
+          attendances: {
+            where: { OR: [{ playerId }, { player: { slug: playerId } }] },
+            select: {
+              playerId: true,
+              status: true,
+              declineReason: true,
+              invitedAt: true,
+              isLateDecline: true,
+              declinedAt: true,
+              isManualConfirm: true,
+            },
+          },
+          events: {
+            where: {
+              OR: [
+                { playerId },
+                { player: { slug: playerId } },
+                { assistPlayerId: playerId },
+                { assistPlayer: { slug: playerId } },
+              ],
+            },
+            select: { type: true, minute: true, playerId: true, assistPlayerId: true },
+          },
+        },
+        orderBy: { matchDate: 'desc' },
       }),
     ]);
 
-    if (attendance) {
-      return NextResponse.json({
-        attendance,
-        player: attendance.player,
-        inviteNotes: match?.inviteNotes || null,
-        statusJourney: match?.statusJourney || null,
+    let playerObj = attendance?.player || null;
+    if (!playerObj) {
+      playerObj = await prisma.player.findFirst({
+        where: {
+          OR: [{ id: playerId }, { slug: playerId }],
+        },
       });
     }
 
-    // If no attendance record yet, find player directly so confirmation card can render immediately
-    const player = await prisma.player.findFirst({
-      where: {
-        OR: [{ id: playerId }, { slug: playerId }],
-      },
-    });
+    const targetSeason = match?.seasonName || '2026';
+    let performance: any = null;
+    if (playerObj) {
+      try {
+        performance = calculatePlayerPerformance(playerObj, allMatches, targetSeason);
+      } catch (err) {
+        console.error('Failed to calculate player performance:', err);
+      }
+    }
 
     return NextResponse.json({
-      attendance: null,
-      player,
+      attendance: attendance || null,
+      player: playerObj,
+      performance,
       inviteNotes: match?.inviteNotes || null,
       statusJourney: match?.statusJourney || null,
     });

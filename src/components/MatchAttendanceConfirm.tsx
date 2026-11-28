@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, Check } from 'lucide-react';
 import { useSystemSetting } from '@/context/SystemSettingContext';
+import PlayerPerformanceExpModal from '@/components/player/PlayerPerformanceExpModal';
 
 interface AttendanceItem {
   id: string;
@@ -57,6 +58,8 @@ interface MatchAttendanceConfirmProps {
   initialAttendances: AttendanceItem[];
   inviteNotes?: string | null;
   statusJourney?: string | null | StatusJourneyItem[];
+  seasonName?: string;
+  initialPerformance?: any;
 }
 
 export default function MatchAttendanceConfirm({
@@ -66,6 +69,8 @@ export default function MatchAttendanceConfirm({
   initialAttendances,
   inviteNotes,
   statusJourney,
+  seasonName,
+  initialPerformance,
 }: MatchAttendanceConfirmProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -80,6 +85,7 @@ export default function MatchAttendanceConfirm({
   const [status, setStatus] = useState<'INVITED' | 'CONFIRMED' | 'DECLINED' | null>(null);
   const [currentInviteNotes, setCurrentInviteNotes] = useState(inviteNotes || '');
   const [currentStatusJourney, setCurrentStatusJourney] = useState<any>(statusJourney || null);
+  const [performanceData, setPerformanceData] = useState<any>(initialPerformance || null);
   const [declineReason, setDeclineReason] = useState('');
   const [showDeclineInput, setShowDeclineInput] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -97,6 +103,12 @@ export default function MatchAttendanceConfirm({
   }, [statusJourney]);
 
   useEffect(() => {
+    if (initialPerformance) {
+      setPerformanceData(initialPerformance);
+    }
+  }, [initialPerformance]);
+
+  useEffect(() => {
     if (!playerId) return;
 
     const existing = initialAttendances.find((a) => a.playerId === playerId || a.player?.id === playerId);
@@ -106,37 +118,41 @@ export default function MatchAttendanceConfirm({
       if (existing.declineReason) setDeclineReason(existing.declineReason);
     } else {
       setLoading(true);
-      fetch(`/api/matches/${matchId}/attendance?playerId=${playerId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.inviteNotes !== undefined && data.inviteNotes !== null) {
-            setCurrentInviteNotes(data.inviteNotes);
-          }
-          if (data.statusJourney !== undefined && data.statusJourney !== null) {
-            setCurrentStatusJourney(data.statusJourney);
-          }
-          if (data.attendance?.player) {
-            setPlayerData(data.attendance.player);
-            setStatus(data.attendance.status);
-            if (data.attendance.declineReason) setDeclineReason(data.attendance.declineReason);
-          } else if (data.player) {
-            setPlayerData(data.player);
-            setStatus('INVITED');
-          } else {
-            fetch(`/api/players/${playerId}`)
-              .then((pRes) => pRes.json())
-              .then((pData) => {
-                if (pData?.id) {
-                  setPlayerData(pData);
-                  setStatus('INVITED');
-                }
-              })
-              .catch(() => {});
-          }
-        })
-        .catch((e) => console.error(e))
-        .finally(() => setLoading(false));
     }
+
+    fetch(`/api/matches/${matchId}/attendance?playerId=${playerId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.performance) {
+          setPerformanceData(data.performance);
+        }
+        if (data.inviteNotes !== undefined && data.inviteNotes !== null) {
+          setCurrentInviteNotes(data.inviteNotes);
+        }
+        if (data.statusJourney !== undefined && data.statusJourney !== null) {
+          setCurrentStatusJourney(data.statusJourney);
+        }
+        if (data.attendance?.player) {
+          setPlayerData(data.attendance.player);
+          setStatus(data.attendance.status);
+          if (data.attendance.declineReason) setDeclineReason(data.attendance.declineReason);
+        } else if (data.player) {
+          setPlayerData(data.player);
+          setStatus((prev) => prev || 'INVITED');
+        } else {
+          fetch(`/api/players/${playerId}`)
+            .then((pRes) => pRes.json())
+            .then((pData) => {
+              if (pData?.id) {
+                setPlayerData(pData);
+                setStatus((prev) => prev || 'INVITED');
+              }
+            })
+            .catch(() => {});
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [playerId, matchId, initialAttendances]);
 
   if (!playerId) {
@@ -257,8 +273,8 @@ export default function MatchAttendanceConfirm({
           </div>
         </div>
 
-        {/* Status indicator */}
-        <div className="shrink-0 w-full sm:w-auto">
+        {/* Status indicator & EXP Button di ujung kanan profil pemain */}
+        <div className="shrink-0 w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2.5">
           {isConfirmed ? (
             <span className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase inline-block">
               Status: Ikut Bertanding
@@ -271,6 +287,17 @@ export default function MatchAttendanceConfirm({
             <span className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold uppercase inline-block">
               Status: Menunggu Konfirmasi
             </span>
+          )}
+
+          {/* Tombol & Tampilan EXP (persis sama seperti di pojok kiri atas profil pemain) */}
+          {performanceData && (
+            <div className="shrink-0">
+              <PlayerPerformanceExpModal
+                playerName={playerData.name}
+                seasonName={seasonName || '2026'}
+                performance={performanceData}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -395,7 +422,13 @@ export default function MatchAttendanceConfirm({
             type="button"
             disabled={saving}
             onClick={() => handleConfirmAttendance('CONFIRMED')}
-            className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+            className={`w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+              isConfirmed
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-500/30'
+                : isDeclined
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+            }`}
           >
             IKUT BERTANDING
           </button>
@@ -404,7 +437,11 @@ export default function MatchAttendanceConfirm({
             type="button"
             disabled={saving}
             onClick={() => setShowDeclineInput(true)}
-            className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+            className={`w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+              isDeclined
+                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-2 ring-rose-500/30'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+            }`}
           >
             TIDAK BISA IKUT
           </button>

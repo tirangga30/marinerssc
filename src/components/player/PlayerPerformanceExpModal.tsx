@@ -59,7 +59,7 @@ export default function PlayerPerformanceExpModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        title="Klik untuk melihat rincian riwayat poin performa (EXP)"
+        title="Klik untuk melihat rincian kedisiplinan dan poin performa (EXP)"
         className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full border-2 ${badgeColor.border} ${badgeColor.bg} backdrop-blur-md flex flex-col items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer select-none`}
       >
         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-white/90 leading-none">
@@ -86,7 +86,7 @@ export default function PlayerPerformanceExpModal({
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm sm:text-base font-black uppercase text-slate-900 tracking-wide">
-                    Riwayat Poin Performa
+                    Kedisiplinan
                   </h3>
                   {isIndiscipline && (
                     <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-black uppercase border border-rose-300">
@@ -140,8 +140,10 @@ export default function PlayerPerformanceExpModal({
                 </span>
                 <span
                   className={`text-xs font-black uppercase px-2.5 py-1 rounded-lg inline-block mt-1 border ${
-                    isIndiscipline
+                    status?.toUpperCase() === 'INACTIVE' || isIndiscipline
                       ? 'bg-rose-50 text-rose-700 border-rose-300'
+                      : status?.toUpperCase() === 'LOAN'
+                      ? 'bg-amber-50 text-amber-700 border-amber-300'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-300'
                   }`}
                 >
@@ -150,13 +152,21 @@ export default function PlayerPerformanceExpModal({
               </div>
             </div>
 
-            {/* Info Legend Note (Tanpa Box) */}
-            <div className="text-[10px] text-slate-500 space-y-0.5 px-0.5 pb-1 border-b border-slate-100">
+            {/* Info Legend Note & Aturan Kedisiplinan */}
+            <div className="text-[10px] text-slate-500 space-y-1 px-0.5 pb-1 border-b border-slate-100">
               <div>
                 <strong className="text-slate-700">Poin Plus:</strong> Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
               </div>
               <div>
                 <strong className="text-slate-700">Pelanggaran:</strong> Mengabaikan Invite (-3), Batal &lt;1 Jam (-1), Konfirmasi ikut namun tidak hadir (-4), Menolak (0)
+              </div>
+              <div className="pt-1.5 border-t border-slate-100 space-y-0.5">
+                <p className="text-rose-600 font-bold">
+                  * Catatan: jika poin sudah melebihi -30 maka otomatis akan keluar squad.
+                </p>
+                <p className="text-slate-500 font-medium text-[9.5px]">
+                  Konfirmasi admin jika mau absen dalam waktu lama.
+                </p>
               </div>
             </div>
 
