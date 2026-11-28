@@ -523,15 +523,13 @@ export default function QuickLineupEditor({
         </div>
       )}
 
-      {/* ═══ MIDDLE: TACTICAL PITCH AREA (FITS FLUIDLY IN VIEWPORT) ═══ */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-2 sm:p-3 relative overflow-hidden">
-        {/* Tactical Pitch Board */}
+      {/* ═══ MIDDLE: TACTICAL PITCH AREA (UKURAN SAMA DI SEMUA DEVICE: 340px x 417px) ═══ */}
+      <div className="shrink-0 flex items-center justify-center p-2 relative select-none">
+        {/* Tactical Pitch Board - Ukuran Lapangan Konsisten di Semua Device */}
         <div
           ref={pitchRef}
-          className="relative w-full max-w-sm sm:max-w-md h-full rounded-2xl overflow-hidden border border-emerald-600/40 shadow-2xl bg-emerald-950/60 flex items-center justify-center select-none"
+          className="relative w-[340px] h-[417px] max-w-[calc(100vw-16px)] rounded-2xl overflow-hidden border border-emerald-600/40 shadow-2xl bg-emerald-950/60 flex items-center justify-center select-none"
           style={{
-            maxHeight: '100%',
-            aspectRatio: '1132 / 1389',
             touchAction: 'none',
           }}
         >
@@ -595,10 +593,10 @@ export default function QuickLineupEditor({
         </div>
       </div>
 
-      {/* ═══ BOTTOM: BENCH / CADANGAN AREA (TERKUNCI 1 LAYAR) ═══ */}
+      {/* ═══ BOTTOM: BENCH / CADANGAN AREA (MENYESUAIKAN SISA TINGGI DEVICE) ═══ */}
       <div
         ref={benchRef}
-        className="h-32 sm:h-36 shrink-0 bg-slate-900/95 border-t border-slate-800 p-2 sm:p-3 flex flex-col z-20"
+        className="flex-1 min-h-0 bg-slate-900/95 border-t border-slate-800 p-2.5 sm:p-3 flex flex-col z-20 overflow-hidden"
         style={{ touchAction: 'none' }}
       >
         {/* Header Cadangan */}
@@ -614,8 +612,8 @@ export default function QuickLineupEditor({
           </span>
         </div>
 
-        {/* Bench Players Horizontal Scroll Tray */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden flex items-center gap-2 pb-1 scrollbar-thin">
+        {/* Bench Players Adaptive Grid / Scroll Container */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto flex flex-wrap content-start items-center gap-2 pb-1 scrollbar-thin">
           {bench.length === 0 ? (
             <div className="w-full text-center text-xs text-slate-500 font-bold py-2">
               Tidak ada pemain di cadangan. Geser pemain dari lapang ke sini untuk mencadangkan.
