@@ -192,26 +192,26 @@ export default function Navbar() {
 
         {/* Mobile Admin Nav */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 border-b border-slate-200 px-4 pt-2 pb-6 space-y-1 shadow-md">
-            {adminNavLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                    isActive
-                      ? 'text-blue-600 bg-blue-50 font-extrabold'
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span>{link.name}</span>
-                </Link>
-              );
-            })}
+          <div className="md:hidden bg-[#06152d] border-b border-blue-950/80 shadow-2xl animate-fadeIn overflow-hidden">
+            <div className="flex flex-col">
+              {adminNavLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`relative flex items-center px-6 py-3.5 text-sm sm:text-base transition-colors duration-150 border-l-4 select-none ${
+                      isActive
+                        ? 'bg-[#002952] text-white font-bold border-yellow-400'
+                        : 'bg-[#06152d] text-slate-300 hover:bg-[#002952]/60 hover:text-white font-medium border-transparent'
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </header>
@@ -341,9 +341,9 @@ export default function Navbar() {
 
       {/* Mobile Nav Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="relative z-20 md:hidden bg-[#003893] border-b border-blue-900 px-4 pt-3 pb-6 space-y-1 animate-fadeIn shadow-2xl">
-          {/* Links */}
-          <div className="space-y-1">
+        <div className="relative z-20 md:hidden bg-[#06152d] border-b border-blue-950/80 shadow-2xl animate-fadeIn overflow-hidden">
+          {/* Links list in full-bleed rows without icons */}
+          <div className="flex flex-col">
             {activeNavLinks.map((link) => {
               const isActive = pathname === link.href.split('?')[0];
               return (
@@ -351,15 +351,13 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-2.5 rounded-xl text-xs font-bold transition-all border-b ${
+                  className={`relative flex items-center px-6 py-3.5 text-sm sm:text-base transition-colors duration-150 border-l-4 select-none ${
                     isActive
-                      ? clubMode === 'community'
-                        ? 'text-amber-300 bg-white/15 border-amber-400 font-extrabold'
-                        : 'text-white bg-white/15 border-white font-extrabold'
-                      : 'text-blue-100 border-white/10 hover:text-white hover:bg-white/10 hover:border-white/40'
+                      ? 'bg-[#002952] text-white font-bold border-yellow-400'
+                      : 'bg-[#06152d] text-slate-300 hover:bg-[#002952]/60 hover:text-white font-medium border-transparent'
                   }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
                 </Link>
               );
             })}
