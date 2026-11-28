@@ -92,7 +92,15 @@ export default function PlayerMatchHistory({
       .filter(Boolean)
   );
   const hasSeasonEnrollment = playerSeasonNames.size > 0 || playerSeasonYears.size > 0;
-  const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
+
+  const toWibDateKey = (d: Date | string | null | undefined): string | null => {
+    if (!d) return null;
+    const dateObj = new Date(d);
+    if (isNaN(dateObj.getTime())) return null;
+    const wibMs = dateObj.getTime() + 7 * 3600 * 1000;
+    return new Date(wibMs).toISOString().slice(0, 10);
+  };
+  const joinWibDate = toWibDateKey(player.joinDate);
 
   // Saring riwayat laga sejak pemain bergabung:
   // - Pemain di lineup -> selalu muncul
@@ -108,21 +116,20 @@ export default function PlayerMatchHistory({
       (m.matchDate ? new Date(m.matchDate).getFullYear().toString() : '');
 
     const isEnrolledInSeason = playerSeasonNames.has(mSeason) || playerSeasonYears.has(mYear);
+    const matchWibDate = toWibDateKey(m.matchDate);
 
     // 2. Jika pemain terdaftar dalam musim tertentu: HANYA boleh melihat laga musim yang diikutinya
     if (hasSeasonEnrollment) {
       if (!isEnrolledInSeason) return false;
-      if (joinDateMs !== null && !isNaN(joinDateMs)) {
-        const mDateMs = new Date(m.matchDate).getTime();
-        return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
+      if (joinWibDate !== null) {
+        return matchWibDate !== null && matchWibDate >= joinWibDate;
       }
       return true;
     }
 
     // 3. Jika belum terikat musim spesifik, gunakan joinDate jika ada
-    if (joinDateMs !== null && !isNaN(joinDateMs)) {
-      const mDateMs = new Date(m.matchDate).getTime();
-      return !isNaN(mDateMs) && mDateMs >= joinDateMs - 12 * 3600 * 1000;
+    if (joinWibDate !== null) {
+      return matchWibDate !== null && matchWibDate >= joinWibDate;
     }
 
     // 4. Jika sudah pernah melakoni debut/lineup di tanggal tertentu
@@ -511,7 +518,7 @@ export default function PlayerMatchHistory({
                   ? (match.seasonName.match(/\d{4}/)?.[0] || match.seasonName)
                   : (match.matchDate ? new Date(match.matchDate).getFullYear().toString() : '');
 
-                const matchDateMs = match.matchDate ? new Date(match.matchDate).getTime() : 0;
+                const matchWibDate = toWibDateKey(match.matchDate);
                 const mSeasonLower = (match.seasonName || '').trim().toLowerCase();
                 const isEnrolledInMatchSeason = playerSeasonNames.has(mSeasonLower) || playerSeasonYears.has(seasonYear);
 
@@ -520,7 +527,7 @@ export default function PlayerMatchHistory({
                 // tandai LOAN di samping kiri menit bermainnya.
                 const isLoanInMatch =
                   Boolean(player.isGuest) ||
-                  (joinDateMs !== null && !isNaN(joinDateMs) && matchDateMs > 0 && matchDateMs < joinDateMs - 12 * 3600 * 1000) ||
+                  (joinWibDate !== null && matchWibDate !== null && matchWibDate < joinWibDate) ||
                   (hasSeasonEnrollment && !isEnrolledInMatchSeason);
 
                 return (

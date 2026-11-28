@@ -145,9 +145,17 @@ export function calculatePlayerPerformance(
   let redCount = 0;
   let penaltiesCount = 0;
 
+  const toWibDateKey = (d: Date | string | null | undefined): string | null => {
+    if (!d) return null;
+    const dateObj = new Date(d);
+    if (isNaN(dateObj.getTime())) return null;
+    const wibMs = dateObj.getTime() + 7 * 3600 * 1000;
+    return new Date(wibMs).toISOString().slice(0, 10);
+  };
+
   const playerId = player.id;
   const isLoan = Boolean(player.isGuest);
-  const joinDateMs = player.joinDate ? new Date(player.joinDate).getTime() : null;
+  const joinWibDate = toWibDateKey(player.joinDate);
   const playerNameLower = (player.name || '').toLowerCase();
   const playerSlugLower = (player.slug || '').toLowerCase();
   const playerStatusLower = (player.status || '').toLowerCase().trim();
@@ -160,10 +168,13 @@ export function calculatePlayerPerformance(
     playerSlugLower.includes('endra') ||
     playerNameLower.includes('rifki') ||
     playerSlugLower.includes('rifki');
+  const isErick =
+    playerNameLower.includes('erick') || playerSlugLower.includes('erick');
 
   for (const match of seasonMatches) {
     const matchDateObj = match.matchDate ? new Date(match.matchDate) : null;
     const matchDateMs = matchDateObj ? matchDateObj.getTime() : 0;
+    const matchWibDate = toWibDateKey(match.matchDate);
     const isPastKickoff =
       match.status === 'finished' || (matchDateMs > 0 && nowMs >= matchDateMs);
 
@@ -175,11 +186,13 @@ export function calculatePlayerPerformance(
     const isDisciplineSeason = matchSeasonYear >= 2026;
 
     // Discipline rules DO NOT apply to loan players, inactive or injured players, OR matches before joinDate
+    const isAfterJoinDate =
+      joinWibDate === null || (matchWibDate !== null && matchWibDate >= joinWibDate);
     const isDisciplineEligible =
       isDisciplineSeason &&
       !isLoan &&
       !isPlayerInactiveOrInjured &&
-      (joinDateMs === null || isNaN(joinDateMs) || matchDateMs >= joinDateMs - 12 * 3600 * 1000);
+      isAfterJoinDate;
 
     // Check lineup participation
     const lineup = (match.lineups || []).find(
@@ -256,7 +269,26 @@ export function calculatePlayerPerformance(
           points: 1,
         });
       }
-    } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer && !isManualConfirm) {
+    } else if (
+      isDisciplineEligible &&
+      isPastKickoff &&
+      isErick &&
+      Boolean(match.opponentName && match.opponentName.toLowerCase().includes('irege'))
+    ) {
+      // Special user adjustment: Erick tiba-tiba tidak ikut melawan IREGE (-5 poin)
+      penaltiesCount++;
+      activities.push({
+        id: `${match.id}-irege-erick-no-show`,
+        matchId: match.id,
+        opponentName: match.opponentName || 'IREGE',
+        matchDate: match.matchDate,
+        stage: match.stage,
+        type: 'no_show',
+        title: 'Tiba-tiba Tidak Ikut (-5)',
+        reason: 'Tiba-tiba tidak ikut bertanding melawan IREGE (-5 poin)',
+        points: -5,
+      });
+    } else if (isDisciplineEligible && isPastKickoff && wasInvited && !isExemptPlayer) {
       // Player was NOT in lineup, match passed kickoff: evaluate discipline rules
       const isExempt = isExemptReason(attendance?.declineReason);
       if (!isExempt) {

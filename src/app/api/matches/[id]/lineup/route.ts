@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 import { recalculateAllPlayerStats } from '@/lib/stats';
+import { revalidatePath } from 'next/cache';
 
 function parseNullableInt(val: any): number | null {
   if (val === null || val === undefined || val === '') return null;
@@ -168,6 +169,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     await recalculateAllPlayerStats();
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/players');
+      revalidatePath('/players/[slug]', 'page');
+      revalidatePath('/stats');
+      revalidatePath('/matches');
+      revalidatePath(`/matches/${matchId}`);
+    } catch (revErr) {
+      console.warn('Lineup revalidatePath warning:', revErr);
+    }
 
     const updatedMatch = await prisma.footballMatch.findUnique({
       where: { id: matchId },
