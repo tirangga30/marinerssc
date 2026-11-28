@@ -180,10 +180,19 @@ export default async function MatchDetailPage({
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
-      {/* Main Score Board Header - Tanpa Box */}
-      <div className="relative py-2 sm:py-3 text-center space-y-4">
+      {/* Main Score Board Header - Tanpa Box dengan Latar Stadium */}
+      <div className="relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl overflow-hidden text-center space-y-4">
+        {/* Stadium Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url('/stadium.webp')` }}
+        />
+        {/* Subtle light overlay to ensure flawless contrast */}
+        <div className="absolute inset-0 bg-white/20 pointer-events-none" />
+
+        <div className="relative z-10 space-y-4">
         {/* Top Bar Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3 text-[10px] sm:text-xs font-bold uppercase">
+        <div className="flex items-center justify-between border-b border-slate-300/80 pb-3 text-[10px] sm:text-xs font-bold uppercase">
           {/* Ujung Kiri: Kompetisi, Tahun, dan Stage */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 pr-2">
             <span className="w-2 h-2 rounded-full bg-black shrink-0 inline-block" style={{ backgroundColor: '#000000' }} />
@@ -307,6 +316,7 @@ export default async function MatchDetailPage({
             <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="truncate">{match.venue || '—'}</span>
           </span>
+        </div>
         </div>
       </div>
 
