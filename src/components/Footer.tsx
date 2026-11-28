@@ -196,7 +196,7 @@ export default function Footer() {
               {/* Copyright & Versi Aplikasi */}
               <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-right">
                 <span className="text-[10px] sm:text-xs text-blue-200/90 font-medium">
-                  v 2.0.0
+                  v 2.1.0
                 </span>
                 <span className="hidden sm:inline text-blue-300/40">|</span>
                 <p className="text-[11px] sm:text-xs text-blue-200/90 font-medium tracking-wide">

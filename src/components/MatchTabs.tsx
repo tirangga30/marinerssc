@@ -694,11 +694,19 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                     const chronEvts = getPlayerChronologicalEvents(item.player.id);
                     const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
                     const matchEvts = chronEvts.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
-                    const isGuest = item.player.isGuest;
+                    const isLoan = Boolean(
+                      item.player.isGuest ||
+                      (item.player as any).playerType === 'LOAN' ||
+                      (item.player as any).playerType === 'GUEST' ||
+                      localAttendances.some((a) => (a.playerId === item.player.id || a.player?.id === item.player.id) && (a.playerType === 'LOAN' || a.playerType === 'GUEST'))
+                    );
+                    const isGuest = isLoan;
                     const Content = (
                       <>
                         {/* Photo Avatar */}
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                        <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 bg-slate-100 ${
+                          isLoan ? 'border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-xs' : 'border border-slate-200'
+                        }`}>
                           <img
                             src={(item.player.photoUrl && item.player.photoUrl !== '/playertemplate.webp') ? item.player.photoUrl : defaultPlayerTemplate}
                             alt={item.player.name}
@@ -808,11 +816,19 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                     const chronEvts = getPlayerChronologicalEvents(item.player.id);
                     const subEvts = chronEvts.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
                     const matchEvts = chronEvts.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
-                    const isGuest = item.player.isGuest;
+                    const isLoan = Boolean(
+                      item.player.isGuest ||
+                      (item.player as any).playerType === 'LOAN' ||
+                      (item.player as any).playerType === 'GUEST' ||
+                      localAttendances.some((a) => (a.playerId === item.player.id || a.player?.id === item.player.id) && (a.playerType === 'LOAN' || a.playerType === 'GUEST'))
+                    );
+                    const isGuest = isLoan;
                     const Content = (
                       <>
                         {/* Photo Avatar */}
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                        <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 bg-slate-100 ${
+                          isLoan ? 'border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-xs' : 'border border-slate-200'
+                        }`}>
                           <img
                             src={(item.player.photoUrl && item.player.photoUrl !== '/playertemplate.webp') ? item.player.photoUrl : defaultPlayerTemplate}
                             alt={item.player.name}
@@ -932,11 +948,20 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
               <div className="divide-y divide-slate-100">
                 {sortedConfirmedAttendances.map((item) => {
                   const p = item.player!;
-                  const isGuest = p.isGuest;
+                  const isLoan = Boolean(
+                    p.isGuest ||
+                    item.playerType === 'LOAN' ||
+                    item.playerType === 'GUEST' ||
+                    (p as any).playerType === 'LOAN' ||
+                    (p as any).playerType === 'GUEST'
+                  );
+                  const isGuest = isLoan;
                   const Content = (
                     <>
                       {/* Photo Avatar */}
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                      <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 bg-slate-100 ${
+                        isLoan ? 'border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-xs' : 'border border-slate-200'
+                      }`}>
                         <img
                           src={(p.photoUrl && p.photoUrl !== '/playertemplate.webp') ? p.photoUrl : defaultPlayerTemplate}
                           alt={p.name}

@@ -23,6 +23,7 @@ interface LineupPlayer {
     number: number;
     position: string;
     photoUrl: string;
+    isGuest?: boolean;
     seasonData?: any;
   };
 }
@@ -106,6 +107,17 @@ export default function TacticalPitch({
   const [sharingImage, setSharingImage] = useState(false);
   const [sharedSuccess, setSharedSuccess] = useState(false);
 
+  // Helper untuk mendeteksi apakah pemain berstatus pinjaman (LOAN / Guest)
+  const isPlayerLoan = (player: any) => {
+    if (!player) return false;
+    if (player.isGuest) return true;
+    if (player.playerType === 'LOAN' || player.playerType === 'GUEST') return true;
+    if (typeof player.status === 'string' && player.status.toUpperCase() === 'LOAN') return true;
+    const att = (attendances || []).find((a: any) => a.playerId === player.id || a.player?.id === player.id);
+    if (att && (att.playerType === 'LOAN' || att.playerType === 'GUEST')) return true;
+    return false;
+  };
+
   const handleShareLineupImage = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -123,6 +135,7 @@ export default function TacticalPitch({
         y: s.y != null && !isNaN(Number(s.y)) ? Number(s.y) : positionCoordinates[s.pitchPosition]?.top ?? 50,
         isStarter: true,
         isGk: s.id === detectedGkLineupId || s.player?.id === detectedGkPlayerId,
+        isGuest: isPlayerLoan(s.player),
       }));
 
       // Bench: gabungkan cadangan + pemain hadir terkonfirmasi (PASTIKAN STARTER TIDAK MASUK CADANGAN)
@@ -142,6 +155,7 @@ export default function TacticalPitch({
             number: b.player.number,
             photoUrl: b.player.photoUrl,
             isStarter: false,
+            isGuest: isPlayerLoan(b.player),
           });
         }
       }
@@ -154,6 +168,7 @@ export default function TacticalPitch({
             number: att.player?.number ?? 0,
             photoUrl: att.player?.photoUrl || '',
             isStarter: false,
+            isGuest: att.playerType === 'LOAN' || att.playerType === 'GUEST' || Boolean(att.player?.isGuest),
           });
         }
       }
@@ -469,11 +484,16 @@ export default function TacticalPitch({
           const subEvents = chronEvents.filter((e) => e.type === 'sub_in' || e.type === 'sub_out');
           const matchEvts = chronEvents.filter((e) => e.type !== 'sub_in' && e.type !== 'sub_out');
 
-          const isGuest = (lineup.player as any)?.isGuest;
+          const isLoan = isPlayerLoan(lineup.player);
+          const isGuest = isLoan;
           const TokenContent = (
             <>
-              {/* Player Avatar Circle with Blue Gradient Border */}
-              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#003893] via-[#004bb8] to-sky-400 shadow-md shadow-blue-600/30 group-hover:scale-105 transition-transform">
+              {/* Player Avatar Circle with Blue Gradient Border (Yellow for LOAN players) */}
+              <div className={`relative w-10 h-10 sm:w-14 sm:h-14 rounded-full p-[2.5px] ${
+                isLoan
+                  ? 'bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 shadow-md shadow-amber-500/40 ring-1 ring-amber-300/60'
+                  : 'bg-gradient-to-tr from-[#003893] via-[#004bb8] to-sky-400 shadow-md shadow-blue-600/30'
+              } group-hover:scale-105 transition-transform`}>
                 <div className="w-full h-full rounded-full overflow-hidden bg-slate-100">
                   <img
                     src={(lineup.player.photoUrl && lineup.player.photoUrl !== '/playertemplate.webp') ? lineup.player.photoUrl : defaultPlayerTemplate}
@@ -589,7 +609,11 @@ export default function TacticalPitch({
                 className="flex items-center gap-3.5 p-1 rounded-xl hover:bg-slate-200/50 transition-colors"
               >
                 {/* Photo avatar pemain cadangan (di atas) */}
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-slate-300 shrink-0 bg-white flex items-center justify-center">
+                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shrink-0 bg-white flex items-center justify-center ${
+                  isPlayerLoan(sub.benchPlayer)
+                    ? 'border-2 border-amber-400 ring-2 ring-amber-300/50 shadow-sm shadow-amber-400/20'
+                    : 'border border-slate-300'
+                }`}>
                   <img
                     src={(sub.benchPlayer?.photoUrl && sub.benchPlayer.photoUrl !== '/playertemplate.webp') ? sub.benchPlayer.photoUrl : defaultPlayerTemplate}
                     alt={sub.benchPlayer?.name || 'Pemain Cadangan'}

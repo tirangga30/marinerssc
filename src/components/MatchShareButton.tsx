@@ -183,6 +183,16 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
 
         let blob: Blob | null = null;
         if (lineupsData && lineupsData.length > 0) {
+          const isPlayerLoan = (p: any) => {
+            if (!p) return false;
+            if (p.isGuest) return true;
+            if (p.playerType === 'LOAN' || p.playerType === 'GUEST') return true;
+            if (typeof p.status === 'string' && p.status.toUpperCase() === 'LOAN') return true;
+            const att = (attendancesData || []).find((a: any) => a.playerId === p.id || a.player?.id === p.id);
+            if (att && (att.playerType === 'LOAN' || att.playerType === 'GUEST')) return true;
+            return false;
+          };
+
           const starters = (lineupsData || [])
             .filter((l: any) => l.isStarter && l.player)
             .map((s: any) => ({
@@ -193,6 +203,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
               x: s.x != null && !isNaN(Number(s.x)) ? Number(s.x) : 50,
               y: s.y != null && !isNaN(Number(s.y)) ? Number(s.y) : 50,
               isStarter: true,
+              isGuest: isPlayerLoan(s.player),
             }));
 
           const starterPlayerIds = new Set<string>();
@@ -212,6 +223,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
                 number: b.player.number,
                 photoUrl: b.player.photoUrl,
                 isStarter: false,
+                isGuest: isPlayerLoan(b.player),
               });
             }
           }
@@ -224,6 +236,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
                 number: att.player?.number ?? 0,
                 photoUrl: att.player?.photoUrl || '',
                 isStarter: false,
+                isGuest: att.playerType === 'LOAN' || att.playerType === 'GUEST' || Boolean(att.player?.isGuest),
               });
             }
           }

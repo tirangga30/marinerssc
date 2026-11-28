@@ -13,6 +13,7 @@ export interface LineupPlayerForCanvas {
   y?: number;
   isStarter?: boolean;
   isGk?: boolean;
+  isGuest?: boolean;
   pitchPosition?: string;
 }
 
@@ -238,7 +239,8 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
     const py = pitchTop + (yPct / 100) * pitchHeight;
 
     const isGk = s.isGk || (s.id && s.id === detectedGkId) || s.name === detectedGkId;
-    const ringColor = isGk ? '#f59e0b' : '#38bdf8';
+    const isLoan = Boolean(s.isGuest);
+    const ringColor = isLoan ? '#eab308' : isGk ? '#f59e0b' : '#38bdf8';
 
     ctx.save();
     // Shadow
@@ -364,13 +366,16 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
       const img = benchImgs[i];
       const bx = benchStartX + i * itemWidth + itemWidth / 2;
 
+      const isLoan = Boolean(b.isGuest);
+      const ringColor = isLoan ? '#eab308' : '#38bdf8';
+
       // Base circle
       ctx.beginPath();
       ctx.arc(bx, benchY, 32, 0, Math.PI * 2);
       ctx.fillStyle = '#1e293b';
       ctx.fill();
       ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeStyle = ringColor;
       ctx.stroke();
 
       // Circular clipped photo
@@ -397,7 +402,7 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
       ctx.fillStyle = '#0f172a';
       ctx.fill();
       ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeStyle = ringColor;
       ctx.stroke();
 
       ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
