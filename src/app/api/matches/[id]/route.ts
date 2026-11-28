@@ -114,6 +114,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         isLiveEnabled: data.isLiveEnabled !== undefined ? Boolean(data.isLiveEnabled) : undefined,
         sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : undefined,
         inviteNotes: data.inviteNotes !== undefined ? (data.inviteNotes ? String(data.inviteNotes).trim() : null) : undefined,
+        statusJourney: data.statusJourney !== undefined ? (typeof data.statusJourney === 'string' ? data.statusJourney : JSON.stringify(data.statusJourney)) : undefined,
         summary: data.summary,
       },
     });

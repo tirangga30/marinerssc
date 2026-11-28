@@ -41,7 +41,33 @@ interface FootballMatch {
   summary: string | null;
   sendWhatsAppInvite?: boolean;
   inviteNotes?: string | null;
+  statusJourney?: string | null;
   attendances?: Array<{ id: string; status: string }>;
+}
+
+interface StatusJourneyItem {
+  name: string;
+  completed: boolean;
+}
+
+const DEFAULT_STATUS_JOURNEY: StatusJourneyItem[] = [
+  { name: 'PENJARINGAN', completed: false },
+  { name: 'LAWAN', completed: false },
+  { name: 'FIX', completed: false },
+];
+
+function parseStatusJourney(input: any): StatusJourneyItem[] {
+  if (!input) return DEFAULT_STATUS_JOURNEY.map((s) => ({ ...s }));
+  try {
+    const parsed = typeof input === 'string' ? JSON.parse(input) : input;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((item: any) => ({
+        name: typeof item === 'string' ? item : (item.name || ''),
+        completed: typeof item === 'object' ? Boolean(item.completed) : false,
+      }));
+    }
+  } catch {}
+  return DEFAULT_STATUS_JOURNEY.map((s) => ({ ...s }));
 }
 
 interface Season {
@@ -98,6 +124,7 @@ export default function AdminMatchesPage() {
   const [editingMatch, setEditingMatch] = useState<FootballMatch | null>(null);
   const [uploading, setUploading] = useState(false);
   const [broadcastMatchId, setBroadcastMatchId] = useState<string | null>(null);
+  const [newStatusInput, setNewStatusInput] = useState('');
 
   const getDefaultMatchDate = () => {
     const d = new Date();
@@ -125,6 +152,7 @@ export default function AdminMatchesPage() {
     summary: '',
     sendWhatsAppInvite: true,
     inviteNotes: '',
+    statusJourney: DEFAULT_STATUS_JOURNEY.map((s) => ({ ...s })),
   });
 
   const fetchMatches = async () => {
@@ -229,7 +257,9 @@ export default function AdminMatchesPage() {
       summary: '',
       sendWhatsAppInvite: true,
       inviteNotes: '',
+      statusJourney: DEFAULT_STATUS_JOURNEY.map((s) => ({ ...s })),
     });
+    setNewStatusInput('');
     setShowModal(true);
   };
 
@@ -249,7 +279,9 @@ export default function AdminMatchesPage() {
       summary: m.summary || '',
       sendWhatsAppInvite: m.sendWhatsAppInvite !== false,
       inviteNotes: m.inviteNotes || '',
+      statusJourney: parseStatusJourney(m.statusJourney),
     });
+    setNewStatusInput('');
     setShowModal(true);
   };
 
@@ -313,6 +345,7 @@ export default function AdminMatchesPage() {
 
       const payload = {
         ...formData,
+        statusJourney: JSON.stringify(formData.statusJourney),
         status: editingMatch ? editingMatch.status : 'scheduled',
         formation: editingMatch ? editingMatch.formation : '4-3-3',
         homeScore,
@@ -845,6 +878,113 @@ export default function AdminMatchesPage() {
                   </label>
                 </div>
               )}
+
+              {/* Perjalanan Status Pertandingan */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                    <i className="fa-solid fa-route text-emerald-600" /> Perjalanan Status Pertandingan
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Centang jika status telah tercapai
+                  </span>
+                </div>
+
+                {/* List status */}
+                <div className="space-y-1.5">
+                  {formData.statusJourney.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${
+                        step.completed
+                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                          : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      <span className="w-5 h-5 rounded-full bg-slate-200/80 text-[10px] font-black flex items-center justify-center text-slate-600 shrink-0">
+                        {idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={step.name}
+                        onChange={(e) => {
+                          const updated = [...formData.statusJourney];
+                          updated[idx] = { ...updated[idx], name: e.target.value.toUpperCase() };
+                          setFormData({ ...formData, statusJourney: updated });
+                        }}
+                        placeholder="NAMA STATUS..."
+                        className="flex-1 bg-transparent text-xs font-bold uppercase tracking-wider outline-none text-slate-900 placeholder:text-slate-400"
+                      />
+                      {/* Kotak ceklis di ujungnya */}
+                      <label className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white border border-slate-200 cursor-pointer hover:bg-slate-50 shrink-0 select-none">
+                        <input
+                          type="checkbox"
+                          checked={step.completed}
+                          onChange={(e) => {
+                            const updated = [...formData.statusJourney];
+                            updated[idx] = { ...updated[idx], completed: e.target.checked };
+                            setFormData({ ...formData, statusJourney: updated });
+                          }}
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer accent-emerald-600"
+                        />
+                        <span className={`text-[10px] font-black uppercase ${step.completed ? 'text-emerald-700' : 'text-slate-400'}`}>
+                          {step.completed ? 'Tercapai' : 'Belum'}
+                        </span>
+                      </label>
+                      {/* Tombol hapus */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = formData.statusJourney.filter((_, i) => i !== idx);
+                          setFormData({ ...formData, statusJourney: updated });
+                        }}
+                        title="Hapus status ini"
+                        className="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0 cursor-pointer"
+                      >
+                        <i className="fa-solid fa-trash text-xs" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Input nama status & tombol tambah */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    value={newStatusInput}
+                    onChange={(e) => setNewStatusInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (!newStatusInput.trim()) return;
+                        const updated = [
+                          ...formData.statusJourney,
+                          { name: newStatusInput.trim().toUpperCase(), completed: false },
+                        ];
+                        setFormData({ ...formData, statusJourney: updated });
+                        setNewStatusInput('');
+                      }
+                    }}
+                    placeholder="Nama status baru (misal: DP LAPANGAN, JERSEY)..."
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newStatusInput.trim()) return;
+                      const updated = [
+                        ...formData.statusJourney,
+                        { name: newStatusInput.trim().toUpperCase(), completed: false },
+                      ];
+                      setFormData({ ...formData, statusJourney: updated });
+                      setNewStatusInput('');
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider shrink-0 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  >
+                    <i className="fa-solid fa-plus text-xs" /> Tambah Status
+                  </button>
+                </div>
+              </div>
 
               {/* Catatan Pertandingan (Opsional) - muncul di Edit Pertandingan atau saat mode WA aktif di Tambah Pertandingan */}
               {(editingMatch || formData.sendWhatsAppInvite) && (

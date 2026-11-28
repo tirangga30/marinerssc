@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import { useSystemSetting } from '@/context/SystemSettingContext';
 
 interface AttendanceItem {
@@ -20,6 +20,33 @@ interface AttendanceItem {
   };
 }
 
+export interface StatusJourneyItem {
+  name: string;
+  completed: boolean;
+}
+
+const DEFAULT_STATUS_JOURNEY: StatusJourneyItem[] = [
+  { name: 'PENJARINGAN', completed: false },
+  { name: 'LAWAN', completed: false },
+  { name: 'FIX', completed: false },
+];
+
+function parseStatusJourney(input: any): StatusJourneyItem[] {
+  if (!input) return DEFAULT_STATUS_JOURNEY;
+  try {
+    const parsed = typeof input === 'string' ? JSON.parse(input) : input;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((item: any) => ({
+        name: typeof item === 'string' ? item : (item.name || ''),
+        completed: typeof item === 'object' ? Boolean(item.completed) : false,
+      }));
+    }
+  } catch {
+    // fallback
+  }
+  return DEFAULT_STATUS_JOURNEY;
+}
+
 interface MatchAttendanceConfirmProps {
   matchId: string;
   opponentName?: string;
@@ -29,6 +56,7 @@ interface MatchAttendanceConfirmProps {
   matchStatus?: string;
   initialAttendances: AttendanceItem[];
   inviteNotes?: string | null;
+  statusJourney?: string | null | StatusJourneyItem[];
 }
 
 export default function MatchAttendanceConfirm({
@@ -37,6 +65,7 @@ export default function MatchAttendanceConfirm({
   matchStatus,
   initialAttendances,
   inviteNotes,
+  statusJourney,
 }: MatchAttendanceConfirmProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -50,6 +79,7 @@ export default function MatchAttendanceConfirm({
   const [playerData, setPlayerData] = useState<any>(null);
   const [status, setStatus] = useState<'INVITED' | 'CONFIRMED' | 'DECLINED' | null>(null);
   const [currentInviteNotes, setCurrentInviteNotes] = useState(inviteNotes || '');
+  const [currentStatusJourney, setCurrentStatusJourney] = useState<any>(statusJourney || null);
   const [declineReason, setDeclineReason] = useState('');
   const [showDeclineInput, setShowDeclineInput] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -59,6 +89,12 @@ export default function MatchAttendanceConfirm({
       setCurrentInviteNotes(inviteNotes || '');
     }
   }, [inviteNotes]);
+
+  useEffect(() => {
+    if (statusJourney !== undefined) {
+      setCurrentStatusJourney(statusJourney);
+    }
+  }, [statusJourney]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -75,6 +111,9 @@ export default function MatchAttendanceConfirm({
         .then((data) => {
           if (data.inviteNotes !== undefined && data.inviteNotes !== null) {
             setCurrentInviteNotes(data.inviteNotes);
+          }
+          if (data.statusJourney !== undefined && data.statusJourney !== null) {
+            setCurrentStatusJourney(data.statusJourney);
           }
           if (data.attendance?.player) {
             setPlayerData(data.attendance.player);
@@ -137,18 +176,6 @@ export default function MatchAttendanceConfirm({
       setStatus(newStatus);
       setShowDeclineInput(false);
 
-      if (newStatus === 'CONFIRMED') {
-        setFeedbackMsg({
-          type: 'success',
-          text: 'Konfirmasi tersimpan: Anda tercatat hadir untuk pertandingan ini.',
-        });
-      } else {
-        setFeedbackMsg({
-          type: 'success',
-          text: 'Konfirmasi tersimpan: Anda tercatat tidak bisa hadir pada pertandingan ini.',
-        });
-      }
-
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('player_attendance_updated', {
           detail: { playerId, status: newStatus },
@@ -190,6 +217,8 @@ export default function MatchAttendanceConfirm({
   if (isExpired) {
     return null;
   }
+
+  const journeyItems = parseStatusJourney(currentStatusJourney);
 
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
@@ -246,6 +275,58 @@ export default function MatchAttendanceConfirm({
         </div>
       </div>
 
+      {/* Perjalanan Status Pertandingan: Garis kesamping, bulatan di atas nama status, hijau jika sudah diceklis, abu jika belum */}
+      {journeyItems.length > 0 && (
+        <div className="py-2.5 px-2 sm:px-3 bg-slate-50/70 rounded-2xl border border-slate-100/90 my-1">
+          <div className="flex items-start justify-between w-full">
+            {journeyItems.map((step, idx) => {
+              const isCompleted = step.completed;
+              const isLast = idx === journeyItems.length - 1;
+
+              return (
+                <React.Fragment key={idx}>
+                  {/* Step item */}
+                  <div className="flex flex-col items-center flex-1 min-w-0 text-center">
+                    {/* Bulatan di atas nama status */}
+                    <div
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all duration-300 z-10 shrink-0 ${
+                        isCompleted
+                          ? 'bg-emerald-600 text-white shadow-xs ring-4 ring-emerald-100/80'
+                          : 'bg-slate-200 border-2 border-slate-300 text-transparent ring-4 ring-white'
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                      )}
+                    </div>
+
+                    {/* Nama status di bawah bulatan */}
+                    <span
+                      className={`text-[9px] sm:text-[11px] font-black uppercase tracking-wider mt-1.5 px-0.5 break-words leading-tight transition-colors duration-200 ${
+                        isCompleted ? 'text-emerald-700' : 'text-slate-400'
+                      }`}
+                    >
+                      {step.name}
+                    </span>
+                  </div>
+
+                  {/* Garis ke samping menuju status berikutnya */}
+                  {!isLast && (
+                    <div
+                      className={`flex-1 -mx-2 sm:-mx-3 mt-3 sm:mt-3.5 h-1 rounded-full transition-colors duration-300 self-start z-0 ${
+                        isCompleted ? 'bg-emerald-500' : 'bg-slate-200'
+                      }`}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Catatan pertandingan di bawah STATUS (tanpa box & tanpa tulisan label catatan) */}
       {currentInviteNotes && (
         <p className="text-xs sm:text-sm text-slate-600 font-medium whitespace-pre-line leading-relaxed px-0.5">
@@ -253,15 +334,9 @@ export default function MatchAttendanceConfirm({
         </p>
       )}
 
-      {/* Feedback alert */}
-      {feedbackMsg && (
-        <div
-          className={`p-2.5 rounded-xl text-xs font-semibold ${
-            feedbackMsg.type === 'success'
-              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-              : 'bg-rose-50 border border-rose-200 text-rose-800'
-          }`}
-        >
+      {/* Feedback alert (hanya tampil jika error) */}
+      {feedbackMsg && feedbackMsg.type === 'error' && (
+        <div className="p-2.5 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800">
           {feedbackMsg.text}
         </div>
       )}
@@ -318,28 +393,20 @@ export default function MatchAttendanceConfirm({
         <div className="pt-1 flex flex-col sm:flex-row items-center gap-2">
           <button
             type="button"
-            disabled={saving || isConfirmed}
+            disabled={saving}
             onClick={() => handleConfirmAttendance('CONFIRMED')}
-            className={`w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              isConfirmed
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-            }`}
+            className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
-            {saving ? 'Menyimpan...' : isConfirmed ? 'Sudah Konfirmasi: Ikut' : 'Ikut Bertanding'}
+            IKUT BERTANDING
           </button>
 
           <button
             type="button"
-            disabled={saving || isDeclined}
+            disabled={saving}
             onClick={() => setShowDeclineInput(true)}
-            className={`w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              isDeclined
-                ? 'bg-rose-100 text-rose-800 border border-rose-300 cursor-default'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-            }`}
+            className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
           >
-            {isDeclined ? 'Status: Tidak Bisa' : 'Tidak Bisa Ikut'}
+            TIDAK BISA IKUT
           </button>
         </div>
       )}

@@ -82,6 +82,7 @@ export async function POST(req: Request) {
         summary: data.summary || '',
         sendWhatsAppInvite: data.sendWhatsAppInvite !== undefined ? Boolean(data.sendWhatsAppInvite) : true,
         inviteNotes: data.inviteNotes ? String(data.inviteNotes).trim() : null,
+        statusJourney: data.statusJourney !== undefined ? (typeof data.statusJourney === 'string' ? data.statusJourney : JSON.stringify(data.statusJourney)) : null,
       },
     });
 

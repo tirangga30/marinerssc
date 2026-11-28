@@ -35,7 +35,7 @@ export async function GET(
       }),
       prisma.footballMatch.findUnique({
         where: { id: matchId },
-        select: { inviteNotes: true },
+        select: { inviteNotes: true, statusJourney: true },
       }),
     ]);
 
@@ -44,6 +44,7 @@ export async function GET(
         attendance,
         player: attendance.player,
         inviteNotes: match?.inviteNotes || null,
+        statusJourney: match?.statusJourney || null,
       });
     }
 
@@ -58,6 +59,7 @@ export async function GET(
       attendance: null,
       player,
       inviteNotes: match?.inviteNotes || null,
+      statusJourney: match?.statusJourney || null,
     });
   } catch (error) {
     console.error('Error fetching attendance:', error);
