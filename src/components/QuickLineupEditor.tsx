@@ -575,9 +575,9 @@ export default function QuickLineupEditor({
                   {item.player.number}
                 </div>
 
-                {/* Player Name Pill */}
-                <div className="mt-1 px-1.5 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-[9px] sm:text-[10px] font-bold text-slate-100 flex items-center gap-1 shadow-md whitespace-nowrap max-w-[85px] sm:max-w-[100px] truncate">
-                  <span className="truncate">{item.player.name.split(' ')[0]}</span>
+                {/* Player Name Pill - GELAP */}
+                <div className="mt-1 px-1.5 py-0.5 rounded-md bg-white border border-slate-300 text-[9px] sm:text-[10px] font-black text-slate-900 flex items-center gap-1 shadow-md whitespace-nowrap max-w-[85px] sm:max-w-[100px] truncate">
+                  <span className="truncate text-slate-900 font-black">{item.player.name.split(' ')[0]}</span>
                   {isGk && (
                     <img
                       src="/gk_gloves.png"
@@ -628,19 +628,19 @@ export default function QuickLineupEditor({
                 <div
                   key={b.playerId}
                   onPointerDown={(e) => handleStartDrag(e, b.player, 'bench')}
-                  className={`shrink-0 flex items-center gap-2 bg-slate-800 hover:bg-slate-750 active:bg-slate-700 px-2.5 py-1.5 rounded-xl border border-slate-700/80 cursor-grab active:cursor-grabbing transition-all ${
-                    isBeingDragged ? 'opacity-30 scale-95' : 'hover:scale-102 shadow-sm'
+                  className={`shrink-0 flex items-center gap-2 bg-slate-100 hover:bg-white active:bg-slate-200 px-2.5 py-1.5 rounded-xl border border-slate-300 cursor-grab active:cursor-grabbing transition-all ${
+                    isBeingDragged ? 'opacity-30 scale-95' : 'hover:scale-102 shadow-xs'
                   }`}
                   style={{ touchAction: 'none' }}
                 >
-                  <span className="w-5 text-center text-xs font-black text-blue-400 font-mono">
+                  <span className="w-5 text-center text-xs font-black text-blue-600 font-mono">
                     {b.player.number}
                   </span>
                   <div className="flex flex-col min-w-0 max-w-[80px]">
-                    <span className="text-xs font-bold text-slate-200 truncate">
+                    <span className="text-xs font-black text-slate-900 truncate">
                       {b.player.name.split(' ')[0]}
                     </span>
-                    <span className="text-[9px] text-slate-400 uppercase truncate">
+                    <span className="text-[9px] text-slate-500 font-bold uppercase truncate">
                       {b.player.position || 'Cadangan'}
                     </span>
                   </div>
@@ -663,7 +663,7 @@ export default function QuickLineupEditor({
           <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-mono font-black text-sm flex items-center justify-center border-2 border-white shadow-2xl ring-4 ring-blue-500/40">
             {draggingPlayer.player.number}
           </div>
-          <div className="mt-1 px-2 py-0.5 rounded-md bg-slate-900 text-white text-[10px] font-bold border border-slate-600 shadow-2xl whitespace-nowrap">
+          <div className="mt-1 px-2 py-0.5 rounded-md bg-white text-slate-900 text-[10px] font-black border border-slate-300 shadow-2xl whitespace-nowrap">
             {draggingPlayer.player.name.split(' ')[0]}
           </div>
         </div>

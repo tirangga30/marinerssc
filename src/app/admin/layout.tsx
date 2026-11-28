@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         aria-hidden="true"
       />
       <div className="relative flex flex-col min-h-screen" style={{ zIndex: 10 }}>
-        <main className="flex-1">{children}</main>
+        <div className="flex-1 flex flex-col min-h-screen">{children}</div>
       </div>
     </div>
   );

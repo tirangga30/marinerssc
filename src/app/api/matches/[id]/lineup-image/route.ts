@@ -103,7 +103,36 @@ export async function GET(
       };
     });
 
-    // Process bench player photos
+    // Circular mask for Sharp rendering
+    const circleMask = Buffer.from(
+      '<svg width="60" height="60"><circle cx="30" cy="30" r="30" fill="#fff"/></svg>'
+    );
+
+    // Gloves icon
+    let glovesBase64: string | null = null;
+    const glovesPath = path.join(process.cwd(), 'public', 'gk_gloves.png');
+    if (fs.existsSync(glovesPath)) {
+      try {
+        glovesBase64 = fs.readFileSync(glovesPath).toString('base64');
+      } catch {}
+    }
+
+    // Default player template mask
+    let fallbackPhotoBase64: string | null = null;
+    const fallbackPath = path.join(process.cwd(), 'public', 'playertemplate.webp');
+    if (fs.existsSync(fallbackPath)) {
+      try {
+        const raw = fs.readFileSync(fallbackPath);
+        const circ = await sharp(raw)
+          .resize(60, 60, { fit: 'cover', position: 'top' })
+          .composite([{ input: circleMask, blend: 'dest-in' }])
+          .png()
+          .toBuffer();
+        fallbackPhotoBase64 = circ.toString('base64');
+      } catch {}
+    }
+
+    // Process bench player photos with sharp circular mask
     const benchWithPhotos = await Promise.all(
       rawBench.map(async (b) => {
         let photoBase64: string | null = null;
@@ -126,7 +155,8 @@ export async function GET(
 
             if (buffer) {
               const resized = await sharp(buffer)
-                .resize(64, 64, { fit: 'cover', position: 'top' })
+                .resize(60, 60, { fit: 'cover', position: 'top' })
+                .composite([{ input: circleMask, blend: 'dest-in' }])
                 .png()
                 .toBuffer();
               photoBase64 = resized.toString('base64');
@@ -134,6 +164,10 @@ export async function GET(
           } catch {
             photoBase64 = null;
           }
+        }
+
+        if (!photoBase64 && fallbackPhotoBase64) {
+          photoBase64 = fallbackPhotoBase64;
         }
 
         return {
@@ -164,10 +198,15 @@ export async function GET(
           <g transform="translate(${px}, ${py})">
             <circle cx="0" cy="0" r="28" fill="rgba(0,0,0,0.6)"/>
             <circle cx="0" cy="0" r="26" fill="#0f172a" stroke="${ringColor}" stroke-width="4"/>
-            <text x="0" y="8" font-family="monospace, sans-serif" font-size="22" font-weight="900" fill="${numColor}" text-anchor="middle">${s.number}</text>
+            <text x="0" y="8" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="${numColor}" text-anchor="middle">${s.number}</text>
             <g transform="translate(0, 36)">
               <rect x="-65" y="0" width="130" height="24" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5" opacity="0.95"/>
-              <text x="0" y="16" font-family="sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">${s.name.toUpperCase()}${s.isGk ? ' (GK)' : ''}</text>
+              <text x="${s.isGk && glovesBase64 ? -10 : 0}" y="16" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">${s.name.toUpperCase()}</text>
+              ${
+                s.isGk && glovesBase64
+                  ? `<image href="data:image/png;base64,${glovesBase64}" x="36" y="3" width="18" height="18"/>`
+                  : ''
+              }
             </g>
           </g>
         `;
@@ -183,24 +222,18 @@ export async function GET(
     const benchSvg = benchWithPhotos
       .map((b, idx) => {
         const bx = benchStartX + idx * itemWidth + itemWidth / 2;
-        const clipId = `bench-clip-${idx}`;
 
         return `
           <g transform="translate(${bx}, ${benchY})">
-            <defs>
-              <clipPath id="${clipId}">
-                <circle cx="0" cy="0" r="30"/>
-              </clipPath>
-            </defs>
             <circle cx="0" cy="0" r="32" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
             ${
               b.photoBase64
-                ? `<image href="data:image/png;base64,${b.photoBase64}" x="-30" y="-30" width="60" height="60" clip-path="url(#${clipId})"/>`
-                : `<text x="0" y="8" font-family="monospace, sans-serif" font-size="20" font-weight="900" fill="#38bdf8" text-anchor="middle">${b.number}</text>`
+                ? `<image href="data:image/png;base64,${b.photoBase64}" x="-30" y="-30" width="60" height="60"/>`
+                : `<text x="0" y="8" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#38bdf8" text-anchor="middle">${b.number}</text>`
             }
             <circle cx="18" cy="-18" r="11" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="18" y="-14" font-family="monospace, sans-serif" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle">${b.number}</text>
-            <text x="0" y="48" font-family="sans-serif" font-size="13" font-weight="bold" fill="#cbd5e1" text-anchor="middle">${b.name}</text>
+            <text x="18" y="-14" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">${b.number}</text>
+            <text x="0" y="48" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#cbd5e1" text-anchor="middle">${b.name}</text>
           </g>
         `;
       })
@@ -224,21 +257,21 @@ export async function GET(
         <rect width="${width}" height="${height}" fill="url(#bgGrad)"/>
 
         <!-- ═══ HEADER ═══ -->
-        <text x="540" y="55" font-family="sans-serif" font-size="15" font-weight="900" fill="#f59e0b" letter-spacing="3" text-anchor="middle">${competition} • ${stage}</text>
+        <text x="540" y="55" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#f59e0b" letter-spacing="3" text-anchor="middle">${competition} • ${stage}</text>
         
         <!-- Teams Title -->
-        <text x="540" y="105" font-family="sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle">
+        <text x="540" y="105" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="middle">
           ${homeTeam.toUpperCase()} <tspan fill="#64748b" font-size="26">VS</tspan> ${awayTeam.toUpperCase()}
         </text>
 
         <!-- Date & Venue -->
-        <text x="540" y="140" font-family="sans-serif" font-size="15" font-weight="500" fill="#94a3b8" text-anchor="middle">
+        <text x="540" y="140" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#94a3b8" text-anchor="middle">
           ${dateText} • ${venueText}
         </text>
 
         <!-- Formation Badge -->
         <rect x="460" y="152" width="160" height="26" rx="13" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-        <text x="540" y="170" font-family="sans-serif" font-size="12" font-weight="800" fill="#38bdf8" letter-spacing="1.5" text-anchor="middle">FORMASI: ${formation}</text>
+        <text x="540" y="170" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#38bdf8" letter-spacing="1.5" text-anchor="middle">FORMASI: ${formation}</text>
 
         <!-- ═══ TACTICAL PITCH ═══ -->
         <g transform="translate(${pitchLeft}, ${pitchTop})">
@@ -271,14 +304,14 @@ export async function GET(
         <!-- ═══ BENCH SECTION (CADANGAN MENYAMPING) ═══ -->
         <line x1="60" y1="1120" x2="1020" y2="1120" stroke="#1e293b" stroke-width="2"/>
         
-        <text x="60" y="1150" font-family="sans-serif" font-size="14" font-weight="900" fill="#38bdf8" letter-spacing="2">PEMAIN CADANGAN</text>
-        <text x="1020" y="1150" font-family="sans-serif" font-size="13" font-weight="bold" fill="#64748b" text-anchor="end">${benchWithPhotos.length} PEMAIN</text>
+        <text x="60" y="1150" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#38bdf8" letter-spacing="2">PEMAIN CADANGAN</text>
+        <text x="1020" y="1150" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#64748b" text-anchor="end">${benchWithPhotos.length} PEMAIN</text>
 
         <!-- Bench items horizontal -->
         ${benchSvg}
 
         <!-- Watermark Footer -->
-        <text x="540" y="1410" font-family="sans-serif" font-size="12" font-weight="bold" fill="#475569" letter-spacing="2" text-anchor="middle">${teamName.toUpperCase()} • OFFICIAL LINEUP</text>
+        <text x="540" y="1410" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#475569" letter-spacing="2" text-anchor="middle">${teamName.toUpperCase()} • OFFICIAL LINEUP</text>
       </svg>
     `;
 

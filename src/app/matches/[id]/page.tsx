@@ -181,19 +181,19 @@ export default async function MatchDetailPage({
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
       {/* Main Score Board Header - Menempel ke navbar & sisi kiri kanan pada mobile, PAKAI BOX KHUSUS DESKTOP */}
-      <div className="relative -mx-3 sm:-mx-6 lg:mx-auto -mt-4 sm:-mt-6 lg:mt-0 p-3 sm:p-5 lg:p-8 rounded-none lg:rounded-2xl sm:lg:rounded-3xl overflow-hidden text-center space-y-2.5 sm:space-y-3.5 lg:space-y-4 shadow-none lg:shadow-md border-0 border-b border-slate-300 lg:border lg:border-slate-200/90 lg:bg-white">
+      <div className="relative -mx-3 sm:-mx-6 lg:mx-auto -mt-4 sm:-mt-6 lg:mt-0 p-4 sm:p-6 lg:px-8 lg:pt-6 lg:pb-7 rounded-none lg:rounded-2xl sm:lg:rounded-3xl overflow-hidden text-center space-y-3 sm:space-y-4 shadow-none lg:shadow-md border-0 border-b border-slate-300 lg:border lg:border-slate-200/90 lg:bg-white">
         {/* Stadium Background */}
         <div
           className="absolute inset-0 bg-cover pointer-events-none"
           style={{
             backgroundImage: `url('/stadium.webp')`,
-            backgroundPosition: 'center 35%',
+            backgroundPosition: 'center center',
           }}
         />
         {/* Subtle light overlay to ensure flawless contrast */}
         <div className="absolute inset-0 bg-white/20 pointer-events-none" />
 
-        <div className="relative z-10 space-y-2.5 sm:space-y-3.5 max-w-5xl mx-auto">
+        <div className="relative z-10 space-y-3 sm:space-y-4 max-w-5xl mx-auto">
         {/* Top Bar Header */}
         <div className="flex items-center justify-between border-b border-slate-300/80 pb-2 sm:pb-2.5 text-[10px] sm:text-xs font-bold uppercase">
           {/* Ujung Kiri: Kompetisi, Tahun, dan Stage */}
@@ -305,7 +305,7 @@ export default async function MatchDetailPage({
         </div>
 
         {/* Footer Row: Waktu di Ujung Kiri Bawah, Lokasi di Ujung Kanan Bawah */}
-        <div className="flex items-center justify-between pt-2.5 sm:pt-3 mt-3 sm:mt-4 border-t border-slate-200 text-[9px] sm:text-xs text-slate-500">
+        <div className="flex items-center justify-between pt-2.5 sm:pt-3.5 mt-3 sm:mt-4 pb-1 sm:pb-2 border-t border-slate-200 text-[9px] sm:text-xs text-slate-500">
           {/* Ujung kiri bawah: Hari, Tanggal, Bulan, Tahun, Jam */}
           <span className="font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
             <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />

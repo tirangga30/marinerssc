@@ -299,15 +299,16 @@ export default function TacticalPitch({
     <div className="bg-[#eff3f7] p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs space-y-4 max-w-4xl mx-auto">
       {/* 1. Header (Luar Garis Lapang Atas): Tulisan Formasi di Kiri, Formasi & Tombol Share di Kanan */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-300/60 select-none">
-        <div
-          onClick={handleFormationClick}
-          className={`flex items-center gap-2 ${isBeforeKickoff ? 'cursor-pointer' : ''}`}
-          title={isBeforeKickoff ? 'Formasi' : undefined}
-        >
-          <span className="text-sm sm:text-base font-bold text-slate-800">
+        <div className="flex items-center gap-2">
+          <span
+            onClick={handleFormationClick}
+            className={`text-sm sm:text-base font-bold text-slate-800 select-none transition-colors ${
+              isBeforeKickoff ? 'cursor-pointer hover:text-blue-700' : ''
+            }`}
+          >
             Formasi
           </span>
-          <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
+          <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs select-none">
             {currentFormation || 'Belum Tersedia'}
           </span>
         </div>
