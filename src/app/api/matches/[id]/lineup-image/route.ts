@@ -100,30 +100,6 @@ export async function GET(
       CDM2: { top: 56, left: 64 },
     };
 
-    const starters = rawStarters.map((s) => {
-      let x = 50;
-      let y = 50;
-      if (s.x != null && !isNaN(Number(s.x))) {
-        x = Number(s.x);
-      } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
-        x = positionCoordinates[s.pitchPosition].left;
-      }
-
-      if (s.y != null && !isNaN(Number(s.y))) {
-        y = Number(s.y);
-      } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
-        y = positionCoordinates[s.pitchPosition].top;
-      }
-
-      return {
-        number: s.player.number,
-        name: s.player.name.split(' ')[0],
-        x,
-        y,
-        isGk: s.player.id === detectedGkPlayerId,
-      };
-    });
-
     // Circular mask for Sharp rendering
     const circleMask = Buffer.from(
       '<svg width="60" height="60"><circle cx="30" cy="30" r="30" fill="#fff"/></svg>'
@@ -152,6 +128,69 @@ export async function GET(
         fallbackPhotoBase64 = circ.toString('base64');
       } catch {}
     }
+
+    // Process starters photos
+    const startersWithPhotos = await Promise.all(
+      rawStarters.map(async (s) => {
+        let x = 50;
+        let y = 50;
+        if (s.x != null && !isNaN(Number(s.x))) {
+          x = Number(s.x);
+        } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
+          x = positionCoordinates[s.pitchPosition].left;
+        }
+
+        if (s.y != null && !isNaN(Number(s.y))) {
+          y = Number(s.y);
+        } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
+          y = positionCoordinates[s.pitchPosition].top;
+        }
+
+        let photoBase64: string | null = null;
+        const photoUrl = s.player.photoUrl;
+
+        if (photoUrl && photoUrl !== '/playertemplate.webp') {
+          try {
+            let buffer: Buffer | null = null;
+            if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
+              const res = await fetch(photoUrl, { signal: AbortSignal.timeout(3000) });
+              if (res.ok) {
+                buffer = Buffer.from(await res.arrayBuffer());
+              }
+            } else {
+              const localPath = path.join(process.cwd(), 'public', photoUrl.replace(/^\//, ''));
+              if (fs.existsSync(localPath)) {
+                buffer = fs.readFileSync(localPath);
+              }
+            }
+
+            if (buffer) {
+              const resized = await sharp(buffer)
+                .resize(60, 60, { fit: 'cover', position: 'top' })
+                .composite([{ input: circleMask, blend: 'dest-in' }])
+                .png()
+                .toBuffer();
+              photoBase64 = resized.toString('base64');
+            }
+          } catch {
+            photoBase64 = null;
+          }
+        }
+
+        if (!photoBase64 && fallbackPhotoBase64) {
+          photoBase64 = fallbackPhotoBase64;
+        }
+
+        return {
+          number: s.player.number,
+          name: s.player.name.split(' ')[0],
+          x,
+          y,
+          isGk: s.player.id === detectedGkPlayerId,
+          photoBase64,
+        };
+      })
+    );
 
     // Process bench player photos with sharp circular mask
     const benchWithPhotos = await Promise.all(
@@ -208,7 +247,7 @@ export async function GET(
     const pitchHeight = 875;
 
     // Starter markers SVG
-    const starterSvg = starters
+    const starterSvg = startersWithPhotos
       .map((s) => {
         const px = pitchLeft + (s.x / 100) * pitchWidth;
         const py = pitchTop + (s.y / 100) * pitchHeight;
@@ -219,13 +258,18 @@ export async function GET(
           <g transform="translate(${px}, ${py})">
             <circle cx="0" cy="0" r="28" fill="rgba(0,0,0,0.6)"/>
             <circle cx="0" cy="0" r="26" fill="#0f172a" stroke="${ringColor}" stroke-width="4"/>
-            <text x="0" y="8" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="${numColor}" text-anchor="middle">${s.number}</text>
+            ${
+              s.photoBase64
+                ? `<image href="data:image/png;base64,${s.photoBase64}" x="-26" y="-26" width="52" height="52"/>`
+                : `<text x="0" y="8" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="${numColor}" text-anchor="middle">${s.number}</text>`
+            }
             <g transform="translate(0, 36)">
-              <rect x="-65" y="0" width="130" height="24" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5" opacity="0.95"/>
-              <text x="${s.isGk && glovesBase64 ? -10 : 0}" y="16" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">${s.name.toUpperCase()}</text>
+              <rect x="-65" y="0" width="130" height="24" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="-48" y="16" font-family="monospace, sans-serif" font-size="12" font-weight="bold" fill="#2563eb" text-anchor="middle">${s.number}</text>
+              <text x="${s.isGk && glovesBase64 ? 2 : 10}" y="16" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">${s.name.toUpperCase()}</text>
               ${
                 s.isGk && glovesBase64
-                  ? `<image href="data:image/png;base64,${glovesBase64}" x="36" y="3" width="18" height="18"/>`
+                  ? `<image href="data:image/png;base64,${glovesBase64}" x="44" y="4" width="16" height="16"/>`
                   : ''
               }
             </g>

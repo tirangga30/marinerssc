@@ -59,13 +59,20 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
     throw new Error('Failed to get canvas 2d context');
   }
 
-  // Pre-load glove icon and player photos
+  // Pre-load glove icon and player photos (lapangan & cadangan)
   const gloveImgPromise = loadImage('/gk_gloves.png');
+  const starterPhotosPromises = starters.map((s) =>
+    loadImage(s.photoUrl && s.photoUrl !== '/playertemplate.webp' ? s.photoUrl : '/playertemplate.webp')
+  );
   const benchPhotosPromises = bench.slice(0, 10).map((b) =>
     loadImage(b.photoUrl && b.photoUrl !== '/playertemplate.webp' ? b.photoUrl : '/playertemplate.webp')
   );
 
-  const [gloveImg, ...benchImgs] = await Promise.all([gloveImgPromise, ...benchPhotosPromises]);
+  const [gloveImg, starterImgs, benchImgs] = await Promise.all([
+    gloveImgPromise,
+    Promise.all(starterPhotosPromises),
+    Promise.all(benchPhotosPromises),
+  ]);
 
   // 1. ═══ BACKGROUND GRADIENT ═══
   const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
@@ -222,7 +229,9 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
     }
   }
 
-  for (const s of starters) {
+  for (let idx = 0; idx < starters.length; idx++) {
+    const s = starters[idx];
+    const starterImg = starterImgs[idx];
     const xPct = s.x != null && !isNaN(Number(s.x)) ? Number(s.x) : 50;
     const yPct = s.y != null && !isNaN(Number(s.y)) ? Number(s.y) : 50;
     const px = pitchLeft + (xPct / 100) * pitchWidth;
@@ -230,10 +239,9 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
 
     const isGk = s.isGk || (s.id && s.id === detectedGkId) || s.name === detectedGkId;
     const ringColor = isGk ? '#f59e0b' : '#38bdf8';
-    const numColor = isGk ? '#fbbf24' : '#ffffff';
 
-    // Shadow
     ctx.save();
+    // Shadow
     ctx.beginPath();
     ctx.arc(px, py, 28, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
@@ -244,23 +252,51 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
     ctx.arc(px, py, 26, 0, Math.PI * 2);
     ctx.fillStyle = '#0f172a';
     ctx.fill();
-    ctx.lineWidth = 4;
+
+    // Foto Pemain di dalam lingkaran token lapang
+    if (starterImg) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px, py, 26, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(starterImg, px - 26, py - 26, 52, 52);
+      ctx.restore();
+    } else {
+      ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+      ctx.fillStyle = isGk ? '#fbbf24' : '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(s.number), px, py + 1);
+    }
+
+    // Border ring (Gold untuk GK, Cyan untuk Outfield)
+    ctx.beginPath();
+    ctx.arc(px, py, 26, 0, Math.PI * 2);
+    ctx.lineWidth = 3.5;
     ctx.strokeStyle = ringColor;
     ctx.stroke();
 
-    // Squad Number
-    ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-    ctx.fillStyle = numColor;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(s.number), px, py + 1);
+    // Name Pill below token: [ Nomor Punggung (Kiri, Biru) | Nama (Gelap) | (Sarung jika Kiper) ]
+    const shortName = s.name.split(' ')[0].toUpperCase();
+    const numStr = String(s.number);
 
-    // Name Pill below token (Gelap pekat pada kartu putih / terang)
-    const pillW = 130;
-    const pillH = 25;
+    ctx.font = 'bold 12px monospace, sans-serif';
+    const numW = ctx.measureText(numStr).width;
+
+    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+    const nameW = ctx.measureText(shortName).width;
+
+    const gloveW = isGk && gloveImg ? 18 : 0;
+    const gloveGap = isGk && gloveImg ? 4 : 0;
+    const numGap = 6;
+
+    const contentW = numW + numGap + nameW + gloveGap + gloveW;
+    const pillW = Math.max(120, contentW + 20);
+    const pillH = 26;
     const pillX = px - pillW / 2;
     const pillY = py + 34;
 
+    // Latar kartu nama putih / terang
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 1.5;
@@ -269,20 +305,28 @@ export async function generateLineupCanvas(options: LineupCanvasOptions): Promis
     ctx.fill();
     ctx.stroke();
 
-    // Player Name in Dark Color (text-slate-900)
-    const shortName = s.name.split(' ')[0].toUpperCase();
+    const startX = px - contentW / 2;
+    const centerY = pillY + pillH / 2;
+
+    // 1. Nomor punggung di sebelah KIRI nama (berwarna biru #2563eb)
+    ctx.font = 'bold 12px monospace, sans-serif';
+    ctx.fillStyle = '#2563eb';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(numStr, startX, centerY);
+
+    // 2. Tulisan nama pemain berwarna GELAP (#0f172a)
+    const nameX = startX + numW + numGap;
     ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
     ctx.fillStyle = '#0f172a';
+    ctx.fillText(shortName, nameX, centerY);
 
+    // 3. Ikon sarung tangan jika Kiper di sebelah kanan nama
     if (isGk && gloveImg) {
-      // Draw name shifted slightly left and glove icon on the right
-      ctx.textAlign = 'center';
-      ctx.fillText(shortName, px - 10, pillY + pillH / 2);
-      ctx.drawImage(gloveImg, px + 28, pillY + 3.5, 18, 18);
-    } else {
-      ctx.textAlign = 'center';
-      ctx.fillText(shortName, px, pillY + pillH / 2);
+      const gloveX = nameX + nameW + gloveGap;
+      ctx.drawImage(gloveImg, gloveX, centerY - 8, 16, 16);
     }
+
     ctx.restore();
   }
 
