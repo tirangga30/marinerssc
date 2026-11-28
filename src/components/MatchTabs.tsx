@@ -93,6 +93,25 @@ interface MatchTabsProps {
   }>;
 }
 
+const positionCoordinates: Record<string, { top: number; left: number }> = {
+  GK: { top: 86, left: 50 },
+  LB: { top: 68, left: 16 },
+  CB1: { top: 72, left: 37 },
+  CB2: { top: 72, left: 63 },
+  RB: { top: 68, left: 84 },
+  CM1: { top: 50, left: 32 },
+  CM2: { top: 50, left: 68 },
+  CAM: { top: 34, left: 50 },
+  LW: { top: 16, left: 18 },
+  ST: { top: 12, left: 50 },
+  RW: { top: 16, left: 82 },
+  CDM1: { top: 56, left: 36 },
+  CDM2: { top: 56, left: 64 },
+  LM: { top: 34, left: 18 },
+  RM: { top: 34, left: 82 },
+  CF: { top: 14, left: 50 },
+};
+
 export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
   const { teamName, teamLogo, playerDefaultPhoto } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
@@ -136,8 +155,51 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
     return 5;
   };
 
+  // Deteksi otomatis kiper (pemain yang posisinya paling bawah di lineup lapangan)
+  let maxTopY = -Infinity;
+  let detectedGkLineupId: string | null = null;
+  let detectedGkPlayerId: string | null = null;
+
+  const rawStarters = (match.lineups || []).filter((l) => l.isStarter && l.player);
+  for (const s of rawStarters) {
+    let y = 50;
+    if ((s as any).y != null && !isNaN(Number((s as any).y))) {
+      y = Number((s as any).y);
+    } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
+      y = positionCoordinates[s.pitchPosition].top;
+    } else if (
+      (s.pitchPosition || '').toUpperCase() === 'GK' ||
+      (s.positionName || '').toUpperCase().includes('GOAL') ||
+      (s.player?.position || '').toUpperCase() === 'GK' ||
+      (s.player?.position || '').toUpperCase().includes('GOAL')
+    ) {
+      y = 86;
+    } else if ((s.player?.position || '').toUpperCase().includes('DEF') || ['CB', 'LB', 'RB', 'DF'].includes(s.pitchPosition)) {
+      y = 70;
+    } else {
+      y = 30;
+    }
+
+    if (y > maxTopY) {
+      maxTopY = y;
+      detectedGkLineupId = s.id;
+      detectedGkPlayerId = s.player?.id;
+    }
+  }
+
+  // Jika ada pergantian kiper (sub_in yang menggantikan kiper utama)
+  const gkSubEvent = (match.events || []).find(
+    (e: any) => e.type === 'sub' && (e.playerId === detectedGkPlayerId || e.player?.id === detectedGkPlayerId)
+  );
+  const subInGkPlayerId = gkSubEvent ? ((gkSubEvent as any).assistPlayerId || gkSubEvent.assistPlayer?.id) : null;
+
   const sortLineupsByPosition = (list: LineupItem[]) => {
     return [...list].sort((a, b) => {
+      const isAGk = a.id === detectedGkLineupId || a.player?.id === detectedGkPlayerId;
+      const isBGk = b.id === detectedGkLineupId || b.player?.id === detectedGkPlayerId;
+      if (isAGk && !isBGk) return -1;
+      if (!isAGk && isBGk) return 1;
+
       const wA = getPosWeight(a.player?.position || a.positionName, a.pitchPosition);
       const wB = getPosWeight(b.player?.position || b.positionName, b.pitchPosition);
       if (wA !== wB) return wA - wB;
@@ -630,8 +692,16 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                         </span>
 
                         {/* Player Name — Tight Left */}
-                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1">
-                          {item.player.name}
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1.5">
+                          <span>{item.player.name}</span>
+                          {(item.id === detectedGkLineupId || item.player.id === detectedGkPlayerId || item.player.id === subInGkPlayerId) && (
+                            <img
+                              src="/gk_gloves.png"
+                              alt="Kiper"
+                              className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain inline-block shrink-0"
+                              title="Kiper"
+                            />
+                          )}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-300">Loan</span>}
                           {subEvts.map((sub) => (
                             <i
@@ -736,8 +806,16 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                         </span>
 
                         {/* Player Name — Tight Left */}
-                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1">
-                          {item.player.name}
+                        <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate flex items-center gap-1.5">
+                          <span>{item.player.name}</span>
+                          {(item.id === detectedGkLineupId || item.player.id === detectedGkPlayerId || item.player.id === subInGkPlayerId) && (
+                            <img
+                              src="/gk_gloves.png"
+                              alt="Kiper"
+                              className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain inline-block shrink-0"
+                              title="Kiper"
+                            />
+                          )}
                           {isGuest && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-300">Loan</span>}
                           {subEvts.map((sub) => (
                             <i

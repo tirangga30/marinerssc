@@ -96,6 +96,37 @@ export default function TacticalPitch({
   const starters = sortLineupsByPos(lineups.filter((l) => l.isStarter));
   const bench = sortLineupsByPos(lineups.filter((l) => !l.isStarter));
 
+  // Deteksi otomatis pemain paling bawah di lineup lapangan (Kiper)
+  let maxTopY = -Infinity;
+  let detectedGkLineupId: string | null = null;
+  let detectedGkPlayerId: string | null = null;
+
+  for (const s of starters) {
+    let y = 50;
+    if (s.y != null && !isNaN(Number(s.y))) {
+      y = Number(s.y);
+    } else if (s.pitchPosition && positionCoordinates[s.pitchPosition]) {
+      y = positionCoordinates[s.pitchPosition].top;
+    } else if (
+      (s.pitchPosition || '').toUpperCase() === 'GK' ||
+      (s.positionName || '').toUpperCase().includes('GOAL') ||
+      (s.player?.position || '').toUpperCase() === 'GK' ||
+      (s.player?.position || '').toUpperCase().includes('GOAL')
+    ) {
+      y = 86;
+    } else if ((s.player?.position || '').toUpperCase().includes('DEF') || ['CB', 'LB', 'RB', 'DF'].includes(s.pitchPosition)) {
+      y = 70;
+    } else {
+      y = 30;
+    }
+
+    if (y > maxTopY) {
+      maxTopY = y;
+      detectedGkLineupId = s.id;
+      detectedGkPlayerId = s.player?.id;
+    }
+  }
+
   const subEvents = (events || [])
     .filter((e) => e.type === 'sub')
     .map((e, idx) => {
@@ -285,8 +316,16 @@ export default function TacticalPitch({
                 <span className="text-blue-600 font-black font-mono">
                   {lineup.player.number}
                 </span>
-                <span className="text-slate-900 font-black">
-                  {lineup.player.name.split(' ')[0]}
+                <span className="text-slate-900 font-black flex items-center gap-1">
+                  <span>{lineup.player.name.split(' ')[0]}</span>
+                  {(lineup.id === detectedGkLineupId || lineup.player?.id === detectedGkPlayerId) && (
+                    <img
+                      src="/gk_gloves.png"
+                      alt="GK"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain inline-block shrink-0"
+                      title="Kiper"
+                    />
+                  )}
                 </span>
               </div>
             </>
