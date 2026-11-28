@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield, Loader2 } from 'lucide-react';
+import { Shield, Loader2, Share2, Check } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import { getClientPublicSeason } from '@/lib/publicSeason';
 import { useSystemSetting } from '@/context/SystemSettingContext';
@@ -90,6 +90,50 @@ export default function TacticalPitch({
   const [pinLoading, setPinLoading] = useState(false);
   const [verifiedPin, setVerifiedPin] = useState('');
   const [showEditor, setShowEditor] = useState(false);
+  const [sharingImage, setSharingImage] = useState(false);
+  const [sharedSuccess, setSharedSuccess] = useState(false);
+
+  const handleShareLineupImage = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!matchId || sharingImage) return;
+
+    setSharingImage(true);
+    try {
+      const res = await fetch(`/api/matches/${matchId}/lineup-image?v=${Date.now()}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const file = new File([blob], `lineup-${matchId}.png`, { type: 'image/png' });
+
+        if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `Line Up Pertandingan`,
+            files: [file],
+          });
+          setSharedSuccess(true);
+          setTimeout(() => setSharedSuccess(false), 2000);
+          return;
+        }
+
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `lineup-${matchId}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setSharedSuccess(true);
+        setTimeout(() => setSharedSuccess(false), 2000);
+      }
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      console.warn('Error sharing image:', err);
+    } finally {
+      setSharingImage(false);
+    }
+  };
 
   useEffect(() => {
     setCurrentFormation(formation || 'Belum Tersedia');
@@ -253,20 +297,40 @@ export default function TacticalPitch({
 
   return (
     <div className="bg-[#eff3f7] p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs space-y-4 max-w-4xl mx-auto">
-      {/* 1. Header (Luar Garis Lapang Atas): Tulisan Formasi di Kiri, Formasi di Kanan */}
-      <div
-        onClick={handleFormationClick}
-        className={`flex items-center justify-between pb-2 border-b border-slate-300/60 select-none ${
-          isBeforeKickoff ? 'cursor-pointer' : ''
-        }`}
-        title={isBeforeKickoff ? 'Formasi' : undefined}
-      >
-        <span className="text-sm sm:text-base font-bold text-slate-800">
-          Formasi
-        </span>
-        <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
-          {currentFormation || 'Belum Tersedia'}
-        </span>
+      {/* 1. Header (Luar Garis Lapang Atas): Tulisan Formasi di Kiri, Formasi & Tombol Share di Kanan */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-300/60 select-none">
+        <div
+          onClick={handleFormationClick}
+          className={`flex items-center gap-2 ${isBeforeKickoff ? 'cursor-pointer' : ''}`}
+          title={isBeforeKickoff ? 'Formasi' : undefined}
+        >
+          <span className="text-sm sm:text-base font-bold text-slate-800">
+            Formasi
+          </span>
+          <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
+            {currentFormation || 'Belum Tersedia'}
+          </span>
+        </div>
+
+        {/* Tombol Bagikan Gambar Line Up */}
+        {matchId && (
+          <button
+            type="button"
+            onClick={handleShareLineupImage}
+            disabled={sharingImage}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 shadow-xs transition-colors cursor-pointer"
+            title="Bagikan Gambar Line Up Langsung"
+          >
+            {sharingImage ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+            ) : sharedSuccess ? (
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+            ) : (
+              <Share2 className="w-3.5 h-3.5 text-slate-500" />
+            )}
+            <span className="hidden sm:inline">{sharedSuccess ? 'Tersimpan' : 'Bagikan Line Up'}</span>
+          </button>
+        )}
       </div>
 
       {/* 2. Tactical Pitch (Gambar /pitch.png & Marker Pemain) */}

@@ -137,7 +137,7 @@ export default function QuickLineupEditor({
     setBench(initBench);
   }, [isOpen, initialLineups, initialFormation, attendances]);
 
-  // Lock whole page scroll (terkunci 1 layar)
+  // Lock whole page scroll & prevent mobile auto-zoom (terkunci 1 layar)
   useEffect(() => {
     if (!isOpen) return;
     const origOverflow = document.body.style.overflow;
@@ -145,9 +145,18 @@ export default function QuickLineupEditor({
     document.body.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
 
+    let metaViewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+    const origViewport = metaViewport?.content;
+    if (metaViewport) {
+      metaViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    }
+
     return () => {
       document.body.style.overflow = origOverflow;
       document.body.style.touchAction = origTouchAction;
+      if (metaViewport && origViewport) {
+        metaViewport.content = origViewport;
+      }
     };
   }, [isOpen]);
 
@@ -456,8 +465,13 @@ export default function QuickLineupEditor({
             type="text"
             value={formation}
             onChange={(e) => setFormation(e.target.value)}
+            onBlur={() => {
+              if (typeof window !== 'undefined') {
+                window.scrollTo(0, 0);
+              }
+            }}
             placeholder="4-3-3"
-            className="w-16 sm:w-20 bg-slate-900 text-center text-xs sm:text-sm font-mono font-black text-blue-400 border border-slate-700 rounded px-1 py-0.5 outline-none focus:border-blue-500 uppercase"
+            className="w-16 sm:w-20 bg-slate-900 text-center text-[16px] sm:text-sm font-mono font-black text-blue-400 border border-slate-700 rounded px-1 py-0.5 outline-none focus:border-blue-500 uppercase"
             title="Ubah format formasi (misal: 4-3-3, 2-3-2)"
           />
         </div>

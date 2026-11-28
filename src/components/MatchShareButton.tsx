@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check, Loader2 } from 'lucide-react';
 import { formatWibDate, formatWibTime } from '@/lib/date';
 
 interface MatchShareButtonProps {
@@ -24,10 +24,14 @@ interface MatchShareButtonProps {
 
 export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShareButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [copyBadgeText, setCopyBadgeText] = useState('Disalin!');
+  const [loading, setLoading] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (loading) return;
 
     const homeTeam = match.isHome ? teamName : match.opponentName;
     const awayTeam = match.isHome ? match.opponentName : teamName;
@@ -153,6 +157,53 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
     }
 
     const shareText = textLines.join('\n');
+    const isLineupShare = currentTab === 'lineup';
+
+    // Jika tab lineup (khusus sebelum atau saat melihat lineup), bagikan gambar langsung
+    if (isLineupShare) {
+      setLoading(true);
+      try {
+        const imgRes = await fetch(`/api/matches/${match.id}/lineup-image?v=${Date.now()}`);
+        if (imgRes.ok) {
+          const blob = await imgRes.blob();
+          const cleanTitle = `${homeTeam}-vs-${awayTeam}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          const fileName = `lineup-${cleanTitle}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          // Coba Web Share API dengan attachment file gambar
+          if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title,
+              text: shareText,
+              files: [file],
+            });
+            setCopyBadgeText('Gambar Terbagikan!');
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+            return;
+          }
+
+          // Fallback di browser desktop / browser tanpa share file: download gambar otomatis
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+          setCopyBadgeText('Gambar Tersimpan!');
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2500);
+          return;
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+        console.warn('Error sharing lineup image:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
     // 1. Native Web Share API (ideal for mobile WhatsApp / social share)
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -162,6 +213,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
           text: shareText,
           url: shareUrl,
         });
+        setCopyBadgeText('Disalin!');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         return;
@@ -184,6 +236,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
         document.execCommand('copy');
         document.body.removeChild(ta);
       }
+      setCopyBadgeText('Disalin!');
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch (clipErr) {
@@ -196,15 +249,18 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
       <button
         type="button"
         onClick={handleShare}
+        disabled={loading}
         aria-label="Bagikan Pertandingan"
-        title="Bagikan Pertandingan / Hasil Pertandingan"
+        title={loading ? 'Menyiapkan gambar...' : 'Bagikan Pertandingan / Hasil Pertandingan'}
         className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer ${
           copied
             ? 'bg-emerald-50 border-emerald-300 text-emerald-600 scale-105'
             : 'bg-slate-50 hover:bg-blue-50 text-slate-500 hover:text-blue-600 border-slate-200 hover:border-blue-300 shadow-2xs'
         }`}
       >
-        {copied ? (
+        {loading ? (
+          <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 animate-spin" />
+        ) : copied ? (
           <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 stroke-[2.5]" />
         ) : (
           <Share2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2]" />
@@ -215,7 +271,7 @@ export default function MatchShareButton({ match, teamName = 'TEAM' }: MatchShar
       {copied && (
         <div className="absolute right-0 -bottom-7 z-30 pointer-events-none animate-fadeIn">
           <span className="px-2 py-0.5 rounded-md bg-slate-900 text-white text-[9px] sm:text-[10px] font-bold whitespace-nowrap shadow-md">
-            Disalin!
+            {copyBadgeText}
           </span>
         </div>
       )}

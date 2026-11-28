@@ -181,7 +181,7 @@ export default async function MatchDetailPage({
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
       {/* Main Score Board Header - Menempel ke navbar & sisi kiri kanan pada mobile, memanjang di desktop */}
-      <div className="relative -mx-3 sm:-mx-6 lg:mx-0 -mt-4 sm:-mt-6 lg:mt-0 p-3 sm:p-5 lg:py-3.5 lg:px-6 rounded-none lg:rounded-2xl overflow-hidden text-center space-y-2.5 sm:space-y-3.5 shadow-none border-none">
+      <div className="relative -mx-3 sm:-mx-6 lg:mx-0 -mt-4 sm:-mt-6 lg:mt-0 p-3 sm:p-5 lg:py-3.5 lg:px-6 rounded-none lg:rounded-2xl overflow-hidden text-center space-y-2.5 sm:space-y-3.5 shadow-none border-b border-slate-300 lg:border lg:border-slate-300/80">
         {/* Stadium Background */}
         <div
           className="absolute inset-0 bg-cover pointer-events-none"
