@@ -643,10 +643,14 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
         <div className="space-y-4 sm:space-y-6 animate-fadeIn">
           {/* Tactical Pitch 2D (Tanpa Box Putih Luar) */}
           <TacticalPitch
+            matchId={match.id}
+            matchDate={match.matchDate}
+            matchStatus={match.status}
             lineups={match.lineups}
             formation={match.formation}
             events={pitchEvents}
             season={match.seasonName}
+            attendances={match.attendances}
           />
 
           {/* Lineup Detail Grid (Starting XI + Substitutes) */}
@@ -698,7 +702,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                             <img
                               src="/gk_gloves.png"
                               alt="Kiper"
-                              className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain inline-block shrink-0"
+                              className="w-5 h-5 sm:w-6 sm:h-6 object-contain inline-block shrink-0 drop-shadow-xs"
                               title="Kiper"
                             />
                           )}
@@ -812,7 +816,7 @@ export default function MatchTabs({ match, h2hMatches = [] }: MatchTabsProps) {
                             <img
                               src="/gk_gloves.png"
                               alt="Kiper"
-                              className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain inline-block shrink-0"
+                              className="w-5 h-5 sm:w-6 sm:h-6 object-contain inline-block shrink-0 drop-shadow-xs"
                               title="Kiper"
                             />
                           )}

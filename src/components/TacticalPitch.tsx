@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 import { resolvePlayerForSeason } from '@/lib/seasonPlayer';
 import { getClientPublicSeason } from '@/lib/publicSeason';
 import { useSystemSetting } from '@/context/SystemSettingContext';
+import QuickLineupEditor from './QuickLineupEditor';
 
 interface LineupPlayer {
   id: string;
@@ -26,6 +27,9 @@ interface LineupPlayer {
 }
 
 interface TacticalPitchProps {
+  matchId?: string;
+  matchDate?: Date | string;
+  matchStatus?: string;
   lineups: LineupPlayer[];
   formation?: string;
   season?: string;
@@ -38,6 +42,7 @@ interface TacticalPitchProps {
     player?: { id: string; name?: string; slug?: string; photoUrl?: string; number?: number; seasonData?: any } | null;
     assistPlayer?: { id: string; name?: string; slug?: string; photoUrl?: string; number?: number; seasonData?: any } | null;
   }>;
+  attendances?: any[];
 }
 
 // Preset coordinates on pitch percentage (top %, left %)
@@ -64,14 +69,78 @@ const positionCoordinates: Record<string, { top: number; left: number }> = {
 
 
 export default function TacticalPitch({
+  matchId,
+  matchDate,
+  matchStatus,
   lineups,
   formation = 'Belum Tersedia',
   events = [],
   season,
+  attendances = [],
 }: TacticalPitchProps) {
   const { playerDefaultPhoto } = useSystemSetting();
   const defaultPlayerTemplate = playerDefaultPhoto || '/playertemplate.webp';
   const activeSeason = season || getClientPublicSeason() || '2026';
+
+  const [currentFormation, setCurrentFormation] = useState(formation || 'Belum Tersedia');
+  const [currentLineups, setCurrentLineups] = useState<LineupPlayer[]>(lineups || []);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
+  const [verifiedPin, setVerifiedPin] = useState('');
+  const [showEditor, setShowEditor] = useState(false);
+
+  useEffect(() => {
+    setCurrentFormation(formation || 'Belum Tersedia');
+  }, [formation]);
+
+  useEffect(() => {
+    setCurrentLineups(lineups || []);
+  }, [lineups]);
+
+  const isBeforeKickoff = Boolean(
+    matchId &&
+    (matchDate ? new Date() < new Date(matchDate) : true) &&
+    matchStatus !== 'live' &&
+    matchStatus !== 'finished'
+  );
+
+  const handleFormationClick = () => {
+    if (!isBeforeKickoff || !matchId) return;
+    setPinInput('');
+    setPinError('');
+    setShowPinModal(true);
+  };
+
+  const handleVerifyPin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!pinInput || pinInput.length < 4 || !matchId) return;
+
+    setPinLoading(true);
+    setPinError('');
+
+    try {
+      const res = await fetch(`/api/matches/${matchId}/verify-lineup-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'PIN salah');
+      }
+
+      setVerifiedPin(pinInput);
+      setShowPinModal(false);
+      setShowEditor(true);
+    } catch (err: any) {
+      setPinError(err.message || 'PIN salah');
+    } finally {
+      setPinLoading(false);
+    }
+  };
 
   const getPosWeight = (pos: string, pitchPos?: string): number => {
     const p = (pos || '').toUpperCase();
@@ -93,8 +162,8 @@ export default function TacticalPitch({
     });
   };
 
-  const starters = sortLineupsByPos(lineups.filter((l) => l.isStarter));
-  const bench = sortLineupsByPos(lineups.filter((l) => !l.isStarter));
+  const starters = sortLineupsByPos(currentLineups.filter((l) => l.isStarter));
+  const bench = sortLineupsByPos(currentLineups.filter((l) => !l.isStarter));
 
   // Deteksi otomatis pemain paling bawah di lineup lapangan (Kiper)
   let maxTopY = -Infinity;
@@ -185,12 +254,18 @@ export default function TacticalPitch({
   return (
     <div className="bg-[#eff3f7] p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs space-y-4 max-w-4xl mx-auto">
       {/* 1. Header (Luar Garis Lapang Atas): Tulisan Formasi di Kiri, Formasi di Kanan */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-300/60">
+      <div
+        onClick={handleFormationClick}
+        className={`flex items-center justify-between pb-2 border-b border-slate-300/60 select-none ${
+          isBeforeKickoff ? 'cursor-pointer' : ''
+        }`}
+        title={isBeforeKickoff ? 'Formasi' : undefined}
+      >
         <span className="text-sm sm:text-base font-bold text-slate-800">
           Formasi
         </span>
         <span className="text-xs sm:text-sm font-black font-mono text-blue-600 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
-          {formation || 'Belum Tersedia'}
+          {currentFormation || 'Belum Tersedia'}
         </span>
       </div>
 
@@ -427,6 +502,100 @@ export default function TacticalPitch({
             ))}
           </div>
         </div>
+      )}
+      {/* 4. PIN Verification Modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 w-full max-w-xs shadow-2xl border border-slate-200 space-y-4 text-center">
+            <div>
+              <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                PIN Keamanan
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Masukkan 4 digit PIN untuk mengatur susunan pemain
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyPin} className="space-y-3">
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                autoFocus
+                value={pinInput}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                  setPinInput(val);
+                  setPinError('');
+                }}
+                placeholder="••••"
+                className="w-full text-center tracking-[1em] text-2xl font-mono font-black py-2 rounded-xl bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-slate-900"
+              />
+
+              {pinError && (
+                <p className="text-xs font-bold text-red-600">
+                  {pinError}
+                </p>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPinModal(false)}
+                  className="flex-1 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={pinLoading || pinInput.length < 4}
+                  className="flex-1 py-2 rounded-xl text-xs font-black uppercase bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-all flex items-center justify-center gap-1 shadow-md cursor-pointer"
+                >
+                  {pinLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Buka'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. 1-Screen Locked Quick Lineup Editor Portal */}
+      {showEditor && matchId && (
+        <QuickLineupEditor
+          isOpen={showEditor}
+          onClose={() => setShowEditor(false)}
+          matchId={matchId}
+          initialFormation={currentFormation}
+          initialLineups={currentLineups}
+          attendances={attendances}
+          pin={verifiedPin}
+          onSaved={(newLineups, newFormation) => {
+            setCurrentFormation(newFormation);
+            setCurrentLineups((prev) => {
+              const map = new Map(prev.map((p) => [p.player.id, p]));
+              return newLineups.map((nl: any) => {
+                const existing = map.get(nl.playerId);
+                return {
+                  id: existing?.id || `lp-${nl.playerId}`,
+                  isStarter: Boolean(nl.isStarter),
+                  pitchPosition: nl.pitchPosition || 'PITCH',
+                  positionName: nl.positionName || 'Starter',
+                  x: nl.x,
+                  y: nl.y,
+                  player: existing?.player || {
+                    id: nl.playerId,
+                    name: 'Pemain',
+                    slug: '',
+                    number: 0,
+                    position: '',
+                    photoUrl: '',
+                  },
+                };
+              });
+            });
+          }}
+        />
       )}
     </div>
   );

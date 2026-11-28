@@ -24,13 +24,33 @@ function parseNullableFloat(val: any): number | null {
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id: matchId } = await params;
+    const body = await req.json();
+    const { lineups, events, formation, status, homeScore, awayScore, duration, isLiveEnabled, nonSquadReasons, pin } = body;
+
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Tidak sah' }, { status: 401 });
+    let isAuthorized = Boolean(session);
+
+    if (!isAuthorized && pin) {
+      let expectedPin = '1234';
+      try {
+        const setting = await (prisma as any).systemSetting?.findUnique({
+          where: { id: 'default' },
+        });
+        if (setting?.securityPin) {
+          expectedPin = setting.securityPin;
+        }
+      } catch (dbErr) {
+        console.warn('DB error reading securityPin:', dbErr);
+      }
+      if (String(pin).trim() === String(expectedPin).trim()) {
+        isAuthorized = true;
+      }
     }
 
-    const { id: matchId } = await params;
-    const { lineups, events, formation, status, homeScore, awayScore, duration, isLiveEnabled, nonSquadReasons } = await req.json();
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Tidak sah: Sesi admin atau PIN keamanan diperlukan' }, { status: 401 });
+    }
 
     const updateData: any = {};
     if (formation !== undefined) updateData.formation = formation;
@@ -47,9 +67,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       });
     }
 
-    // Reset old lineups and events
+    // Reset old lineups
     await prisma.matchLineup.deleteMany({ where: { matchId } });
-    await prisma.matchEvent.deleteMany({ where: { matchId } });
+    if (events !== undefined) {
+      await prisma.matchEvent.deleteMany({ where: { matchId } });
+    }
 
     // Insert new lineups
     if (Array.isArray(lineups) && lineups.length > 0) {
