@@ -23,7 +23,8 @@ export interface PerformanceActivity {
 
 export interface PlayerPerformanceResult {
   totalPoints: number; // Total EXP (matchPoints + disciplinePoints)
-  matchPoints: number; // Top Performa: Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
+  matchPoints: number; // EXP Performa Laga sejak bergabung
+  statsMatchPoints: number; // Top Performa untuk halaman /stats (termasuk laga saat masih loan)
   disciplinePoints: number; // Disiplin Undangan: Abaikan (-3), Batal <1 Jam (-1), Tanpa Kabar (-4)
   goalsCount: number;
   assistsCount: number;
@@ -144,6 +145,7 @@ export function calculatePlayerPerformance(
   let yellowCount = 0;
   let redCount = 0;
   let penaltiesCount = 0;
+  let statsMatchPoints = 0;
 
   const toWibDateKey = (d: Date | string | null | undefined): string | null => {
     if (!d) return null;
@@ -241,33 +243,38 @@ export function calculatePlayerPerformance(
         (isManualConfirm || attStatus === 'DECLINED' || (wasInvited && (attStatus === 'INVITED' || attStatus === 'NOT_INVITED')));
 
       if (isUnconfirmedAppearance) {
-        activities.push({
-          id: `${match.id}-app-unconfirmed`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'declined_appearance',
-          title: 'Tampil Tanpa Konfirmasi',
-          reason: isManualConfirm
-            ? 'Dikonfirmasi manual oleh admin (tampil tanpa konfirmasi mandiri, 0 poin)'
-            : attStatus === 'DECLINED'
-            ? 'Tampil di laga meski awalnya berstatus Tidak Ikut (0 poin)'
-            : 'Tampil di laga tanpa melakukan konfirmasi kehadiran (0 poin)',
-          points: 0,
-        });
+        if (isAfterJoinDate) {
+          activities.push({
+            id: `${match.id}-app-unconfirmed`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'declined_appearance',
+            title: 'Tampil Tanpa Konfirmasi',
+            reason: isManualConfirm
+              ? 'Dikonfirmasi manual oleh admin (tampil tanpa konfirmasi mandiri, 0 poin)'
+              : attStatus === 'DECLINED'
+              ? 'Tampil di laga meski awalnya berstatus Tidak Ikut (0 poin)'
+              : 'Tampil di laga tanpa melakukan konfirmasi kehadiran (0 poin)',
+            points: 0,
+          });
+        }
       } else {
-        activities.push({
-          id: `${match.id}-app`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'appearance',
-          title: 'Tampil di Pertandingan',
-          reason: lineup.isStarter ? 'Starter Skuad Utama' : 'Pemain Pengganti',
-          points: 1,
-        });
+        statsMatchPoints += 1;
+        if (isAfterJoinDate) {
+          activities.push({
+            id: `${match.id}-app`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'appearance',
+            title: 'Tampil di Pertandingan',
+            reason: lineup.isStarter ? 'Starter Skuad Utama' : 'Pemain Pengganti',
+            points: 1,
+          });
+        }
       }
     } else if (
       isDisciplineEligible &&
@@ -408,18 +415,21 @@ export function calculatePlayerPerformance(
     for (const ge of matchEvents) {
       if (ge.type === 'goal' || ge.type === 'penalty') {
         goalsCount++;
-        activities.push({
-          id: ge.id || `${match.id}-goal-${ge.minute || 0}`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'goal',
-          title: ge.type === 'penalty' ? 'Gol Penalti (+5)' : 'Mencetak Gol (+5)',
-          reason: `Gol pada menit ke-${ge.minute || '—'}`,
-          minute: ge.minute,
-          points: 5,
-        });
+        statsMatchPoints += 5;
+        if (isAfterJoinDate) {
+          activities.push({
+            id: ge.id || `${match.id}-goal-${ge.minute || 0}`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'goal',
+            title: ge.type === 'penalty' ? 'Gol Penalti (+5)' : 'Mencetak Gol (+5)',
+            reason: `Gol pada menit ke-${ge.minute || '—'}`,
+            minute: ge.minute,
+            points: 5,
+          });
+        }
       }
     }
 
@@ -427,36 +437,42 @@ export function calculatePlayerPerformance(
     const directAssists = matchEvents.filter((e: any) => e.type === 'assist');
     for (const ae of directAssists) {
       assistsCount++;
-      activities.push({
-        id: ae.id || `${match.id}-assist-${ae.minute || 0}`,
-        matchId: match.id,
-        opponentName: match.opponentName,
-        matchDate: match.matchDate,
-        stage: match.stage,
-        type: 'assist',
-        title: 'Memberikan Assist (+3)',
-        reason: `Assist pada menit ke-${ae.minute || '—'}`,
-        minute: ae.minute,
-        points: 3,
-      });
-    }
-
-    for (const ae of assistedMatchEvents) {
-      // Prevent duplicate if already counted in direct assists
-      if (!directAssists.some((d: any) => d.id === ae.id)) {
-        assistsCount++;
+      statsMatchPoints += 3;
+      if (isAfterJoinDate) {
         activities.push({
-          id: ae.id || `${match.id}-assisted-${ae.minute || 0}`,
+          id: ae.id || `${match.id}-assist-${ae.minute || 0}`,
           matchId: match.id,
           opponentName: match.opponentName,
           matchDate: match.matchDate,
           stage: match.stage,
           type: 'assist',
           title: 'Memberikan Assist (+3)',
-          reason: `Assist gol pada menit ke-${ae.minute || '—'}`,
+          reason: `Assist pada menit ke-${ae.minute || '—'}`,
           minute: ae.minute,
           points: 3,
         });
+      }
+    }
+
+    for (const ae of assistedMatchEvents) {
+      // Prevent duplicate if already counted in direct assists
+      if (!directAssists.some((d: any) => d.id === ae.id)) {
+        assistsCount++;
+        statsMatchPoints += 3;
+        if (isAfterJoinDate) {
+          activities.push({
+            id: ae.id || `${match.id}-assisted-${ae.minute || 0}`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'assist',
+            title: 'Memberikan Assist (+3)',
+            reason: `Assist gol pada menit ke-${ae.minute || '—'}`,
+            minute: ae.minute,
+            points: 3,
+          });
+        }
       }
     }
 
@@ -464,18 +480,21 @@ export function calculatePlayerPerformance(
     for (const yc of matchEvents) {
       if (yc.type === 'yellow_card') {
         yellowCount++;
-        activities.push({
-          id: yc.id || `${match.id}-yc-${yc.minute || 0}`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'yellow_card',
-          title: 'Kartu Kuning (-1)',
-          reason: `Peringatan kartu kuning menit ke-${yc.minute || '—'}`,
-          minute: yc.minute,
-          points: -1,
-        });
+        statsMatchPoints -= 1;
+        if (isAfterJoinDate) {
+          activities.push({
+            id: yc.id || `${match.id}-yc-${yc.minute || 0}`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'yellow_card',
+            title: 'Kartu Kuning (-1)',
+            reason: `Peringatan kartu kuning menit ke-${yc.minute || '—'}`,
+            minute: yc.minute,
+            points: -1,
+          });
+        }
       }
     }
 
@@ -483,18 +502,21 @@ export function calculatePlayerPerformance(
     for (const rc of matchEvents) {
       if (rc.type === 'red_card' || rc.type === 'second_yellow') {
         redCount++;
-        activities.push({
-          id: rc.id || `${match.id}-rc-${rc.minute || 0}`,
-          matchId: match.id,
-          opponentName: match.opponentName,
-          matchDate: match.matchDate,
-          stage: match.stage,
-          type: 'red_card',
-          title: rc.type === 'second_yellow' ? 'Kartu Merah (2 Kuning) (-3)' : 'Kartu Merah Langsung (-3)',
-          reason: `Pelanggaran kartu merah menit ke-${rc.minute || '—'}`,
-          minute: rc.minute,
-          points: -3,
-        });
+        statsMatchPoints -= 3;
+        if (isAfterJoinDate) {
+          activities.push({
+            id: rc.id || `${match.id}-rc-${rc.minute || 0}`,
+            matchId: match.id,
+            opponentName: match.opponentName,
+            matchDate: match.matchDate,
+            stage: match.stage,
+            type: 'red_card',
+            title: rc.type === 'second_yellow' ? 'Kartu Merah (2 Kuning) (-3)' : 'Kartu Merah Langsung (-3)',
+            reason: `Pelanggaran kartu merah menit ke-${rc.minute || '—'}`,
+            minute: rc.minute,
+            points: -3,
+          });
+        }
       }
     }
   }
@@ -546,6 +568,7 @@ export function calculatePlayerPerformance(
   return {
     totalPoints,
     matchPoints,
+    statsMatchPoints,
     disciplinePoints,
     goalsCount,
     assistsCount,

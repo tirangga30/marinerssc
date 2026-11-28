@@ -234,7 +234,7 @@ export default async function StatsPage({
     // Calculate performance points: Gol (+5), Assist (+3), Tampil (+1), Tampil Tanpa Konfirmasi (0), Kartu Kuning (-1), Kartu Merah (-3)
     const perf = calculatePlayerPerformance(p, allMatches, selectedSeason);
     const fallbackBasePoints = (goals * 5) + (assists * 3) + (appearances * 1) - (yellowCards * 1) - (redCards * 3);
-    const points = isAll && fallbackBasePoints > perf.matchPoints ? fallbackBasePoints : perf.matchPoints;
+    const points = isAll && fallbackBasePoints > perf.statsMatchPoints ? fallbackBasePoints : perf.statsMatchPoints;
 
     return {
       ...p,
